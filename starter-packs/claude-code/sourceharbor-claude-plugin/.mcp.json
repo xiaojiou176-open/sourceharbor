@@ -1,0 +1,10 @@
+{
+  "command": "bash",
+  "args": [
+    "-lc",
+    "cd \"__REPLACE_WITH_SOURCEHARBOR_REPO_ROOT__\" && ./bin/dev-mcp"
+  ],
+  "env": {
+    "SOURCE_HARBOR_API_BASE_URL": "http://127.0.0.1:9000"
+  }
+}

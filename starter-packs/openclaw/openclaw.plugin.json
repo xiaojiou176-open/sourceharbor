@@ -1,0 +1,11 @@
+{
+  "id": "sourceharbor-openclaw",
+  "name": "SourceHarbor",
+  "description": "First-cut local SourceHarbor plugin and skill pack for OpenClaw watchlist briefings and MCP/API reuse.",
+  "skills": ["./skills"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

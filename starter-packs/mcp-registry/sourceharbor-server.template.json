@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.xiaojiou176-open/sourceharbor-mcp",
+  "title": "SourceHarbor MCP",
+  "description": "Source-first AI knowledge control tower MCP server for YouTube, Bilibili, RSSHub, and RSS.",
+  "repository": {
+    "url": "https://github.com/xiaojiou176-open/sourceharbor",
+    "source": "github"
+  },
+  "version": "0.1.11",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@sourceharbor/mcp-server",
+      "version": "0.1.11",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "SOURCE_HARBOR_API_BASE_URL",
+          "description": "Base URL for a running SourceHarbor API.",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
