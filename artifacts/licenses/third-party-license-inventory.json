@@ -1834,7 +1834,7 @@
     },
     {
       "name": "@sourceharbor/sdk",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "license": "MIT",
       "license_source": "package-lock",
       "resolved": "",
