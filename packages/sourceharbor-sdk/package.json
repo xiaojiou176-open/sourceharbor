@@ -1,7 +1,15 @@
 {
   "name": "@sourceharbor/sdk",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Thin public TypeScript SDK for the SourceHarbor HTTP API.",
+  "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaojiou176-open/sourceharbor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiaojiou176-open/sourceharbor/issues"
+  },
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,6 +25,14 @@
   "files": [
     "dist",
     "README.md"
+  ],
+  "keywords": [
+    "sourceharbor",
+    "sdk",
+    "typescript",
+    "mcp",
+    "retrieval",
+    "knowledge-pipeline"
   ],
   "scripts": {
     "build": "npx --yes -p typescript tsc -p tsconfig.build.json",

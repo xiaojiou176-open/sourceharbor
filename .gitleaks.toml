@@ -11,6 +11,11 @@ regexes = [
   '''sk-(test|dummy|placeholder)[A-Za-z0-9_-]*''',
 ]
 paths = [
+  '''^\.agents/''',
+  '''^\.agent/''',
+  '''^\.codex/''',
+  '''^\.claude/''',
+  '''^\.serena/''',
   '''^\.runtime-cache/''',
   '''^logs/''',
   '''^apps/web/\.next/''',

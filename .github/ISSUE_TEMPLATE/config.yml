@@ -7,7 +7,7 @@ contact_links:
     url: https://github.com/xiaojiou176-open/sourceharbor/discussions/categories/ideas
     about: Share product ideas, use cases, and integration requests.
   - name: Docs and quickstart
-    url: https://github.com/xiaojiou176-open/sourceharbor?tab=readme-ov-file#see-it-in-30-seconds
+    url: https://xiaojiou176-open.github.io/sourceharbor/
     about: Start with the layered docs map and public proof pages.
   - name: Security report
     url: https://github.com/xiaojiou176-open/sourceharbor/security
