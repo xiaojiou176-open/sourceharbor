@@ -7,12 +7,12 @@
     "url": "https://github.com/xiaojiou176-open/sourceharbor",
     "source": "github"
   },
-  "version": "0.1.11",
+  "version": "0.1.12",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@sourceharbor/mcp-server",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "transport": {
         "type": "stdio"
       },

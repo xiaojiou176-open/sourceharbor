@@ -30,6 +30,8 @@ apps/web/node_modules.broken*/
 *.tsbuildinfo
 
 # local build and temp
+cache/
+.cache/
 dist/
 build/
 coverage/

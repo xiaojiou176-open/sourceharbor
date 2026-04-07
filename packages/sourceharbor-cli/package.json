@@ -1,7 +1,15 @@
 {
   "name": "@sourceharbor/cli",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Thin public CLI for SourceHarbor with repo-aware delegation.",
+  "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaojiou176-open/sourceharbor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiaojiou176-open/sourceharbor/issues"
+  },
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -10,6 +18,15 @@
   "files": [
     "bin/sourceharbor.js",
     "README.md"
+  ],
+  "keywords": [
+    "sourceharbor",
+    "cli",
+    "mcp",
+    "codex",
+    "claude-code",
+    "retrieval",
+    "knowledge-pipeline"
   ],
   "scripts": {
     "pack:dry": "npm pack --dry-run"

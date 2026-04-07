@@ -132,7 +132,7 @@ jobs:
       - name: Generate strict CI image SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          image: ghcr.io/xiaojiou176/sourceharbor-ci-standard:${{ github.sha }}
+          image: ghcr.io/xiaojiou176-open/sourceharbor-ci-standard:${{ github.sha }}
           format: cyclonedx-json
           output-file: .runtime-cache/reports/attestations/strict-ci-image.cdx.json
           upload-artifact: false
@@ -176,14 +176,14 @@ jobs:
       - name: Attest strict CI image provenance
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4
         with:
-          subject-name: ghcr.io/xiaojiou176/sourceharbor-ci-standard
+          subject-name: ghcr.io/xiaojiou176-open/sourceharbor-ci-standard
           subject-digest: ${{ steps.digest.outputs.digest }}
           push-to-registry: true
 
       - name: Attest strict CI image SBOM
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-name: ghcr.io/xiaojiou176/sourceharbor-ci-standard
+          subject-name: ghcr.io/xiaojiou176-open/sourceharbor-ci-standard
           subject-digest: ${{ steps.digest.outputs.digest }}
           sbom-path: .runtime-cache/reports/attestations/strict-ci-image.cdx.json
           push-to-registry: true

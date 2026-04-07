@@ -1,5 +1,5 @@
 {
   "name": "sourceharbor-codex",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "SourceHarbor plugin-grade bundle for grounded watchlist briefings through MCP and the HTTP API."
 }
