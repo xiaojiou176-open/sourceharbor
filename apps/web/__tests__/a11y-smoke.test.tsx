@@ -15,6 +15,7 @@ const mockListWatchlists = vi.fn();
 const mockListVideos = vi.fn();
 const mockListIngestRuns = vi.fn();
 const mockGetWatchlistBriefing = vi.fn();
+const mockGetWatchlistBriefingPage = vi.fn();
 const mockGetJob = vi.fn();
 const mockGetDigestFeed = vi.fn();
 const mockGetArtifactMarkdown = vi.fn();
@@ -54,6 +55,8 @@ vi.mock("@/lib/api/client", () => ({
 		listIngestRuns: (...args: unknown[]) => mockListIngestRuns(...args),
 		getWatchlistBriefing: (...args: unknown[]) =>
 			mockGetWatchlistBriefing(...args),
+		getWatchlistBriefingPage: (...args: unknown[]) =>
+			mockGetWatchlistBriefingPage(...args),
 		getJob: (...args: unknown[]) => mockGetJob(...args),
 		getDigestFeed: (...args: unknown[]) => mockGetDigestFeed(...args),
 		getArtifactMarkdown: (...args: unknown[]) =>
@@ -142,7 +145,7 @@ describe("a11y smoke", () => {
 		]);
 		mockListVideos.mockResolvedValue([]);
 		mockListIngestRuns.mockResolvedValue([]);
-		mockGetWatchlistBriefing.mockResolvedValue({
+		const briefing = {
 			watchlist: {
 				id: "wl-1",
 				name: "Retry policy",
@@ -251,6 +254,25 @@ describe("a11y smoke", () => {
 					},
 				],
 			},
+		};
+		mockGetWatchlistBriefing.mockResolvedValue(briefing);
+		mockGetWatchlistBriefingPage.mockResolvedValue({
+			context: {
+				watchlist_id: "wl-1",
+				watchlist_name: "Retry policy",
+				story_id: null,
+				selected_story_id: "story-1",
+				story_headline: "Retries became default posture",
+				topic_key: "retry-policy",
+				topic_label: "Retry policy",
+				selection_basis: "suggested_story_id",
+				question_seed: "Retry policy",
+			},
+			briefing,
+			selected_story: briefing.evidence.stories[0],
+			ask_route:
+				"/ask?watchlist_id=wl-1&question=Retries+became+default+posture&story_id=story-1&topic_key=retry-policy&via=briefing-story",
+			compare_route: "/jobs?job_id=job-1",
 		});
 		mockGetNotificationConfig.mockResolvedValue({
 			enabled: true,

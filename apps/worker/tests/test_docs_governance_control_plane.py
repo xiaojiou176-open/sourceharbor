@@ -103,6 +103,12 @@ def test_generated_docs_reference_current_semantics_and_counts() -> None:
         "Pre-commit workflow jobs in `.github/workflows/pre-commit.yml`: `pre-commit`"
         in ci_topology
     )
+    assert "| `pre-commit` |" in ci_topology
+    assert "| `pre-push` |" in ci_topology
+    assert "| `hosted` |" in ci_topology
+    assert "| `nightly` |" in ci_topology
+    assert "| `manual` |" in ci_topology
+    assert "do not create a separate weekly governance bucket" in ci_topology
     assert "`pre-commit.yml`" in required_checks
     assert "`pre-commit`" in required_checks
     assert "`python-tests`" in required_checks
@@ -131,6 +137,23 @@ def test_generated_governance_dashboard_and_required_checks_exist() -> None:
     ):
         text = (root / relative).read_text(encoding="utf-8")
         assert "generated: docs governance control plane" in text
+
+
+def test_third_party_notice_scope_matches_inventory_contract() -> None:
+    root = _repo_root()
+    inventory = json.loads(
+        (root / "artifacts" / "licenses" / "third-party-license-inventory.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    notice = (root / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+    shared_phrase = (
+        "throwaway temp uv environment instead of root `.venv` or repo-owned runtime roots"
+    )
+
+    assert shared_phrase in inventory["scope"]["python"]
+    assert ".runtime-cache/tmp/" not in inventory["scope"]["python"]
+    assert shared_phrase in notice
 
 
 def test_render_docs_governance_uses_runtime_release_readiness_inputs() -> None:

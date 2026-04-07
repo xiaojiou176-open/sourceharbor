@@ -28,6 +28,11 @@ Treat these as separate ledgers, not one blended readiness badge:
 - live GitHub metadata truth
 - live provider/browser truth
 
+Two current reading rules are worth keeping explicit:
+
+- a live GitHub Release object can exist while current remote `main` has already moved ahead again
+- the live branch-protected required-check set is its own remote contract; if GitHub protection changes, tracked required-check docs and summaries must be refreshed before the repo repeats a "current remote proof" claim
+
 That separation matters because SourceHarbor can honestly advance one layer without pretending all the other layers moved with it.
 
 Read this together with [proof.md](../proof.md) whenever you want to separate local credibility from remote proof.

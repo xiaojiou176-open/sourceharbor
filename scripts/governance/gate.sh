@@ -66,7 +66,9 @@ python3 scripts/governance/check_root_zero_unknowns.py
 python3 scripts/governance/check_host_specific_path_references.py
 python3 scripts/governance/check_public_personal_email_references.py
 python3 scripts/governance/check_public_sensitive_surface.py
-python3 scripts/governance/check_remote_security_alerts.py
+if [[ "$MODE" == "audit" ]]; then
+  python3 scripts/governance/check_remote_security_alerts.py
+fi
 python3 scripts/governance/check_bridge_expiry.py
 python3 scripts/governance/check_public_surface_policy.py
 python3 scripts/governance/check_historical_release_examples.py

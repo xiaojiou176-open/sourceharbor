@@ -241,6 +241,26 @@ describe("dashboard/settings/subscriptions pages", () => {
 				screen.getByText("Build with Codex, Claude Code, and MCP clients"),
 			).toBeInTheDocument();
 			expect(
+				screen.getByRole("heading", {
+					name: "Why builders keep reading",
+				}),
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", {
+					name: "One truth across Web, API, and MCP",
+				}),
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", {
+					name: "Proof sits next to the product story",
+				}),
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", {
+					name: "Worth returning to after the first run",
+				}),
+			).toBeInTheDocument();
+			expect(
 				screen.getByRole("heading", { name: "Source-universe intake" }),
 			).toBeInTheDocument();
 			expect(

@@ -14,7 +14,7 @@ This file is the machine-generated third-party rights ledger for the tracked pub
 
 | Ecosystem | Packages | UNKNOWN license declarations |
 | --- | ---: | ---: |
-| Python runtime | 96 | 0 |
+| Python runtime | 95 | 0 |
 | Web runtime | 287 | 0 |
 
 ## Python Runtime Packages
@@ -43,7 +43,6 @@ This file is the machine-generated third-party rights ledger for the tracked pub
 | `frozenlist` | `1.8.0` | `Apache-2.0` | `license-field` |
 | `google-auth` | `2.48.0` | `Apache 2.0` | `license-field` |
 | `google-genai` | `1.64.0` | `Apache-2.0` | `license-expression` |
-| `greenlet` | `3.3.2` | `MIT AND PSF-2.0` | `license-expression` |
 | `h11` | `0.16.0` | `MIT` | `license-field` |
 | `htmldate` | `1.9.4` | `Apache 2.0` | `license-field` |
 | `httpcore` | `1.0.9` | `BSD-3-Clause` | `license-expression` |

@@ -82,7 +82,7 @@ def _advisory_security_workflows_line() -> str:
     present = [
         f"`{name}`" for name in workflows if (REPO_ROOT / ".github" / "workflows" / name).exists()
     ]
-    return "- advisory security workflows: " + ", ".join(present)
+    return "- PR-facing security workflows: " + ", ".join(present)
 
 
 def _render_governance_dashboard() -> str:
@@ -167,6 +167,16 @@ def _render_ci_topology() -> str:
         _expected_ci_topology_standard_image_line(),
         "- release evidence attestation stays in `.github/workflows/release-evidence-attest.yml`.",
         "",
+        "## Five-layer verification map",
+        "",
+        "| Layer | Primary entrypoints | Reading rule |",
+        "| --- | --- | --- |",
+        "| `pre-commit` | fast local checks in `docs/testing.md` + `npm run lint` | fastest contributor-side contract before deeper proof |",
+        "| `pre-push` | `.githooks/pre-push` | default local parity hook; keep it deterministic instead of turning it into a full closeout audit |",
+        "| `hosted` | `ci.yml`, `pre-commit.yml`, `dependency-review.yml`, `codeql.yml` on `pull_request`/`push`, `trivy.yml`, `trufflehog.yml`, `zizmor.yml` | branch-protected GitHub contract for pull requests and `main` |",
+        "| `nightly` | `codeql.yml` on `schedule` | background CodeQL refresh; keep it thin and do not create a separate weekly governance bucket |",
+        "| `manual` | `./bin/repo-side-strict-ci --mode pre-push`, `./bin/quality-gate --mode pre-push`, `./bin/governance-audit --mode audit`, `./bin/smoke-full-stack --offline-fallback 0`, repo-owned real-profile browser proof, `build-ci-standard-image.yml`, `release-evidence-attest.yml` | provider/browser/release/publication truth plus closeout-grade repo/public audits |",
+        "",
     ]
     return "\n".join(lines)
 
@@ -176,14 +186,19 @@ def _render_required_checks() -> str:
         ("python-tests", "ci.yml"),
         ("web-lint", "ci.yml"),
         ("pre-commit", "pre-commit.yml"),
+        ("CodeQL", "codeql.yml"),
+        ("dependency-review", "dependency-review.yml"),
+        ("trivy-fs", "trivy.yml"),
+        ("trufflehog", "trufflehog.yml"),
+        ("zizmor", "zizmor.yml"),
     ]
     lines = [
         GENERATED_HEADER.rstrip(),
         "# Required Checks",
         "",
-        "These are the deterministic GitHub Actions checks currently documented as the repository's pull-request path.",
+        "These are the GitHub Actions checks currently enforced by branch protection on the repository's pull-request path.",
         "",
-        "Local Git hooks may rerun overlapping checks, but they are contributor-side guardrails rather than remote required checks.",
+        "Local Git hooks may rerun overlapping checks, but they are contributor-side guardrails rather than the remote branch-protection contract.",
         "",
         "| Check | Workflow | Why it exists |",
         "| --- | --- | --- |",
@@ -192,6 +207,11 @@ def _render_required_checks() -> str:
         "python-tests": "Verifies API, worker, and MCP Python surfaces with the documented in-memory SQLite test path.",
         "web-lint": "Keeps the web command center lint-clean.",
         "pre-commit": "Runs the all-files hygiene gate for YAML, secrets, Ruff, Biome, Markdown, ShellCheck, and Actionlint.",
+        "CodeQL": "Runs GitHub code scanning over the tracked Python and JavaScript/TypeScript surfaces.",
+        "dependency-review": "Blocks pull requests whose dependency changes fail GitHub's dependency review policy.",
+        "trivy-fs": "Scans the repository filesystem and dependency manifests for high-severity vulnerabilities.",
+        "trufflehog": "Scans the pushed and pull-request Git history delta for verified or unknown secrets.",
+        "zizmor": "Lint-checks GitHub Actions workflow safety on the PR-facing workflow set.",
     }
     for check_name, workflow_name in checks:
         lines.append(

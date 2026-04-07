@@ -32,6 +32,8 @@ They should not assume:
 - a first-cut starter pack is a registry-published ecosystem product
 - a browser proof helper surface is the same thing as a supported source-ingestion lane
 - a workflow-dispatch receipt implies the protected environment has already approved or published the result
+- a latest tagged release is automatically the same snapshot as the current remote `main`
+- a generated required-check ledger remains current after GitHub branch protection adds or removes required checks
 
 When rights or provenance are unclear, the safer reading is:
 

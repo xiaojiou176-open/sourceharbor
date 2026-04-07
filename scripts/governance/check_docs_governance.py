@@ -168,7 +168,7 @@ def _expected_advisory_security_workflows_line() -> str:
     present = [
         f"`{name}`" for name in workflows if (REPO_ROOT / ".github" / "workflows" / name).exists()
     ]
-    return "- advisory security workflows: " + ", ".join(present)
+    return "- PR-facing security workflows: " + ", ".join(present)
 
 
 def _check_generated_doc_semantics() -> list[str]:
@@ -208,12 +208,28 @@ def _check_generated_doc_semantics() -> list[str]:
     ):
         failures.append("docs/generated/ci-topology.md: missing pre-commit workflow summary")
     if _expected_advisory_security_workflows_line() not in ci_topology:
-        failures.append("docs/generated/ci-topology.md: advisory security workflow summary drifted")
+        failures.append(
+            "docs/generated/ci-topology.md: PR-facing security workflow summary drifted"
+        )
+    for layer in ("pre-commit", "pre-push", "hosted", "nightly", "manual"):
+        if f"| `{layer}` |" not in ci_topology:
+            failures.append(f"docs/generated/ci-topology.md: missing `{layer}` layer row")
+    if "do not create a separate weekly governance bucket" not in ci_topology:
+        failures.append("docs/generated/ci-topology.md: missing nightly no-weekly guidance")
 
     required_checks = (REPO_ROOT / "docs" / "generated" / "required-checks.md").read_text(
         encoding="utf-8"
     )
-    for job_name in ("python-tests", "web-lint", "pre-commit"):
+    for job_name in (
+        "python-tests",
+        "web-lint",
+        "pre-commit",
+        "CodeQL",
+        "dependency-review",
+        "trivy-fs",
+        "trufflehog",
+        "zizmor",
+    ):
         if f"`{job_name}`" not in required_checks:
             failures.append(f"docs/generated/required-checks.md: missing `{job_name}`")
 

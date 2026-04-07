@@ -74,29 +74,38 @@ const BUILDER_RESOURCE_LINKS = {
 const OFFICIAL_SURFACE_SNAPSHOTS = [
 	{
 		name: "Codex",
-		status: "Bundle-ready",
+		status: "Bundle ready, listing still unavailable",
 		detail:
 			"Compatible bundle exists today; official directory listing still is not self-serve.",
 	},
 	{
 		name: "Claude Code",
-		status: "Submission-ready",
+		status: "Submission ready, review still pending",
 		detail:
 			"Bundle is ready now, but live listing still needs marketplace submit and review proof.",
 	},
 	{
 		name: "OpenClaw / ClawHub",
-		status: "Template-ready",
+		status: "Template ready, publish receipt still missing",
 		detail:
 			"Local pack and package template exist, but a real public publish receipt is still missing.",
 	},
 	{
 		name: "Official MCP Registry",
-		status: "Metadata-ready",
+		status: "Metadata ready, install proof still missing",
 		detail:
 			"Registry-shaped metadata exists, but live registry publication still needs install-artifact and namespace proof.",
 	},
 ] as const;
+
+const FIRST_HOP_DOC_LINKS = {
+	seeItFast:
+		"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/see-it-fast.md",
+	startHere:
+		"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/start-here.md",
+	publicDistribution:
+		"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/public-distribution.md",
+} as const;
 
 function renderAlert(status: string, code: string) {
 	if (!status || !code) {
@@ -168,6 +177,20 @@ export default async function DashboardPage({
 		builderCopy.cards.reuse,
 		builderCopy.cards.proof,
 		builderCopy.cards.compounders,
+	];
+	const whyNowCards = [
+		{
+			title: copy.whyNow.sharedTruthTitle,
+			description: copy.whyNow.sharedTruthDescription,
+		},
+		{
+			title: copy.whyNow.proofFirstTitle,
+			description: copy.whyNow.proofFirstDescription,
+		},
+		{
+			title: copy.whyNow.returnLoopTitle,
+			description: copy.whyNow.returnLoopDescription,
+		},
 	];
 	const builderResourceLinks = [
 		{
@@ -266,6 +289,104 @@ export default async function DashboardPage({
 					</CardContent>
 				</Card>
 			) : null}
+
+			<section
+				className="grid gap-4 xl:grid-cols-3"
+				aria-label="Why builders keep reading"
+			>
+				<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground xl:col-span-3">
+					{copy.sectionHeadings.whyNow}
+				</h2>
+				{whyNowCards.map((card) => (
+					<Card key={card.title} className="folo-surface border-border/70">
+						<CardHeader>
+							<CardTitle>{card.title}</CardTitle>
+							<CardDescription>{card.description}</CardDescription>
+						</CardHeader>
+					</Card>
+				))}
+			</section>
+
+			<section
+				className="grid gap-4 xl:grid-cols-3"
+				aria-label="Choose your first SourceHarbor path"
+			>
+				<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground xl:col-span-3">
+					{copy.sectionHeadings.firstHop}
+				</h2>
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<CardTitle>{copy.firstHop.evaluateTitle}</CardTitle>
+						<CardDescription>
+							{copy.firstHop.evaluateDescription}
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild>
+							<a
+								href={FIRST_HOP_DOC_LINKS.seeItFast}
+								target="_blank"
+								rel="noreferrer"
+							>
+								{copy.firstHop.evaluatePrimaryCta}
+							</a>
+						</Button>
+						<Button asChild variant="outline">
+							<Link href="/proof">{copy.firstHop.evaluateSecondaryCta}</Link>
+						</Button>
+					</CardContent>
+				</Card>
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<CardTitle>{copy.firstHop.operateTitle}</CardTitle>
+						<CardDescription>
+							{copy.firstHop.operateDescription}
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild>
+							<a
+								href={FIRST_HOP_DOC_LINKS.startHere}
+								target="_blank"
+								rel="noreferrer"
+							>
+								{copy.firstHop.operatePrimaryCta}
+							</a>
+						</Button>
+						<Button asChild variant="outline">
+							<Link href="/subscriptions">
+								{copy.firstHop.operateSecondaryCta}
+							</Link>
+						</Button>
+						<Button asChild variant="outline">
+							<Link href="/ops">{copy.firstHop.operateTertiaryCta}</Link>
+						</Button>
+					</CardContent>
+				</Card>
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<CardTitle>{copy.firstHop.buildTitle}</CardTitle>
+						<CardDescription>{copy.firstHop.buildDescription}</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild>
+							<Link href="/mcp">{copy.firstHop.buildPrimaryCta}</Link>
+						</Button>
+						<Button asChild variant="outline">
+							<Link href="/builders">{copy.firstHop.buildSecondaryCta}</Link>
+						</Button>
+						<Button asChild variant="outline">
+							<a
+								href={FIRST_HOP_DOC_LINKS.publicDistribution}
+								target="_blank"
+								rel="noreferrer"
+							>
+								{copy.firstHop.buildTertiaryCta}
+							</a>
+						</Button>
+					</CardContent>
+				</Card>
+			</section>
 
 			<section
 				className="grid gap-4 xl:grid-cols-4"

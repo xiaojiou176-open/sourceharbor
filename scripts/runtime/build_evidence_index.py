@@ -13,7 +13,14 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "scripts" / "governance") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts" / "governance"))
 
-from common import load_governance_json, read_runtime_metadata, rel_path, write_runtime_metadata
+from common import (
+    current_git_commit,
+    load_governance_json,
+    read_runtime_metadata,
+    rel_path,
+    runtime_metadata_path,
+    write_runtime_metadata,
+)
 
 
 def _candidate_artifacts() -> list[Path]:
@@ -40,7 +47,7 @@ def main() -> int:
     parser.add_argument(
         "--rebuild-all", action="store_true", help="Rebuild all discovered run indexes."
     )
-    parser.parse_args()
+    args = parser.parse_args()
 
     grouped: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
     for artifact in _candidate_artifacts():
@@ -58,7 +65,10 @@ def main() -> int:
         contract.get("evidence_index", {}).get("root") or ".runtime-cache/reports/evidence-index"
     )
     index_root.mkdir(parents=True, exist_ok=True)
-    for run_id, categories in grouped.items():
+    current_head = current_git_commit()
+    expected_paths: set[Path] = set()
+
+    for run_id, categories in sorted(grouped.items()):
         payload = {
             "version": 1,
             "run_id": run_id,
@@ -67,17 +77,36 @@ def main() -> int:
             "evidence": sorted(categories.get("evidence", [])),
         }
         index_path = index_root / f"{run_id}.json"
-        index_path.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        metadata_path = runtime_metadata_path(index_path)
+        expected_paths.add(index_path)
+        expected_paths.add(metadata_path)
+        rendered = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+        metadata = read_runtime_metadata(index_path) or {}
+        metadata_current = (
+            str(metadata.get("source_commit") or "").strip() == current_head
+            and str(metadata.get("source_entrypoint") or "").strip()
+            == "scripts/runtime/build_evidence_index.py"
+            and str(metadata.get("source_run_id") or "").strip() == run_id
+            and str(metadata.get("verification_scope") or "").strip() == "evidence-index"
         )
+        existing = index_path.read_text(encoding="utf-8") if index_path.is_file() else None
+        if not args.rebuild_all and existing == rendered and metadata_current:
+            continue
+
+        index_path.write_text(rendered, encoding="utf-8")
         write_runtime_metadata(
             index_path,
             source_entrypoint="scripts/runtime/build_evidence_index.py",
             verification_scope="evidence-index",
             source_run_id=run_id,
             freshness_window_hours=24,
+            source_commit=current_head,
             extra={"report_kind": "evidence-index"},
         )
+
+    for stale_path in index_root.glob("*.json*"):
+        if stale_path not in expected_paths:
+            stale_path.unlink(missing_ok=True)
 
     print(f"[build-evidence-index] PASS ({len(grouped)} run ids indexed)")
     return 0

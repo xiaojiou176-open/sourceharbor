@@ -1,11 +1,11 @@
 {
   "version": 1,
   "scope": {
-    "python": "runtime environment from `uv run python` with UV_PROJECT_ENVIRONMENT under `.runtime-cache/tmp/`",
+    "python": "runtime environment from the canonical `uv run --extra dev python` environment, using a throwaway temp uv environment instead of root `.venv` or repo-owned runtime roots",
     "web": "production packages from `apps/web/package-lock.json` with dev=false"
   },
   "summary": {
-    "python_runtime_packages": 96,
+    "python_runtime_packages": 95,
     "python_unknown_licenses": 0,
     "web_runtime_packages": 287,
     "web_unknown_licenses": 0
@@ -228,15 +228,6 @@
       "classifiers": [],
       "summary": "GenAI Python SDK",
       "homepage": "Homepage, https://github.com/googleapis/python-genai"
-    },
-    {
-      "name": "greenlet",
-      "version": "3.3.2",
-      "license": "MIT AND PSF-2.0",
-      "license_source": "license-expression",
-      "classifiers": [],
-      "summary": "Lightweight in-process concurrent programming",
-      "homepage": "Homepage, https://greenlet.readthedocs.io"
     },
     {
       "name": "h11",

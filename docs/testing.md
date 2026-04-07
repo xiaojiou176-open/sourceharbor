@@ -10,6 +10,27 @@ Think of it like product evidence in layers:
 4. **Supervisor clean path** proves the repo-managed operator path locally
 5. **Long live smoke** extends into secret and provider gates on purpose
 
+## Five-Layer Verification Contract
+
+Think of this like airport checkpoints:
+
+- `pre-commit` is the quick bag scan
+- `pre-push` is the fuller gate before you board
+- `hosted` is the airline's own security lane on GitHub
+- `nightly` is the background sweep that keeps stale risk from piling up
+- `manual` is the specialist inspection for release, provider, browser, and public-proof truth
+
+Do not force every heavy check into the default local path. Each layer answers a
+different question.
+
+| Layer | Default trigger | Primary entrypoints | What it proves |
+| --- | --- | --- | --- |
+| `pre-commit` | local edit / commit prep | fast local checks below + web lint | the fastest contributor-side contract stays honest before deeper proof |
+| `pre-push` | contributor-side push gate | `.githooks/pre-push` | the default local parity hook stays deterministic and does not silently expand into a full closeout audit |
+| `hosted` | GitHub `pull_request` / `push` | `ci.yml`, `pre-commit.yml`, `dependency-review.yml`, `codeql.yml` on PR/push, `trivy.yml`, `trufflehog.yml`, `zizmor.yml` | the branch-protected remote contract for pull requests and `main` |
+| `nightly` | hosted `schedule` | `codeql.yml` on `schedule` | thin background security refresh; keep this lane small and do not create a separate weekly governance bucket |
+| `manual` | human-triggered or operator-triggered | `./bin/repo-side-strict-ci --mode pre-push`, `./bin/quality-gate --mode pre-push`, `./bin/governance-audit --mode audit`, `./bin/smoke-full-stack --offline-fallback 0`, repo-owned real-profile browser proof, `build-ci-standard-image.yml`, `release-evidence-attest.yml` | provider/browser/release/publication truth plus closeout-grade repo/public audits |
+
 ## Fast Local Checks
 
 ```bash
@@ -21,7 +42,6 @@ python3 scripts/governance/check_route_contract_alignment.py
 python3 scripts/governance/check_public_entrypoint_references.py
 python3 scripts/governance/check_public_personal_email_references.py
 python3 scripts/governance/check_public_sensitive_surface.py
-python3 scripts/governance/check_remote_security_alerts.py
 python3 scripts/governance/check_local_private_ledger_migration.py
 python3 scripts/governance/check_external_lane_contract.py
 eval "$(bash scripts/ci/prepare_web_runtime.sh --shell-exports)"
@@ -49,7 +69,6 @@ What they cover:
 - host-safety contract drift for broad kill and desktop-control primitives
 - host-specific path and personal-email drift in tracked public text surfaces
 - sensitive public wording drift for secret presence, operator-secret stories, and concrete home-cache/profile path details
-- open GitHub secret-scanning and code-scanning alerts on the remote public surface
 - placebo test detection
 - route and public-entrypoint contract drift
 - local-private ledger migration drift
@@ -150,15 +169,27 @@ Pre-commit and pre-push should block:
 - secret leaks
 - broken public workflows
 
-## Advisory Security And Dependency Lanes
+## PR-Facing Security And Dependency Checks
 
-These are repo-visible checks that help with supply-chain and long-tail risk, but they are not the same as the small merge-required path above:
+These checks now sit on the remote branch-protected pull-request path together
+with `python-tests`, `web-lint`, and `pre-commit`. They still answer a
+different question from the small local proof path above: they widen
+GitHub-side supply-chain, workflow-safety, and secret-scanning coverage rather
+than replacing the repo-managed local supervisor proof.
 
 - `dependency-review.yml` inspects pull-request dependency changes
 - `codeql.yml` runs code scanning on the tracked languages
 - `zizmor.yml` lint-checks GitHub Actions workflow safety
 - `trivy.yml` scans the repository filesystem and dependency manifests for high-severity issues
 - `trufflehog.yml` scans pushed and pull-request Git history deltas for verified or unknown secrets
+
+Those branch-protected checks are current remote required checks today, so this
+page should not describe them as optional or merely advisory.
+
+## External-Proof Workflow-Dispatch Lanes
+
+These still stay outside the default pull-request gate:
+
 - `build-ci-standard-image.yml` and `release-evidence-attest.yml` stay in the external-proof lane, not the default pull-request gate
 - those external lanes are `workflow_dispatch` only and run behind protected environments so ordinary pull requests never touch their secrets or publication paths
 - all active GitHub workflows run on `ubuntu-latest`; local `repo-side-strict-ci`
@@ -167,9 +198,38 @@ These are repo-visible checks that help with supply-chain and long-tail risk, bu
 Think of them like specialist inspectors after the core exam:
 
 - the required path proves the repo is locally honest and rerunnable
-- the advisory security lanes widen supply-chain and secret coverage without changing the core local-proof contract
+- the branch-protected security and dependency checks widen GitHub-side
+  supply-chain and secret coverage without changing the core local-proof contract
 - the external lanes prove harder publication claims when you actually need them
 - publication or attestation happens only after an owner deliberately opens that lane and approves the protected environment
+
+## Manual Truth Audits And Closeout Lanes
+
+These commands are the closer's toolkit, not the default newcomer path.
+
+Use them when you need remote/public truth, current-proof receipts, or release
+and provider evidence that go beyond the ordinary local and PR-facing lanes.
+
+```bash
+./bin/repo-side-strict-ci --mode pre-push
+./bin/quality-gate --mode pre-push
+./bin/governance-audit --mode audit
+python3 scripts/governance/probe_remote_platform_truth.py
+python3 scripts/governance/check_remote_required_checks.py
+python3 scripts/governance/check_remote_security_alerts.py
+python3 scripts/governance/probe_external_lane_workflows.py
+python3 scripts/governance/check_current_proof_commit_alignment.py
+python3 scripts/governance/render_newcomer_result_proof.py && python3 scripts/governance/check_newcomer_result_proof.py
+python3 scripts/governance/render_current_state_summary.py && python3 scripts/governance/check_current_state_summary.py
+```
+
+What this layer proves:
+
+- the live remote required-check contract still matches the tracked docs
+- remote code-scanning and secret-scanning alerts remain clean
+- external-proof workflow-dispatch lanes still point at the current public truth
+- current-proof, newcomer, and current-state receipts still match the current HEAD
+- release/publication truth is being read as its own ledger instead of being mixed into the default local path
 
 ## Public-Proof Boundary
 

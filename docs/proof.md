@@ -109,6 +109,7 @@ Current remote-proof reading rule:
 
 - treat current `main`, latest release, and workflow-dispatch evidence as separate ledgers
 - only treat GitHub checks and workflow-dispatch runs as current remote proof when their recorded `headSha` still matches the current remote head
+- treat the current branch-protected required-check set as its own live contract; if GitHub protection now requires `CodeQL`, `dependency-review`, `trivy-fs`, `trufflehog`, or `zizmor`, the generated required-checks ledger and any summary docs must match that live set
 - live GitHub description, homepage, topics, and discussions should be checked live against `config/public/github-profile.json` before repeating the claim
 - workflow-dispatch lanes such as standard-image publish or release attestation can still be blocked by repo policy, account permission, or required approval even when current `main` itself is healthy
 - release-side proof must still be checked against the latest live tag, because current `main` can move ahead again after docs/governance closeout merges

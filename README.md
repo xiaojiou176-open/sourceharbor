@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <strong>AI knowledge control tower and MCP server with strong YouTube/Bilibili support plus a generalized RSSHub and RSS intake substrate.</strong>
+  <strong>Proof-first AI knowledge control tower for source intake, grounded search, and agent workflows, with one shared Web/API/MCP truth and strong YouTube/Bilibili lanes.</strong>
 </p>
 
 <p align="center">
@@ -62,6 +62,12 @@ knowledge cards, traceable job runs, and MCP-ready operations. It stays
 source-first and proof-first: you can inspect it, run it locally, and verify
 each surface instead of trusting product copy on vibes alone.
 
+Three quick reasons developers keep reading:
+
+- **One truth across Web, API, and MCP.** Operators and agent builders see the same jobs, artifacts, and retrieval state instead of three disconnected product shells.
+- **Proof sits next to the product story.** The README, proof ladder, runtime truth, and job receipts all point at the same contract, so the repo earns trust instead of asking for it.
+- **Strong lanes plus honest boundaries.** YouTube and Bilibili are the rich lanes today, RSSHub and generic RSS widen the source universe, and the docs say plainly where route-by-route proof still stops.
+
 The honest intake boundary today is:
 
 - **strong support:** YouTube channels and Bilibili creators
@@ -104,6 +110,18 @@ The hook is simple:
 - **Ask** gives the story-aware, briefing-backed answer/change/evidence front door, now pushed toward a server-owned page payload instead of a front-end stitched view model.
 - **MCP** gives Codex / Claude Code / builder reuse.
 - **Watchlists + Trends + Playground** make the system worth coming back to instead of treating it like a one-shot summarizer.
+
+## Choose Your First Path
+
+You do not need every door on day one.
+
+Pick the first path that matches why you are here:
+
+| If you want to... | Open this first | Why this is the right first door |
+| --- | --- | --- |
+| **See whether the product is real** | [docs/see-it-fast.md](./docs/see-it-fast.md), then [docs/proof.md](./docs/proof.md) | start with the shop window, then inspect the proof ladder before you commit to a longer run |
+| **Run SourceHarbor as an operator** | [docs/start-here.md](./docs/start-here.md), then `/subscriptions`, `/search`, and `/ops` after local boot | this is the shortest truthful path from clone to intake, evidence, and triage |
+| **Build on top of SourceHarbor** | [docs/builders.md](./docs/builders.md), [docs/mcp-quickstart.md](./docs/mcp-quickstart.md), and [docs/public-distribution.md](./docs/public-distribution.md) | these pages separate MCP, API, CLI, SDK, starter packs, and official-surface submission truth without mixing them into the newcomer path |
 
 ## Front Doors
 

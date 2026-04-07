@@ -146,10 +146,42 @@ const MESSAGES = {
 				jobCta: "Inspect job evidence",
 			},
 			sectionHeadings: {
+				whyNow: "Why builders keep reading",
+				firstHop: "Choose your first path",
 				primaryFrontDoors: "Primary front doors",
 				builderEntryPoints: "Builder entry points",
 				compounderSurfaces: "Compounder surfaces",
 				keyMetrics: "Command center metrics",
+			},
+			whyNow: {
+				sharedTruthTitle: "One truth across Web, API, and MCP",
+				sharedTruthDescription:
+					"Operators and agent builders read the same jobs, artifacts, and retrieval state instead of three parallel product shells.",
+				proofFirstTitle: "Proof sits next to the product story",
+				proofFirstDescription:
+					"README, proof, runtime truth, and job receipts stay on one line so newcomers can trust what they see before they commit to a full run.",
+				returnLoopTitle: "Worth returning to after the first run",
+				returnLoopDescription:
+					"Watchlists, trends, briefings, bundles, and the playground make SourceHarbor a reusable control tower instead of a one-shot summarizer.",
+			},
+			firstHop: {
+				evaluateTitle: "See whether the product is real",
+				evaluateDescription:
+					"Start with the fastest no-boot preview, then read the proof ladder before you commit to a full local run.",
+				evaluatePrimaryCta: "Open no-boot tour",
+				evaluateSecondaryCta: "Open proof ladder",
+				operateTitle: "Run SourceHarbor as an operator",
+				operateDescription:
+					"Take the shortest truthful local path first, then move into subscriptions, search, and ops once the stack is up.",
+				operatePrimaryCta: "Open start-here guide",
+				operateSecondaryCta: "Start with Subscriptions",
+				operateTertiaryCta: "Open Ops inbox",
+				buildTitle: "Build with the same system truth",
+				buildDescription:
+					"Jump into MCP, builders docs, and distribution status when you are here to integrate rather than just evaluate the product surface.",
+				buildPrimaryCta: "Open MCP quickstart",
+				buildSecondaryCta: "Open builders guide",
+				buildTertiaryCta: "Open distribution status",
 			},
 			compounders: {
 				watchlistsTitle: "Watchlists are tracking objects",
@@ -1333,10 +1365,42 @@ const MESSAGES = {
 				jobCta: "查看 job 证据",
 			},
 			sectionHeadings: {
-				primaryFrontDoors: "Primary front doors",
-				builderEntryPoints: "Builder entry points",
-				compounderSurfaces: "Compounder surfaces",
-				keyMetrics: "Command center metrics",
+				whyNow: "为什么值得继续看",
+				firstHop: "先选第一条路径",
+				primaryFrontDoors: "核心入口",
+				builderEntryPoints: "Builder 入口",
+				compounderSurfaces: "复利层",
+				keyMetrics: "控制塔指标",
+			},
+			whyNow: {
+				sharedTruthTitle: "Web、API 和 MCP 读的是同一套真相",
+				sharedTruthDescription:
+					"运营者和 agent builder 看到的是同一批 jobs、artifacts 和 retrieval 状态，而不是三套互相打架的产品壳。",
+				proofFirstTitle: "Proof 和产品故事贴在一起",
+				proofFirstDescription:
+					"README、proof、runtime truth 和 job receipts 讲的是同一份合同，所以新来的人能先建立信任，再决定是否完整跑起来。",
+				returnLoopTitle: "不是跑一次就结束的 summarizer",
+				returnLoopDescription:
+					"Watchlists、trends、briefings、bundles 和 playground 让 SourceHarbor 更像会持续复用的控制塔，而不是一次性的摘要脚本。",
+			},
+			firstHop: {
+				evaluateTitle: "先判断这个产品是不是真的",
+				evaluateDescription:
+					"先看最快的 no-boot 预览，再读 proof ladder，确定它不是靠气氛撑起来的，然后再决定要不要完整本地启动。",
+				evaluatePrimaryCta: "打开 no-boot tour",
+				evaluateSecondaryCta: "打开 proof ladder",
+				operateTitle: "把 SourceHarbor 当成 operator 产品来跑",
+				operateDescription:
+					"先走最短的本地真实路径，起来以后再进入 subscriptions、search 和 ops，不要一上来就试图理解所有门。",
+				operatePrimaryCta: "打开 start-here 指南",
+				operateSecondaryCta: "从 Subscriptions 开始",
+				operateTertiaryCta: "打开 Ops inbox",
+				buildTitle: "基于同一套系统真相继续构建",
+				buildDescription:
+					"如果你来这里是为了接入，而不是先当 operator 用，就直接进 MCP、builders 文档和 distribution status。",
+				buildPrimaryCta: "打开 MCP quickstart",
+				buildSecondaryCta: "打开 builders 指南",
+				buildTertiaryCta: "打开 distribution status",
 			},
 			compounders: {
 				watchlistsTitle: "Watchlists 是 tracking object",
