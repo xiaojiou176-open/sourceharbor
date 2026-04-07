@@ -62,6 +62,26 @@ PY
 )"
 repo_owner="${repo_slug%%/*}"
 
+if [[ "$status" == "ready" ]]; then
+  docker_info_stdout="$(mktemp)"
+  docker_info_stderr="$(mktemp)"
+  if run_with_timeout_capture 5 "$docker_info_stdout" "$docker_info_stderr" docker info; then
+    :
+  else
+    docker_info_status=$?
+    status="blocked"
+    blocker_type="buildx-runtime-preparation-failure"
+    if [[ "$docker_info_status" == "124" ]]; then
+      errors+=("docker info timed out after 5s")
+    elif [[ -s "$docker_info_stderr" ]]; then
+      errors+=("docker info failed: $(tr '\n' ' ' < "$docker_info_stderr" | sed 's/[[:space:]]\\+/ /g; s/[[:space:]]$//')")
+    else
+      errors+=("docker info failed")
+    fi
+  fi
+  rm -f "$docker_info_stdout" "$docker_info_stderr"
+fi
+
 buildx_version=""
 if buildx_version="$(docker buildx version 2>/dev/null)"; then
   :
@@ -343,6 +363,7 @@ fallback_token="${GHCR_WRITE_TOKEN:-${GHCR_TOKEN:-}}"
 fallback_username="${GHCR_WRITE_USERNAME:-${GHCR_USERNAME:-}}"
 fallback_attempted="false"
 primary_token_mode=""
+if [[ "$status" == "ready" ]]; then
 # Hosted GHCR publish must prefer explicit writer credentials when they are
 # configured because private org packages can reject repository-scoped
 # GITHUB_TOKEN writes even when the workflow has packages:write permissions.
@@ -541,6 +562,7 @@ PY
 )"
 if [[ "$manifest_probe_returncode" != "0" && "$manifest_probe_stderr" == *"manifest unknown"* ]]; then
   errors+=("GHCR manifest probe reports 'manifest unknown' for the digest-pinned standard image; this suggests package-path / ownership / visibility / publication is still unresolved")
+fi
 fi
 
 ERRORS_JSON="$(
