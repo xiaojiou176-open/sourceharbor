@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://video-analysis.local/schemas/steps.schema.json",
+  "title": "Worker Step Contracts",
+  "type": "object",
+  "$defs": {
+    "PollFeedsFilters": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "platform": {
+          "type": ["string", "null"],
+          "enum": ["bilibili", "youtube", null]
+        },
+        "max_new_videos": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "PollFeedsSkippedOutput": {
+      "type": "object",
+      "required": ["ok", "skipped", "reason"],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "skipped": {
+          "const": true
+        },
+        "reason": {
+          "const": "lock_not_acquired"
+        }
+      },
+      "additionalProperties": false
+    },
+    "IngestCandidate": {
+      "type": "object",
+      "required": ["job_id", "video_id", "platform", "video_uid", "source_url"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "video_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["bilibili", "youtube"]
+        },
+        "video_uid": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "title": {
+          "type": ["string", "null"]
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "entry_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ingest_event_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PollFeedsOutput": {
+      "type": "object",
+      "required": [
+        "ok",
+        "phase",
+        "feeds_polled",
+        "entries_fetched",
+        "entries_normalized",
+        "ingest_events_created",
+        "ingest_event_duplicates",
+        "jobs_created",
+        "job_duplicates",
+        "created_job_ids",
+        "candidates",
+        "at",
+        "filters"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "phase": {
+          "const": "phase2"
+        },
+        "feeds_polled": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entries_fetched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entries_normalized": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ingest_events_created": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ingest_event_duplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jobs_created": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "job_duplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "created_job_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IngestCandidate"
+          }
+        },
+        "at": {
+          "$ref": "common.schema.json#/$defs/Timestamp"
+        },
+        "filters": {
+          "$ref": "#/$defs/PollFeedsFilters"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MarkRunningOutput": {
+      "type": "object",
+      "required": ["job_id", "attempt", "status"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "const": "running"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CollectCommentsPolicy": {
+      "$ref": "common.schema.json#/$defs/CommentCollectionPolicy"
+    },
+    "CollectCommentsOutput": {
+      "$ref": "common.schema.json#/$defs/CommentBundle"
+    },
+    "RunPipelineInput": {
+      "type": "object",
+      "required": ["job_id", "attempt"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mode": {
+          "$ref": "common.schema.json#/$defs/PipelineMode",
+          "default": "full"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RunPipelineOutput": {
+      "$ref": "common.schema.json#/$defs/PipelineResult"
+    },
+    "MarkSucceededInput": {
+      "type": "object",
+      "required": ["job_id", "attempt", "final_status"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "final_status": {
+          "type": "string",
+          "enum": ["succeeded", "degraded"]
+        },
+        "pipeline_final_status": {
+          "type": ["string", "null"],
+          "enum": ["succeeded", "degraded", "failed", null]
+        },
+        "artifact_dir": {
+          "type": ["string", "null"]
+        },
+        "artifacts": {
+          "anyOf": [
+            {
+              "$ref": "common.schema.json#/$defs/ArtifactIndex"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "degradation_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "last_error_code": {
+          "type": ["string", "null"]
+        },
+        "llm_mode": {
+          "anyOf": [
+            {
+              "$ref": "common.schema.json#/$defs/LLMMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retry": {
+          "$ref": "common.schema.json#/$defs/RetryMeta"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MarkSucceededOutput": {
+      "type": "object",
+      "required": ["job_id", "attempt", "status", "db_status"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["succeeded", "degraded"]
+        },
+        "db_status": {
+          "type": "string",
+          "enum": ["succeeded"]
+        },
+        "pipeline_final_status": {
+          "type": ["string", "null"],
+          "enum": ["succeeded", "degraded", "failed", null]
+        },
+        "degradation_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "last_error_code": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "MarkFailedInput": {
+      "type": "object",
+      "required": ["job_id", "attempt", "error"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_error_code": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "MarkFailedOutput": {
+      "type": "object",
+      "required": ["job_id", "attempt", "status"],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "const": "failed"
+        },
+        "last_error_code": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProcessJobWorkflowOutput": {
+      "type": "object",
+      "required": ["ok", "job_id", "attempt", "status"],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["succeeded", "degraded", "failed"]
+        },
+        "pipeline_final_status": {
+          "type": ["string", "null"],
+          "enum": ["succeeded", "degraded", "failed", null]
+        },
+        "db_status": {
+          "type": ["string", "null"],
+          "enum": ["succeeded", "failed", null]
+        },
+        "degradation_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "last_error_code": {
+          "type": ["string", "null"]
+        },
+        "llm_mode": {
+          "anyOf": [
+            {
+              "$ref": "common.schema.json#/$defs/LLMMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retry": {
+          "$ref": "common.schema.json#/$defs/RetryMeta"
+        },
+        "pipeline": {
+          "$ref": "common.schema.json#/$defs/PipelineResult"
+        },
+        "error": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,568 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://video-analysis.local/schemas/common.schema.json",
+  "title": "Worker Common Contracts",
+  "type": "object",
+  "$defs": {
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Platform": {
+      "type": "string",
+      "enum": ["bilibili", "youtube"]
+    },
+    "JobKind": {
+      "type": "string",
+      "enum": ["video_digest_v1", "phase2_ingest_stub"]
+    },
+    "JobStatus": {
+      "type": "string",
+      "enum": ["queued", "running", "succeeded", "failed"]
+    },
+    "StepStatus": {
+      "type": "string",
+      "enum": ["succeeded", "failed", "skipped"]
+    },
+    "PipelineFinalStatus": {
+      "type": "string",
+      "enum": ["succeeded", "degraded", "failed"]
+    },
+    "LLMMode": {
+      "type": "string",
+      "enum": ["gemini"]
+    },
+    "PipelineMode": {
+      "type": "string",
+      "enum": ["full", "text_only", "refresh_comments", "refresh_llm"]
+    },
+    "LLMInputMode": {
+      "type": "string",
+      "enum": ["auto", "text", "video_text", "frames_text"]
+    },
+    "LLMMediaInputDimension": {
+      "type": "object",
+      "required": ["video_available", "frame_count"],
+      "properties": {
+        "video_available": {
+          "type": "boolean"
+        },
+        "frame_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "RetryMeta": {
+      "type": "object",
+      "required": ["attempt", "max_attempts"],
+      "properties": {
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "error_class": {
+          "type": ["string", "null"],
+          "enum": ["TRANSIENT", "RATE_LIMITED", "AUTH", "NOT_FOUND", "INVALID_INPUT", null]
+        },
+        "next_delay_seconds": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "backoff_base_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 2
+        },
+        "backoff_max_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "default": 120
+        },
+        "jitter_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.3
+        }
+      },
+      "additionalProperties": false
+    },
+    "CommentSort": {
+      "type": "string",
+      "enum": ["hot", "new"]
+    },
+    "CommentReply": {
+      "type": "object",
+      "required": ["reply_id", "author", "content"],
+      "properties": {
+        "reply_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "like_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "TopComment": {
+      "type": "object",
+      "required": ["comment_id", "author", "content"],
+      "properties": {
+        "comment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "like_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "reply_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CommentReply"
+          },
+          "maxItems": 10,
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "CommentBundle": {
+      "type": "object",
+      "required": ["sort", "top_comments"],
+      "properties": {
+        "sort": {
+          "$ref": "#/$defs/CommentSort"
+        },
+        "top_n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 10
+        },
+        "replies_per_comment": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 10
+        },
+        "top_comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TopComment"
+          },
+          "maxItems": 10
+        },
+        "fetched_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CommentCollectionPolicy": {
+      "type": "object",
+      "required": ["sort", "top_n", "replies_per_comment"],
+      "properties": {
+        "sort": {
+          "$ref": "#/$defs/CommentSort"
+        },
+        "top_n": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 10
+        },
+        "replies_per_comment": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 10
+        }
+      },
+      "additionalProperties": false
+    },
+    "StepName": {
+      "type": "string",
+      "enum": [
+        "fetch_metadata",
+        "download_media",
+        "collect_subtitles",
+        "collect_comments",
+        "extract_frames",
+        "llm_outline",
+        "llm_digest",
+        "build_embeddings",
+        "write_artifacts",
+        "mark_running",
+        "mark_succeeded",
+        "mark_failed"
+      ]
+    },
+    "DegradationRecord": {
+      "type": "object",
+      "required": ["step", "status", "at"],
+      "properties": {
+        "step": {
+          "$ref": "#/$defs/StepName"
+        },
+        "status": {
+          "$ref": "#/$defs/StepStatus"
+        },
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "error": {
+          "type": ["string", "null"]
+        },
+        "error_code": {
+          "type": ["string", "null"]
+        },
+        "llm_mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryMeta"
+        },
+        "at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ArtifactPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ArtifactIndex": {
+      "type": "object",
+      "required": ["artifact_root", "digest_md", "files"],
+      "properties": {
+        "artifact_root": {
+          "$ref": "#/$defs/ArtifactPath"
+        },
+        "digest_md": {
+          "$ref": "#/$defs/ArtifactPath"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactPath"
+          }
+        },
+        "meta": {
+          "type": ["string", "null"]
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "transcript": {
+          "type": ["string", "null"]
+        },
+        "outline": {
+          "type": ["string", "null"]
+        },
+        "digest": {
+          "type": ["string", "null"]
+        },
+        "comments_data": {
+          "$ref": "#/$defs/CommentBundle"
+        }
+      },
+      "additionalProperties": false
+    },
+    "VideoRecord": {
+      "type": "object",
+      "required": ["id", "platform", "video_uid", "source_url"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "platform": {
+          "$ref": "#/$defs/Platform"
+        },
+        "video_uid": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "title": {
+          "type": ["string", "null"]
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    },
+    "JobRecord": {
+      "type": "object",
+      "required": ["job_id", "job_status", "job_kind", "idempotency_key", "video_id", "platform", "video_uid", "source_url"],
+      "properties": {
+        "job_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "job_status": {
+          "$ref": "#/$defs/JobStatus"
+        },
+        "job_kind": {
+          "$ref": "#/$defs/JobKind"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "video_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "platform": {
+          "$ref": "#/$defs/Platform"
+        },
+        "video_uid": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "title": {
+          "type": ["string", "null"]
+        },
+        "published_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    },
+    "StepExecutionRecord": {
+      "type": "object",
+      "required": ["status", "output", "state_updates", "degraded"],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/StepStatus"
+        },
+        "output": {
+          "type": "object"
+        },
+        "state_updates": {
+          "type": "object"
+        },
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "error": {
+          "type": ["string", "null"]
+        },
+        "error_code": {
+          "type": ["string", "null"]
+        },
+        "llm_mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryMeta"
+        },
+        "degraded": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StepRunsLedgerRecord": {
+      "type": "object",
+      "required": ["job_id", "step_name", "status", "attempt", "started_at"],
+      "properties": {
+        "job_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "step_name": {
+          "$ref": "#/$defs/StepName"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["running", "succeeded", "failed", "skipped"]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "started_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "finished_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "error_json": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "PipelineResult": {
+      "type": "object",
+      "required": [
+        "job_id",
+        "attempt",
+        "final_status",
+        "steps",
+        "artifacts",
+        "degradations",
+        "llm_required",
+        "llm_gate_passed",
+        "hard_fail_reason",
+        "completed_at"
+      ],
+      "properties": {
+        "job_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "final_status": {
+          "$ref": "#/$defs/PipelineFinalStatus"
+        },
+        "mode": {
+          "$ref": "#/$defs/PipelineMode"
+        },
+        "steps": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/StepExecutionRecord"
+          }
+        },
+        "artifact_dir": {
+          "type": ["string", "null"]
+        },
+        "artifacts": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactIndex"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "degradations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DegradationRecord"
+          }
+        },
+        "llm_mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "llm_input_mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMInputMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "llm_media_input": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMMediaInputDimension"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "llm_required": {
+          "type": "boolean"
+        },
+        "llm_gate_passed": {
+          "type": "boolean"
+        },
+        "hard_fail_reason": {
+          "type": ["string", "null"]
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryMeta"
+        },
+        "fatal_error": {
+          "type": ["string", "null"]
+        },
+        "completed_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

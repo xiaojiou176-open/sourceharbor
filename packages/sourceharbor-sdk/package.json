@@ -1,0 +1,26 @@
+{
+  "name": "@sourceharbor/sdk",
+  "version": "0.1.11",
+  "description": "Thin public TypeScript SDK for the SourceHarbor HTTP API.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "npx --yes -p typescript tsc -p tsconfig.build.json",
+    "typecheck": "npx --yes -p typescript tsc -p tsconfig.build.json --noEmit",
+    "pack:dry": "npm pack --dry-run"
+  }
+}

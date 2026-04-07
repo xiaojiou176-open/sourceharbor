@@ -1,0 +1,17 @@
+{
+  "name": "@sourceharbor/cli",
+  "version": "0.1.11",
+  "description": "Thin public CLI for SourceHarbor with repo-aware delegation.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "sourceharbor": "./bin/sourceharbor.js"
+  },
+  "files": [
+    "bin/sourceharbor.js",
+    "README.md"
+  ],
+  "scripts": {
+    "pack:dry": "npm pack --dry-run"
+  }
+}
