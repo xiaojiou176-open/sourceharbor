@@ -15,6 +15,10 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_PATH = ROOT / "artifacts" / "licenses" / "third-party-license-inventory.json"
 NOTICE_PATH = ROOT / "THIRD_PARTY_NOTICES.md"
+PYTHON_RUNTIME_SCOPE_NOTE = (
+    "the canonical `uv run --extra dev python` environment, using a throwaway temp uv "
+    "environment instead of root `.venv` or repo-owned runtime roots"
+)
 
 
 def _python_inventory_command(code: str) -> list[str]:
@@ -132,7 +136,7 @@ def _build_inventory() -> dict[str, object]:
     return {
         "version": 1,
         "scope": {
-            "python": "runtime environment from `uv run python` with UV_PROJECT_ENVIRONMENT under `.runtime-cache/tmp/`",
+            "python": f"runtime environment from {PYTHON_RUNTIME_SCOPE_NOTE}",
             "web": "production packages from `apps/web/package-lock.json` with dev=false",
         },
         "summary": {
@@ -159,7 +163,7 @@ def _render_notice(inventory: dict[str, object]) -> str:
         "",
         "## Scope",
         "",
-        "- Python runtime inventory comes from the canonical `uv run --extra dev python` environment, using a throwaway temp uv environment instead of root `.venv` or repo-owned runtime roots.",
+        f"- Python runtime inventory comes from {PYTHON_RUNTIME_SCOPE_NOTE}.",
         "- Web runtime inventory comes from `apps/web/package-lock.json` and excludes `dev=true` packages.",
         "- `UNKNOWN` means the package metadata did not expose a machine-readable license field/classifier in this inventory pass; it is a follow-up item, not a silent pass.",
         "",

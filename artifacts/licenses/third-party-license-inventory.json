@@ -1,7 +1,7 @@
 {
   "version": 1,
   "scope": {
-    "python": "runtime environment from `uv run python` with UV_PROJECT_ENVIRONMENT under `.runtime-cache/tmp/`",
+    "python": "runtime environment from the canonical `uv run --extra dev python` environment, using a throwaway temp uv environment instead of root `.venv` or repo-owned runtime roots",
     "web": "production packages from `apps/web/package-lock.json` with dev=false"
   },
   "summary": {
