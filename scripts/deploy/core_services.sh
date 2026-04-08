@@ -10,6 +10,11 @@ eval "$(python3 "$ROOT_DIR/scripts/ci/contract.py" shell-exports)"
 usage() {
   cat <<'EOF'
 Usage: ./scripts/deploy/core_services.sh [up|down|restart|status|logs] [--env-file <path>]
+
+SourceHarbor local core services compose helper.
+Starts or inspects the repo-local Postgres + Temporal stack from
+infra/compose/core-services.compose.yml.
+This is not a product distribution image installer or hosted runtime surface.
 EOF
 }
 
