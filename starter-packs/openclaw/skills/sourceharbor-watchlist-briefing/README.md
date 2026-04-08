@@ -2,10 +2,11 @@
 
 This skill is the OpenClaw-facing watchlist briefing card for SourceHarbor.
 
-It is designed to behave like a lightweight plugin bundle:
+It is designed to behave like a self-contained operator skill package:
 
 - one skill prompt that teaches the agent the workflow
 - one MCP/HTTP setup reference
+- one HTTP fallback reference
 - one capability map over the SourceHarbor operator surfaces
 - one example output that keeps the answer shape stable
 

@@ -13,7 +13,7 @@ triggers:
 Use this skill when you want OpenClaw to inspect one SourceHarbor watchlist and
 answer a question with the current story and evidence context.
 
-Think of it as a **plugin-grade operator briefing card**:
+Think of it as an **operator briefing skill card**:
 
 - it teaches the agent the workflow
 - it names the MCP/HTTP setup needed
@@ -94,5 +94,6 @@ Return:
 
 - `README.md`
 - `references/mcp-and-http-setup.md`
+- `references/http-fallback.md`
 - `references/capability-map.md`
 - `references/example-output.md`
