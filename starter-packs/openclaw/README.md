@@ -12,9 +12,10 @@ Start here:
 
 - `docs/compat/openclaw.md`
 - `starter-packs/openclaw/sourceharbor-mcp-template.json`
-- `templates/public-skills/openclaw/sourceharbor-watchlist-briefing.md`
 - `starter-packs/openclaw/openclaw.plugin.json`
 - `starter-packs/openclaw/skills/sourceharbor-watchlist-briefing/SKILL.md`
+- `starter-packs/openclaw/skills/sourceharbor-watchlist-briefing/references/mcp-and-http-setup.md`
+- `starter-packs/openclaw/skills/sourceharbor-watchlist-briefing/references/capability-map.md`
 
 ## Three-step quickstart
 
@@ -26,10 +27,9 @@ Start here:
 3. Point OpenClaw at `openclaw.plugin.json`, then start with
    `skills/sourceharbor-watchlist-briefing/SKILL.md` as the first workflow.
 
-If your local SourceHarbor stack is not using `http://127.0.0.1:9000`, mirror
-the real `SOURCE_HARBOR_API_BASE_URL` from
-`.runtime-cache/run/full-stack/resolved.env` before you hand the template to
-OpenClaw.
+If your local SourceHarbor stack is not using `http://127.0.0.1:9000`, replace
+the placeholder with the real `SOURCE_HARBOR_API_BASE_URL` before you hand the
+template to OpenClaw.
 
 Honest boundary:
 
