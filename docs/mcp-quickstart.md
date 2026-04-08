@@ -8,6 +8,11 @@ In plain language:
 - API is the shared service contract
 - MCP is the agent-facing doorway into that same system
 
+SourceHarbor is a **multi-surface product repo, not a single skill package**.
+MCP is one doorway into that repo. Public starter packs and plugin-grade skill
+bundles may help builders adopt it, but they do not redefine the whole product
+as one exported skill.
+
 That same system truth now stretches across the product line:
 
 - `/subscriptions` defines source intake through one shared template catalog
@@ -43,6 +48,13 @@ If you specifically want the OpenClaw-facing compatibility path, start with
 [docs/compat/openclaw.md](./compat/openclaw.md) and
 [starter-packs/openclaw/README.md](../starter-packs/openclaw/README.md).
 
+Container truth, kept short:
+
+- core-services compose is for repo-local runtime helpers
+- the devcontainer is for contributor workspace parity
+- the strict CI GHCR image is for CI/devcontainer parity and attestation
+- none of those three are the newcomer-facing product distribution story
+
 ## Start MCP Locally
 
 ```bash
@@ -70,6 +82,7 @@ The full manifest lives in [apps/mcp/schemas/tools.json](../apps/mcp/schemas/too
 
 - MCP is real and already wired
 - MCP is not a second copy of the business logic
+- MCP is not evidence that the whole repo should be described as a single skill package
 - `@sourceharbor/cli` is a thin builder-facing wrapper over the HTTP API, and
   inside a checkout its convenience commands can delegate back into the
   repo-local substrate

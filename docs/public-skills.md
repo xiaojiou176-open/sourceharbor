@@ -6,9 +6,13 @@ Think of it like the difference between a private workshop notebook and a
 public starter kit:
 
 - `.agents/skills/**` is still the internal workshop notebook
-- `starter-packs/` is the public starter-kit directory a newcomer should open first
+- `starter-packs/` is the public starter-kit directory a builder newcomer should open after choosing a Codex / Claude Code / OpenClaw-style adoption path
 - `templates/public-skills/**` holds the copyable prompt/template assets that those starter packs point to
 - this page and the examples below explain how those public pieces fit together
+
+SourceHarbor is a **multi-surface product repo, not a single skill package**.
+The surfaces documented here are the public starter-pack / public-skill layer
+inside that repo. They do not redefine the whole repo as one skill package.
 
 ## What Is Shipped Now
 
@@ -27,6 +31,16 @@ public starter kit:
 | `examples/cli/search.sh` | minimal CLI example | public example for `@sourceharbor/cli` |
 | `starter-packs/openclaw/skills/**` | OpenClaw-shaped starter skill files | public starter-pack skill surface, not internal skill export |
 
+## Skill Applicability Matrix
+
+| Surface | Is it a public skill surface? | Why |
+| --- | --- | --- |
+| **Whole SourceHarbor repo** | No | the repo includes Web, API, MCP, runtime, docs, CLI, SDK, and builder packaging |
+| **`starter-packs/**`** | Yes | public adoption entrypoints for Codex / Claude Code / OpenClaw / SDK workflows |
+| **plugin-grade bundle directories** | Yes | the closest repo-owned artifacts to official marketplace or registry submission |
+| **`templates/public-skills/**`** | Yes, as support material | copyable public prompts/templates used by the starter packs |
+| **internal `.agents/skills/**`** | No | internal operating surface, not public export |
+
 ## Why This Surface Exists
 
 Codex and Claude Code already fit SourceHarbor through MCP + HTTP API.
@@ -44,8 +58,14 @@ Use the naming like this:
 
 - open `starter-packs/` when you want the public entry directory
 - use `templates/public-skills/**` when you want the copyable prompt/template files inside that starter surface
-- use the plugin-grade bundle directories when you want Codex / Claude / OpenClaw / MCP submission-ready artifacts instead of docs-only starters
+- use the plugin-grade bundle directories when you want the strongest public distribution artifacts or templates that exist today: Codex bundle-ready, Claude submission-ready, OpenClaw publish-template plus first-cut local pack, and MCP registry metadata-only
 - use [`docs/public-distribution.md`](./public-distribution.md) when you want the official-surface submission ledger and the exact human-only steps
+
+So the safe short version is:
+
+- public starter packs and public skills are one adoption layer
+- internal `.agents/skills` are a different, internal layer
+- the repository itself is still the larger multi-surface product
 
 ## Fastest Adoption Ladder
 
@@ -76,5 +96,7 @@ Use the naming like this:
   SourceHarbor already ships a registry-published OpenClaw plugin.
 - Do not treat these docs as a promise that every internal agent workflow is
   supported publicly.
+- Do not treat this page as proof that SourceHarbor should expose a repo-root
+  `SKILL.md` or behave like a single marketplace skill package.
 - Keep the public surface thin: starters should point at MCP, HTTP API, CLI,
   SDK, and the existing proof surfaces instead of inventing a parallel runtime.

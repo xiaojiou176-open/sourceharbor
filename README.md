@@ -85,6 +85,11 @@ It is strongest when you read it as a control tower for source intake:
 - Codex, Claude Code, and other MCP-aware workflows use the MCP surface
 - all three point at the same jobs, artifacts, retrieval index, and operator truth
 
+SourceHarbor is a **multi-surface product repo, not a single skill package**.
+Public starter packs and plugin-grade skill surfaces are adoption layers inside
+that repo. They are not the whole product, and they are not raw exports of the
+internal `.agents/skills` tree.
+
 <p align="center">
   <img
     src="./docs/assets/sourceharbor-developer-flywheel.svg"
@@ -155,7 +160,7 @@ The builder-facing mental map should follow the same product line:
 | --- | --- | --- |
 | **Codex / Claude Code workflows** | local operators who want an AI coding or operations agent to query and drive the same system truth | honest fit today through MCP + HTTP API, documented in [docs/builders.md](./docs/builders.md) |
 | **OpenClaw workflows** | builders who want a dedicated OpenClaw first hop instead of only generic MCP theory | first-cut fit today through [docs/compat/openclaw.md](./docs/compat/openclaw.md) plus [starter-packs/openclaw/README.md](./starter-packs/openclaw/README.md) |
-| **Plugin-grade bundles** | builders who want Codex / Claude Code / OpenClaw / MCP submission-ready artifacts instead of docs-only starters | real today through `starter-packs/codex/sourceharbor-codex-plugin/`, `starter-packs/claude-code/sourceharbor-claude-plugin/`, `starter-packs/openclaw/clawhub.package.template.json`, and `starter-packs/mcp-registry/sourceharbor-server.template.json` |
+| **Plugin-grade bundles and official-surface templates** | builders who want the strongest public bundles or distribution templates beyond docs-only starters | real today through `starter-packs/codex/sourceharbor-codex-plugin/`, `starter-packs/claude-code/sourceharbor-claude-plugin/`, `starter-packs/openclaw/clawhub.package.template.json`, and `starter-packs/mcp-registry/sourceharbor-server.template.json`; readiness differs by platform |
 | **Packaged public CLI** | builders who want an installable command surface before memorizing repo entrypoints | real today in [`packages/sourceharbor-cli`](./packages/sourceharbor-cli/README.md); it stays thinner than the repo-local runtime CLI and delegates inside a checkout |
 | **Repo-local CLI substrate** | operators already inside a checkout who want the direct runtime and governance command truth | real today via `./bin/sourceharbor help`, which remains the underlying local command truth |
 | **MCP surface** | agent workflows and assistant clients that need governed access to jobs, artifacts, retrieval, ingest, reports, and notifications | real surface today via [`./bin/dev-mcp`](./docs/mcp-quickstart.md) |
@@ -168,12 +173,21 @@ delegates to `./bin/sourceharbor` inside a checkout, the TypeScript SDK stays a
 contract-first wrapper over the HTTP API, and Python SDK support still stays
 later.
 
+Skill-repo criteria apply only **partially** here:
+
+| Surface | Skill-repo criteria apply? | Why |
+| --- | --- | --- |
+| **Whole SourceHarbor repo** | No | this repo ships Web, API, MCP, runtime, and builder layers together; it is a multi-surface product repo |
+| **`starter-packs/**`** | Yes, mostly | these are newcomer-facing starter surfaces with copyable prompts, templates, and clear adoption paths |
+| **plugin-grade bundle directories** | Yes, strongly | these are the closest repo-owned artifacts to official marketplace or registry submission |
+| **internal `.agents/skills/**`** | No public applicability | they stay internal operating aids, not newcomer-facing exports |
+
 Plugin-grade distribution is now one layer stronger than raw docs:
 
 - Codex has a plugin-shaped bundle for repo or personal marketplace distribution, but official Codex directory self-serve publishing is still not open.
 - Claude Code has a submission-ready plugin bundle, but official listing still depends on Anthropic review.
-- OpenClaw has a first-cut local starter pack plus a ClawHub package metadata template, but not a live ClawHub publish receipt.
-- MCP has an official-registry-shaped metadata template, but registry publication still requires a public install artifact and namespace verification.
+- OpenClaw has a first-cut local starter pack plus a publish-ready ClawHub package template, but not a live ClawHub publish receipt.
+- MCP has an official-registry-shaped metadata template, but it is still metadata-only; registry publication still requires a public install artifact and namespace verification.
 
 If you want the shortest truthful answer to "what already exists vs what still
 needs official submit/read-back proof," open
@@ -186,6 +200,23 @@ These packages are the public box around the same repo-owned logic:
 - **CLI:** install [`packages/sourceharbor-cli`](./packages/sourceharbor-cli/README.md) when you want one thin command surface for the repo-local command substrate.
 - **TypeScript SDK:** install [`packages/sourceharbor-sdk`](./packages/sourceharbor-sdk/README.md) when you want a typed HTTP client instead of inventing a second fetch stack.
 - **Starter packs:** open [`starter-packs/README.md`](./starter-packs/README.md) when you want reproducible Codex / Claude Code / OpenClaw / SDK starting templates rather than raw internal skill files; this surface is available today, but it is still first-cut.
+
+## Container Truth Split
+
+Do not read every container-shaped artifact in this repo as a newcomer-facing
+product container.
+
+| Container surface | What it is for | Current truth |
+| --- | --- | --- |
+| **`infra/compose/core-services.compose.yml`** | repo-local core services for Postgres and Temporal | local operator/runtime helper for SourceHarbor boot; not a public product container distribution |
+| **`.devcontainer/devcontainer.json` + `.devcontainer/Dockerfile`** | contributor workspace parity | local development environment for people working inside a checkout; not a packaged newcomer product artifact |
+| **`infra/config/strict_ci_contract.json` + `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard`** | strict CI and devcontainer parity image | infrastructure image for CI, attestation, and repeatable tooling; **not** newcomer-facing product container distribution |
+
+So the honest newcomer path stays:
+
+- run the repo from [`docs/start-here.md`](./docs/start-here.md)
+- use the packaged CLI / SDK / starter packs when you want public builder surfaces
+- do **not** treat the strict CI GHCR image as the product's install story
 
 Minimal examples:
 
@@ -205,6 +236,7 @@ Think of this as the label on the box, not fine print:
 - Agent Autopilot is **not** a shipped capability; it remains a bounded spike direction.
 - Hosted Team Workspace is **not** a current promise; it remains a deferred bet.
 - SourceHarbor does **not** yet ship a public Python SDK.
+- SourceHarbor does **not** yet claim a public product Docker image or registry-proven container install artifact.
 - SourceHarbor does **not** claim official marketplace or registry listing everywhere.
 - SourceHarbor does **not** yet claim a registry-published OpenClaw plugin package or official Codex directory listing.
 - SourceHarbor does **not** claim that every RSSHub route has already been individually validated.
@@ -221,7 +253,8 @@ Keep these truth layers separate when you read or share the repo:
 
 - current `main` truth can move ahead of the latest release tag
 - tracked GitHub profile metadata can move ahead of the live GitHub repo settings
-- workflow-dispatch lanes such as release evidence attestation and standard-image publish may still wait on protected-environment approval even when required checks on `main` are already green
+- workflow-dispatch lanes such as release evidence attestation and strict CI standard-image publish are manual proof lanes, not the public install ledger, even when required checks on `main` are already green
+- local support-service containers plus devcontainer/strict-CI images do not turn Docker or GHCR into the current product front door
 - local real-profile browser proof can confirm login persistence and page state without turning those same sites into source-ingestion product claims
 
 That is why SourceHarbor keeps `proof.md`, `project-status.md`, `runbook-local.md`, and the public-reference docs as separate ledgers instead of one blanket “ready” claim.

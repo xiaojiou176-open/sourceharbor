@@ -11,6 +11,11 @@ Think of it like a guided first local run:
 - then inspect the feed and the job trace
 - then run the smoke path that backs up the public story
 
+SourceHarbor is a **multi-surface product repo, not a single skill package**.
+This page is the operator boot path for the repo itself. Public starter packs
+and plugin-grade skill bundles are separate builder-facing adoption surfaces,
+not the whole product.
+
 If you want one discoverable repo-local command surface before you memorize
 individual entrypoints, start here:
 
@@ -29,6 +34,19 @@ when you run it inside a checkout:
 npm install --global ./packages/sourceharbor-cli
 sourceharbor help
 ```
+
+## Container Truth Split
+
+Use this table as the "which box am I opening?" guide:
+
+| Surface | What it means | What it does not mean |
+| --- | --- | --- |
+| `infra/compose/core-services.compose.yml` via `scripts/deploy/core_services.sh` | repo-local core services for Postgres/Temporal | not a newcomer-facing product container package |
+| `.devcontainer/devcontainer.json` | contributor workspace parity inside a checkout | not the public runtime distribution story |
+| `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` from `infra/config/strict_ci_contract.json` | strict CI / devcontainer parity image for repeatable tooling | not a public product container artifact and not the recommended newcomer entrypoint |
+
+So if you are new here, start with the repo boot flow below. Do not start by
+pulling the strict CI image and assuming that image is the product.
 
 ## What You Should See By The End
 
@@ -284,6 +302,7 @@ doctor` is already healthy.
 ## Boundaries
 
 - This repository is **inspectable and runnable locally**, but not marketed as a turnkey hosted product.
+- The repo is **not** one single public skill package; starter packs and plugin-grade bundles are only the builder-facing adoption layer.
 - Local proof is different from remote release proof.
 - Public screenshots and diagrams are presentation assets, not a substitute for live verification.
 - For the shortest delivered-vs-bet summary, read [project-status.md](./project-status.md).

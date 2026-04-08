@@ -1,6 +1,7 @@
 # Build With SourceHarbor
 
 SourceHarbor is not only a Web UI.
+SourceHarbor is a **multi-surface product repo, not a single skill package**.
 
 It already exposes six real builder-facing layers:
 
@@ -27,6 +28,9 @@ Think of the product like one control tower with multiple doors:
 The easiest way to keep the builder story honest is to map it to the same front
 doors operators already see:
 
+That also means the "skill repo" lens applies only to some builder-facing
+surfaces, not to the whole repository.
+
 OpenClaw belongs in this story only as a first-cut local compatibility path.
 It is not a primary front door, registry plugin, or marketplace claim.
 
@@ -37,6 +41,24 @@ It is not a primary front door, registry plugin, or marketplace claim.
 | **`/trends`** | compounder front door | repeated runs become merged stories and evidence surfaces instead of one-off search sessions |
 | **`/briefings` + `/ask`** | story-aware answer/change/evidence lane | the same server-owned story payload now carries selected-story context into Ask |
 | **`/mcp`** | agent-facing reuse doorway | assistants reuse the same jobs, retrieval, artifacts, and operator truth instead of a second business-logic stack |
+
+## Skill Applicability Matrix
+
+Use this before you describe SourceHarbor as a "skill" anything:
+
+| Surface | Skill-repo criteria apply? | Honest wording |
+| --- | --- | --- |
+| **Whole repository** | No | multi-surface product repo with Web, API, MCP, runtime, CLI, SDK, and starter surfaces |
+| **`starter-packs/**`** | Yes, mostly | public starter-pack and public-skill adoption layer |
+| **plugin-grade bundle directories** | Yes, strongly | submission-ready or template-ready distribution artifacts |
+| **`templates/public-skills/**`** | Yes, partially | copyable public prompt/template assets referenced by starter packs |
+| **internal `.agents/skills/**`** | No for public use | internal operating surface, not a public export |
+
+If a newcomer only reads the builder docs, the safe takeaway should be:
+
+- SourceHarbor the repo is the product home for multiple surfaces
+- starter packs are one adoption layer inside that repo
+- internal `.agents/skills` stay internal
 
 ## Best-Fit Clients Today
 
@@ -160,6 +182,19 @@ Current truth:
 - **OpenClaw**: the local pack remains first-cut, while the ClawHub package template is the strongest publish-ready artifact the repo can ship today.
 - **MCP**: the registry template is metadata-only; real publication still needs a public install artifact and verified namespace ownership.
 
+## Container Truth For Builders
+
+Do not treat every container surface as builder distribution:
+
+| Surface | Purpose | Builder-facing claim |
+| --- | --- | --- |
+| `infra/compose/core-services.compose.yml` | repo-local core runtime helpers | local boot aid only |
+| `.devcontainer/devcontainer.json` | contributor workspace parity | development environment only |
+| `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` | strict CI and devcontainer parity image | infrastructure image, **not** newcomer-facing product container distribution |
+
+The actual newcomer-facing builder surfaces are MCP, HTTP API, packaged CLI,
+TypeScript SDK, starter packs, and plugin-grade bundles.
+
 ## Submission And Read-Back Rule
 
 Treat public distribution as complete only when all three exist together:
@@ -215,9 +250,10 @@ What ships now:
 - **Public starter packs / compatibility docs:** available now, but still first-cut
 - **Codex / Claude Code fit via MCP + HTTP API + CLI + SDK:** now
 - **OpenClaw fit via local starter pack + MCP / HTTP substrate:** first-cut now
-- **Codex-compatible plugin bundle:** now
-- **Claude Code plugin bundle:** now
-- **ClawHub package template / MCP Registry template:** now
+- **Codex-compatible plugin bundle:** bundle-ready now
+- **Claude Code plugin bundle:** submission-ready now
+- **ClawHub package template:** publish-template now
+- **MCP Registry template:** metadata-template now
 
 What stays later:
 
