@@ -7,20 +7,22 @@ Use it when you want:
 
 - a current `server.json` draft shaped for the official MCP Registry
 - a single place to keep namespace, package, and environment-variable metadata
+- the real Python package lane that produces `sourceharbor-mcp`
 - an honest reminder that MCP Registry publication still depends on a public
   install method and verified namespace ownership
 
 What this is:
 
-- a submission-ready metadata template
+- a submission-ready metadata template tied to the root Python package
 
 What this is not:
 
 - proof that SourceHarbor is already published in the official MCP Registry
-- proof that the package identifier below already exists in npm, PyPI, or OCI
+- proof that the package identifier below is already live on PyPI
 
 Current boundary:
 
 - the official MCP Registry exists
-- registry publication still requires a public install method, namespace
-  verification, and an actual package or remote server artifact
+- the repo now has a real Python package + console-script install lane
+- registry publication still requires live PyPI publish/read-back, namespace
+  verification, and an actual registry submission receipt

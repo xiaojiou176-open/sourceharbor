@@ -1,0 +1,108 @@
+name: build-public-api-image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-public-api-image-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment:
+      name: external-ghcr-publish
+    permissions:
+      contents: read
+      packages: write
+      artifact-metadata: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          clean: true
+          persist-credentials: false
+
+      - name: Install hosted runner prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+
+      - name: Enforce runner disk budget
+        run: |
+          bash scripts/governance/runner_workspace_maintenance.sh --workspace "$GITHUB_WORKSPACE" --include-runner-diag 1
+          python3 scripts/governance/check_runner_baseline.py --profile ci-heavy --workspace "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+
+      - name: Resolve GHCR credentials
+        env:
+          GHCR_WRITE_USERNAME: ${{ secrets.GHCR_WRITE_USERNAME }}
+          GHCR_WRITE_TOKEN: ${{ secrets.GHCR_WRITE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+        run: |
+          username=""
+          token=""
+          if [[ -n "${GHCR_WRITE_TOKEN}" ]]; then
+            username="${GHCR_WRITE_USERNAME:-$GH_ACTOR}"
+            token="${GHCR_WRITE_TOKEN}"
+          else
+            username="${GH_ACTOR}"
+            token="${GITHUB_TOKEN}"
+          fi
+          if [[ -z "$username" || -z "$token" ]]; then
+            echo "failed to resolve GHCR credentials for hosted publish" >&2
+            exit 1
+          fi
+          {
+            echo "GHCR_LOGIN_USERNAME=$username"
+            echo "GHCR_LOGIN_TOKEN=$token"
+          } >> "$GITHUB_ENV"
+
+      - name: Login to GHCR
+        env:
+          GHCR_LOGIN_USERNAME: ${{ env.GHCR_LOGIN_USERNAME }}
+          GHCR_LOGIN_TOKEN: ${{ env.GHCR_LOGIN_TOKEN }}
+        run: |
+          echo "$GHCR_LOGIN_TOKEN" | docker login ghcr.io -u "$GHCR_LOGIN_USERNAME" --password-stdin
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Build and push public API image
+        env:
+          SOURCE_HARBOR_PUBLIC_API_IMAGE_REPOSITORY: ghcr.io/xiaojiou176-open/sourceharbor-api
+        run: |
+          ./scripts/ci/build_public_api_image.sh \
+            --push \
+            --metadata-file .runtime-cache/reports/build-public-api-image/metadata.json
+
+      - name: Upload public API image artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: public-api-image-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            .runtime-cache/reports/build-public-api-image/metadata.json
+
+      - name: Summarize package URL
+        run: |
+          {
+            echo "### Public API image publish result"
+            echo "- image repository: \`ghcr.io/xiaojiou176-open/sourceharbor-api\`"
+            echo "- package URL: \`https://github.com/orgs/xiaojiou176-open/packages/container/package/sourceharbor-api\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -25,6 +25,7 @@
     ".githooks/pre-commit",
     ".githooks/pre-push",
     ".github/workflows/ci.yml",
+    ".github/workflows/build-public-api-image.yml",
     ".github/workflows/build-ci-standard-image.yml",
     ".github/workflows/release-evidence-attest.yml"
   ],

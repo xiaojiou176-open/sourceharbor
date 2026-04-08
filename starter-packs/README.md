@@ -39,7 +39,7 @@ What lives here:
 | prepare a Claude Code plugin submission bundle | `starter-packs/claude-code/sourceharbor-claude-plugin/` | plugin-grade bundle today; official listing still depends on Anthropic review |
 | drive it from OpenClaw | `starter-packs/openclaw/README.md` | first-cut local starter pack today over the same MCP/API path |
 | prepare OpenClaw / ClawHub packaging metadata | `starter-packs/openclaw/clawhub.package.template.json` | publish-template only today; still not proof of ClawHub publication |
-| prepare official MCP Registry metadata | `starter-packs/mcp-registry/README.md` | metadata template only today; still not proof of official registry publication |
+| prepare official MCP Registry distribution | `starter-packs/mcp-registry/README.md` | PyPI-ready server package plus registry template today; still not proof of live registry publication |
 | start from SDK code instead of an agent | `starter-packs/typescript-sdk/example.ts` | public example, not a full framework pack |
 
 What does **not** live here:

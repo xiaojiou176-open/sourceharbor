@@ -32,17 +32,26 @@ from .tools.workflows import register_workflow_tools
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _LOG_EVENT_SCRIPT = _REPO_ROOT / "scripts" / "runtime" / "log_jsonl_event.py"
 _MCP_API_LOG_PATH = _REPO_ROOT / ".runtime-cache" / "logs" / "app" / "mcp-api.jsonl"
-_REPO_COMMIT = (
-    subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=_REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    or "unknown"
-)
 _ENV_PROFILE = os.getenv("ENV_PROFILE", "unknown")
+
+
+def _resolve_repo_commit() -> str:
+    try:
+        return (
+            subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=_REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            or "unknown"
+        )
+    except OSError:
+        return "unknown"
+
+
+_REPO_COMMIT = _resolve_repo_commit()
 
 
 class ApiError(RuntimeError):

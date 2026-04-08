@@ -244,6 +244,38 @@ jobs:
     )
 
 
+def test_build_public_api_image_requires_manual_only_protected_environment() -> None:
+    module = _load_module()
+    workflow = """name: build-public-api-image
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@1234567890abcdef1234567890abcdef12345678
+        with:
+          clean: true
+      - run: echo build
+"""
+    failures: list[str] = []
+
+    module._check_build_public_api_image_specific_rules(workflow, failures)
+
+    assert (
+        "build-public-api-image.yml: external publish lane must be workflow_dispatch only"
+        in failures
+    )
+    assert (
+        "build-public-api-image.yml: publish: must use protected environment `external-ghcr-publish`"
+        in failures
+    )
+
+
 def test_release_evidence_requires_manual_only_protected_environment() -> None:
     module = _load_module()
     workflow = """name: release-evidence-attest

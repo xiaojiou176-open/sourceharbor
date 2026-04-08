@@ -2,17 +2,11 @@
 
 SourceHarbor now has a first public starter surface for builder workflows.
 
-Think of it like the difference between a private workshop notebook and a
-public starter kit:
+Think of it like the difference between an internal workshop notebook and a public starter kit:
 
-- `.agents/skills/**` is still the internal workshop notebook
-- `starter-packs/` is the public starter-kit directory a builder newcomer should open after choosing a Codex / Claude Code / OpenClaw-style adoption path
-- `templates/public-skills/**` holds the copyable prompt/template assets that those starter packs point to
-- this page and the examples below explain how those public pieces fit together
-
-SourceHarbor is a **multi-surface product repo, not a single skill package**.
-The surfaces documented here are the public starter-pack / public-skill layer
-inside that repo. They do not redefine the whole repo as one skill package.
+- `.agents/skills/**` stays internal
+- `starter-packs/` is the public starter-kit directory
+- `templates/public-skills/**` holds the copyable prompt/template assets those starter packs point to
 
 ## What Is Shipped Now
 
@@ -24,7 +18,7 @@ inside that repo. They do not redefine the whole repo as one skill package.
 | `starter-packs/codex/sourceharbor-codex-plugin/` | Codex-compatible plugin-grade bundle | public, plugin-shaped, strongest Codex distribution artifact today |
 | `starter-packs/claude-code/sourceharbor-claude-plugin/` | Claude Code plugin-grade bundle | public, plugin-shaped, submission-ready |
 | `starter-packs/openclaw/clawhub.package.template.json` | OpenClaw / ClawHub package metadata template | public, publish-ready template, not a live publish receipt |
-| `starter-packs/mcp-registry/sourceharbor-server.template.json` | official MCP Registry metadata template | public, metadata-only template, not a live registry publish receipt |
+| root `pyproject.toml` + `starter-packs/mcp-registry/sourceharbor-server.template.json` | PyPI-ready MCP server package plus official MCP Registry template | public install-artifact lane plus registry template, but still not a live publish receipt |
 | `starter-packs/**` | primary public starter-pack directory | public top-level adoption surface |
 | `templates/public-skills/**` | copyable prompt/template assets referenced by the starter packs | public starter surface, not internal skill export |
 | `examples/sdk/search.ts` | minimal SDK example | public example for `@sourceharbor/sdk` |
@@ -41,31 +35,11 @@ inside that repo. They do not redefine the whole repo as one skill package.
 | **`templates/public-skills/**`** | Yes, as support material | copyable public prompts/templates used by the starter packs |
 | **internal `.agents/skills/**`** | No | internal operating surface, not public export |
 
-## Why This Surface Exists
-
-Codex and Claude Code already fit SourceHarbor through MCP + HTTP API.
-
-The missing piece was a public first hop that does not depend on reading our
-private `.agents/skills` tree. These starter packs solve that gap by giving a
-newcomer:
-
-1. the right doorway
-2. the shortest command or prompt
-3. the honest boundary
-4. one example they can run immediately
-
-Use the naming like this:
+## Naming Rule
 
 - open `starter-packs/` when you want the public entry directory
-- use `templates/public-skills/**` when you want the copyable prompt/template files inside that starter surface
-- use the plugin-grade bundle directories when you want the strongest public distribution artifacts or templates that exist today: Codex bundle-ready, Claude submission-ready, OpenClaw publish-template plus first-cut local pack, and MCP registry metadata-only
-- use [`docs/public-distribution.md`](./public-distribution.md) when you want the official-surface submission ledger and the exact human-only steps
-
-So the safe short version is:
-
-- public starter packs and public skills are one adoption layer
-- internal `.agents/skills` are a different, internal layer
-- the repository itself is still the larger multi-surface product
+- use `templates/public-skills/**` for the copyable prompt/template files inside that starter surface
+- use [`docs/public-distribution.md`](./public-distribution.md) when the question becomes official submission or listing truth
 
 ## Fastest Adoption Ladder
 
@@ -91,7 +65,7 @@ So the safe short version is:
 
 - Do not treat these public starter packs as proof that SourceHarbor ships a
   plugin marketplace.
-- Do not treat a plugin-grade bundle or registry template as proof of live official listing.
+- Do not treat a plugin-grade bundle, registry template, or repo-side PyPI wheel as proof of live official listing by itself.
 - Do not treat the OpenClaw local pack as proof that
   SourceHarbor already ships a registry-published OpenClaw plugin.
 - Do not treat these docs as a promise that every internal agent workflow is

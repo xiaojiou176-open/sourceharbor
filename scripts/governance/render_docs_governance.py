@@ -71,6 +71,17 @@ def _expected_ci_topology_standard_image_line() -> str:
     )
 
 
+def _expected_public_api_image_line() -> str:
+    workflow_text = (REPO_ROOT / ".github" / "workflows" / "build-public-api-image.yml").read_text(
+        encoding="utf-8"
+    )
+    runner = _extract_workflow_job_runs_on(workflow_text, "publish") or "unknown"
+    return (
+        "- Public API image publish workflow runs on "
+        f"`{runner}` and builds `ghcr.io/xiaojiou176-open/sourceharbor-api` via `scripts/ci/build_public_api_image.sh`"
+    )
+
+
 def _advisory_security_workflows_line() -> str:
     workflows = [
         "codeql.yml",
@@ -164,6 +175,7 @@ def _render_ci_topology() -> str:
         "- canonical python-tests command: `bash scripts/ci/python_tests.sh`",
         "- pre-push is a contributor-side parity hook: it reruns env contract, placebo assertion guard, `bash scripts/ci/python_tests.sh`, and web lint locally after a deterministic `npm ci` refresh when tracked web manifests drift or `apps/web/node_modules/.bin/next` is missing.",
         _advisory_security_workflows_line(),
+        _expected_public_api_image_line(),
         _expected_ci_topology_standard_image_line(),
         "- release evidence attestation stays in `.github/workflows/release-evidence-attest.yml`.",
         "",
@@ -175,7 +187,7 @@ def _render_ci_topology() -> str:
         "| `pre-push` | `.githooks/pre-push` | default local parity hook; keep it deterministic instead of turning it into a full closeout audit |",
         "| `hosted` | `ci.yml`, `pre-commit.yml`, `dependency-review.yml`, `codeql.yml` on `pull_request`/`push`, `trivy.yml`, `trufflehog.yml`, `zizmor.yml` | branch-protected GitHub contract for pull requests and `main` |",
         "| `nightly` | `codeql.yml` on `schedule` | background CodeQL refresh; keep it thin and do not create a separate weekly governance bucket |",
-        "| `manual` | `./bin/repo-side-strict-ci --mode pre-push`, `./bin/quality-gate --mode pre-push`, `./bin/governance-audit --mode audit`, `./bin/smoke-full-stack --offline-fallback 0`, repo-owned real-profile browser proof, `build-ci-standard-image.yml`, `release-evidence-attest.yml` | provider/browser/release/publication truth plus closeout-grade repo/public audits |",
+        "| `manual` | `./bin/repo-side-strict-ci --mode pre-push`, `./bin/quality-gate --mode pre-push`, `./bin/governance-audit --mode audit`, `./bin/smoke-full-stack --offline-fallback 0`, repo-owned real-profile browser proof, `build-public-api-image.yml`, `build-ci-standard-image.yml`, `release-evidence-attest.yml` | provider/browser/release/publication truth plus closeout-grade repo/public audits |",
         "",
     ]
     return "\n".join(lines)

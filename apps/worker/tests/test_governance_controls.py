@@ -115,6 +115,7 @@ def test_public_entrypoint_registry_tracks_current_public_workflows() -> None:
     )
 
     assert '".github/workflows/ci.yml"' in registry
+    assert '".github/workflows/build-public-api-image.yml"' in registry
     assert '".github/workflows/build-ci-standard-image.yml"' in registry
     assert '".github/workflows/release-evidence-attest.yml"' in registry
     assert "monthly-governance-audit" not in registry
@@ -182,6 +183,7 @@ def test_hosted_workflow_set_is_small_and_explicit() -> None:
 
     assert names == [
         "build-ci-standard-image.yml",
+        "build-public-api-image.yml",
         "ci.yml",
         "codeql.yml",
         "dependency-review.yml",
