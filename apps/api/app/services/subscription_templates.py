@@ -6,7 +6,9 @@ from typing import Any
 
 from apps.runtime_paths import get_runtime_config_root
 
-_TEMPLATE_FILE = get_runtime_config_root() / "source-templates" / "subscriptions.intake_templates.json"
+_TEMPLATE_FILE = (
+    get_runtime_config_root() / "source-templates" / "subscriptions.intake_templates.json"
+)
 
 
 def _normalize_template(item: Any) -> dict[str, Any] | None:

@@ -114,7 +114,11 @@ SOURCEHARBOR_VERSION="$(resolve_version)"
 SOURCEHARBOR_VCS_REF="$(git rev-parse HEAD 2>/dev/null || printf 'unknown\n')"
 SOURCEHARBOR_BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 SOURCE_REPOSITORY_URL="$(resolve_source_repository_url)"
-DEFAULT_TAG="${TAG_OVERRIDE:-$SOURCEHARBOR_VERSION}"
+if [[ -n "$TAG_OVERRIDE" ]]; then
+  DEFAULT_TAG="$TAG_OVERRIDE"
+else
+  DEFAULT_TAG="$SOURCEHARBOR_VERSION"
+fi
 
 rm -rf "$CONTEXT_DIR" "$DIST_DIR"
 mkdir -p "$CONTEXT_DIR" "$DIST_DIR"

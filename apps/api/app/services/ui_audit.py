@@ -16,11 +16,11 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from apps.runtime_paths import get_runtime_cache_root, get_runtime_root
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
+from apps.runtime_paths import get_runtime_cache_root, get_runtime_root
 from integrations.providers.gemini import build_gemini_client, load_gemini_sdk
 
 from ..config import Settings

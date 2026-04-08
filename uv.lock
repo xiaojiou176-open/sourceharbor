@@ -1486,8 +1486,8 @@ wheels = [
 
 [[package]]
 name = "sourceharbor"
-version = "0.1.0"
-source = { virtual = "." }
+version = "0.1.14"
+source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "google-genai" },
