@@ -82,7 +82,18 @@ include = [
   "integrations",
   "integrations.*",
 ]
-exclude = ["*.tests", "*.tests.*"]
+exclude = [
+  "*.tests",
+  "*.tests.*",
+  "apps.api.tests",
+  "apps.api.tests.*",
+  "apps.mcp.tests",
+  "apps.mcp.tests.*",
+  "apps.web",
+  "apps.web.*",
+  "apps.worker",
+  "apps.worker.*",
+]
 
 [tool.setuptools.package-data]
 "apps.mcp.schemas" = ["*.json"]

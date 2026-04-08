@@ -14,6 +14,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
+from apps.runtime_paths import get_runtime_cache_root, get_runtime_root
+
 from .config import settings
 from .routers import (
     artifacts,
@@ -51,8 +53,8 @@ _REQUEST_COUNTER: dict[tuple[str, str, str], int] = defaultdict(int)
 _REQUEST_DURATION: dict[tuple[str, str], dict[str, float]] = defaultdict(
     lambda: {"count": 0.0, "sum": 0.0}
 )
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_APP_LOG_PATH = _REPO_ROOT / ".runtime-cache" / "logs" / "app" / "api-http.jsonl"
+_RUNTIME_ROOT = get_runtime_root()
+_APP_LOG_PATH = get_runtime_cache_root() / "logs" / "app" / "api-http.jsonl"
 _ENV_PROFILE = os.getenv("ENV_PROFILE", "unknown")
 
 
@@ -61,7 +63,7 @@ def _resolve_repo_commit() -> str:
         return (
             subprocess.run(
                 ["git", "rev-parse", "HEAD"],
-                cwd=_REPO_ROOT,
+                cwd=_RUNTIME_ROOT,
                 check=False,
                 capture_output=True,
                 text=True,

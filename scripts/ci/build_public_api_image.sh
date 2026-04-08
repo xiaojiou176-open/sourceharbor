@@ -130,9 +130,9 @@ fi
 wheel_name="$(basename "$wheel_path")"
 cp "$ROOT_DIR/infra/docker/sourceharbor-api.Dockerfile" "$CONTEXT_DIR/Dockerfile"
 cp "$wheel_path" "$CONTEXT_DIR/$wheel_name"
-cp -R "$ROOT_DIR/apps" "$CONTEXT_DIR/apps"
-cp -R "$ROOT_DIR/integrations" "$CONTEXT_DIR/integrations"
 cp -R "$ROOT_DIR/config" "$CONTEXT_DIR/config"
+mkdir -p "$CONTEXT_DIR/scripts"
+cp -R "$ROOT_DIR/scripts/runtime" "$CONTEXT_DIR/scripts/runtime"
 
 build_args=(
   --build-arg "SOURCEHARBOR_WHEEL=${wheel_name}"

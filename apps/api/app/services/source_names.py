@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import json
 from functools import lru_cache
-from pathlib import Path
 from urllib.parse import urlparse
 
-_MAPPING_FILE = (
-    Path(__file__).resolve().parents[4] / "config" / "source-names" / "subscriptions.up_names.json"
-)
+from apps.runtime_paths import get_runtime_config_root
+
+_MAPPING_FILE = get_runtime_config_root() / "source-names" / "subscriptions.up_names.json"
 
 
 @lru_cache(maxsize=1)

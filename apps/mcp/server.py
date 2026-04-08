@@ -15,6 +15,12 @@ from uuid import uuid4
 import httpx
 from mcp.server.fastmcp import FastMCP
 
+from apps.runtime_paths import (
+    get_runtime_cache_root,
+    get_runtime_root,
+    get_runtime_scripts_root,
+)
+
 from .tools.artifacts import register_artifact_tools
 from .tools.computer_use import register_computer_use_tools
 from .tools.feed import register_feed_tools
@@ -29,9 +35,9 @@ from .tools.subscriptions import register_subscription_tools
 from .tools.ui_audit import register_ui_audit_tools
 from .tools.workflows import register_workflow_tools
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_LOG_EVENT_SCRIPT = _REPO_ROOT / "scripts" / "runtime" / "log_jsonl_event.py"
-_MCP_API_LOG_PATH = _REPO_ROOT / ".runtime-cache" / "logs" / "app" / "mcp-api.jsonl"
+_RUNTIME_ROOT = get_runtime_root()
+_LOG_EVENT_SCRIPT = get_runtime_scripts_root() / "runtime" / "log_jsonl_event.py"
+_MCP_API_LOG_PATH = get_runtime_cache_root() / "logs" / "app" / "mcp-api.jsonl"
 _ENV_PROFILE = os.getenv("ENV_PROFILE", "unknown")
 
 
@@ -40,7 +46,7 @@ def _resolve_repo_commit() -> str:
         return (
             subprocess.run(
                 ["git", "rev-parse", "HEAD"],
-                cwd=_REPO_ROOT,
+                cwd=_RUNTIME_ROOT,
                 check=False,
                 capture_output=True,
                 text=True,
@@ -160,7 +166,7 @@ def _log_mcp_api_event(
             "--message",
             f"{method} {path} | {message}",
         ],
-        cwd=_REPO_ROOT,
+        cwd=_RUNTIME_ROOT,
         check=False,
         capture_output=True,
         text=True,

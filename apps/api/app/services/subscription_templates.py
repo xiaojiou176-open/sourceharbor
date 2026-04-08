@@ -2,15 +2,11 @@ from __future__ import annotations
 
 import json
 from functools import lru_cache
-from pathlib import Path
 from typing import Any
 
-_TEMPLATE_FILE = (
-    Path(__file__).resolve().parents[4]
-    / "config"
-    / "source-templates"
-    / "subscriptions.intake_templates.json"
-)
+from apps.runtime_paths import get_runtime_config_root
+
+_TEMPLATE_FILE = get_runtime_config_root() / "source-templates" / "subscriptions.intake_templates.json"
 
 
 def _normalize_template(item: Any) -> dict[str, Any] | None:

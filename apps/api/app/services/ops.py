@@ -13,6 +13,8 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
+from apps.runtime_paths import get_runtime_root
+
 from ..config import Settings
 from ..models import NotificationConfig
 from ..security import sanitize_exception_detail
@@ -20,7 +22,7 @@ from .health import HealthService
 
 logger = logging.getLogger(__name__)
 OPS_SECTION_ERROR_MESSAGE = "diagnostic data temporarily unavailable"
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = get_runtime_root()
 
 
 @lru_cache(maxsize=1)

@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from apps.runtime_paths import get_runtime_cache_root, get_runtime_root
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
@@ -57,8 +58,8 @@ _DEFAULT_ARTIFACT_BASE_ROOT = tempfile.gettempdir()
 _DEFAULT_UI_AUDIT_RUN_STORE = ".runtime-cache/evidence/tests/ui-audit-runs"
 _DEFAULT_MODEL_TIMEOUT_SECONDS = 15.0
 _DEFAULT_MODEL_MAX_RETRIES = 1
-_REPO_ROOT = Path(__file__).resolve().parents[4]
-_RUNTIME_CACHE_ROOT = _REPO_ROOT / ".runtime-cache"
+_REPO_ROOT = get_runtime_root()
+_RUNTIME_CACHE_ROOT = get_runtime_cache_root()
 _EVIDENCE_INDEX_ROOT = _RUNTIME_CACHE_ROOT / "reports" / "evidence-index"
 
 _GEMINI_UI_AUDIT_SCHEMA: dict[str, Any] = {
