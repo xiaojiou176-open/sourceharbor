@@ -7,6 +7,13 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-04-07
+
+### Fixed
+
+- aligned the packaged CLI fallback docs URL with the live GitHub Pages front door instead of the raw GitHub docs tree
+- bumped the public CLI, public TypeScript SDK, OpenAPI contract, and plugin/template version anchors to `0.1.13` so the next release can catch back up with current `main`
+
 ## [0.1.12] - 2026-04-06
 
 ### Changed

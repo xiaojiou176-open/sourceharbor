@@ -99,7 +99,7 @@ What this layer answers:
 
 Current release-side truth still needs one extra sentence kept explicit:
 
-- the current public repo now has a live GitHub Release object: **`v0.1.12`**
+- the current public repo now has a live GitHub Release object: **`v0.1.13`**
 - that release object is current only while it still matches the remote head you
   are describing
 - uploaded social preview state is also part of this layer: the tracked asset can
