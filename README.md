@@ -187,7 +187,7 @@ Plugin-grade distribution is now one layer stronger than raw docs:
 - Codex has a plugin-shaped bundle for repo or personal marketplace distribution, but official Codex directory self-serve publishing is still not open.
 - Claude Code has a submission-ready plugin bundle, but official listing still depends on Anthropic review.
 - OpenClaw has a first-cut local starter pack plus a publish-ready ClawHub package template, but not a live ClawHub publish receipt.
-- MCP has an official-registry-shaped metadata template, but it is still metadata-only; registry publication still requires a public install artifact and namespace verification.
+- MCP now has a real Python package lane plus the official-registry-shaped template; live registry or PyPI read-back still requires submit/publish proof.
 
 If you want the shortest truthful answer to "what already exists vs what still
 needs official submit/read-back proof," open
@@ -199,7 +199,12 @@ These packages are the public box around the same repo-owned logic:
 
 - **CLI:** install [`packages/sourceharbor-cli`](./packages/sourceharbor-cli/README.md) when you want one thin command surface for the repo-local command substrate.
 - **TypeScript SDK:** install [`packages/sourceharbor-sdk`](./packages/sourceharbor-sdk/README.md) when you want a typed HTTP client instead of inventing a second fetch stack.
+- **MCP server package:** build the root Python package when you want the real `sourceharbor-mcp` console script and the PyPI-shaped install artifact that the MCP Registry template now targets.
 - **Starter packs:** open [`starter-packs/README.md`](./starter-packs/README.md) when you want reproducible Codex / Claude Code / OpenClaw / SDK starting templates rather than raw internal skill files; this surface is available today, but it is still first-cut.
+
+Registry ownership marker:
+
+`mcp-name: io.github.xiaojiou176-open/sourceharbor-mcp`
 
 ## Container Truth Split
 
@@ -210,12 +215,14 @@ product container.
 | --- | --- | --- |
 | **`infra/compose/core-services.compose.yml`** | repo-local core services for Postgres and Temporal | local operator/runtime helper for SourceHarbor boot; not a public product container distribution |
 | **`.devcontainer/devcontainer.json` + `.devcontainer/Dockerfile`** | contributor workspace parity | local development environment for people working inside a checkout; not a packaged newcomer product artifact |
+| **`infra/docker/sourceharbor-api.Dockerfile` + `ghcr.io/xiaojiou176-open/sourceharbor-api`** | dedicated product API image route | builder-facing API container lane; the GHCR package URL now exists, but anonymous pull is still blocked while the package visibility remains private |
 | **`infra/config/strict_ci_contract.json` + `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard`** | strict CI and devcontainer parity image | infrastructure image for CI, attestation, and repeatable tooling; **not** newcomer-facing product container distribution |
 
 So the honest newcomer path stays:
 
 - run the repo from [`docs/start-here.md`](./docs/start-here.md)
 - use the packaged CLI / SDK / starter packs when you want public builder surfaces
+- use the dedicated API image only when you explicitly want the API container lane
 - do **not** treat the strict CI GHCR image as the product's install story
 
 Minimal examples:
@@ -226,6 +233,8 @@ cd /path/to/sourceharbor
 sourceharbor help
 
 npm install ./packages/sourceharbor-sdk
+
+uv build
 ```
 
 ## What It Does Not Claim Today
@@ -236,7 +245,8 @@ Think of this as the label on the box, not fine print:
 - Agent Autopilot is **not** a shipped capability; it remains a bounded spike direction.
 - Hosted Team Workspace is **not** a current promise; it remains a deferred bet.
 - SourceHarbor does **not** yet ship a public Python SDK.
-- SourceHarbor does **not** yet claim a public product Docker image or registry-proven container install artifact.
+- SourceHarbor does **not** claim that one public image is the whole product stack; the dedicated API image still expects external Postgres/Temporal once you move past health-only smoke.
+- SourceHarbor does **not** collapse a repo-side PyPI/GHCR route into a live registry claim without read-back proof.
 - SourceHarbor does **not** claim official marketplace or registry listing everywhere.
 - SourceHarbor does **not** yet claim a registry-published OpenClaw plugin package or official Codex directory listing.
 - SourceHarbor does **not** claim that every RSSHub route has already been individually validated.

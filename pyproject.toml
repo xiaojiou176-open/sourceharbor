@@ -1,10 +1,33 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sourceharbor"
-version = "0.1.0"
+version = "0.1.14"
 description = "Turn YouTube, Bilibili, and RSS sources into readable digests, traceable job runs, and searchable knowledge for operators and agents."
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE", "NOTICE.md"]
 requires-python = ">=3.11,<3.13"
+authors = [
+  { name = "SourceHarbor Maintainers" },
+]
+keywords = [
+  "mcp",
+  "fastapi",
+  "source-intake",
+  "grounded-search",
+  "knowledge-management",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
   "fastapi>=0.116.0,<1",
   "google-genai>=1.33.0,<2",
@@ -22,6 +45,15 @@ dependencies = [
   "uvicorn>=0.35.0,<1",
 ]
 
+[project.urls]
+Homepage = "https://github.com/xiaojiou176-open/sourceharbor"
+Documentation = "https://github.com/xiaojiou176-open/sourceharbor/tree/main/docs"
+Repository = "https://github.com/xiaojiou176-open/sourceharbor"
+Issues = "https://github.com/xiaojiou176-open/sourceharbor/issues"
+
+[project.scripts]
+sourceharbor-mcp = "apps.mcp.server:main"
+
 [project.optional-dependencies]
 dev = [
   "pyyaml>=6.0.3,<7",
@@ -35,6 +67,25 @@ dev = [
 e2e = [
   "playwright>=1.55.0,<2",
 ]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = [
+  "apps",
+  "apps.api",
+  "apps.api.app",
+  "apps.api.app.*",
+  "apps.mcp",
+  "apps.mcp.*",
+  "integrations",
+  "integrations.*",
+]
+exclude = ["*.tests", "*.tests.*"]
+
+[tool.setuptools.package-data]
+"apps.mcp.schemas" = ["*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = [

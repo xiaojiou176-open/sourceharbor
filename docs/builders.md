@@ -1,7 +1,6 @@
 # Build With SourceHarbor
 
-SourceHarbor is not only a Web UI.
-SourceHarbor is a **multi-surface product repo, not a single skill package**.
+SourceHarbor is the builder side of the same control tower.
 
 It already exposes six real builder-facing layers:
 
@@ -17,22 +16,11 @@ It now also exposes a seventh adoption layer:
 - **Plugin-grade bundles and official-surface templates** for Codex, Claude
   Code, OpenClaw, and the official MCP Registry path
 
-Think of the product like one control tower with multiple doors:
+The safest way to read this page is:
 
 - operators use the Web command center
-- integrations use the HTTP API
-- assistants use MCP
-- future SDKs should stay thin wrappers over those same contracts
-- the same contracts now distinguish **strong-supported video intake** from **generalized RSSHub/RSS intake**
-
-The easiest way to keep the builder story honest is to map it to the same front
-doors operators already see:
-
-That also means the "skill repo" lens applies only to some builder-facing
-surfaces, not to the whole repository.
-
-OpenClaw belongs in this story only as a first-cut local compatibility path.
-It is not a primary front door, registry plugin, or marketplace claim.
+- builders reuse the same truth through HTTP, MCP, CLI, SDK, or starter packs
+- public skill/bundle lanes are adoption surfaces inside the repo, not the whole repo identity
 
 | Product door | Builder meaning | Current truth |
 | --- | --- | --- |
@@ -180,7 +168,7 @@ Current truth:
 - **Codex**: the bundle is the strongest official-docs-supported distribution artifact today, but public self-serve official listing is still not open.
 - **Claude Code**: the bundle is submission-ready for the official marketplace path, but live listing still depends on Anthropic review.
 - **OpenClaw**: the local pack remains first-cut, while the ClawHub package template is the strongest publish-ready artifact the repo can ship today.
-- **MCP**: the registry template is metadata-only; real publication still needs a public install artifact and verified namespace ownership.
+- **MCP**: the root Python package now produces the real `sourceharbor-mcp` install artifact and the registry template points at the PyPI identifier `sourceharbor`; live registry/PyPI read-back still needs submit/publish proof.
 
 ## Container Truth For Builders
 
@@ -190,72 +178,21 @@ Do not treat every container surface as builder distribution:
 | --- | --- | --- |
 | `infra/compose/core-services.compose.yml` | repo-local core runtime helpers | local boot aid only |
 | `.devcontainer/devcontainer.json` | contributor workspace parity | development environment only |
+| `ghcr.io/xiaojiou176-open/sourceharbor-api` | dedicated API image route | product-facing API container lane; GHCR read-back now exists, but anonymous pull is still blocked until package visibility becomes public |
 | `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` | strict CI and devcontainer parity image | infrastructure image, **not** newcomer-facing product container distribution |
 
 The actual newcomer-facing builder surfaces are MCP, HTTP API, packaged CLI,
 TypeScript SDK, starter packs, and plugin-grade bundles.
 
-## Submission And Read-Back Rule
+## Distribution Rule
 
-Treat public distribution as complete only when all three exist together:
-
-1. a real package or template artifact
-2. a real submit or listing step on the strongest official surface available
-3. a read-back proof such as a receipt, review URL, listing URL, or exact blocker
-
-That means:
-
-- `submission-ready` is stronger than docs-only
-- `publish-template-ready` is stronger than starter-only
-- but neither one equals a live official listing by itself
-
-If you need the shortest shipping ledger for those last steps, read:
-
-- [`docs/public-distribution.md`](./public-distribution.md)
-- [`docs/media-kit.md`](./media-kit.md)
-
-## Official Submission And Read-Back
-
-If you want to carry SourceHarbor from "public bundle exists" to "officially
-submitted with receipts", keep one ledger per platform.
-
-| Platform | What is already real | What still counts as missing | What read-back would prove it |
-| --- | --- | --- | --- |
-| **Codex** | Codex-compatible plugin bundle and starter-pack path | an official public directory path or another strongest public distribution surface with a truthful public claim | listing URL, marketplace entry, or exact blocker stating that the official directory still is not self-serve |
-| **Claude Code** | submission-ready plugin-grade bundle | live marketplace submission and Anthropic review proof | pending-review URL, listing URL, receipt, or review identifier |
-| **OpenClaw / ClawHub** | local starter pack plus publish-ready ClawHub metadata template | live public publish or listing proof | package URL, listing URL, review URL, or a precise blocker if publication still needs human-controlled account steps |
-| **Official MCP Registry** | official-registry-shaped metadata template | real registry submission and verified namespace/public install artifact | submission receipt, registry URL, or a precise blocker such as namespace verification not yet completed |
-
-Use this rule when you describe progress:
+Keep the shipping language simple:
 
 - `bundle-ready` means the artifact exists
-- `submission-ready` means the form/package/template can be submitted now
-- `officially submitted` means there is a real platform-side receipt or review link
-- `listed` means the public page exists and can be revisited later
+- `submission-ready` means the repo has a real packet/template
+- `listed` only means a public upstream page exists
 
-Do not collapse those four states into one sentence.
-
-If you want the shortest ledger for "what is already public-facing vs what still
-needs submit/read-back proof," read
-[`docs/public-distribution.md`](./public-distribution.md).
-
-## Public Packaging Status
-
-SourceHarbor should still stay honest here.
-
-What ships now:
-
-- **Packaged public CLI:** now
-- **Public TypeScript SDK:** now
-- **Public starter packs / compatibility docs:** available now, but still first-cut
-- **Codex / Claude Code fit via MCP + HTTP API + CLI + SDK:** now
-- **OpenClaw fit via local starter pack + MCP / HTTP substrate:** first-cut now
-- **Codex-compatible plugin bundle:** bundle-ready now
-- **Claude Code plugin bundle:** submission-ready now
-- **ClawHub package template:** publish-template now
-- **MCP Registry template:** metadata-template now
-
-What stays later:
+If you need the full shipping ledger, read [`docs/public-distribution.md`](./public-distribution.md).
 
 - **Python SDK:** later
 

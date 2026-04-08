@@ -7,6 +7,7 @@ from pathlib import Path
 
 WORKFLOW_DIR = Path(".github/workflows")
 WORKFLOW_PATH = WORKFLOW_DIR / "ci.yml"
+BUILD_PUBLIC_API_IMAGE_WORKFLOW_PATH = WORKFLOW_DIR / "build-public-api-image.yml"
 BUILD_STANDARD_IMAGE_WORKFLOW_PATH = WORKFLOW_DIR / "build-ci-standard-image.yml"
 RELEASE_EVIDENCE_WORKFLOW_PATH = WORKFLOW_DIR / "release-evidence-attest.yml"
 RUNNER_HEALTH_WORKFLOW_PATH = WORKFLOW_DIR / "runner-health.yml"
@@ -892,6 +893,39 @@ def _check_build_standard_image_specific_rules(text: str, failures: list[str]) -
         )
 
 
+def _check_build_public_api_image_specific_rules(text: str, failures: list[str]) -> None:
+    blocks = dict(_job_blocks(text))
+    if not _workflow_has_only_workflow_dispatch(text):
+        failures.append(
+            "build-public-api-image.yml: external publish lane must be workflow_dispatch only"
+        )
+    if not _workflow_has_explicit_trigger(text, "workflow_dispatch"):
+        failures.append("build-public-api-image.yml: missing workflow_dispatch trigger")
+    publish = blocks.get("publish", "")
+    if not publish:
+        failures.append("build-public-api-image.yml: publish: missing job")
+        return
+    if "environment:\n      name: external-ghcr-publish" not in publish:
+        failures.append(
+            "build-public-api-image.yml: publish: must use protected environment `external-ghcr-publish`"
+        )
+    if "runs-on: ubuntu-latest" not in publish:
+        failures.append("build-public-api-image.yml: publish: must run on ubuntu-latest")
+    if "build_public_api_image.sh" not in text:
+        failures.append(
+            "build-public-api-image.yml: must build through scripts/ci/build_public_api_image.sh"
+        )
+    if "sourceharbor-api" not in text:
+        failures.append(
+            "build-public-api-image.yml: must target the dedicated sourceharbor-api image repository"
+        )
+    for token in LOCAL_REAL_CHROME_PROFILE_ENV_VARS:
+        if token in text:
+            failures.append(
+                f"build-public-api-image.yml: hosted external lane must not reference local-only real Chrome profile env `{token}`"
+            )
+
+
 def _check_release_evidence_specific_rules(text: str, failures: list[str]) -> None:
     blocks = dict(_job_blocks(text))
     if not _workflow_has_only_workflow_dispatch(text):
@@ -1147,6 +1181,8 @@ def main() -> int:
         if workflow == WORKFLOW_PATH:
             if not _uses_public_hosted_first_ci(blocks):
                 _check_ci_specific_rules(blocks, failures)
+        elif workflow == BUILD_PUBLIC_API_IMAGE_WORKFLOW_PATH:
+            _check_build_public_api_image_specific_rules(text, failures)
         elif workflow == BUILD_STANDARD_IMAGE_WORKFLOW_PATH:
             _check_build_standard_image_specific_rules(text, failures)
         elif workflow == RELEASE_EVIDENCE_WORKFLOW_PATH:

@@ -29,7 +29,7 @@ different question.
 | `pre-push` | contributor-side push gate | `.githooks/pre-push` | the default local parity hook stays deterministic and does not silently expand into a full closeout audit |
 | `hosted` | GitHub `pull_request` / `push` | `ci.yml`, `pre-commit.yml`, `dependency-review.yml`, `codeql.yml` on PR/push, `trivy.yml`, `trufflehog.yml`, `zizmor.yml` | the branch-protected remote contract for pull requests and `main` |
 | `nightly` | hosted `schedule` | `codeql.yml` on `schedule` | thin background security refresh; keep this lane small and do not create a separate weekly governance bucket |
-| `manual` | human-triggered or operator-triggered | `./bin/repo-side-strict-ci --mode pre-push`, `./bin/quality-gate --mode pre-push`, `./bin/governance-audit --mode audit`, `./bin/smoke-full-stack --offline-fallback 0`, repo-owned real-profile browser proof, `build-ci-standard-image.yml`, `release-evidence-attest.yml` | provider/browser/release/publication truth plus closeout-grade repo/public audits |
+| `manual` | human-triggered or operator-triggered | `./bin/repo-side-strict-ci --mode pre-push`, `./bin/quality-gate --mode pre-push`, `./bin/governance-audit --mode audit`, `./bin/smoke-full-stack --offline-fallback 0`, repo-owned real-profile browser proof, `build-public-api-image.yml`, `build-ci-standard-image.yml`, `release-evidence-attest.yml` | provider/browser/release/publication truth plus closeout-grade repo/public audits |
 
 ## Fast Local Checks
 
@@ -190,7 +190,7 @@ page should not describe them as optional or merely advisory.
 
 These still stay outside the default pull-request gate:
 
-- `build-ci-standard-image.yml` and `release-evidence-attest.yml` stay in the external-proof lane, not the default pull-request gate
+- `build-public-api-image.yml`, `build-ci-standard-image.yml`, and `release-evidence-attest.yml` stay in the external-proof lane, not the default pull-request gate
 - those external lanes are `workflow_dispatch` only and run behind protected environments so ordinary pull requests never touch their secrets or publication paths
 - all active GitHub workflows run on `ubuntu-latest`; local `repo-side-strict-ci`
   remains a repo-side proof command, not a self-hosted CI runner

@@ -53,17 +53,26 @@ _REQUEST_DURATION: dict[tuple[str, str], dict[str, float]] = defaultdict(
 )
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _APP_LOG_PATH = _REPO_ROOT / ".runtime-cache" / "logs" / "app" / "api-http.jsonl"
-_REPO_COMMIT = (
-    subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=_REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    or "unknown"
-)
 _ENV_PROFILE = os.getenv("ENV_PROFILE", "unknown")
+
+
+def _resolve_repo_commit() -> str:
+    try:
+        return (
+            subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=_REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            or "unknown"
+        )
+    except OSError:
+        return "unknown"
+
+
+_REPO_COMMIT = _resolve_repo_commit()
 
 
 def _escape_metric_label(value: str) -> str:
