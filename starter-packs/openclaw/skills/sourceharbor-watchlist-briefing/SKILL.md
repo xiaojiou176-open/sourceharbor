@@ -1,10 +1,24 @@
 ---
 name: sourceharbor-watchlist-briefing
 description: Use SourceHarbor watchlists, briefings, Ask, MCP, and HTTP API to answer one question with current story context and evidence.
+triggers:
+  - sourceharbor
+  - watchlist
+  - briefing
+  - operator question
 ---
+
+# SourceHarbor Watchlist Briefing
 
 Use this skill when you want OpenClaw to inspect one SourceHarbor watchlist and
 answer a question with the current story and evidence context.
+
+Think of it as a **plugin-grade operator briefing card**:
+
+- it teaches the agent the workflow
+- it names the MCP/HTTP setup needed
+- it shows which SourceHarbor capabilities matter
+- it keeps the answer evidence-backed and operational
 
 ## Goal
 
@@ -13,6 +27,24 @@ answer a question with the current story and evidence context.
 - answer one operator question
 - cite the evidence used
 - return one concrete next action
+
+## Runtime you need
+
+- one connected SourceHarbor MCP server, or
+- one running SourceHarbor HTTP API at `SOURCE_HARBOR_API_BASE_URL`
+- if either still needs wiring, use `references/mcp-and-http-setup.md`
+
+## Exposed MCP abilities
+
+This skill is built around these SourceHarbor capability groups:
+
+- health
+- retrieval / Ask-style evidence lookup
+- jobs and compare views
+- artifacts and reports
+- workflows, subscriptions, and notifications when the question is really about operator state
+
+Use `references/capability-map.md` for the concrete tool map.
 
 ## Inputs To Fill In
 
@@ -41,6 +73,16 @@ Required steps:
    - Evidence used
    - Suggested next operator action
 
+## Output contract
+
+Return:
+
+- `current_story`
+- `what_changed`
+- `evidence_used`
+- `suggested_next_action`
+- `runtime_gap` if MCP or HTTP access was partial
+
 ## Guardrails
 
 - Do not pretend SourceHarbor is a hosted SaaS.
@@ -48,9 +90,9 @@ Required steps:
 - Do not answer without evidence.
 - If MCP or HTTP access is partial, say so clearly instead of filling gaps.
 
-## Related Public Surfaces
+## Companion references
 
-- `docs/compat/openclaw.md`
-- `docs/builders.md`
-- `docs/mcp-quickstart.md`
-- `starter-packs/openclaw/README.md`
+- `README.md`
+- `references/mcp-and-http-setup.md`
+- `references/capability-map.md`
+- `references/example-output.md`
