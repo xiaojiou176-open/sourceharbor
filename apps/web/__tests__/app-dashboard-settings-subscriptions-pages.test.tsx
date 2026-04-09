@@ -600,12 +600,21 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(
 				screen.getByRole("link", { name: "Open merged stories" }),
 			).toHaveAttribute("href", "/trends");
-			expect(
-				screen.getByRole("button", { name: "Save subscription" }),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("combobox", { name: "Platform" }),
-			).toHaveTextContent("RSSHub");
+				expect(
+					screen.getByRole("button", { name: "Save subscription" }),
+				).toBeInTheDocument();
+				expect(
+					screen.getByRole("heading", { name: "Manual source intake" }),
+				).toBeInTheDocument();
+				expect(
+					screen.getByRole("button", { name: "Run manual intake" }),
+				).toBeInTheDocument();
+				expect(
+					screen.getByLabelText("URLs / handles / pages"),
+				).toBeInTheDocument();
+				expect(
+					screen.getByRole("combobox", { name: "Platform" }),
+				).toHaveTextContent("RSSHub");
 			expect(
 				screen.getByRole("combobox", { name: "Source type" }),
 			).toHaveTextContent("RSSHub route");

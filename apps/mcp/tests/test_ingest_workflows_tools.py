@@ -300,6 +300,24 @@ def test_workflows_payload_normalizer_covers_bool_and_range_branches() -> None:
     assert error is None and field is None
     assert poll_feeds == {"run_once": True, "max_new_videos": 25}
 
+    poll_with_interval, field, error = _normalize_workflow_payload(
+        "poll_feeds",
+        {"run_once": False, "interval_minutes": 15},
+    )
+    assert error is None and field is None
+    assert poll_with_interval == {"run_once": False, "interval_minutes": 15}
+
+    consume_pending, field, error = _normalize_workflow_payload(
+        "consume_pending",
+        {"run_once": False, "interval_minutes": 120, "timezone_name": "America/Los_Angeles"},
+    )
+    assert error is None and field is None
+    assert consume_pending == {
+        "run_once": False,
+        "interval_minutes": 120,
+        "timezone_name": "America/Los_Angeles",
+    }
+
     notification_retry, field, error = _normalize_workflow_payload(
         "notification_retry",
         {"interval_minutes": 15, "retry_batch_limit": 9},

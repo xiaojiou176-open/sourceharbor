@@ -25,6 +25,7 @@ from apps.mcp.tools.notifications import (
     _normalize_set_config_payload,
     register_notification_tools,
 )
+from apps.mcp.tools.reader import register_reader_tools
 from apps.mcp.tools.retrieval import register_retrieval_tools
 from apps.mcp.tools.subscriptions import register_subscription_tools
 from apps.mcp.tools.ui_audit import register_ui_audit_tools
@@ -295,6 +296,65 @@ def test_notifications_manage_rejects_invalid_action_with_standard_payload() -> 
     assert payload["code"] == "INVALID_ARGUMENT"
     assert payload["details"]["field"] == "action"
     assert payload["details"]["path"] == "sourceharbor.notifications.manage"
+
+
+def test_reader_tools_cover_list_get_and_navigation() -> None:
+    mcp = _FakeMCP()
+    calls: list[tuple[str, str, dict[str, Any]]] = []
+
+    def fake_api_call(method: str, path: str, **kwargs: Any) -> Any:
+        calls.append((method, path, kwargs))
+        if path == "/api/v1/reader/documents":
+            return [
+                {
+                    "id": UUID_1,
+                    "stable_key": "topic-ai-agents-2026-04-09",
+                    "slug": "topic-ai-agents-2026-04-09-v1",
+                    "window_id": "2026-04-09@America/Los_Angeles",
+                    "title": "AI Agents",
+                    "markdown": "# AI Agents",
+                    "materialization_mode": "merge_then_polish",
+                    "version": 1,
+                    "published_with_gap": False,
+                    "source_item_count": 2,
+                }
+            ]
+        if path == f"/api/v1/reader/documents/{UUID_1}":
+            return {
+                "id": UUID_1,
+                "stable_key": "topic-ai-agents-2026-04-09",
+                "slug": "topic-ai-agents-2026-04-09-v1",
+                "window_id": "2026-04-09@America/Los_Angeles",
+                "title": "AI Agents",
+                "markdown": "# AI Agents",
+                "materialization_mode": "merge_then_polish",
+                "version": 1,
+                "published_with_gap": True,
+                "warning": {"published_with_gap": True, "reasons": ["1 source missing digest"]},
+            }
+        assert path == "/api/v1/reader/navigation-brief"
+        return {
+            "brief_kind": "sourceharbor_navigation_brief_v1",
+            "generated_at": "2026-04-09T12:00:00Z",
+            "window_id": "2026-04-09@America/Los_Angeles",
+            "document_count": 1,
+            "published_with_gap_count": 1,
+            "summary": "Read 1 published reader documents.",
+            "items": [{"document_id": UUID_1, "title": "AI Agents", "route": f"/reader/{UUID_1}"}],
+        }
+
+    register_reader_tools(mcp, fake_api_call)
+
+    listed = mcp.tools["sourceharbor.reader.documents.list"](limit=5)
+    fetched = mcp.tools["sourceharbor.reader.documents.get"](document_id=UUID_1)
+    brief = mcp.tools["sourceharbor.reader.navigation.get"](limit=3)
+
+    assert listed["items"][0]["stable_key"] == "topic-ai-agents-2026-04-09"
+    assert fetched["warning"]["published_with_gap"] is True
+    assert brief["document_count"] == 1
+    assert calls[0][0] == "GET"
+    assert calls[1][1] == f"/api/v1/reader/documents/{UUID_1}"
+    assert calls[2][1] == "/api/v1/reader/navigation-brief"
 
 
 def test_artifacts_get_supports_markdown_and_asset() -> None:
@@ -884,6 +944,12 @@ def test_workflow_payload_normalizer_rejects_invalid_boolean_and_parses_ranges()
     )
     assert error is None and field is None
     assert poll_feeds_with_run_once == {"run_once": True, "max_new_videos": 5}
+
+    poll_feeds_with_interval, field, error = _normalize_workflow_payload(
+        "poll_feeds", {"run_once": False, "interval_minutes": 15}
+    )
+    assert error is None and field is None
+    assert poll_feeds_with_interval == {"run_once": False, "interval_minutes": 15}
 
     daily_digest, field, error = _normalize_workflow_payload(
         "daily_digest",

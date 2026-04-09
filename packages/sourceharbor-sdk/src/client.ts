@@ -1,6 +1,7 @@
 import type {
 	ArtifactMarkdownWithMeta,
 	AskAnswerResponse,
+	ClusterVerdictManifest,
 	DigestFeedResponse,
 	FeedFeedback,
 	FeedFeedbackUpdateRequest,
@@ -13,12 +14,18 @@ import type {
 	JobEvidenceBundle,
 	JobStatus,
 	KnowledgeCard,
+	ManualSourceIntakeRequest,
+	ManualSourceIntakeResponse,
 	NotificationConfig,
 	NotificationConfigUpdateRequest,
 	NotificationSendResponse,
 	NotificationTestRequest,
 	OpsInboxResponse,
 	Platform,
+	NavigationBrief,
+	ReaderBatchMaterialization,
+	ReaderDocument,
+	ReaderDocumentRepairRequest,
 	RetrievalSearchMode,
 	RetrievalSearchResponse,
 	Subscription,
@@ -553,20 +560,38 @@ export const apiClient = {
 		);
 	},
 
-	upsertSubscription(
-		payload: SubscriptionUpsertRequest,
-		options?: { writeAccessToken?: string | null },
-	) {
+		upsertSubscription(
+			payload: SubscriptionUpsertRequest,
+			options?: { writeAccessToken?: string | null },
+		) {
 		return requestJson<SubscriptionUpsertResponse>("/api/v1/subscriptions", {
 			method: "POST",
 			body: payload,
 			writeAccessToken: options?.writeAccessToken,
-		});
-	},
+			});
+		},
 
-	batchUpdateSubscriptionCategory(
-		payload: { ids: string[]; category: string },
-		options?: {
+		submitManualSourceIntake(
+			payload: ManualSourceIntakeRequest,
+			options?: {
+				webSessionToken?: string | null;
+				writeAccessToken?: string | null;
+			},
+		) {
+			return requestJson<ManualSourceIntakeResponse>(
+				"/api/v1/subscriptions/manual-intake",
+				{
+					method: "POST",
+					body: payload,
+					webSessionToken: options?.webSessionToken,
+					writeAccessToken: options?.writeAccessToken,
+				},
+			);
+		},
+
+		batchUpdateSubscriptionCategory(
+			payload: { ids: string[]; category: string },
+			options?: {
 			webSessionToken?: string | null;
 			writeAccessToken?: string | null;
 		},
@@ -615,6 +640,86 @@ export const apiClient = {
 	getIngestRun(runId: string) {
 		const safeId = encodeURIComponent(assertSafeIdentifier(runId));
 		return requestJson<IngestRun>(`/api/v1/ingest/runs/${safeId}`);
+	},
+
+	judgeConsumptionBatch(
+		batchId: string,
+		options?: {
+			webSessionToken?: string | null;
+			writeAccessToken?: string | null;
+		},
+	) {
+		const safeId = encodeURIComponent(assertSafeIdentifier(batchId));
+		return requestJson<ClusterVerdictManifest>(
+			`/api/v1/reader/batches/${safeId}/judge`,
+			{
+				method: "POST",
+				webSessionToken: options?.webSessionToken,
+				writeAccessToken: options?.writeAccessToken,
+			},
+		);
+	},
+
+	getClusterVerdictManifest(batchId: string) {
+		const safeId = encodeURIComponent(assertSafeIdentifier(batchId));
+		return requestJson<ClusterVerdictManifest>(
+			`/api/v1/reader/batches/${safeId}/manifest`,
+		);
+	},
+
+	materializeConsumptionBatch(
+		batchId: string,
+		options?: {
+			webSessionToken?: string | null;
+			writeAccessToken?: string | null;
+		},
+	) {
+		const safeId = encodeURIComponent(assertSafeIdentifier(batchId));
+		return requestJson<ReaderBatchMaterialization>(
+			`/api/v1/reader/batches/${safeId}/materialize`,
+			{
+				method: "POST",
+				webSessionToken: options?.webSessionToken,
+				writeAccessToken: options?.writeAccessToken,
+			},
+		);
+	},
+
+	listPublishedReaderDocuments(params?: {
+		limit?: number;
+		window_id?: string;
+	}) {
+		return requestJson<ReaderDocument[]>("/api/v1/reader/documents", {}, params);
+	},
+
+	getPublishedReaderDocument(documentId: string) {
+		const safeId = encodeURIComponent(assertSafeIdentifier(documentId));
+		return requestJson<ReaderDocument>(`/api/v1/reader/documents/${safeId}`);
+	},
+
+	repairPublishedReaderDocument(
+		documentId: string,
+		payload: ReaderDocumentRepairRequest,
+		options?: {
+			webSessionToken?: string | null;
+			writeAccessToken?: string | null;
+		},
+	) {
+		const safeId = encodeURIComponent(assertSafeIdentifier(documentId));
+		return requestJson<ReaderDocument>(`/api/v1/reader/documents/${safeId}/repair`, {
+			method: "POST",
+			body: payload,
+			webSessionToken: options?.webSessionToken,
+			writeAccessToken: options?.writeAccessToken,
+		});
+	},
+
+	getNavigationBrief(params?: { window_id?: string; limit?: number }) {
+		return requestJson<NavigationBrief>(
+			"/api/v1/reader/navigation-brief",
+			{},
+			params,
+		);
 	},
 
 	listIngestRuns(params?: {
@@ -1016,16 +1121,34 @@ export function createSourceHarborClient(
 			);
 		},
 
-		listSubscriptions(params?: {
-			platform?: Platform;
-			category?: SubscriptionCategory;
-			enabled_only?: boolean;
-		}) {
-			return requestJsonForBase<Subscription[]>("/api/v1/subscriptions", {}, params);
-		},
+			listSubscriptions(params?: {
+				platform?: Platform;
+				category?: SubscriptionCategory;
+				enabled_only?: boolean;
+			}) {
+				return requestJsonForBase<Subscription[]>("/api/v1/subscriptions", {}, params);
+			},
 
-		search(params: {
-			query: string;
+			submitManualSourceIntake(
+				payload: ManualSourceIntakeRequest,
+				requestOptions?: {
+					webSessionToken?: string | null;
+					writeAccessToken?: string | null;
+				},
+			) {
+				return requestJsonForBase<ManualSourceIntakeResponse>(
+					"/api/v1/subscriptions/manual-intake",
+					{
+						method: "POST",
+						body: payload,
+						webSessionToken: requestOptions?.webSessionToken,
+						writeAccessToken: requestOptions?.writeAccessToken,
+					},
+				);
+			},
+
+			search(params: {
+				query: string;
 			topK?: number;
 			mode?: RetrievalSearchMode;
 			filters?: Record<string, string>;
@@ -1148,6 +1271,93 @@ export function createSourceHarborClient(
 				webSessionToken: requestOptions?.webSessionToken,
 				writeAccessToken: requestOptions?.writeAccessToken,
 			});
+		},
+
+		judgeConsumptionBatch(
+			batchId: string,
+			requestOptions?: {
+				webSessionToken?: string | null;
+				writeAccessToken?: string | null;
+			},
+		) {
+			const safeId = encodeURIComponent(assertSafeIdentifier(batchId));
+			return requestJsonForBase<ClusterVerdictManifest>(
+				`/api/v1/reader/batches/${safeId}/judge`,
+				{
+					method: "POST",
+					webSessionToken: requestOptions?.webSessionToken,
+					writeAccessToken: requestOptions?.writeAccessToken,
+				},
+			);
+		},
+
+		getClusterVerdictManifest(batchId: string) {
+			const safeId = encodeURIComponent(assertSafeIdentifier(batchId));
+			return requestJsonForBase<ClusterVerdictManifest>(
+				`/api/v1/reader/batches/${safeId}/manifest`,
+			);
+		},
+
+		materializeConsumptionBatch(
+			batchId: string,
+			requestOptions?: {
+				webSessionToken?: string | null;
+				writeAccessToken?: string | null;
+			},
+		) {
+			const safeId = encodeURIComponent(assertSafeIdentifier(batchId));
+			return requestJsonForBase<ReaderBatchMaterialization>(
+				`/api/v1/reader/batches/${safeId}/materialize`,
+				{
+					method: "POST",
+					webSessionToken: requestOptions?.webSessionToken,
+					writeAccessToken: requestOptions?.writeAccessToken,
+				},
+			);
+		},
+
+		listPublishedReaderDocuments(params?: {
+			limit?: number;
+			window_id?: string;
+		}) {
+			return requestJsonForBase<ReaderDocument[]>(
+				"/api/v1/reader/documents",
+				{},
+				params,
+			);
+		},
+
+		getPublishedReaderDocument(documentId: string) {
+			const safeId = encodeURIComponent(assertSafeIdentifier(documentId));
+			return requestJsonForBase<ReaderDocument>(`/api/v1/reader/documents/${safeId}`);
+		},
+
+		repairPublishedReaderDocument(
+			documentId: string,
+			payload: ReaderDocumentRepairRequest,
+			requestOptions?: {
+				webSessionToken?: string | null;
+				writeAccessToken?: string | null;
+			},
+		) {
+			const safeId = encodeURIComponent(assertSafeIdentifier(documentId));
+			return requestJsonForBase<ReaderDocument>(
+				`/api/v1/reader/documents/${safeId}/repair`,
+				{
+					method: "POST",
+					body: payload,
+					webSessionToken: requestOptions?.webSessionToken,
+					writeAccessToken: requestOptions?.writeAccessToken,
+				},
+			);
+		},
+
+		getNavigationBrief(params?: { window_id?: string; limit?: number }) {
+			return requestJsonForBase<NavigationBrief>(
+				"/api/v1/reader/navigation-brief",
+				{},
+				params,
+			);
 		},
 
 		processVideo(

@@ -4,6 +4,7 @@ import asyncio
 import sys
 import types
 import uuid
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from typing import Any
 
@@ -102,6 +103,52 @@ class _FakeTemporalClient:
         return _FakeHandle(self.result_payload, workflow_id=id)
 
 
+class _FakeBatchRepo:
+    def __init__(self) -> None:
+        self.pending_items: list[dict[str, Any]] = []
+        self.created_batches: list[dict[str, Any]] = []
+        self.started: list[tuple[uuid.UUID, str]] = []
+        self.failed: list[tuple[uuid.UUID, str]] = []
+        self._batch_id = uuid.uuid4()
+        self._latest_batch: Any | None = None
+        self._prepared_payload: dict[str, Any] = {}
+
+    def list_pending_items(self, *, subscription_id, platform):
+        del subscription_id, platform
+        return list(self.pending_items)
+
+    def create_batch(self, **kwargs: Any) -> Any:
+        self.created_batches.append(dict(kwargs))
+        return SimpleNamespace(
+            id=self._batch_id,
+            workflow_id=None,
+            status="frozen",
+            trigger_mode=kwargs["trigger_mode"],
+            window_id=kwargs["window_id"],
+            cutoff_at=kwargs["cutoff_at"],
+            source_item_count=len(kwargs["items"]),
+        )
+
+    def mark_workflow_started(self, *, batch_id: uuid.UUID, workflow_id: str) -> Any:
+        self.started.append((batch_id, workflow_id))
+        return SimpleNamespace(
+            id=batch_id,
+            workflow_id=workflow_id,
+            status="frozen",
+            trigger_mode=self._prepared_payload.get("trigger_mode", "manual"),
+            window_id=self._prepared_payload.get("window_id"),
+            cutoff_at=self._prepared_payload.get("cutoff_at"),
+            source_item_count=int(self._prepared_payload.get("source_item_count") or 0),
+        )
+
+    def mark_start_failed(self, *, batch_id: uuid.UUID, error_message: str) -> Any:
+        self.failed.append((batch_id, error_message))
+        return SimpleNamespace(id=batch_id, status="failed", error_message=error_message)
+
+    def latest_batch(self) -> Any | None:
+        return self._latest_batch
+
+
 def _install_temporal_client(
     monkeypatch: pytest.MonkeyPatch,
     client: _FakeTemporalClient,
@@ -168,6 +215,30 @@ async def _run_poll(
         subscription_id=subscription_id,
         platform=platform,
         max_new_videos=max_new_videos,
+        trace_id=trace_id,
+        user=user,
+    )
+
+
+async def _run_consume(
+    service: IngestService,
+    *,
+    trigger_mode: str = "manual",
+    subscription_id: uuid.UUID | None = None,
+    platform: str | None = "youtube",
+    timezone_name: str | None = "America/Los_Angeles",
+    window_id: str | None = None,
+    cooldown_minutes: int | None = None,
+    trace_id: str | None = None,
+    user: str | None = None,
+) -> dict[str, object]:
+    return await service.consume(
+        trigger_mode=trigger_mode,
+        subscription_id=subscription_id,
+        platform=platform,
+        timezone_name=timezone_name,
+        window_id=window_id,
+        cooldown_minutes=cooldown_minutes,
         trace_id=trace_id,
         user=user,
     )
@@ -499,3 +570,87 @@ def test_poll_raises_runtime_error_when_temporal_client_import_fails(
     assert error_log.trace_id == "missing_trace"
     assert error_log.user == "system"
     assert error_log.error == str(cause)
+
+
+def test_consume_creates_batch_and_starts_workflow(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = _FakeTemporalClient(result_payload={"ok": True})
+    _install_temporal_client(monkeypatch, client)
+    service = IngestService(_PollDB(exists=True))  # type: ignore[arg-type]
+    fake_batch_repo = _FakeBatchRepo()
+    service.batch_repo = fake_batch_repo  # type: ignore[assignment]
+    prepared_payload = {
+        "ok": True,
+        "status": "frozen",
+        "consumption_batch_id": str(fake_batch_repo._batch_id),
+        "trigger_mode": "manual",
+        "window_id": "2026-04-09@America/Los_Angeles",
+        "timezone_name": "America/Los_Angeles",
+        "cutoff_at": datetime(2026, 4, 9, 12, 1, tzinfo=UTC),
+        "source_item_count": 1,
+        "job_ids": [str(uuid.uuid4())],
+        "source_item_ids": [str(uuid.uuid4())],
+        "pending_window_ids": ["2026-04-09@America/Los_Angeles"],
+        "base_published_doc_versions": [],
+    }
+    fake_batch_repo._prepared_payload = dict(prepared_payload)
+
+    class _FakeBusinessStore:
+        def __init__(self, _database_url: str) -> None:
+            pass
+
+        def prepare_consumption_batch(self, **kwargs: Any) -> dict[str, Any]:
+            fake_batch_repo.created_batches.append(dict(kwargs))
+            return prepared_payload
+
+    monkeypatch.setattr(ingest_module, "PostgresBusinessStore", _FakeBusinessStore)
+
+    result = asyncio.run(_run_consume(service))
+
+    assert result["status"] == "frozen"
+    assert result["trigger_mode"] == "manual"
+    assert result["workflow_id"] == f"consume-batch-{fake_batch_repo._batch_id}"
+    assert result["source_item_count"] == 1
+    assert fake_batch_repo.created_batches[0]["window_id"] is None
+    assert client.calls[0]["workflow"] == "ConsumeBatchWorkflow"
+    assert client.calls[0]["filters"]["consumption_batch_id"] == str(fake_batch_repo._batch_id)
+
+
+def test_consume_auto_respects_cooldown(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = _FakeTemporalClient(result_payload={"ok": True})
+    _install_temporal_client(monkeypatch, client)
+    service = IngestService(_PollDB(exists=True))  # type: ignore[arg-type]
+    fake_batch_repo = _FakeBatchRepo()
+    fake_batch_repo.pending_items = [
+        {
+            "ingest_run_item_id": uuid.uuid4(),
+            "subscription_id": uuid.uuid4(),
+            "video_id": uuid.uuid4(),
+            "job_id": uuid.uuid4(),
+            "ingest_event_id": uuid.uuid4(),
+            "platform": "youtube",
+            "video_uid": "abc123",
+            "source_url": "https://www.youtube.com/watch?v=abc123",
+            "title": "Demo",
+            "published_at": datetime.now(UTC),
+            "entry_hash": "entry-1",
+            "pipeline_mode": "full",
+            "content_type": "video",
+            "item_status": "pending_consume",
+            "discovered_at": datetime.now(UTC),
+            "filters_json": {},
+        }
+    ]
+    fake_batch_repo._latest_batch = SimpleNamespace(
+        cutoff_at=datetime.now(UTC),
+        workflow_id="consume-batch-existing",
+        window_id="2026-04-09@America/Los_Angeles",
+    )
+    service.batch_repo = fake_batch_repo  # type: ignore[assignment]
+
+    result = asyncio.run(_run_consume(service, trigger_mode="auto", cooldown_minutes=60))
+
+    assert result["status"] == "cooldown_blocked"
+    assert result["workflow_id"] == "consume-batch-existing"
+    assert result["cooldown_remaining_seconds"] > 0
+    assert fake_batch_repo.created_batches == []
+    assert client.calls == []

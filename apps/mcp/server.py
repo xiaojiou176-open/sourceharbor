@@ -28,6 +28,7 @@ from .tools.ingest import register_ingest_tools
 from .tools.jobs import register_job_tools
 from .tools.knowledge import register_knowledge_tools
 from .tools.notifications import register_notification_tools
+from .tools.reader import register_reader_tools
 from .tools.reports import register_report_tools
 from .tools.retrieval import register_retrieval_tools
 from .tools.subscriptions import register_subscription_tools
@@ -784,6 +785,7 @@ def create_server() -> FastMCP:
     register_knowledge_tools(mcp, api_call)
     register_artifact_tools(mcp, api_call)
     register_notification_tools(mcp, api_call)
+    register_reader_tools(mcp, api_call)
     register_report_tools(mcp, api_call)
     register_health_tools(mcp, api_call)
     register_workflow_tools(mcp, api_call)

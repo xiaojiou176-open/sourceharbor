@@ -19,6 +19,7 @@ const ROUTE_NAME_MAP: Array<{
 	{ href: "/ask", label: routeTransitionCopy.labels.ask },
 	{ href: "/mcp", label: routeTransitionCopy.labels.mcp },
 	{ href: "/ops", label: routeTransitionCopy.labels.ops },
+	{ href: "/reader", label: routeTransitionCopy.labels.reader },
 	{ href: "/watchlists", label: routeTransitionCopy.labels.watchlists },
 	{ href: "/trends", label: routeTransitionCopy.labels.trends },
 	{ href: "/briefings", label: routeTransitionCopy.labels.briefings },

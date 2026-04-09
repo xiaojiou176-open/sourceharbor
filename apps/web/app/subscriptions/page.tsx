@@ -9,6 +9,7 @@ import {
 	FormInputField,
 	FormSelectField,
 } from "@/components/form-field";
+import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel";
 import { SubmitButton } from "@/components/submit-button";
 import { SubscriptionBatchPanel } from "@/components/subscription-batch-panel";
 import { Badge } from "@/components/ui/badge";
@@ -446,10 +447,17 @@ export default async function SubscriptionsPage({
 						</Button>
 					</CardContent>
 				</Card>
-			</section>
+				</section>
 
-			<section>
-				<Card className="folo-surface border-border/70">
+				<section>
+					<ManualSourceIntakePanel
+						copy={copy.manualIntake}
+						sessionToken={sessionToken}
+					/>
+				</section>
+
+				<section>
+					<Card className="folo-surface border-border/70">
 					<CardHeader className="gap-2">
 						<h2 className="text-xl font-semibold">
 							{copy.templateSectionTitle}

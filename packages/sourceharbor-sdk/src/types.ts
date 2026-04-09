@@ -8,6 +8,7 @@ export type Platform =
 export type SourceType =
 	| "url"
 	| "youtube_channel_id"
+	| "youtube_user"
 	| "bilibili_uid"
 	| "rsshub_route"
 	| ExtensibleString;
@@ -64,6 +65,45 @@ export type SubscriptionUpsertRequest = {
 export type SubscriptionUpsertResponse = {
 	subscription: Subscription;
 	created: boolean;
+};
+
+export type ManualSourceIntakeRequest = {
+	raw_input: string;
+	category?: SubscriptionCategory;
+	tags?: string[];
+	priority?: number;
+	enabled?: boolean;
+};
+
+export type ManualSourceIntakeResult = {
+	line_number: number;
+	raw_input: string;
+	target_kind: "subscription_source" | "manual_source_item" | "unsupported";
+	recommended_action: "save_subscription" | "add_to_today" | "unsupported";
+	applied_action: "save_subscription" | "add_to_today" | null;
+	status: "created" | "updated" | "queued" | "reused" | "rejected";
+	platform: Platform | string | null;
+	source_type: SourceType | string | null;
+	source_value: string | null;
+	source_url: string | null;
+	rsshub_route: string | null;
+	adapter_type: SubscriptionAdapterType | string | null;
+	content_profile: ContentType | string | null;
+	support_tier: "strong_supported" | "generic_supported" | string | null;
+	display_name: string | null;
+	message: string;
+	subscription_id: string | null;
+	job_id: string | null;
+};
+
+export type ManualSourceIntakeResponse = {
+	processed_count: number;
+	created_subscriptions: number;
+	updated_subscriptions: number;
+	queued_manual_items: number;
+	reused_manual_items: number;
+	rejected_count: number;
+	results: ManualSourceIntakeResult[];
 };
 
 export type SubscriptionTemplateSupportTier = {
@@ -169,6 +209,160 @@ export type IngestRun = IngestRunSummary & {
 	requested_trace_id: string | null;
 	filters_json: Record<string, unknown> | null;
 	items: IngestRunItem[];
+};
+
+export type ClusterVerdictManifestMember = {
+	source_item_id: string;
+	job_id: string | null;
+	platform: string;
+	source_origin: string;
+	title: string;
+	source_url: string | null;
+	published_at: string | null;
+	claim_kinds: string[];
+	digest_preview: string;
+};
+
+export type ClusterVerdictCluster = {
+	cluster_id: string;
+	cluster_key: string;
+	topic_key: string | null;
+	topic_label: string;
+	decision: "merge_then_polish";
+	source_item_count: number;
+	source_item_ids: string[];
+	job_ids: string[];
+	platforms: string[];
+	claim_kinds: string[];
+	headline: string;
+	digest_preview: string;
+	members: ClusterVerdictManifestMember[];
+};
+
+export type ClusterVerdictSingleton = {
+	singleton_id: string;
+	source_item_id: string;
+	ingest_run_item_id: string | null;
+	job_id: string | null;
+	platform: string;
+	source_origin: string;
+	content_type: string;
+	title: string;
+	source_url: string | null;
+	published_at: string | null;
+	topic_key: string | null;
+	topic_label: string | null;
+	claim_kinds: string[];
+	decision: "polish_only";
+	digest_preview: string;
+};
+
+export type ClusterVerdictManifestPayload = {
+	manifest_kind: string;
+	generated_at: string;
+	consumption_batch_id: string;
+	window_id: string;
+	status: "ready" | "gap_detected";
+	source_item_count: number;
+	cluster_count: number;
+	singleton_count: number;
+	clusters: ClusterVerdictCluster[];
+	singletons: ClusterVerdictSingleton[];
+};
+
+export type ClusterVerdictManifest = {
+	id: string;
+	consumption_batch_id: string;
+	window_id: string;
+	status: "ready" | "gap_detected";
+	source_item_count: number;
+	cluster_count: number;
+	singleton_count: number;
+	summary_markdown: string | null;
+	manifest: ClusterVerdictManifestPayload;
+	created_at: string;
+	updated_at: string;
+};
+
+export type ReaderDocumentSection = {
+	section_id: string;
+	title: string;
+	markdown: string;
+	source_item_ids: string[];
+};
+
+export type ReaderDocumentWarning = {
+	warning_kind: string;
+	published_with_gap: boolean;
+	reasons: string[];
+	failed_source_count: number;
+	degraded_source_count: number;
+	missing_digest_count: number;
+	generated_at: string | null;
+};
+
+export type ReaderDocument = {
+	id: string;
+	stable_key: string;
+	slug: string;
+	window_id: string;
+	topic_key: string | null;
+	topic_label: string | null;
+	title: string;
+	summary: string | null;
+	markdown: string;
+	materialization_mode: string;
+	version: number;
+	published_with_gap: boolean;
+	is_current: boolean;
+	source_item_count: number;
+	consumption_batch_id: string | null;
+	cluster_verdict_manifest_id: string | null;
+	supersedes_document_id: string | null;
+	warning: ReaderDocumentWarning;
+	coverage_ledger: Record<string, unknown>;
+	traceability_pack: Record<string, unknown>;
+	source_refs: Record<string, unknown>[];
+	sections: ReaderDocumentSection[];
+	repair_history: Record<string, unknown>[];
+	created_at: string;
+	updated_at: string;
+};
+
+export type NavigationBriefItem = {
+	document_id: string;
+	title: string;
+	summary: string | null;
+	topic_key: string | null;
+	topic_label: string | null;
+	published_with_gap: boolean;
+	source_item_count: number;
+	route: string;
+};
+
+export type NavigationBrief = {
+	brief_kind: string;
+	generated_at: string;
+	window_id: string;
+	document_count: number;
+	published_with_gap_count: number;
+	summary: string;
+	items: NavigationBriefItem[];
+};
+
+export type ReaderBatchMaterialization = {
+	consumption_batch_id: string;
+	cluster_verdict_manifest_id: string;
+	window_id: string;
+	published_document_count: number;
+	published_with_gap_count: number;
+	documents: ReaderDocument[];
+	navigation_brief: NavigationBrief;
+};
+
+export type ReaderDocumentRepairRequest = {
+	repair_mode: "patch" | "section" | "cluster" | string;
+	section_ids?: string[];
 };
 
 export type Video = {

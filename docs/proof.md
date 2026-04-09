@@ -16,7 +16,7 @@ These prove that the public narrative maps to visible product surfaces:
 - [docs/architecture.md](./architecture.md)
 - [docs/mcp-quickstart.md](./mcp-quickstart.md)
 - `./bin/sourceharbor help`
-- the web command center routes
+- the web command center routes, including the reader frontstage at `/reader`
 - the API route map
 - the MCP tool map
 
@@ -70,14 +70,19 @@ These prove that a pipeline run leaves inspectable evidence behind:
 
 - `GET /api/v1/jobs/{job_id}`
 - `GET /api/v1/feed/digests`
+- `POST /api/v1/reader/batches/{batch_id}/materialize`
+- `GET /api/v1/reader/documents`
+- `GET /api/v1/reader/navigation-brief`
 - `POST /api/v1/retrieval/search`
 - artifact references exposed by job payloads
+- source contribution drawer payloads and traceability routes exposed by published reader documents
 - step summaries, degradations, and notification retry details
 
 What this layer answers:
 
 - What happened in a run?
 - Where did a digest come from?
+- Which frozen batch became which published reader document?
 - Can an operator inspect failure, degradation, and retry state?
 
 ## Proof Layer 4: Release And Remote Evidence

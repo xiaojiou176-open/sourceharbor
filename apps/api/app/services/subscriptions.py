@@ -20,6 +20,7 @@ _BLOCKED_HOSTS = {
 _BLOCKED_HOST_SUFFIXES = (".localhost", ".local", ".internal", ".home.arpa")
 _STRONG_VIDEO_SOURCES = {
     ("youtube", "youtube_channel_id"),
+    ("youtube", "youtube_user"),
     ("bilibili", "bilibili_uid"),
 }
 
@@ -97,6 +98,8 @@ def _derive_rsshub_route(platform: str, source_type: str, source_value: str) -> 
     source_type = normalize_subscription_source_type(source_type)
     if source_type == "url":
         return source_value
+    if platform == "youtube" and source_type == "youtube_user":
+        return f"/youtube/user/{source_value}"
     if platform == "bilibili" and source_type == "bilibili_uid":
         return f"/bilibili/user/video/{source_value}"
     if platform == "youtube" and source_type == "youtube_channel_id":

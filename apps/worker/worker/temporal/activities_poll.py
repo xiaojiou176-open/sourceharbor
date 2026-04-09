@@ -388,7 +388,7 @@ async def run_poll_feeds_once(
                         "entry_hash": normalized["entry_hash"],
                         "pipeline_mode": pipeline_mode,
                         "content_type": content_type,
-                        "item_status": "queued",
+                        "item_status": "pending_consume",
                     }
                 )
                 if len(candidates) < max_new:
