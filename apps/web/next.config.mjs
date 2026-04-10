@@ -2,11 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
-const runtimeWorkspaceMarker = `${path.sep}.runtime-cache${path.sep}tmp${path.sep}web-runtime${path.sep}workspace${path.sep}apps${path.sep}web`;
-const usesManagedRuntimeWorkspace = configDir.includes(runtimeWorkspaceMarker);
-const monorepoRoot = usesManagedRuntimeWorkspace
-	? path.resolve(configDir, "../..")
-	: configDir;
+const monorepoRoot = path.resolve(configDir, "../..");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

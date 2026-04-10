@@ -89,11 +89,13 @@ describe("reader pages", () => {
 			],
 		});
 
-		render(await ReaderPage());
+			render(await ReaderPage());
 
-		expect(
-			screen.getByText("Start with a finished reading unit"),
-		).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					"Read the strongest finished unit before you touch the operator rails",
+				),
+			).toBeInTheDocument();
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 3 }),
 		).toBeInTheDocument();
@@ -150,6 +152,27 @@ describe("reader pages", () => {
 		);
 		expect(screen.getAllByTestId("markdown-preview")[0]).toHaveTextContent(
 			"# AI Agents",
+		);
+	});
+
+	it("renders preview detail when the demo route is requested", async () => {
+		render(
+			await ReaderDocumentPage({
+				params: Promise.resolve({ documentId: "demo" }),
+			}),
+		);
+
+		expect(
+			screen.getByRole("heading", { name: "Reader detail preview", level: 1 }),
+		).toBeInTheDocument();
+		expect(screen.getAllByText("Preview sample").length).toBeGreaterThanOrEqual(
+			1,
+		);
+		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(
+			1,
+		);
+		expect(screen.getByTestId("reader-source-drawer")).toHaveTextContent(
+			"Reader detail preview",
 		);
 	});
 });
