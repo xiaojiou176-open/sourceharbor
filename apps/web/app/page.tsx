@@ -414,8 +414,8 @@ export default async function DashboardPage({
 							</Button>
 						</div>
 						<p className="text-sm text-muted-foreground">
-							Use this when you want the actual reading product, not the operator
-							controls or raw job trace.
+							Use this when you want the actual reading product, not the
+							operator controls or raw job trace.
 						</p>
 					</CardContent>
 				</Card>

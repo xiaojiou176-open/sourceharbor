@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { SourceContributionDrawer } from "@/components/source-contribution-drawer";
-import { YellowWarningCard } from "@/components/yellow-warning-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { YellowWarningCard } from "@/components/yellow-warning-card";
 import { apiClient } from "@/lib/api/client";
 import { buildProductMetadata } from "@/lib/seo";
 
@@ -112,7 +112,9 @@ export default async function ReaderDetailPage({
 					<SourceContributionDrawer document={document} />
 					<Card className="border-border/70">
 						<CardHeader>
-							<CardTitle className="text-base">Coverage ledger snapshot</CardTitle>
+							<CardTitle className="text-base">
+								Coverage ledger snapshot
+							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-2 text-sm">
 							<p>

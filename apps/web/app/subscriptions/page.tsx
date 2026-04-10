@@ -447,17 +447,17 @@ export default async function SubscriptionsPage({
 						</Button>
 					</CardContent>
 				</Card>
-				</section>
+			</section>
 
-				<section>
-					<ManualSourceIntakePanel
-						copy={copy.manualIntake}
-						sessionToken={sessionToken}
-					/>
-				</section>
+			<section>
+				<ManualSourceIntakePanel
+					copy={copy.manualIntake}
+					sessionToken={sessionToken}
+				/>
+			</section>
 
-				<section>
-					<Card className="folo-surface border-border/70">
+			<section>
+				<Card className="folo-surface border-border/70">
 					<CardHeader className="gap-2">
 						<h2 className="text-xl font-semibold">
 							{copy.templateSectionTitle}

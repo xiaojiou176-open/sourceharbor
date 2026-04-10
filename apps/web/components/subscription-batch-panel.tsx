@@ -487,12 +487,12 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 														: ""}
 											</div>
 										</td>
-											<td className="px-3 py-3">
-												<div>{item.platform}</div>
-												<div className="text-xs text-muted-foreground">
-													{humanizeSourceType(item.source_type)}
-												</div>
-											</td>
+										<td className="px-3 py-3">
+											<div>{item.platform}</div>
+											<div className="text-xs text-muted-foreground">
+												{humanizeSourceType(item.source_type)}
+											</div>
+										</td>
 										<td className="px-3 py-3">
 											<Badge
 												variant={

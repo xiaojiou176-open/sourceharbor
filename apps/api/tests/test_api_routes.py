@@ -2656,6 +2656,7 @@ def test_execution_endpoints_enforce_write_access(api_client: TestClient, monkey
         }
 
     monkeypatch.setattr("apps.api.app.services.ingest.IngestService.poll", fake_ingest_poll)
+
     async def fake_consume(self, **kwargs):
         del self
         return {

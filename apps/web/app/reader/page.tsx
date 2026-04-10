@@ -125,7 +125,9 @@ export default async function ReaderPage() {
 										{document.materialization_mode}
 									</Badge>
 									<Badge
-										variant={document.published_with_gap ? "destructive" : "outline"}
+										variant={
+											document.published_with_gap ? "destructive" : "outline"
+										}
 									>
 										{document.published_with_gap ? "Yellow warning" : "Clear"}
 									</Badge>
@@ -145,30 +147,33 @@ export default async function ReaderPage() {
 									<span>Sources {document.source_item_count}</span>
 								</div>
 								<div className="space-y-2">
-									{(
-										Array.isArray(document.source_refs)
-											? document.source_refs
-											: []
+									{(Array.isArray(document.source_refs)
+										? document.source_refs
+										: []
 									)
 										.slice(0, 3)
 										.map((source) => (
-										<div
-											key={String(source.source_item_id ?? source.title)}
-											className="rounded-lg border border-border/60 p-3 text-sm"
-										>
-											<p className="font-medium">
-												{typeof source.title === "string" ? source.title : "Untitled source"}
-											</p>
-											{typeof source.digest_preview === "string" ? (
-												<p className="mt-1 text-muted-foreground">
-													{source.digest_preview}
+											<div
+												key={String(source.source_item_id ?? source.title)}
+												className="rounded-lg border border-border/60 p-3 text-sm"
+											>
+												<p className="font-medium">
+													{typeof source.title === "string"
+														? source.title
+														: "Untitled source"}
 												</p>
-											) : null}
-										</div>
+												{typeof source.digest_preview === "string" ? (
+													<p className="mt-1 text-muted-foreground">
+														{source.digest_preview}
+													</p>
+												) : null}
+											</div>
 										))}
 								</div>
 								<Button asChild className="w-full">
-									<Link href={`/reader/${document.id}`}>Open reader detail</Link>
+									<Link href={`/reader/${document.id}`}>
+										Open reader detail
+									</Link>
 								</Button>
 							</CardContent>
 						</Card>
@@ -178,8 +183,9 @@ export default async function ReaderPage() {
 						<CardHeader>
 							<CardTitle>No published reader documents yet</CardTitle>
 							<CardDescription>
-								Run the intake path, freeze a consumption batch, then materialize
-								the reader pipeline so this surface has real output to show.
+								Run the intake path, freeze a consumption batch, then
+								materialize the reader pipeline so this surface has real output
+								to show.
 							</CardDescription>
 						</CardHeader>
 					</Card>

@@ -606,7 +606,9 @@ class PostgresBusinessStore:
                     break
 
             if target_window_id is None:
-                local_now = cutoff_at.astimezone(self._resolve_batch_timezone(resolved_timezone_name)[0])
+                local_now = cutoff_at.astimezone(
+                    self._resolve_batch_timezone(resolved_timezone_name)[0]
+                )
                 target_window_id = f"{local_now.date().isoformat()}@{resolved_timezone_name}"
 
             if not selected_items:
@@ -925,7 +927,9 @@ class PostgresBusinessStore:
                         "processed_job_count": processed_job_count,
                         "succeeded_job_count": succeeded_job_count,
                         "failed_job_count": failed_job_count,
-                        "process_summary_json": json.dumps(process_summary_json, ensure_ascii=False),
+                        "process_summary_json": json.dumps(
+                            process_summary_json, ensure_ascii=False
+                        ),
                     },
                 )
                 .mappings()
@@ -973,7 +977,9 @@ class PostgresBusinessStore:
                     ),
                     {
                         "batch_id": batch_id,
-                        "process_summary_json": json.dumps(process_summary_json, ensure_ascii=False),
+                        "process_summary_json": json.dumps(
+                            process_summary_json, ensure_ascii=False
+                        ),
                     },
                 )
                 .mappings()

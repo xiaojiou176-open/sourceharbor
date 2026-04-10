@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import ReaderPage from "@/app/reader/page";
 import ReaderDocumentPage from "@/app/reader/[documentId]/page";
+import ReaderPage from "@/app/reader/page";
 
 const mockListPublishedReaderDocuments = vi.fn();
 const mockGetNavigationBrief = vi.fn();
@@ -30,11 +29,9 @@ vi.mock("@/components/markdown-preview", () => ({
 }));
 
 vi.mock("@/components/source-contribution-drawer", () => ({
-	SourceContributionDrawer: ({
-		document,
-	}: {
-		document: { title: string };
-	}) => <div data-testid="reader-source-drawer">{document.title}</div>,
+	SourceContributionDrawer: ({ document }: { document: { title: string } }) => (
+		<div data-testid="reader-source-drawer">{document.title}</div>
+	),
 }));
 
 vi.mock("@/lib/api/client", () => ({
@@ -98,8 +95,12 @@ describe("reader pages", () => {
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 3 }),
 		).toBeInTheDocument();
-		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(1);
-		expect(screen.getByText("Read 1 published reader documents.")).toBeInTheDocument();
+		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(
+			1,
+		);
+		expect(
+			screen.getByText("Read 1 published reader documents."),
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole("link", { name: "Open reader detail" }),
 		).toHaveAttribute("href", "/reader/doc-1");
@@ -117,7 +118,9 @@ describe("reader pages", () => {
 			version: 2,
 			summary: "Merged reader doc",
 			markdown: "# AI Agents\n\nMerged reader doc",
-			sections: [{ section_id: "summary", title: "Summary", source_item_ids: ["src-1"] }],
+			sections: [
+				{ section_id: "summary", title: "Summary", source_item_ids: ["src-1"] },
+			],
 			source_refs: [{ source_item_id: "src-1", title: "Agents recap" }],
 			coverage_ledger: {
 				ledger_kind: "sourceharbor_coverage_ledger_v1",
@@ -134,7 +137,9 @@ describe("reader pages", () => {
 			}),
 		);
 
-		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(
+			1,
+		);
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 1 }),
 		).toBeInTheDocument();

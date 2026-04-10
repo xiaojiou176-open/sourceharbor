@@ -1,10 +1,11 @@
 # 2026-04-09 Reader Product Object Contract
 
-状态：`W1-A` canonical object contract。  
-用途：冻结 reader-product program 的对象列表、对象边界、对象命名、ownership、最小字段与最小状态；供 `W1-B ~ W5` 直接引用。  
-边界：本文是 **target contract addendum**，不是 current capability claim；不替代 [2026-04-08-reader-product-system-blueprint.md](./2026-04-08-reader-product-system-blueprint.md) 的系统总图。  
+状态：`W1-A` canonical object contract。
+用途：冻结 reader-product program 的对象列表、对象边界、对象命名、ownership、最小字段与最小状态；供 `W1-B ~ W5` 直接引用。
+边界：本文是 **target contract addendum**，不是 current capability claim；不替代 [2026-04-08-reader-product-system-blueprint.md](./2026-04-08-reader-product-system-blueprint.md) 的系统总图。
 
 依赖先读：
+
 - `AGENTS.md`
 - `docs/start-here.md`
 - `docs/architecture.md`
@@ -15,6 +16,7 @@
 - `.agents/Plans/2026-04-08__sourceharbor-reader-product-context-index.md`
 
 谁应先读我：
+
 - `W1-B` worker
 - 任意要做 `W2-W5` 的 worker
 - 任意要给后续 worker 写 handoff prompt 的 planner/orchestrator
@@ -86,7 +88,7 @@
 
 一句话总结：
 
-> `W1-A` 先把“对象存在性”钉死；  
+> `W1-A` 先把“对象存在性”钉死；
 > `W1-B` 再把“对象怎么编号、怎么版本化、缺口怎么讲”钉死。
 
 ## 4. Canonical Object Table
@@ -306,7 +308,7 @@
 
 `TraceabilityPack` 在 `W1-A` 的正式结论是：
 
-> 它不是第九个业务主对象；  
+> 它不是第九个业务主对象；
 > 它是 `PublishedReaderDocument` 的 companion payload。
 
 理由：
@@ -473,5 +475,5 @@ rg -n "ClusterVerdictManifest|PublishedReaderDocument|CoverageLedger|NavigationB
 
 一句话收尾：
 
-> `W1-A` 的交付物不是“把阅读器做出来”，  
+> `W1-A` 的交付物不是“把阅读器做出来”，
 > 而是确保后面所有人做的是**同一套对象世界观**。

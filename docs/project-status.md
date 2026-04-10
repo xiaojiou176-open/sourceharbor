@@ -51,7 +51,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo now has a live GitHub Release object: **`v0.1.14`**
-- `v0.1.14` is the current latest-release ledger, and this release line now catches back up with the current remote `main` head after the distribution-truth closeout landed
+- `v0.1.14` is the current latest-release ledger, but release-current truth must still be checked live against whatever `main` head you are describing because later docs/governance or reader-product landings can move `main` ahead again
 - workflow-dispatch evidence on current `main` is still its own ledger, but it
   now sits alongside a current release page instead of replacing one
 

@@ -925,25 +925,25 @@ describe("apiClient core behavior", () => {
 					},
 				),
 			)
-				.mockResolvedValueOnce(
-					new Response(JSON.stringify({ updated: 1 }), { status: 200 }),
-				)
-				.mockResolvedValueOnce(new Response(null, { status: 204 }))
-				.mockResolvedValueOnce(
-					new Response(
-						JSON.stringify({
-							processed_count: 1,
-							created_subscriptions: 0,
-							updated_subscriptions: 1,
-							queued_manual_items: 0,
-							reused_manual_items: 0,
-							rejected_count: 0,
-							results: [],
-						}),
-						{ status: 200 },
-					),
-				)
-				.mockResolvedValueOnce(new Response("server down", { status: 503 }));
+			.mockResolvedValueOnce(
+				new Response(JSON.stringify({ updated: 1 }), { status: 200 }),
+			)
+			.mockResolvedValueOnce(new Response(null, { status: 204 }))
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						processed_count: 1,
+						created_subscriptions: 0,
+						updated_subscriptions: 1,
+						queued_manual_items: 0,
+						reused_manual_items: 0,
+						rejected_count: 0,
+						results: [],
+					}),
+					{ status: 200 },
+				),
+			)
+			.mockResolvedValueOnce(new Response("server down", { status: 503 }));
 
 		await apiClient.listSubscriptions({
 			platform: "youtube",
@@ -956,34 +956,34 @@ describe("apiClient core behavior", () => {
 			adapter_type: "rsshub_route",
 			category: "tech",
 		});
-			await apiClient.batchUpdateSubscriptionCategory({
-				ids: ["sub-1"],
-				category: "creator",
-			});
-			await apiClient.deleteSubscription("sub-1");
-			await apiClient.submitManualSourceIntake({
-				raw_input: "https://www.youtube.com/@x",
-			});
-			await expect(
-				apiClient.getArtifactMarkdown({ job_id: "job-2" }),
-			).rejects.toThrow("ERR_REQUEST_FAILED");
-
-			expect(fetchSpy).toHaveBeenCalledTimes(6);
-			expect(String(fetchSpy.mock.calls[0][0])).toContain(
-				"/api/v1/subscriptions",
-			);
-			expect(String(fetchSpy.mock.calls[0][0])).toContain("platform=youtube");
-			expect(String(fetchSpy.mock.calls[0][0])).toContain("enabled_only=true");
-			expect(fetchSpy.mock.calls[1][1]).toMatchObject({ method: "POST" });
-			expect(String(fetchSpy.mock.calls[3][0])).toContain(
-				"/api/v1/subscriptions/sub-1",
-			);
-			expect(fetchSpy.mock.calls[3][1]).toMatchObject({ method: "DELETE" });
-			expect(String(fetchSpy.mock.calls[4][0])).toContain(
-				"/api/v1/subscriptions/manual-intake",
-			);
-			expect(fetchSpy.mock.calls[4][1]).toMatchObject({ method: "POST" });
+		await apiClient.batchUpdateSubscriptionCategory({
+			ids: ["sub-1"],
+			category: "creator",
 		});
+		await apiClient.deleteSubscription("sub-1");
+		await apiClient.submitManualSourceIntake({
+			raw_input: "https://www.youtube.com/@x",
+		});
+		await expect(
+			apiClient.getArtifactMarkdown({ job_id: "job-2" }),
+		).rejects.toThrow("ERR_REQUEST_FAILED");
+
+		expect(fetchSpy).toHaveBeenCalledTimes(6);
+		expect(String(fetchSpy.mock.calls[0][0])).toContain(
+			"/api/v1/subscriptions",
+		);
+		expect(String(fetchSpy.mock.calls[0][0])).toContain("platform=youtube");
+		expect(String(fetchSpy.mock.calls[0][0])).toContain("enabled_only=true");
+		expect(fetchSpy.mock.calls[1][1]).toMatchObject({ method: "POST" });
+		expect(String(fetchSpy.mock.calls[3][0])).toContain(
+			"/api/v1/subscriptions/sub-1",
+		);
+		expect(fetchSpy.mock.calls[3][1]).toMatchObject({ method: "DELETE" });
+		expect(String(fetchSpy.mock.calls[4][0])).toContain(
+			"/api/v1/subscriptions/manual-intake",
+		);
+		expect(fetchSpy.mock.calls[4][1]).toMatchObject({ method: "POST" });
+	});
 
 	it("normalizes digest booleans and cursor from non-string payloads", async () => {
 		vi.spyOn(globalThis, "fetch").mockResolvedValue(
@@ -1127,12 +1127,16 @@ describe("apiClient core behavior", () => {
 			"/api/v1/reader/batches/batch-1/materialize",
 		);
 		expect(fetchSpy.mock.calls[0][1]).toMatchObject({ method: "POST" });
-		expect(String(fetchSpy.mock.calls[1][0])).toContain("/api/v1/reader/documents");
+		expect(String(fetchSpy.mock.calls[1][0])).toContain(
+			"/api/v1/reader/documents",
+		);
 		expect(String(fetchSpy.mock.calls[1][0])).toContain("limit=5");
 		expect(String(fetchSpy.mock.calls[1][0])).toContain(
 			"window_id=2026-04-09%40America%2FLos_Angeles",
 		);
-		expect(String(fetchSpy.mock.calls[2][0])).toContain("/api/v1/reader/documents/doc-1");
+		expect(String(fetchSpy.mock.calls[2][0])).toContain(
+			"/api/v1/reader/documents/doc-1",
+		);
 		expect(String(fetchSpy.mock.calls[3][0])).toContain(
 			"/api/v1/reader/documents/doc-1/repair",
 		);

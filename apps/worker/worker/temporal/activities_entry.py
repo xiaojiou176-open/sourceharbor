@@ -149,7 +149,8 @@ async def prepare_consumption_batch_activity(payload: dict[str, Any]) -> dict[st
     return pg_store.prepare_consumption_batch(
         trigger_mode=str(payload.get("trigger_mode") or "auto"),
         window_id=str(payload.get("window_id") or "").strip() or None,
-        timezone_name=str(payload.get("timezone_name") or "").strip() or settings.digest_local_timezone,
+        timezone_name=str(payload.get("timezone_name") or "").strip()
+        or settings.digest_local_timezone,
         requested_by=str(payload.get("requested_by") or "").strip() or None,
         requested_trace_id=str(payload.get("requested_trace_id") or "").strip() or None,
         subscription_id=str(payload.get("subscription_id") or "").strip() or None,

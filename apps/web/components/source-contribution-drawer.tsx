@@ -17,7 +17,10 @@ export function SourceContributionDrawer({
 				<CardTitle className="text-base">Source contribution drawer</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				<details className="rounded-xl border border-border/70 bg-background/80 p-4" open>
+				<details
+					className="rounded-xl border border-border/70 bg-background/80 p-4"
+					open
+				>
 					<summary className="cursor-pointer font-medium">
 						{document.source_refs.length} linked source items
 					</summary>
@@ -32,7 +35,9 @@ export function SourceContributionDrawer({
 									? source.job_bundle_route
 									: null;
 							const sourceUrl =
-								typeof source.source_url === "string" ? source.source_url : null;
+								typeof source.source_url === "string"
+									? source.source_url
+									: null;
 							const digestPreview =
 								typeof source.digest_preview === "string"
 									? source.digest_preview

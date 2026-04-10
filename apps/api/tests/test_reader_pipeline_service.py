@@ -4,6 +4,8 @@ import uuid
 from datetime import UTC, datetime
 from types import SimpleNamespace
 
+import pytest
+
 from apps.api.app.services.reader_pipeline import ReaderPipelineService
 
 
@@ -160,7 +162,9 @@ def _build_service(*, batch, digest_map, cards_map, bundle_map=None):
     return service
 
 
-def _sample_batch() -> tuple[SimpleNamespace, dict[uuid.UUID, str], dict[uuid.UUID, list[dict[str, str]]]]:
+def _sample_batch() -> tuple[
+    SimpleNamespace, dict[uuid.UUID, str], dict[uuid.UUID, list[dict[str, str]]]
+]:
     batch_id = uuid.uuid4()
     job_one = uuid.uuid4()
     job_two = uuid.uuid4()
@@ -247,9 +251,7 @@ def test_materialize_batch_creates_cluster_and_singleton_documents() -> None:
     modes = sorted(item["materialization_mode"] for item in payload["documents"])
     assert modes == ["merge_then_polish", "polish_only"]
     merge_doc = next(
-        item
-        for item in payload["documents"]
-        if item["materialization_mode"] == "merge_then_polish"
+        item for item in payload["documents"] if item["materialization_mode"] == "merge_then_polish"
     )
     assert isinstance(merge_doc["published_with_gap"], bool)
     assert merge_doc["coverage_ledger"]["status"] == "pass"
@@ -260,6 +262,78 @@ def test_materialize_batch_creates_cluster_and_singleton_documents() -> None:
     assert merge_doc["traceability_pack"]["version"] == merge_doc["version"]
     assert isinstance(merge_doc["traceability_pack"]["source_items"], list)
     assert len(merge_doc["source_refs"]) == 2
+
+
+def test_reader_pipeline_getters_navigation_and_warning_helpers_cover_tail_paths() -> None:
+    batch, digest_map, cards_map = _sample_batch()
+    service = _build_service(batch=batch, digest_map=digest_map, cards_map=cards_map)
+    payload = service.materialize_batch(batch_id=batch.id)
+    document = payload["documents"][0]
+
+    assert service.list_documents(limit=5)[0]["id"] == document["id"]
+    assert service.get_navigation_brief(limit=1)["document_count"] == 1
+    assert service.get_document(document_id=uuid.UUID(document["id"]))["slug"] == document["slug"]
+    assert service.get_document_by_slug(slug=document["slug"])["id"] == document["id"]
+    assert service.get_published_document_by_slug(slug="missing") is None
+    assert service.build_navigation_brief(window_id=None, limit=0)["window_id"]
+
+    coverage_ledger = {
+        "status": "gap_detected",
+        "gap_reasons": ["missing_topics"],
+        "entries": [
+            {
+                "source_item_id": "item-1",
+                "status": "gap_detected",
+                "missing_digest": True,
+            }
+        ],
+    }
+    warning = service._build_warning_json(
+        coverage_ledger=coverage_ledger,
+        traceability_pack={"status": "incomplete"},
+    )
+    assert warning["published_with_gap"] is True
+    assert "missing digest output" in " ".join(warning["reasons"])
+
+    assert service._digest_preview(None, fallback="fallback") == "fallback"
+    assert service._digest_preview("# Title", fallback="fallback") == "# Title"
+    assert (
+        service._isoformat(datetime(2026, 4, 9, 8, 0))
+        == datetime(2026, 4, 9, 8, 0, tzinfo=UTC).isoformat()
+    )
+    assert service._isoformat("bad") is None
+
+
+def test_reader_pipeline_repair_document_handles_patch_section_cluster_and_errors() -> None:
+    batch, digest_map, cards_map = _sample_batch()
+    service = _build_service(batch=batch, digest_map=digest_map, cards_map=cards_map)
+    materialized = service.materialize_batch(batch_id=batch.id)
+    document = service.document_repo.documents[0]
+
+    patch_payload = service.repair_document(document_id=document.id, repair_mode="patch")
+    assert patch_payload["materialization_mode"] == "repair_patch"
+
+    section_payload = service.repair_document(document_id=document.id, repair_mode="section")
+    assert section_payload["materialization_mode"] == "repair_section"
+
+    cluster_payload = service.repair_document(document_id=document.id, repair_mode="cluster")
+    assert cluster_payload["stable_key"] == materialized["documents"][0]["stable_key"]
+
+    document_without_batch = service.document_repo.documents[-1]
+    document_without_batch.consumption_batch_id = None
+    with pytest.raises(ValueError, match="cluster repair requires consumption batch context"):
+        service.repair_document(document_id=document_without_batch.id, repair_mode="cluster")
+
+    document_without_refs = service.document_repo.documents[-1]
+    document_without_refs.source_refs_json = []
+    with pytest.raises(ValueError, match="no source refs"):
+        service.repair_document(document_id=document_without_refs.id, repair_mode="patch")
+
+    with pytest.raises(ValueError, match="must be one of"):
+        service.repair_document(document_id=document.id, repair_mode="invalid")
+
+    with pytest.raises(ValueError, match="published reader document not found"):
+        service.repair_document(document_id=uuid.uuid4(), repair_mode="patch")
 
 
 def test_materialize_batch_marks_document_with_gap_when_digest_is_missing() -> None:
@@ -310,9 +384,7 @@ def test_repair_document_creates_new_version_with_history() -> None:
     service = _build_service(batch=batch, digest_map=digest_map, cards_map=cards_map)
     created = service.materialize_batch(batch_id=batch.id)
     document_id = next(
-        item["id"]
-        for item in created["documents"]
-        if item["materialization_mode"] == "polish_only"
+        item["id"] for item in created["documents"] if item["materialization_mode"] == "polish_only"
     )
 
     repaired = service.repair_document(
@@ -322,7 +394,9 @@ def test_repair_document_creates_new_version_with_history() -> None:
 
     assert repaired["version"] == 2
     assert repaired["materialization_mode"] == "repair_section"
-    assert repaired["stable_key"].startswith("topic-postgres") or repaired["stable_key"].startswith("item-")
+    assert repaired["stable_key"].startswith("topic-postgres") or repaired["stable_key"].startswith(
+        "item-"
+    )
     assert repaired["repair_history"][0]["repair_mode"] == "section"
 
 
@@ -336,9 +410,7 @@ def test_materialize_batch_marks_published_with_gap_when_digest_is_missing() -> 
     payload = service.materialize_batch(batch_id=batch.id)
 
     merge_doc = next(
-        item
-        for item in payload["documents"]
-        if item["materialization_mode"] == "merge_then_polish"
+        item for item in payload["documents"] if item["materialization_mode"] == "merge_then_polish"
     )
     assert merge_doc["published_with_gap"] is True
     assert merge_doc["warning"]["warning_kind"] == "coverage_gap"

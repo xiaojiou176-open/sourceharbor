@@ -1,9 +1,10 @@
 # 2026-04-08 Reader Product System Blueprint
 
-状态：target architecture blueprint，不是 current capability claim。  
-用途：定义 `SourceHarbor` reader-product reset 的产品对象模型、处理流水线、默认参数与改造边界。  
+状态：target architecture blueprint，不是 current capability claim。
+用途：定义 `SourceHarbor` reader-product reset 的产品对象模型、处理流水线、默认参数与改造边界。
 
 依赖先读：
+
 - `docs/start-here.md`
 - `docs/architecture.md`
 - `docs/project-status.md`
@@ -14,6 +15,7 @@
 - `docs/blueprints/2026-04-09-reader-product-version-gap-contract.md`
 
 谁应先读我：
+
 - 任何要做 `W1-W5` 设计或实现的 worker
 - 任何要写新的 handoff prompt 的 orchestrator
 

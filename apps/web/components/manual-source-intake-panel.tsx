@@ -71,7 +71,9 @@ type Props = {
 	sessionToken?: string;
 };
 
-function statusTone(status: string): "success" | "warning" | "error" | "secondary" {
+function statusTone(
+	status: string,
+): "success" | "warning" | "error" | "secondary" {
 	if (status === "created" || status === "updated" || status === "queued") {
 		return "success";
 	}
@@ -84,7 +86,9 @@ function statusTone(status: string): "success" | "warning" | "error" | "secondar
 	return "secondary";
 }
 
-function badgeClass(tone: "success" | "warning" | "error" | "secondary"): string {
+function badgeClass(
+	tone: "success" | "warning" | "error" | "secondary",
+): string {
 	if (tone === "success") {
 		return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700";
 	}
@@ -141,7 +145,9 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 			<CardContent className="space-y-4">
 				<div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
 					<div className="space-y-3">
-						<Label htmlFor="manual-source-intake-input">URLs / handles / pages</Label>
+						<Label htmlFor="manual-source-intake-input">
+							URLs / handles / pages
+						</Label>
 						<Textarea
 							id="manual-source-intake-input"
 							value={rawInput}
@@ -178,7 +184,9 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 							</Select>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="manual-source-intake-tags">{copy.tagsLabel}</Label>
+							<Label htmlFor="manual-source-intake-tags">
+								{copy.tagsLabel}
+							</Label>
 							<input
 								id="manual-source-intake-tags"
 								value={tags}
@@ -230,7 +238,11 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 				</div>
 
 				{errorMessage ? (
-					<p className="alert alert-enter error" role="alert" aria-live="assertive">
+					<p
+						className="alert alert-enter error"
+						role="alert"
+						aria-live="assertive"
+					>
 						{errorMessage}
 					</p>
 				) : null}
@@ -240,7 +252,10 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 						<div className="space-y-1">
 							<p className="font-medium">{copy.resultsTitle}</p>
 							<p className="text-sm text-muted-foreground">
-								{copy.summaryPrefix} {result.processed_count} · subscriptions +{result.created_subscriptions}/~{result.updated_subscriptions} · today +{result.queued_manual_items}/={result.reused_manual_items} · rejected {result.rejected_count}
+								{copy.summaryPrefix} {result.processed_count} · subscriptions +
+								{result.created_subscriptions}/~{result.updated_subscriptions} ·
+								today +{result.queued_manual_items}/=
+								{result.reused_manual_items} · rejected {result.rejected_count}
 							</p>
 							<p className="text-sm text-muted-foreground">
 								{copy.resultsDescription}
@@ -262,7 +277,10 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 									{result.results.map((item) => {
 										const tone = statusTone(item.status);
 										return (
-											<tr key={`${item.line_number}-${item.raw_input}`} className="border-b align-top">
+											<tr
+												key={`${item.line_number}-${item.raw_input}`}
+												className="border-b align-top"
+											>
 												<td className="px-3 py-3 text-xs text-muted-foreground">
 													{item.line_number}
 												</td>
@@ -291,14 +309,14 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 														variant="outline"
 														className={badgeClass("secondary")}
 													>
-														{actionLabel(copy, item.applied_action ?? item.recommended_action)}
+														{actionLabel(
+															copy,
+															item.applied_action ?? item.recommended_action,
+														)}
 													</Badge>
 												</td>
 												<td className="px-3 py-3">
-													<Badge
-														variant="outline"
-														className={badgeClass(tone)}
-													>
+													<Badge variant="outline" className={badgeClass(tone)}>
 														{statusLabel(copy, item.status)}
 													</Badge>
 												</td>

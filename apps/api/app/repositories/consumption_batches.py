@@ -209,39 +209,20 @@ class ConsumptionBatchesRepository:
         summary = dict(batch.process_summary_json or {})
         summary.update(
             {
+                "reader_stage": "judged",
                 "downstream_status": "cluster_verdict_manifest_ready",
+                "cluster_verdict_manifest": {
+                    "manifest_id": str(manifest_id),
+                    "status": manifest_status,
+                    "cluster_count": cluster_count,
+                    "singleton_count": singleton_count,
+                },
                 "cluster_verdict_manifest_id": str(manifest_id),
                 "cluster_verdict_manifest_status": manifest_status,
                 "cluster_count": cluster_count,
                 "singleton_count": singleton_count,
             }
         )
-        batch.process_summary_json = summary
-        self.db.add(batch)
-        self.db.commit()
-        self.db.refresh(batch)
-        return batch
-
-    def mark_judged(
-        self,
-        *,
-        batch_id: uuid.UUID,
-        manifest_id: uuid.UUID,
-        manifest_status: str,
-        cluster_count: int,
-        singleton_count: int,
-    ) -> ConsumptionBatch:
-        batch = self.db.get(ConsumptionBatch, batch_id)
-        if batch is None:
-            raise ValueError(f"consumption batch not found: {batch_id}")
-        summary = dict(batch.process_summary_json or {})
-        summary["reader_stage"] = "judged"
-        summary["cluster_verdict_manifest"] = {
-            "manifest_id": str(manifest_id),
-            "status": manifest_status,
-            "cluster_count": cluster_count,
-            "singleton_count": singleton_count,
-        }
         batch.process_summary_json = summary
         self.db.add(batch)
         self.db.commit()

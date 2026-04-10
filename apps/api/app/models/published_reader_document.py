@@ -39,7 +39,9 @@ class PublishedReaderDocument(Base):
     )
     materialization_mode: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    published_with_gap: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    published_with_gap: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, index=True
+    )
     is_current: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, index=True)
     source_item_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     consumption_batch_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -61,11 +63,19 @@ class PublishedReaderDocument(Base):
         index=True,
     )
     warning_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
-    coverage_ledger_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
-    traceability_pack_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
-    source_refs_json: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    coverage_ledger_json: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, default=dict
+    )
+    traceability_pack_json: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, default=dict
+    )
+    source_refs_json: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, nullable=False, default=list
+    )
     sections_json: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
-    repair_history_json: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    repair_history_json: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, nullable=False, default=list
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

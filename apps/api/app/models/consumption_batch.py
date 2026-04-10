@@ -61,7 +61,7 @@ class ConsumptionBatch(Base):
         onupdate=func.now(),
         nullable=False,
     )
-    items: Mapped[list["ConsumptionBatchItem"]] = relationship(
+    items: Mapped[list[ConsumptionBatchItem]] = relationship(
         lambda: ConsumptionBatchItem,
         back_populates="batch",
         cascade="all, delete-orphan",

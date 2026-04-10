@@ -1,10 +1,11 @@
 # 2026-04-09 Reader Product Lane Split Contract
 
-状态：`W2-A` canonical lane-split contract。  
-用途：冻结 `Track Lane` / `Consume Lane` 的运行时边界、pending pool 语义、batch lifecycle 入口、以及 `W3` 之后需要继续消费的稳定 batch entrance。  
+状态：`W2-A` canonical lane-split contract。
+用途：冻结 `Track Lane` / `Consume Lane` 的运行时边界、pending pool 语义、batch lifecycle 入口、以及 `W3` 之后需要继续消费的稳定 batch entrance。
 边界：本文记录的是 **当前 repo 已经落地的 W2-A runtime 与仍留给 `W2-B / W3` 的边界**；不是把未来 reader-product 全链路误写成已完成。
 
 依赖先读：
+
 - `AGENTS.md`
 - `docs/start-here.md`
 - `docs/architecture.md`
@@ -18,6 +19,7 @@
 - `.agents/Plans/2026-04-09__sourceharbor-W1-B-version-gap-closeout.md`
 
 谁应先读我：
+
 - `W2-B` worker
 - `W3-A cluster-judge` worker
 - `W3-B merge-polish` worker
@@ -73,7 +75,7 @@
 
 `W2-A` 在这些上游 contract 上负责的事情只有一件：
 
-> 把“发现更新”和“冻结消费批次”从当前耦合实现里拆开，  
+> 把“发现更新”和“冻结消费批次”从当前耦合实现里拆开，
 > 并让 `ConsumptionBatch` 真正成为 runtime 入口，而不再只是文档名词。
 
 当前真实边界是：
@@ -157,7 +159,7 @@ flowchart TD
 
 一句话：
 
-> `Track Lane` 现在更像“收件室 + 待处理登记台”，  
+> `Track Lane` 现在更像“收件室 + 待处理登记台”，
 > 而不是“看到新包裹就当场拆箱、组装、再上架”的流水线。
 
 ## 6. Consume Lane Minimum Responsibilities
@@ -183,8 +185,8 @@ flowchart TD
 
 这里要诚实强调一件事：
 
-> 当前 `Consume Lane` 已经建立了稳定 batch entrance，  
-> 但它并没有冒充 `W3` 去假装完成 `Cluster Judge / Merge / Polish`。  
+> 当前 `Consume Lane` 已经建立了稳定 batch entrance，
+> 但它并没有冒充 `W3` 去假装完成 `Cluster Judge / Merge / Polish`。
 > 现在它做的是：把批次冻结、把单 item 处理链吃完、把后续入口稳定交给 `W3`。
 
 ## 7. pending pool / assignment / close semantics
@@ -370,7 +372,7 @@ flowchart TD
 
 一句话：
 
-> `W3` 还需要实现 judge / merge / polish，  
+> `W3` 还需要实现 judge / merge / polish，
 > 但已经不需要再替 `W2-A` 发明“什么叫一批、这批是怎么冻结的”。
 
 ## 12. explicit non-goals
@@ -388,6 +390,6 @@ flowchart TD
 
 最准确的 current truth 口径应该是：
 
-> `W2-A` 已经把 Track / Consume、pending pool、batch freeze、auto/manual guard 和 runtime handoff 接到了真实代码里；  
-> `W2-B` 仍负责 front-door；  
+> `W2-A` 已经把 Track / Consume、pending pool、batch freeze、auto/manual guard 和 runtime handoff 接到了真实代码里；
+> `W2-B` 仍负责 front-door；
 > `W3` 将在这个稳定 batch entrance 上实现 judge / merge / polish 主链。

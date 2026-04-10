@@ -107,9 +107,5 @@ class PublishedReaderDocumentsRepository:
         return document
 
     def get_by_slug(self, *, slug: str) -> PublishedReaderDocument | None:
-        stmt = (
-            select(PublishedReaderDocument)
-            .where(PublishedReaderDocument.slug == slug)
-            .limit(1)
-        )
+        stmt = select(PublishedReaderDocument).where(PublishedReaderDocument.slug == slug).limit(1)
         return self.db.scalar(stmt)

@@ -258,6 +258,7 @@ def test_run_temporal_worker_registers_workflows_and_activities(monkeypatch) -> 
     for name in [
         "cleanup_workspace_activity",
         "load_consumption_batch_activity",
+        "materialize_reader_batch_activity",
         "mark_failed_activity",
         "mark_consumption_batch_closed_activity",
         "mark_consumption_batch_failed_activity",

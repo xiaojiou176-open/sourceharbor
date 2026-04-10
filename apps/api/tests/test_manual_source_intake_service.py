@@ -80,13 +80,11 @@ def test_manual_source_submit_supports_partial_success_and_counts() -> None:
 
     result = asyncio.run(
         service.submit(
-            raw_input="\n".join(
-                [
-                    "https://space.bilibili.com/13416784",
-                    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                    "https://example.com/feed.xml",
-                    "https://example.com/posts/sourceharbor",
-                ]
+            raw_input=(
+                "https://space.bilibili.com/13416784\n"
+                "https://www.youtube.com/watch?v=dQw4w9WgXcQ\n"
+                "https://example.com/feed.xml\n"
+                "https://example.com/posts/sourceharbor"
             ),
             category="creator",
             tags=["ai", "daily"],
@@ -103,3 +101,43 @@ def test_manual_source_submit_supports_partial_success_and_counts() -> None:
     assert result["rejected_count"] == 1
     statuses = [item["status"] for item in result["results"]]
     assert statuses == ["created", "queued", "created", "rejected"]
+
+
+def test_manual_source_plan_handles_empty_invalid_and_unsupported_urls() -> None:
+    service = _build_service()
+
+    empty_plan = service.plan("   ")
+    assert empty_plan.recommended_action == "unsupported"
+    assert empty_plan.message == "Empty line."
+
+    ftp_plan = service.plan("ftp://example.com/feed.xml")
+    assert ftp_plan.recommended_action == "unsupported"
+    assert "Unsupported input" in ftp_plan.message
+
+    youtube_plan = service.plan("https://www.youtube.com/playlist?list=abc")
+    assert youtube_plan.recommended_action == "unsupported"
+    assert "Unsupported YouTube URL" in youtube_plan.message
+
+    bilibili_plan = service.plan("https://space.bilibili.com/not-a-uid")
+    assert bilibili_plan.recommended_action == "unsupported"
+    assert "Unsupported Bilibili URL" in bilibili_plan.message
+
+
+def test_manual_source_submit_tracks_updates_and_reused_items() -> None:
+    service = _build_service()
+
+    result = asyncio.run(
+        service.submit(
+            raw_input="@existing-channel\nhttps://www.youtube.com/watch?v=reused",
+            category="creator",
+            tags=[],
+            priority=10,
+            enabled=False,
+        )
+    )
+
+    assert result["created_subscriptions"] == 0
+    assert result["updated_subscriptions"] == 1
+    assert result["queued_manual_items"] == 0
+    assert result["reused_manual_items"] == 1
+    assert [item["status"] for item in result["results"]] == ["updated", "reused"]

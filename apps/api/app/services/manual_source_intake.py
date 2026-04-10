@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from urllib.parse import urlparse
 
 from .source_names import build_source_name_fallback
@@ -322,7 +322,9 @@ class ManualSourceIntakeService:
             message=message,
         )
 
-    def _manual_video_plan(self, *, platform: str, source_url: str, message: str) -> ManualSourcePlan:
+    def _manual_video_plan(
+        self, *, platform: str, source_url: str, message: str
+    ) -> ManualSourcePlan:
         return ManualSourcePlan(
             target_kind="manual_source_item",
             recommended_action="add_to_today",

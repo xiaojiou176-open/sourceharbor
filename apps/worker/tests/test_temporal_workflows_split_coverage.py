@@ -17,18 +17,7 @@ def test_poll_feeds_workflow_stays_track_only(monkeypatch: Any) -> None:
         assert payload == {"platform": "youtube"}
         return {"ok": True, "created_job_ids": ["job-1", "job-2"]}
 
-    async def _fake_execute_child_workflow(
-        _workflow_run: Any,
-        job_id: str,
-        *,
-        id: str,
-        task_queue: str,
-    ) -> dict[str, Any]:
-        child_calls.append({"job_id": job_id, "id": id, "task_queue": task_queue})
-        return {"ok": True, "job_id": job_id}
-
     monkeypatch.setattr(workflows.workflow, "execute_activity", _fake_execute_activity)
-    monkeypatch.setattr(workflows.workflow, "execute_child_workflow", _fake_execute_child_workflow)
 
     result = asyncio.run(workflows.PollFeedsWorkflow().run({"platform": "youtube"}))
 

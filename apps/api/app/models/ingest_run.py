@@ -114,9 +114,7 @@ class IngestRunItem(Base):
     entry_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
     pipeline_mode: Mapped[str | None] = mapped_column(String(64), nullable=True)
     content_type: Mapped[str] = mapped_column(String(32), nullable=False, default="video")
-    item_status: Mapped[str] = mapped_column(
-        String(32), nullable=False, default="pending_consume"
-    )
+    item_status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending_consume")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -1,10 +1,11 @@
 # 2026-04-09 Reader Product Version And Gap Contract
 
-状态：`W1-B` canonical version / gap contract。  
-用途：冻结 reader-product program 的时间语义、批次生命周期、版本规则、`published_with_gap` 规则、yellow warning、`TraceabilityPack` companion payload、以及增量重判/重建 contract；供 `W2 ~ W5` 直接引用。  
-边界：本文是 **target contract addendum**，不是 current capability claim；不替代 [2026-04-08-reader-product-system-blueprint.md](./2026-04-08-reader-product-system-blueprint.md) 的系统总图，也不回滚 [2026-04-09-reader-product-object-contract.md](./2026-04-09-reader-product-object-contract.md) 已冻结的对象边界。  
+状态：`W1-B` canonical version / gap contract。
+用途：冻结 reader-product program 的时间语义、批次生命周期、版本规则、`published_with_gap` 规则、yellow warning、`TraceabilityPack` companion payload、以及增量重判/重建 contract；供 `W2 ~ W5` 直接引用。
+边界：本文是 **target contract addendum**，不是 current capability claim；不替代 [2026-04-08-reader-product-system-blueprint.md](./2026-04-08-reader-product-system-blueprint.md) 的系统总图，也不回滚 [2026-04-09-reader-product-object-contract.md](./2026-04-09-reader-product-object-contract.md) 已冻结的对象边界。
 
 依赖先读：
+
 - `AGENTS.md`
 - `docs/start-here.md`
 - `docs/architecture.md`
@@ -18,6 +19,7 @@
 - `.agents/Plans/2026-04-08__sourceharbor-reader-product-context-index.md`
 
 谁应先读我：
+
 - `W2` worker
 - `W3-A cluster-judge` worker
 - `W3-B merge-polish` worker
@@ -25,7 +27,7 @@
 
 ## 1. 本文职责与边界
 
-`W1-A` 解决的是“世界里有哪些对象”。  
+`W1-A` 解决的是“世界里有哪些对象”。
 `W1-B` 解决的是“这些对象怎么按时间切片、怎么编号、怎么增量重算、什么时候必须黄标、drawer 到底最少吃什么 payload”。
 
 说得更直白一点：
@@ -88,7 +90,7 @@
 
 一句话总结：
 
-> `W1-B` 把“法律文本”钉死；  
+> `W1-B` 把“法律文本”钉死；
 > `W2` 开始把这些法律接上运行时按钮、调度和入口。
 
 ## 4. `window_id` Contract
@@ -157,7 +159,7 @@ auto/manual 的差异只在 `trigger_mode`，**不影响 batch 语义本身**。
 - `11:30` 又来 1 条
 - `11:40` 又来 1 条
 
-的边界情况。  
+的边界情况。
 `11:30` 和 `11:40` 的条目不会污染 `10:06` 的 batch，只会进入下一次 batch。
 
 ### 5.3 输入集合是否允许追加
@@ -260,7 +262,7 @@ auto/manual 的差异只在 `trigger_mode`，**不影响 batch 语义本身**。
 
 ### 7.3 是否允许持续黄标迭代
 
-允许。  
+允许。
 也就是说：
 
 - `topic-openclaw-2026-04-08@v2` 可以是 `published_with_gap`
@@ -366,7 +368,7 @@ yellow warning 不是 CSS 效果，而是 contract 的一部分。
 
 ### 9.5 evidence anchor 可达性要求
 
-`timestamp / frame / quote` 不要求默认展开在主文，但必须在 payload 中可达。  
+`timestamp / frame / quote` 不要求默认展开在主文，但必须在 payload 中可达。
 最小可达方式允许：
 
 - `evidence_anchor_refs[]`
@@ -503,5 +505,5 @@ rg -n "ClusterVerdictManifest|PublishedReaderDocument|CoverageLedger|NavigationB
 
 一句话收尾：
 
-> `W1-B` 的交付物不是“把阅读器做出来”，  
+> `W1-B` 的交付物不是“把阅读器做出来”，
 > 而是确保后面所有人说的“这一篇是哪一版、为什么黄标、追加后该怎么重建”，指的是同一套法律。

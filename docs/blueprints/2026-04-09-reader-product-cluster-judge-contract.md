@@ -1,10 +1,11 @@
 # 2026-04-09 Reader Product Cluster Judge Contract
 
-状态：`W3-A` canonical cluster-judge contract。  
-用途：冻结 `Cluster Judge` 如何从一个稳定 `ConsumptionBatch` 产出 `ClusterVerdictManifest`，以及它当前真实使用的证据源、分群规则、输出边界与诚实限制。  
+状态：`W3-A` canonical cluster-judge contract。
+用途：冻结 `Cluster Judge` 如何从一个稳定 `ConsumptionBatch` 产出 `ClusterVerdictManifest`，以及它当前真实使用的证据源、分群规则、输出边界与诚实限制。
 边界：本文记录的是 **当前已落地的 first working judge/manifest runtime**；它不是 `Merge Writer`、`Polish Writer`、`PublishedReaderDocument` 或 reader UI 已完成的声明。
 
 依赖先读：
+
 - `docs/blueprints/2026-04-09-reader-product-object-contract.md`
 - `docs/blueprints/2026-04-09-reader-product-version-gap-contract.md`
 - `docs/blueprints/2026-04-09-reader-product-lane-split-contract.md`
@@ -16,7 +17,7 @@
 
 这份文档解决的是：
 
-> 给一批已经 freeze 的 `ConsumptionBatch`，  
+> 给一批已经 freeze 的 `ConsumptionBatch`，
 > 系统现在到底怎么判断哪些 item 应该 merge，哪些只做 `polish_only`。
 
 说得更直白一点：
@@ -46,8 +47,8 @@
 
 换句话说：
 
-> 现在的 judge 不是凭标题硬猜主题，  
-> 而是优先吃现有 knowledge-card 的 topic 语义；  
+> 现在的 judge 不是凭标题硬猜主题，
+> 而是优先吃现有 knowledge-card 的 topic 语义；
 > digest 只作为 preview 和后续 merge/polish 的邻近输入。
 
 ## 3. 当前判定规则
@@ -133,5 +134,5 @@
 
 一句话收尾：
 
-> `W3-A` 这轮不是把 reader 产品做完，  
+> `W3-A` 这轮不是把 reader 产品做完，
 > 而是让系统第一次真正能对一批稳定 source items 给出可持久化的“合并判决书”。

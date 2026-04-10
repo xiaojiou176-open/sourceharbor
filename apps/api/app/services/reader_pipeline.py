@@ -34,7 +34,9 @@ class ReaderPipelineService:
     ) -> list[dict[str, Any]]:
         return self.list_published_documents(limit=limit, window_id=window_id)
 
-    def get_navigation_brief(self, *, limit: int = 8, window_id: str | None = None) -> dict[str, Any]:
+    def get_navigation_brief(
+        self, *, limit: int = 8, window_id: str | None = None
+    ) -> dict[str, Any]:
         return self.build_navigation_brief(window_id=window_id, limit=limit)
 
     def get_document(self, *, document_id: uuid.UUID) -> dict[str, Any] | None:
@@ -255,7 +257,9 @@ class ReaderPipelineService:
             return None
         return self._to_document_payload(document)
 
-    def build_navigation_brief(self, *, window_id: str | None = None, limit: int = 8) -> dict[str, Any]:
+    def build_navigation_brief(
+        self, *, window_id: str | None = None, limit: int = 8
+    ) -> dict[str, Any]:
         documents = self.list_published_documents(limit=limit, window_id=window_id)
         resolved_window_id = window_id or (
             str(documents[0]["window_id"]) if documents else datetime.now(UTC).date().isoformat()
@@ -298,11 +302,7 @@ class ReaderPipelineService:
                     return candidate
             raise ValueError("cluster repair did not produce a replacement document")
 
-        source_refs = [
-            item
-            for item in (document.source_refs_json or [])
-            if isinstance(item, dict)
-        ]
+        source_refs = [item for item in (document.source_refs_json or []) if isinstance(item, dict)]
         if not source_refs:
             raise ValueError("published reader document has no source refs to repair")
 
@@ -350,9 +350,7 @@ class ReaderPipelineService:
             reader_style_profile=document.reader_style_profile,
             strategy=normalized_strategy,
             prior_repair_history=[
-                item
-                for item in (document.repair_history_json or [])
-                if isinstance(item, dict)
+                item for item in (document.repair_history_json or []) if isinstance(item, dict)
             ],
             repaired_from_document_id=document.id,
             section_ids=section_ids or [],
@@ -457,7 +455,9 @@ class ReaderPipelineService:
         digest_markdown: str | None = None
         knowledge_cards: list[dict[str, Any]] = []
         if isinstance(job_id, uuid.UUID):
-            digest_markdown = self.jobs_service.get_artifact_digest_md(job_id=job_id, video_url=None)
+            digest_markdown = self.jobs_service.get_artifact_digest_md(
+                job_id=job_id, video_url=None
+            )
             knowledge_cards = self.jobs_service.get_knowledge_cards(job_id=job_id) or []
         topic_counter: Counter[str] = Counter()
         topic_labels: dict[str, str] = {}
@@ -482,11 +482,13 @@ class ReaderPipelineService:
         title = str(getattr(item, "title", None) or "").strip() or "Untitled source item"
         digest_preview = self._digest_preview(digest_markdown, fallback=title)
         return {
-            "source_item_id": str(getattr(item, "id")),
-            "ingest_run_item_id": str(getattr(item, "ingest_run_item_id", None) or "").strip() or None,
+            "source_item_id": str(item.id),
+            "ingest_run_item_id": str(getattr(item, "ingest_run_item_id", None) or "").strip()
+            or None,
             "job_id": str(job_id) if isinstance(job_id, uuid.UUID) else None,
             "platform": str(getattr(item, "platform", "") or "").strip() or "unknown",
-            "source_origin": str(getattr(item, "source_origin", "") or "").strip() or "subscription_tracked",
+            "source_origin": str(getattr(item, "source_origin", "") or "").strip()
+            or "subscription_tracked",
             "content_type": str(getattr(item, "content_type", "") or "").strip() or "video",
             "title": title,
             "source_url": str(getattr(item, "source_url", "") or "").strip() or None,
@@ -499,9 +501,7 @@ class ReaderPipelineService:
             "digest_preview": digest_preview,
             "knowledge_cards": knowledge_cards,
             "cluster_key": (
-                f"topic:{dominant_topic_key}"
-                if dominant_topic_key
-                else f"singleton:{getattr(item, 'id')}"
+                f"topic:{dominant_topic_key}" if dominant_topic_key else f"singleton:{item.id}"
             ),
             "window_id": None,
         }
@@ -796,7 +796,11 @@ class ReaderPipelineService:
         ]
 
     def _build_repair_sections(self, source_refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        sections = self._build_cluster_sections(source_refs) if len(source_refs) > 1 else self._build_singleton_sections(source_refs)
+        sections = (
+            self._build_cluster_sections(source_refs)
+            if len(source_refs) > 1
+            else self._build_singleton_sections(source_refs)
+        )
         missing_ref_lines = []
         for source_ref in source_refs:
             title = str(source_ref.get("title") or "").strip() or "Untitled source"
@@ -954,6 +958,11 @@ class ReaderPipelineService:
                 for source_ref in source_refs
                 if str(source_ref.get("source_item_id") or "").strip() in source_item_ids
             ]
+            job_ids = [
+                str(item.get("job_id") or "").strip()
+                for item in contributing_refs
+                if str(item.get("job_id") or "").strip()
+            ]
             section_contributions.append(
                 {
                     "section_key": str(section.get("section_key") or "").strip(),
@@ -972,22 +981,8 @@ class ReaderPipelineService:
                             if str(claim_kind).strip()
                         }
                     ),
-                    "evidence_anchor_refs": [
-                        route
-                        for route in [
-                            f"/api/v1/jobs/{job_id}/bundle"
-                            for job_id in [
-                                str(item.get("job_id") or "").strip()
-                                for item in contributing_refs
-                                if str(item.get("job_id") or "").strip()
-                            ]
-                        ]
-                    ],
-                    "job_ids": [
-                        str(item.get("job_id") or "").strip()
-                        for item in contributing_refs
-                        if str(item.get("job_id") or "").strip()
-                    ],
+                    "evidence_anchor_refs": [f"/api/v1/jobs/{job_id}/bundle" for job_id in job_ids],
+                    "job_ids": job_ids,
                 }
             )
         source_item_map = []
@@ -1105,17 +1100,13 @@ class ReaderPipelineService:
         joined = ", ".join(titles[:3]) if titles else "the current source set"
         return f"Repair pass rebuilt missing coverage and traceability around {joined}."
 
-    def _stable_key(
-        self, *, topic_key: str | None, source_item_id: str, window_id: str
-    ) -> str:
+    def _stable_key(self, *, topic_key: str | None, source_item_id: str, window_id: str) -> str:
         date_key = str(window_id or "").split("@", 1)[0] or "window"
         if topic_key:
             return f"topic-{self._slugify(topic_key)}-{date_key}"
         return f"item-{self._slugify(source_item_id)}-{date_key}"
 
-    def _base_slug(
-        self, *, topic_key: str | None, source_item_id: str, window_id: str
-    ) -> str:
+    def _base_slug(self, *, topic_key: str | None, source_item_id: str, window_id: str) -> str:
         date_key = str(window_id or "").split("@", 1)[0] or "window"
         if topic_key:
             return f"{self._slugify(topic_key)}-{date_key}"
@@ -1170,7 +1161,9 @@ class ReaderPipelineService:
         cleaned_lines = [
             line.strip()
             for line in markdown.splitlines()
-            if line.strip() and not line.lstrip().startswith("#") and not line.lstrip().startswith(">")
+            if line.strip()
+            and not line.lstrip().startswith("#")
+            and not line.lstrip().startswith(">")
         ]
         if not cleaned_lines:
             cleaned_lines = [line.strip() for line in markdown.splitlines() if line.strip()]

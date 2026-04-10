@@ -111,9 +111,7 @@ def test_reader_batch_materialize_route_returns_documents(api_client, monkeypatc
             "window_id": "2026-04-09@America/Los_Angeles",
             "published_document_count": 1,
             "published_with_gap_count": 0,
-            "documents": [
-                document
-            ],
+            "documents": [document],
             "navigation_brief": {
                 "brief_kind": "sourceharbor_navigation_brief_v1",
                 "generated_at": now.isoformat(),
@@ -176,9 +174,9 @@ def test_reader_document_repair_route_returns_new_version(api_client, monkeypatc
 
     monkeypatch.setattr(
         "apps.api.app.services.reader_pipeline.ReaderPipelineService.repair_document",
-        lambda self, *, document_id, repair_mode, section_ids=None, strategy=None: document
-        if str(document_id) and repair_mode == "section"
-        else None,
+        lambda self, *, document_id, repair_mode, section_ids=None, strategy=None: (
+            document if str(document_id) and repair_mode == "section" else None
+        ),
     )
 
     response = api_client.post(
@@ -226,3 +224,98 @@ def test_reader_batch_manifest_route_returns_404_when_missing(api_client, monkey
 
     assert response.status_code == 404
     assert response.json()["detail"] == "cluster verdict manifest not found"
+
+
+def test_reader_batch_routes_map_value_errors_and_manifest_payload(api_client, monkeypatch) -> None:
+    now = datetime.now(UTC)
+
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.judge_batch",
+        lambda self, *, batch_id: (_ for _ in ()).throw(ValueError("consumption batch not found")),
+    )
+    missing_response = api_client.post(f"/api/v1/reader/batches/{uuid.uuid4()}/judge")
+    assert missing_response.status_code == 404
+
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.judge_batch",
+        lambda self, *, batch_id: (_ for _ in ()).throw(
+            ValueError("consumption batch has no items")
+        ),
+    )
+    invalid_response = api_client.post(f"/api/v1/reader/batches/{uuid.uuid4()}/judge")
+    assert invalid_response.status_code == 400
+
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.get_manifest",
+        lambda self, *, batch_id: type(
+            "_Manifest",
+            (),
+            {
+                "id": uuid.uuid4(),
+                "consumption_batch_id": batch_id,
+                "window_id": "2026-04-09@America/Los_Angeles",
+                "status": "ready",
+                "source_item_count": 2,
+                "cluster_count": 1,
+                "singleton_count": 1,
+                "summary_markdown": "# Manifest",
+                "manifest_json": {
+                    "manifest_kind": "sourceharbor_cluster_verdict_manifest_v1",
+                    "generated_at": now.isoformat(),
+                    "consumption_batch_id": str(batch_id),
+                    "window_id": "2026-04-09@America/Los_Angeles",
+                    "status": "ready",
+                    "source_item_count": 2,
+                    "cluster_count": 1,
+                    "singleton_count": 1,
+                    "clusters": [],
+                    "singletons": [],
+                },
+                "created_at": now,
+                "updated_at": now,
+            },
+        )(),
+    )
+    manifest_response = api_client.get(f"/api/v1/reader/batches/{uuid.uuid4()}/manifest")
+    assert manifest_response.status_code == 200
+    assert manifest_response.json()["manifest"]["clusters"] == []
+
+
+def test_reader_document_routes_handle_missing_and_repair_errors(api_client, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.get_published_document_by_slug",
+        lambda self, *, slug: None,
+    )
+    slug_response = api_client.get("/api/v1/reader/documents/slug/missing")
+    assert slug_response.status_code == 404
+
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.get_published_document",
+        lambda self, *, document_id: None,
+    )
+    document_response = api_client.get(f"/api/v1/reader/documents/{uuid.uuid4()}")
+    assert document_response.status_code == 404
+
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.repair_document",
+        lambda self, **kwargs: (_ for _ in ()).throw(
+            ValueError("published reader document not found")
+        ),
+    )
+    missing_repair = api_client.post(
+        f"/api/v1/reader/documents/{uuid.uuid4()}/repair",
+        json={"repair_mode": "patch", "section_ids": []},
+    )
+    assert missing_repair.status_code == 404
+
+    monkeypatch.setattr(
+        "apps.api.app.services.reader_pipeline.ReaderPipelineService.repair_document",
+        lambda self, **kwargs: (_ for _ in ()).throw(
+            ValueError("repair strategy must be one of: patch, section, cluster")
+        ),
+    )
+    invalid_repair = api_client.post(
+        f"/api/v1/reader/documents/{uuid.uuid4()}/repair",
+        json={"repair_mode": "patch", "section_ids": []},
+    )
+    assert invalid_repair.status_code == 400

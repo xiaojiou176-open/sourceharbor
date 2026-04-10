@@ -9,13 +9,12 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from worker.state.postgres_store import PostgresBusinessStore
 
 from ..config import settings
 from ..errors import ApiTimeoutError
-from ..models import ConsumptionBatch
-from ..models import Subscription
+from ..models import ConsumptionBatch, Subscription
 from ..repositories import ConsumptionBatchesRepository, IngestRunsRepository
-from worker.state.postgres_store import PostgresBusinessStore
 
 logger = logging.getLogger(__name__)
 _DEFAULT_TRACK_INTERVAL_MINUTES = 15
@@ -214,9 +213,7 @@ class IngestService:
                     "workflow_id": latest_batch.workflow_id,
                     "status": "cooldown_blocked",
                     "trigger_mode": normalized_trigger_mode,
-                    "window_id": str(
-                        window_id or getattr(latest_batch, "window_id", None) or ""
-                    )
+                    "window_id": str(window_id or getattr(latest_batch, "window_id", None) or "")
                     or None,
                     "cutoff_at": latest_batch.cutoff_at,
                     "source_item_count": 0,

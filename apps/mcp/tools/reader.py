@@ -36,7 +36,9 @@ def _normalize_reader_document(payload: Any) -> dict[str, Any]:
         "warning": to_optional_dict(source.get("warning")),
         "coverage_ledger": to_optional_dict(source.get("coverage_ledger")),
         "traceability_pack": to_optional_dict(source.get("traceability_pack")),
-        "source_refs": source.get("source_refs") if isinstance(source.get("source_refs"), list) else [],
+        "source_refs": source.get("source_refs")
+        if isinstance(source.get("source_refs"), list)
+        else [],
         "sections": source.get("sections") if isinstance(source.get("sections"), list) else [],
         "created_at": to_optional_str(source.get("created_at")),
         "updated_at": to_optional_str(source.get("updated_at")),
