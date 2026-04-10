@@ -2,7 +2,7 @@ import type { ReaderDocument } from "@sourceharbor/sdk";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 type SourceContributionDrawerProps = {
 	document: ReaderDocument;
@@ -13,11 +13,14 @@ export function SourceContributionDrawer({
 }: SourceContributionDrawerProps) {
 	const sourceCount = document.source_refs.length;
 	const sectionCount = document.sections.length;
+	const warningContext = document.published_with_gap
+		? "Warning context available"
+		: "Clear provenance map";
 
 	return (
 		<Card className="border-border/70 shadow-sm">
 			<CardHeader className="space-y-2 pb-3">
-				<CardTitle className="text-base">Source contribution drawer</CardTitle>
+				<h2 className="text-base font-semibold">Source contribution drawer</h2>
 				<p className="text-sm text-muted-foreground">
 					Keep the main body clean, then open the drawer only when you want to
 					inspect where each claim came from.
@@ -27,7 +30,13 @@ export function SourceContributionDrawer({
 				<div className="flex flex-wrap gap-2 text-sm">
 					<Badge variant="secondary">Sources {sourceCount}</Badge>
 					<Badge variant="outline">Sections {sectionCount}</Badge>
+					<Badge variant="outline">{warningContext}</Badge>
 				</div>
+				<p className="text-sm text-muted-foreground">
+					Keep the body as the first reading pass. Open this drawer when you
+					want to inspect which source items and sections back the current
+					document.
+				</p>
 				<details className="rounded-xl border border-border/70 bg-background/80 p-4">
 					<summary className="cursor-pointer font-medium">
 						{sourceCount} linked source items
@@ -66,7 +75,7 @@ export function SourceContributionDrawer({
 										) : null}
 									</div>
 									{digestPreview ? (
-										<p className="mt-2 text-sm text-muted-foreground">
+										<p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
 											{digestPreview}
 										</p>
 									) : null}

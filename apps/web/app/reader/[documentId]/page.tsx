@@ -93,6 +93,10 @@ export default async function ReaderDetailPage({
 							{document.summary ??
 								"This document unifies the reader-facing markdown, yellow-warning contract, and source contribution drawer for one published reader unit."}
 						</p>
+						<p className="text-sm text-muted-foreground">
+							Read the body first. Use the right rail only when you want to
+							inspect provenance, warning context, or coverage status.
+						</p>
 						<div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
 							<span>Window {document.window_id}</span>
 							<span>Version {document.version}</span>
@@ -110,13 +114,29 @@ export default async function ReaderDetailPage({
 				</div>
 			</section>
 
-			<section className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
+			{document.published_with_gap ? (
+				<YellowWarningCard reasons={warningReasons} />
+			) : (
+				<Card className="border-border/70 shadow-sm">
+					<CardHeader className="space-y-2 pb-3">
+						<CardTitle className="text-base">Reading contract</CardTitle>
+						<CardDescription>
+							This document is published as a stable reading unit. Use the body
+							as the main narrative and open the evidence rail only when you
+							want to verify provenance or inspect coverage details.
+						</CardDescription>
+					</CardHeader>
+				</Card>
+			)}
+
+			<section className="grid gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(280px,0.85fr)]">
 				<Card className="border-border/70 shadow-sm">
 					<CardHeader>
-						<CardTitle>Reader body</CardTitle>
+						<h2 className="text-base font-semibold">Reader body</h2>
 						<CardDescription>
-							The published markdown unit. Merge docs and singleton docs both
-							render through the same clean reading surface.
+							The published markdown unit. Read this first, then move to the
+							evidence rail only if you need to verify source contribution or
+							coverage risk.
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
@@ -127,15 +147,11 @@ export default async function ReaderDetailPage({
 				</Card>
 
 				<div className="space-y-6 lg:sticky lg:top-6">
-					{document.published_with_gap ? (
-						<YellowWarningCard reasons={warningReasons} />
-					) : null}
-
 					<Card className="border-border/70 shadow-sm">
 						<CardHeader>
-							<CardTitle className="text-base">Reader map</CardTitle>
+							<h2 className="text-base font-semibold">Reader map</h2>
 							<CardDescription>
-								A compact outline before you open the deeper evidence layers.
+								A compact orientation layer before you drill into evidence.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4 text-sm">
@@ -182,14 +198,12 @@ export default async function ReaderDetailPage({
 
 					<SourceContributionDrawer document={document} />
 
-					<Card className="border-border/70 shadow-sm">
+					<Card className="border-border/70 bg-muted/20 shadow-sm">
 						<CardHeader>
-							<CardTitle className="text-base">
-								Coverage ledger snapshot
-							</CardTitle>
+							<h2 className="text-base font-semibold">Coverage snapshot</h2>
 							<CardDescription>
-								A quick integrity read before you reuse the document outside
-								this reader surface.
+								A secondary integrity read. Check this after the body and
+								source-contribution drawer, not before.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-2 text-sm">

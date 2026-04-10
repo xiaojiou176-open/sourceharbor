@@ -65,29 +65,54 @@ export default async function ReaderPage() {
 							Reader frontstage
 						</Badge>
 						<div className="space-y-3">
-							<CardTitle data-route-heading className="text-3xl md:text-4xl">
-								Published reader documents
-							</CardTitle>
+							<h1
+								data-route-heading
+								className="text-3xl font-semibold md:text-4xl"
+							>
+								Start with a finished reading unit
+							</h1>
 							<CardDescription className="max-w-3xl text-base leading-7">
-								A calmer reading deck for the current published-doc layer.
-								Merged stories and singleton polish docs now share one editorial
-								surface, while yellow-warning documents stay honest about
-								missing or degraded source evidence.
+								Open the strongest published document first, use the brief to
+								orient yourself, and only leave the reader when you need more
+								intake or trend context. This page is the frontstage for
+								reading, not the operator control panel.
 							</CardDescription>
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-6">
 						<div className="flex flex-wrap gap-3">
-							<Button asChild>
-								<Link href="/subscriptions">Open source intake</Link>
-							</Button>
-							<Button asChild variant="secondary">
-								<Link href="/trends">Open trends</Link>
-							</Button>
-							<Button asChild variant="outline">
-								<Link href="/briefings">Open briefings</Link>
+							<Button asChild size="lg">
+								<Link
+									href={
+										leadDocument
+											? `/reader/${leadDocument.id}`
+											: "/subscriptions"
+									}
+								>
+									{leadDocument
+										? "Continue reading"
+										: "Create the first reader document"}
+								</Link>
 							</Button>
 						</div>
+						<p className="text-sm text-muted-foreground">
+							Need a different surface?{" "}
+							<Link className="underline underline-offset-4" href="/briefings">
+								Briefings
+							</Link>{" "}
+							for the story-first summary,{" "}
+							<Link className="underline underline-offset-4" href="/trends">
+								Trends
+							</Link>{" "}
+							for repeated themes, or{" "}
+							<Link
+								className="underline underline-offset-4"
+								href="/subscriptions"
+							>
+								Source intake
+							</Link>{" "}
+							when you need to add more material.
+						</p>
 						{leadDocument ? (
 							<div className="rounded-2xl border border-border/70 bg-muted/20 p-6">
 								<div className="flex flex-wrap items-center gap-2">
@@ -116,6 +141,10 @@ export default async function ReaderPage() {
 											{leadDocument.summary ??
 												"Open the current lead document to inspect the merged markdown, warning state, and source contribution ledger in one place."}
 										</p>
+										<p className="text-sm text-muted-foreground">
+											Read the body first. Open source contribution only when
+											you want to inspect provenance or warning detail.
+										</p>
 									</div>
 									<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
 										<span>Window {leadDocument.window_id}</span>
@@ -123,33 +152,33 @@ export default async function ReaderPage() {
 										<span>Sources {leadDocument.source_item_count}</span>
 									</div>
 									{leadSources.length ? (
-										<div className="grid gap-3 md:grid-cols-3">
-											{leadSources.map((source) => (
-												<div
-													key={String(source.source_item_id ?? source.title)}
-													className="rounded-xl border border-border/60 bg-background/90 p-3"
-												>
-													<p className="text-sm font-medium">
-														{typeof source.title === "string" &&
-														source.title.trim()
-															? source.title
-															: "Untitled source"}
-													</p>
-													{typeof source.digest_preview === "string" ? (
-														<p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-															{source.digest_preview}
+										<div className="rounded-2xl border border-border/60 bg-background/90 p-4">
+											<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+												Evidence sources
+											</p>
+											<ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+												{leadSources.map((source) => (
+													<li
+														key={String(source.source_item_id ?? source.title)}
+														className="rounded-xl border border-border/50 px-3 py-2"
+													>
+														<p className="font-medium text-foreground">
+															{typeof source.title === "string" &&
+															source.title.trim()
+																? source.title
+																: "Untitled source"}
 														</p>
-													) : null}
-												</div>
-											))}
+														{typeof source.digest_preview === "string" ? (
+															<p className="mt-1 line-clamp-2">
+																{source.digest_preview}
+															</p>
+														) : null}
+													</li>
+												))}
+											</ul>
 										</div>
 									) : null}
 									<div className="flex flex-wrap gap-3">
-										<Button asChild size="lg">
-											<Link href={`/reader/${leadDocument.id}`}>
-												Open reader detail
-											</Link>
-										</Button>
 										<Button asChild variant="outline">
 											<Link href="/search">Search evidence</Link>
 										</Button>
@@ -173,10 +202,11 @@ export default async function ReaderPage() {
 
 				<Card className="border-border/70 shadow-sm lg:sticky lg:top-6">
 					<CardHeader>
-						<CardTitle className="text-xl">Navigation brief</CardTitle>
+						<CardTitle className="text-xl">30-second brief</CardTitle>
 						<CardDescription>
-							The 30-second guide over the current published-doc layer. Read the
-							brief first, then drop into the document that matters most.
+							A compact route map over the current published-doc layer. Use it
+							to orient yourself, then return to the library or open the lead
+							document.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-3 text-sm">
@@ -200,7 +230,7 @@ export default async function ReaderPage() {
 										>
 											<p className="font-medium">{item.title}</p>
 											{item.summary ? (
-												<p className="mt-1 text-muted-foreground">
+												<p className="mt-1 line-clamp-2 text-muted-foreground">
 													{item.summary}
 												</p>
 											) : null}
@@ -314,31 +344,11 @@ export default async function ReaderPage() {
 										<span>Version {document.version}</span>
 										<span>Sources {document.source_item_count}</span>
 									</div>
-									<div className="space-y-2">
-										{(Array.isArray(document.source_refs)
-											? document.source_refs
-											: []
-										)
-											.slice(0, 2)
-											.map((source) => (
-												<div
-													key={String(source.source_item_id ?? source.title)}
-													className="rounded-xl border border-border/60 bg-background/90 p-3 text-sm"
-												>
-													<p className="font-medium">
-														{typeof source.title === "string" &&
-														source.title.trim()
-															? source.title
-															: "Untitled source"}
-													</p>
-													{typeof source.digest_preview === "string" ? (
-														<p className="mt-2 line-clamp-2 text-muted-foreground">
-															{source.digest_preview}
-														</p>
-													) : null}
-												</div>
-											))}
-									</div>
+									<p className="text-sm text-muted-foreground">
+										Backed by {document.source_item_count} source
+										{document.source_item_count === 1 ? "" : "s"} and ready to
+										open as one published reading unit.
+									</p>
 									<Button asChild className="w-full">
 										<Link href={`/reader/${document.id}`}>
 											Open reader detail

@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 type YellowWarningCardProps = {
 	reasons: string[];
@@ -16,22 +16,36 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 						Published with gap
 					</Badge>
 				</div>
-				<CardTitle className="flex items-center gap-2 text-base">
+				<h2 className="flex items-center gap-2 text-base font-semibold">
 					<AlertTriangle className="h-4 w-4" />
 					Yellow warning
-				</CardTitle>
+				</h2>
 			</CardHeader>
-			<CardContent className="space-y-2 text-sm">
-				<p>
-					This reader document is still readable, but one or more source lanes
-					still carry missing or degraded evidence. Read the main body first,
-					then inspect the drawer before you reuse claims outside this surface.
-				</p>
-				<ul className="list-disc space-y-1 pl-5">
-					{reasons.map((reason) => (
-						<li key={reason}>{reason}</li>
-					))}
-				</ul>
+			<CardContent className="space-y-4 text-sm">
+				<div className="space-y-1">
+					<p className="font-medium">What this means</p>
+					<p>
+						This document is still readable, but one or more evidence lanes are
+						missing or degraded. Treat the body as a useful reading unit, not as
+						a fully sealed proof packet.
+					</p>
+				</div>
+				<div className="space-y-1">
+					<p className="font-medium">How to read safely</p>
+					<ul className="list-disc space-y-1 pl-5">
+						<li>Read the body first.</li>
+						<li>Open the source contribution drawer before reusing a claim.</li>
+						<li>Keep the warning context in mind when comparing sources.</li>
+					</ul>
+				</div>
+				<div className="space-y-1">
+					<p className="font-medium">Why this warning exists</p>
+					<ul className="list-disc space-y-1 pl-5">
+						{reasons.map((reason) => (
+							<li key={reason}>{reason}</li>
+						))}
+					</ul>
+				</div>
 			</CardContent>
 		</Card>
 	);

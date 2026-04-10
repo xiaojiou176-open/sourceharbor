@@ -91,7 +91,9 @@ describe("reader pages", () => {
 
 		render(await ReaderPage());
 
-		expect(screen.getByText("Published reader documents")).toBeInTheDocument();
+		expect(
+			screen.getByText("Start with a finished reading unit"),
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 3 }),
 		).toBeInTheDocument();
@@ -102,7 +104,7 @@ describe("reader pages", () => {
 			screen.getByText("Read 1 published reader documents."),
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole("link", { name: "Open reader detail" }),
+			screen.getByRole("link", { name: "Continue reading" }),
 		).toHaveAttribute("href", "/reader/doc-1");
 	});
 
