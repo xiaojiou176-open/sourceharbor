@@ -9,15 +9,91 @@ import pytest
 from worker.temporal import workflows
 
 
-def test_poll_feeds_workflow_dispatches_child_workflows(monkeypatch: Any) -> None:
-    child_calls: list[dict[str, Any]] = []
-
+def test_poll_feeds_workflow_stays_track_only(monkeypatch: Any) -> None:
     async def _fake_execute_activity(
         activity_fn: Any, payload: dict[str, Any], **_: Any
     ) -> dict[str, Any]:
         assert activity_fn is workflows.poll_feeds_activity
         assert payload == {"platform": "youtube"}
         return {"ok": True, "created_job_ids": ["job-1", "job-2"]}
+
+    monkeypatch.setattr(workflows.workflow, "execute_activity", _fake_execute_activity)
+
+    result = asyncio.run(workflows.PollFeedsWorkflow().run({"platform": "youtube"}))
+
+    assert result["dispatched_process_workflows"] == 0
+    assert result["process_results"] == []
+    assert result["track_interval_minutes"] == 15
+
+
+def test_poll_feeds_workflow_continuous_mode_uses_interval(monkeypatch: Any) -> None:
+    calls = {"activity": 0}
+    sleeps: list[timedelta] = []
+
+    async def _fake_execute_activity(
+        activity_fn: Any, payload: dict[str, Any], **_: Any
+    ) -> dict[str, Any]:
+        assert activity_fn is workflows.poll_feeds_activity
+        assert payload == {"platform": "youtube"}
+        calls["activity"] += 1
+        return {"ok": True, "created_job_ids": []}
+
+    async def _fake_sleep(duration: timedelta) -> None:
+        sleeps.append(duration)
+        raise StopAsyncIteration
+
+    monkeypatch.setattr(workflows.workflow, "execute_activity", _fake_execute_activity)
+    monkeypatch.setattr(workflows.workflow, "sleep", _fake_sleep)
+
+    with pytest.raises(StopAsyncIteration):
+        asyncio.run(
+            workflows.PollFeedsWorkflow().run(
+                {"platform": "youtube", "run_once": False, "interval_minutes": 15}
+            )
+        )
+
+    assert calls["activity"] == 1
+    assert int(sleeps[0].total_seconds()) == 15 * 60
+
+
+def test_consume_batch_workflow_materializes_and_closes(monkeypatch: Any) -> None:
+    reader_materialization_payloads: list[dict[str, Any]] = []
+    materialized_payloads: list[dict[str, Any]] = []
+    closed_payloads: list[dict[str, Any]] = []
+
+    async def _fake_execute_activity(activity_fn: Any, payload: Any, **_: Any) -> dict[str, Any]:
+        if activity_fn is workflows.load_consumption_batch_activity:
+            return {
+                "id": "batch-1",
+                "window_id": "2026-04-09@America/Los_Angeles",
+                "cutoff_at": "2026-04-09T10:00:00Z",
+                "source_item_count": 2,
+                "items": [
+                    {"job_id": "job-1"},
+                    {"job_id": "job-2"},
+                ],
+            }
+        if activity_fn is workflows.mark_consumption_batch_materialized_activity:
+            materialized_payloads.append(dict(payload))
+            return {"status": "materialized"}
+        if activity_fn is workflows.mark_consumption_batch_closed_activity:
+            closed_payloads.append(dict(payload))
+            return {"status": "closed"}
+        if activity_fn is workflows.materialize_reader_batch_activity:
+            reader_materialization_payloads.append(dict(payload))
+            return {
+                "consumption_batch_id": "batch-1",
+                "cluster_verdict_manifest_id": "manifest-1",
+                "window_id": "2026-04-09@America/Los_Angeles",
+                "published_document_count": 2,
+                "published_with_gap_count": 1,
+                "documents": [
+                    {"id": "doc-1"},
+                    {"id": "doc-2"},
+                ],
+                "navigation_brief": {"document_count": 2},
+            }
+        raise AssertionError(f"unexpected activity {activity_fn}")
 
     async def _fake_execute_child_workflow(
         _workflow_run: Any,
@@ -26,8 +102,9 @@ def test_poll_feeds_workflow_dispatches_child_workflows(monkeypatch: Any) -> Non
         id: str,
         task_queue: str,
     ) -> dict[str, Any]:
-        child_calls.append({"job_id": job_id, "id": id, "task_queue": task_queue})
-        return {"ok": True, "job_id": job_id}
+        assert id.startswith("consume-batch-batch-1-process-job-")
+        assert task_queue == "queue-main"
+        return {"ok": job_id == "job-1", "job_id": job_id}
 
     monkeypatch.setattr(workflows.workflow, "execute_activity", _fake_execute_activity)
     monkeypatch.setattr(workflows.workflow, "execute_child_workflow", _fake_execute_child_workflow)
@@ -37,11 +114,23 @@ def test_poll_feeds_workflow_dispatches_child_workflows(monkeypatch: Any) -> Non
         lambda: SimpleNamespace(run_id="run-123", task_queue="queue-main"),
     )
 
-    result = asyncio.run(workflows.PollFeedsWorkflow().run({"platform": "youtube"}))
+    result = asyncio.run(workflows.ConsumeBatchWorkflow().run({"consumption_batch_id": "batch-1"}))
 
-    assert result["dispatched_process_workflows"] == 2
-    assert [item["job_id"] for item in child_calls] == ["job-1", "job-2"]
-    assert result["process_results"][0]["ok"] is True
+    assert result["status"] == "closed"
+    assert result["processed_job_count"] == 2
+    assert result["succeeded_job_count"] == 1
+    assert result["failed_job_count"] == 1
+    assert result["downstream_status"] == "published_reader_documents_materialized"
+    assert result["published_document_count"] == 2
+    assert result["published_with_gap_count"] == 1
+    assert result["materialization"]["cluster_verdict_manifest_id"] == "manifest-1"
+    assert reader_materialization_payloads[0]["consumption_batch_id"] == "batch-1"
+    assert materialized_payloads[0]["processed_job_count"] == 2
+    assert materialized_payloads[0]["process_summary_json"]["published_document_ids"] == [
+        "doc-1",
+        "doc-2",
+    ]
+    assert closed_payloads[0]["consumption_batch_id"] == "batch-1"
 
 
 @pytest.mark.parametrize("job_input", [{"job_id": ""}, "   "])
@@ -135,6 +224,59 @@ def test_process_job_workflow_dict_input_failed_pipeline_branch(monkeypatch: Any
     assert result["ok"] is False
     assert result["status"] == "failed"
     assert result["error"] == "llm_gate_blocked"
+
+
+def test_consume_pending_workflow_prepares_and_dispatches_batch(monkeypatch: Any) -> None:
+    sleep_calls: list[timedelta] = []
+
+    async def _fake_execute_activity(activity_fn: Any, payload: Any, **_: Any) -> dict[str, Any]:
+        if activity_fn is workflows.prepare_consumption_batch_activity:
+            assert payload["trigger_mode"] == "auto"
+            return {
+                "ok": True,
+                "status": "frozen",
+                "consumption_batch_id": "batch-2",
+                "window_id": "2026-04-09@America/Los_Angeles",
+                "cutoff_at": "2026-04-09T18:00:00Z",
+            }
+        raise AssertionError(f"unexpected activity {activity_fn}")
+
+    async def _fake_execute_child_workflow(
+        workflow_run: Any,
+        payload: dict[str, Any],
+        *,
+        id: str,
+        task_queue: str,
+    ) -> dict[str, Any]:
+        assert workflow_run is workflows.ConsumeBatchWorkflow.run
+        assert payload == {"consumption_batch_id": "batch-2"}
+        assert id.startswith("consume-pending-batch-2-")
+        assert task_queue == "queue-main"
+        return {"ok": True, "status": "closed", "processed_job_count": 1}
+
+    async def _fake_sleep(duration: timedelta) -> None:
+        sleep_calls.append(duration)
+        raise StopAsyncIteration
+
+    monkeypatch.setattr(workflows.workflow, "execute_activity", _fake_execute_activity)
+    monkeypatch.setattr(workflows.workflow, "execute_child_workflow", _fake_execute_child_workflow)
+    monkeypatch.setattr(workflows.workflow, "sleep", _fake_sleep)
+    monkeypatch.setattr(
+        workflows.workflow,
+        "info",
+        lambda: SimpleNamespace(run_id="run-789", task_queue="queue-main"),
+    )
+
+    result = asyncio.run(
+        workflows.ConsumePendingWorkflow().run(
+            {"run_once": True, "trigger_mode": "auto", "interval_minutes": 120}
+        )
+    )
+
+    assert result["consumption_batch_id"] == "batch-2"
+    assert result["status"] == "closed"
+    assert result["auto_cooldown_minutes"] == 120
+    assert sleep_calls == []
 
 
 def test_daily_digest_workflow_run_once_returns_result(monkeypatch: Any) -> None:

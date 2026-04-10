@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
@@ -481,6 +482,561 @@ class PostgresBusinessStore:
             )
             if row is None:
                 raise ValueError(f"job not found: {job_id}")
+        return dict(row)
+
+    @staticmethod
+    def _resolve_batch_timezone(timezone_name: str | None) -> tuple[Any, str]:
+        candidate = str(timezone_name or "").strip()
+        if candidate:
+            try:
+                return ZoneInfo(candidate), candidate
+            except ZoneInfoNotFoundError:
+                pass
+        return UTC, "UTC"
+
+    @classmethod
+    def _window_id_for_item(
+        cls,
+        *,
+        published_at: Any,
+        discovered_at: Any,
+        timezone_name: str | None,
+    ) -> tuple[str, datetime, datetime]:
+        zone, resolved_timezone_name = cls._resolve_batch_timezone(timezone_name)
+        effective_at = published_at if isinstance(published_at, datetime) else discovered_at
+        if not isinstance(effective_at, datetime):
+            effective_at = datetime.now(UTC)
+        if effective_at.tzinfo is None:
+            effective_at = effective_at.replace(tzinfo=UTC)
+        discovered = discovered_at if isinstance(discovered_at, datetime) else effective_at
+        if discovered.tzinfo is None:
+            discovered = discovered.replace(tzinfo=UTC)
+        local_effective = effective_at.astimezone(zone)
+        return (
+            f"{local_effective.date().isoformat()}@{resolved_timezone_name}",
+            effective_at,
+            discovered,
+        )
+
+    def prepare_consumption_batch(
+        self,
+        *,
+        trigger_mode: str,
+        window_id: str | None,
+        timezone_name: str | None,
+        requested_by: str | None,
+        requested_trace_id: str | None,
+        subscription_id: str | None = None,
+        platform: str | None = None,
+        max_items: int = 200,
+    ) -> dict[str, Any]:
+        normalized_trigger_mode = str(trigger_mode or "manual").strip().lower() or "manual"
+        if normalized_trigger_mode not in {"manual", "auto"}:
+            raise ValueError("trigger_mode must be 'manual' or 'auto'")
+        _, resolved_timezone_name = self._resolve_batch_timezone(timezone_name)
+        cutoff_at = datetime.now(UTC)
+        target_window_id = str(window_id or "").strip() or None
+
+        safe_max_items = max(1, min(int(max_items or 200), 1000))
+        scan_limit = max(50, safe_max_items * 5)
+        with self._engine.begin() as conn:
+            rows = (
+                conn.execute(
+                    text(
+                        """
+                    SELECT
+                        iri.id::text AS ingest_run_item_id,
+                        iri.subscription_id::text AS subscription_id,
+                        iri.video_id::text AS video_id,
+                        iri.job_id::text AS job_id,
+                        iri.ingest_event_id::text AS ingest_event_id,
+                        iri.platform,
+                        iri.video_uid,
+                        iri.source_url,
+                        iri.title,
+                        iri.published_at,
+                        iri.created_at AS discovered_at,
+                        iri.entry_hash,
+                        iri.pipeline_mode,
+                        iri.content_type
+                    FROM ingest_run_items iri
+                    JOIN jobs j
+                      ON j.id = iri.job_id
+                    WHERE iri.item_status = 'pending_consume'
+                      AND iri.job_id IS NOT NULL
+                      AND j.status = 'queued'
+                      AND (:subscription_id IS NULL OR iri.subscription_id = CAST(:subscription_id AS UUID))
+                      AND (:platform IS NULL OR iri.platform = :platform)
+                    ORDER BY COALESCE(iri.published_at, iri.created_at) ASC, iri.created_at ASC
+                    LIMIT :scan_limit
+                    FOR UPDATE OF iri SKIP LOCKED
+                    """
+                    ),
+                    {
+                        "scan_limit": scan_limit,
+                        "subscription_id": subscription_id,
+                        "platform": platform,
+                    },
+                )
+                .mappings()
+                .all()
+            )
+
+            selected_items: list[dict[str, Any]] = []
+            for row in rows:
+                computed_window_id, source_effective_at, discovered_at = self._window_id_for_item(
+                    published_at=row.get("published_at"),
+                    discovered_at=row.get("discovered_at"),
+                    timezone_name=resolved_timezone_name,
+                )
+                if target_window_id is None:
+                    target_window_id = computed_window_id
+                if computed_window_id != target_window_id:
+                    continue
+                selected_items.append(
+                    {
+                        **dict(row),
+                        "window_id": computed_window_id,
+                        "source_effective_at": source_effective_at,
+                        "discovered_at": discovered_at,
+                        "source_origin": "subscription_tracked",
+                    }
+                )
+                if len(selected_items) >= safe_max_items:
+                    break
+
+            if target_window_id is None:
+                local_now = cutoff_at.astimezone(
+                    self._resolve_batch_timezone(resolved_timezone_name)[0]
+                )
+                target_window_id = f"{local_now.date().isoformat()}@{resolved_timezone_name}"
+
+            if not selected_items:
+                return {
+                    "ok": True,
+                    "status": "no_pending_items",
+                    "trigger_mode": normalized_trigger_mode,
+                    "window_id": target_window_id,
+                    "timezone_name": resolved_timezone_name,
+                    "cutoff_at": cutoff_at,
+                    "source_item_count": 0,
+                    "job_ids": [],
+                    "source_item_ids": [],
+                    "pending_window_ids": [],
+                    "base_published_doc_versions": [],
+                }
+
+            pending_window_ids = sorted({str(item["window_id"]) for item in selected_items})
+            batch_row = (
+                conn.execute(
+                    text(
+                        """
+                    INSERT INTO consumption_batches (
+                        status,
+                        trigger_mode,
+                        window_id,
+                        timezone_name,
+                        cutoff_at,
+                        requested_by,
+                        requested_trace_id,
+                        filters_json,
+                        base_published_doc_versions,
+                        source_item_count,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                        'frozen',
+                        :trigger_mode,
+                        :window_id,
+                        :timezone_name,
+                        :cutoff_at,
+                        :requested_by,
+                        :requested_trace_id,
+                        CAST(:filters_json AS JSONB),
+                        CAST(:base_published_doc_versions AS JSONB),
+                        :source_item_count,
+                        NOW(),
+                        NOW()
+                    )
+                    RETURNING id::text AS id
+                    """
+                    ),
+                    {
+                        "trigger_mode": normalized_trigger_mode,
+                        "window_id": target_window_id,
+                        "timezone_name": resolved_timezone_name,
+                        "cutoff_at": cutoff_at,
+                        "requested_by": requested_by,
+                        "requested_trace_id": requested_trace_id,
+                        "filters_json": json.dumps(
+                            {
+                                "subscription_id": subscription_id,
+                                "platform": platform,
+                            },
+                            ensure_ascii=False,
+                        ),
+                        "base_published_doc_versions": json.dumps([], ensure_ascii=False),
+                        "source_item_count": len(selected_items),
+                    },
+                )
+                .mappings()
+                .one()
+            )
+            batch_id = str(batch_row["id"])
+
+            for item in selected_items:
+                conn.execute(
+                    text(
+                        """
+                    INSERT INTO consumption_batch_items (
+                        consumption_batch_id,
+                        ingest_run_item_id,
+                        subscription_id,
+                        video_id,
+                        job_id,
+                        ingest_event_id,
+                        platform,
+                        video_uid,
+                        source_url,
+                        title,
+                        published_at,
+                        source_effective_at,
+                        discovered_at,
+                        entry_hash,
+                        pipeline_mode,
+                        content_type,
+                        source_origin,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                        CAST(:batch_id AS UUID),
+                        CAST(:ingest_run_item_id AS UUID),
+                        CAST(:subscription_id AS UUID),
+                        CAST(:video_id AS UUID),
+                        CAST(:job_id AS UUID),
+                        CAST(:ingest_event_id AS UUID),
+                        :platform,
+                        :video_uid,
+                        :source_url,
+                        :title,
+                        :published_at,
+                        :source_effective_at,
+                        :discovered_at,
+                        :entry_hash,
+                        :pipeline_mode,
+                        :content_type,
+                        :source_origin,
+                        NOW(),
+                        NOW()
+                    )
+                    """
+                    ),
+                    {
+                        "batch_id": batch_id,
+                        "ingest_run_item_id": item.get("ingest_run_item_id"),
+                        "subscription_id": item.get("subscription_id"),
+                        "video_id": item.get("video_id"),
+                        "job_id": item.get("job_id"),
+                        "ingest_event_id": item.get("ingest_event_id"),
+                        "platform": item.get("platform"),
+                        "video_uid": item.get("video_uid"),
+                        "source_url": item.get("source_url"),
+                        "title": item.get("title"),
+                        "published_at": item.get("published_at"),
+                        "source_effective_at": item.get("source_effective_at"),
+                        "discovered_at": item.get("discovered_at"),
+                        "entry_hash": item.get("entry_hash"),
+                        "pipeline_mode": item.get("pipeline_mode"),
+                        "content_type": item.get("content_type") or "video",
+                        "source_origin": item.get("source_origin") or "subscription_tracked",
+                    },
+                )
+                conn.execute(
+                    text(
+                        """
+                    UPDATE ingest_run_items
+                    SET item_status = 'batch_assigned',
+                        updated_at = NOW()
+                    WHERE id = CAST(:ingest_run_item_id AS UUID)
+                    """
+                    ),
+                    {"ingest_run_item_id": item["ingest_run_item_id"]},
+                )
+
+        return {
+            "ok": True,
+            "status": "frozen",
+            "consumption_batch_id": batch_id,
+            "trigger_mode": normalized_trigger_mode,
+            "window_id": target_window_id,
+            "timezone_name": resolved_timezone_name,
+            "cutoff_at": cutoff_at,
+            "source_item_count": len(selected_items),
+            "job_ids": [str(item["job_id"]) for item in selected_items if item.get("job_id")],
+            "source_item_ids": [
+                str(item["ingest_run_item_id"])
+                for item in selected_items
+                if item.get("ingest_run_item_id")
+            ],
+            "pending_window_ids": pending_window_ids,
+            "base_published_doc_versions": [],
+        }
+
+    def get_consumption_batch(self, *, batch_id: str) -> dict[str, Any]:
+        with self._engine.begin() as conn:
+            batch_row = (
+                conn.execute(
+                    text(
+                        """
+                    SELECT
+                        id::text AS id,
+                        workflow_id,
+                        status,
+                        trigger_mode,
+                        window_id,
+                        timezone_name,
+                        cutoff_at,
+                        requested_by,
+                        requested_trace_id,
+                        filters_json,
+                        base_published_doc_versions,
+                        source_item_count,
+                        processed_job_count,
+                        succeeded_job_count,
+                        failed_job_count,
+                        process_summary_json,
+                        error_message,
+                        materialized_at,
+                        closed_at,
+                        created_at,
+                        updated_at
+                    FROM consumption_batches
+                    WHERE id = CAST(:batch_id AS UUID)
+                    LIMIT 1
+                    """
+                    ),
+                    {"batch_id": batch_id},
+                )
+                .mappings()
+                .first()
+            )
+            if batch_row is None:
+                raise ValueError(f"consumption batch not found: {batch_id}")
+            item_rows = (
+                conn.execute(
+                    text(
+                        """
+                    SELECT
+                        id::text AS id,
+                        consumption_batch_id::text AS consumption_batch_id,
+                        ingest_run_item_id::text AS ingest_run_item_id,
+                        subscription_id::text AS subscription_id,
+                        video_id::text AS video_id,
+                        job_id::text AS job_id,
+                        ingest_event_id::text AS ingest_event_id,
+                        platform,
+                        video_uid,
+                        source_url,
+                        title,
+                        published_at,
+                        source_effective_at,
+                        discovered_at,
+                        entry_hash,
+                        pipeline_mode,
+                        content_type,
+                        source_origin,
+                        created_at,
+                        updated_at
+                    FROM consumption_batch_items
+                    WHERE consumption_batch_id = CAST(:batch_id AS UUID)
+                    ORDER BY source_effective_at ASC, created_at ASC
+                    """
+                    ),
+                    {"batch_id": batch_id},
+                )
+                .mappings()
+                .all()
+            )
+        payload = dict(batch_row)
+        payload["items"] = [dict(item) for item in item_rows]
+        return payload
+
+    def mark_consumption_batch_workflow_started(
+        self,
+        *,
+        batch_id: str,
+        workflow_id: str,
+    ) -> dict[str, Any]:
+        with self._engine.begin() as conn:
+            row = (
+                conn.execute(
+                    text(
+                        """
+                    UPDATE consumption_batches
+                    SET workflow_id = :workflow_id,
+                        updated_at = NOW()
+                    WHERE id = CAST(:batch_id AS UUID)
+                    RETURNING
+                        id::text AS id,
+                        workflow_id,
+                        status
+                    """
+                    ),
+                    {
+                        "batch_id": batch_id,
+                        "workflow_id": workflow_id,
+                    },
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            raise ValueError(f"consumption batch not found: {batch_id}")
+        return dict(row)
+
+    def mark_consumption_batch_materialized(
+        self,
+        *,
+        batch_id: str,
+        processed_job_count: int,
+        succeeded_job_count: int,
+        failed_job_count: int,
+        process_summary_json: dict[str, Any],
+    ) -> dict[str, Any]:
+        with self._engine.begin() as conn:
+            row = (
+                conn.execute(
+                    text(
+                        """
+                    UPDATE consumption_batches
+                    SET status = 'materialized',
+                        processed_job_count = :processed_job_count,
+                        succeeded_job_count = :succeeded_job_count,
+                        failed_job_count = :failed_job_count,
+                        process_summary_json = CAST(:process_summary_json AS JSONB),
+                        materialized_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = CAST(:batch_id AS UUID)
+                    RETURNING id::text AS id, status, materialized_at, updated_at
+                    """
+                    ),
+                    {
+                        "batch_id": batch_id,
+                        "processed_job_count": processed_job_count,
+                        "succeeded_job_count": succeeded_job_count,
+                        "failed_job_count": failed_job_count,
+                        "process_summary_json": json.dumps(
+                            process_summary_json, ensure_ascii=False
+                        ),
+                    },
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            raise ValueError(f"consumption batch not found: {batch_id}")
+        return dict(row)
+
+    def mark_consumption_batch_closed(
+        self,
+        *,
+        batch_id: str,
+        process_summary_json: dict[str, Any],
+    ) -> dict[str, Any]:
+        with self._engine.begin() as conn:
+            conn.execute(
+                text(
+                    """
+                UPDATE ingest_run_items
+                SET item_status = 'closed',
+                    updated_at = NOW()
+                WHERE id IN (
+                    SELECT ingest_run_item_id
+                    FROM consumption_batch_items
+                    WHERE consumption_batch_id = CAST(:batch_id AS UUID)
+                      AND ingest_run_item_id IS NOT NULL
+                )
+                """
+                ),
+                {"batch_id": batch_id},
+            )
+            row = (
+                conn.execute(
+                    text(
+                        """
+                    UPDATE consumption_batches
+                    SET status = 'closed',
+                        process_summary_json = CAST(:process_summary_json AS JSONB),
+                        closed_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = CAST(:batch_id AS UUID)
+                    RETURNING id::text AS id, status, closed_at, updated_at
+                    """
+                    ),
+                    {
+                        "batch_id": batch_id,
+                        "process_summary_json": json.dumps(
+                            process_summary_json, ensure_ascii=False
+                        ),
+                    },
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            raise ValueError(f"consumption batch not found: {batch_id}")
+        return dict(row)
+
+    def mark_consumption_batch_failed(
+        self,
+        *,
+        batch_id: str,
+        error_message: str,
+        reset_items_to_pending: bool = True,
+    ) -> dict[str, Any]:
+        with self._engine.begin() as conn:
+            if reset_items_to_pending:
+                conn.execute(
+                    text(
+                        """
+                    UPDATE ingest_run_items
+                    SET item_status = 'pending_consume',
+                        updated_at = NOW()
+                    WHERE id IN (
+                        SELECT ingest_run_item_id
+                        FROM consumption_batch_items
+                        WHERE consumption_batch_id = CAST(:batch_id AS UUID)
+                          AND ingest_run_item_id IS NOT NULL
+                    )
+                    """
+                    ),
+                    {"batch_id": batch_id},
+                )
+            row = (
+                conn.execute(
+                    text(
+                        """
+                    UPDATE consumption_batches
+                    SET status = 'failed',
+                        error_message = :error_message,
+                        closed_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = CAST(:batch_id AS UUID)
+                    RETURNING id::text AS id, status, error_message, closed_at
+                    """
+                    ),
+                    {
+                        "batch_id": batch_id,
+                        "error_message": error_message,
+                    },
+                )
+                .mappings()
+                .first()
+            )
+        if row is None:
+            raise ValueError(f"consumption batch not found: {batch_id}")
         return dict(row)
 
     @staticmethod

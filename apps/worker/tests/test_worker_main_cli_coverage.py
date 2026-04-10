@@ -69,6 +69,7 @@ def test_main_async_dispatches_commands(monkeypatch, capsys, command, patch_name
         subscription_id=None,
         platform=None,
         max_new_videos=50,
+        continuous=False,
         job_id="job-1",
         run_once=True,
         local_hour=8,
@@ -120,6 +121,7 @@ def test_main_async_emits_success_log_with_output_correlation(monkeypatch, capsy
         subscription_id=None,
         platform="youtube",
         max_new_videos=10,
+        continuous=False,
         job_id=None,
         run_once=False,
         local_hour=None,
@@ -167,6 +169,7 @@ def test_main_async_emits_failure_log_with_argument_correlation(monkeypatch) -> 
         subscription_id=None,
         platform=None,
         max_new_videos=50,
+        continuous=False,
         job_id="job-123",
         run_once=False,
         local_hour=None,
@@ -246,16 +249,24 @@ def test_run_temporal_worker_registers_workflows_and_activities(monkeypatch) -> 
 
     workflows_mod.PollFeedsWorkflow = _Workflow
     workflows_mod.ProcessJobWorkflow = _Workflow
+    workflows_mod.ConsumeBatchWorkflow = _Workflow
+    workflows_mod.ConsumePendingWorkflow = _Workflow
     workflows_mod.DailyDigestWorkflow = _Workflow
     workflows_mod.CleanupWorkspaceWorkflow = _Workflow
     workflows_mod.NotificationRetryWorkflow = _Workflow
     workflows_mod.ProviderCanaryWorkflow = _Workflow
     for name in [
         "cleanup_workspace_activity",
+        "load_consumption_batch_activity",
+        "materialize_reader_batch_activity",
         "mark_failed_activity",
+        "mark_consumption_batch_closed_activity",
+        "mark_consumption_batch_failed_activity",
+        "mark_consumption_batch_materialized_activity",
         "mark_running_activity",
         "mark_succeeded_activity",
         "poll_feeds_activity",
+        "prepare_consumption_batch_activity",
         "provider_canary_activity",
         "reconcile_stale_queued_jobs_activity",
         "resolve_daily_digest_timing_activity",

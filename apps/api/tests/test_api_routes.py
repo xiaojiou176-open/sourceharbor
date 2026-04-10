@@ -149,6 +149,53 @@ def test_ingest_poll_maps_value_error_to_404(api_client: TestClient, monkeypatch
     assert response.json()["detail"] == "subscription not found"
 
 
+def test_ingest_consume_returns_batch_summary(api_client: TestClient, monkeypatch) -> None:
+    batch_id = uuid.uuid4()
+    cutoff_at = datetime.now(UTC)
+
+    async def fake_consume(
+        self,
+        *,
+        trigger_mode,
+        subscription_id,
+        platform,
+        timezone_name,
+        window_id,
+        cooldown_minutes,
+    ):
+        del self, subscription_id, platform, timezone_name, window_id, cooldown_minutes
+        assert trigger_mode == "manual"
+        return {
+            "consumption_batch_id": batch_id,
+            "workflow_id": f"consume-batch-{batch_id}",
+            "status": "frozen",
+            "trigger_mode": "manual",
+            "window_id": "2026-04-09@America/Los_Angeles",
+            "cutoff_at": cutoff_at,
+            "source_item_count": 2,
+            "pending_window_ids": ["2026-04-09@America/Los_Angeles"],
+            "track_interval_minutes": 15,
+            "auto_cooldown_minutes": 60,
+            "cooldown_remaining_seconds": 0,
+        }
+
+    monkeypatch.setattr("apps.api.app.services.ingest.IngestService.consume", fake_consume)
+
+    response = api_client.post(
+        "/api/v1/ingest/consume",
+        json={"trigger_mode": "manual", "timezone_name": "America/Los_Angeles"},
+    )
+
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["consumption_batch_id"] == str(batch_id)
+    assert payload["workflow_id"] == f"consume-batch-{batch_id}"
+    assert payload["status"] == "frozen"
+    assert payload["source_item_count"] == 2
+    assert payload["track_interval_minutes"] == 15
+    assert payload["auto_cooldown_minutes"] == 60
+
+
 def test_ingest_runs_list_returns_summaries(api_client: TestClient, monkeypatch) -> None:
     run_id = uuid.uuid4()
     now = datetime.now(UTC)
@@ -256,6 +303,100 @@ def test_ingest_runs_get_returns_items(api_client: TestClient, monkeypatch) -> N
     assert payload["items"][0]["id"] == str(item_id)
     assert payload["items"][0]["job_id"] == str(job_id)
     assert payload["items"][0]["video_uid"] == "abc123"
+
+
+def test_consumption_batches_list_and_get_return_payloads(
+    api_client: TestClient, monkeypatch
+) -> None:
+    batch_id = uuid.uuid4()
+    item_id = uuid.uuid4()
+    now = datetime.now(UTC)
+
+    monkeypatch.setattr(
+        "apps.api.app.services.ingest.IngestService.list_batches",
+        lambda self, *, limit, status: [
+            SimpleNamespace(
+                id=batch_id,
+                workflow_id="consume-batch-1",
+                status=status or "closed",
+                trigger_mode="manual",
+                window_id="2026-04-09@America/Los_Angeles",
+                timezone_name="America/Los_Angeles",
+                cutoff_at=now,
+                requested_by="tester",
+                requested_trace_id="trace-batch",
+                source_item_count=1,
+                processed_job_count=1,
+                succeeded_job_count=1,
+                failed_job_count=0,
+                error_message=None,
+                judged_at=now,
+                materialized_at=now,
+                closed_at=now,
+                created_at=now,
+                updated_at=now,
+                items=[],
+            )
+        ],
+    )
+    monkeypatch.setattr(
+        "apps.api.app.services.ingest.IngestService.get_batch",
+        lambda self, *, batch_id: SimpleNamespace(
+            id=batch_id,
+            workflow_id="consume-batch-1",
+            status="closed",
+            trigger_mode="manual",
+            window_id="2026-04-09@America/Los_Angeles",
+            timezone_name="America/Los_Angeles",
+            cutoff_at=now,
+            requested_by="tester",
+            requested_trace_id="trace-batch",
+            source_item_count=1,
+            processed_job_count=1,
+            succeeded_job_count=1,
+            failed_job_count=0,
+            error_message=None,
+            judged_at=now,
+            materialized_at=now,
+            closed_at=now,
+            created_at=now,
+            updated_at=now,
+            filters_json={"platform": "youtube"},
+            base_published_doc_versions=[],
+            process_summary_json={"downstream_status": "cluster_judge_pending_w3"},
+            items=[
+                SimpleNamespace(
+                    id=item_id,
+                    ingest_run_item_id=None,
+                    subscription_id=None,
+                    video_id=None,
+                    job_id=None,
+                    ingest_event_id=None,
+                    platform="youtube",
+                    video_uid="abc123",
+                    source_url="https://www.youtube.com/watch?v=abc123",
+                    title="Demo",
+                    published_at=now,
+                    source_effective_at=now,
+                    discovered_at=now,
+                    entry_hash="entry-1",
+                    pipeline_mode="full",
+                    content_type="video",
+                    source_origin="subscription_tracked",
+                    created_at=now,
+                    updated_at=now,
+                )
+            ],
+        ),
+    )
+
+    list_response = api_client.get("/api/v1/ingest/batches?status=closed&limit=5")
+    get_response = api_client.get(f"/api/v1/ingest/batches/{batch_id}")
+
+    assert list_response.status_code == 200
+    assert list_response.json()[0]["id"] == str(batch_id)
+    assert get_response.status_code == 200
+    assert get_response.json()["items"][0]["id"] == str(item_id)
 
 
 def test_get_ingest_run_returns_not_found(api_client: TestClient, monkeypatch) -> None:
@@ -2515,6 +2656,24 @@ def test_execution_endpoints_enforce_write_access(api_client: TestClient, monkey
         }
 
     monkeypatch.setattr("apps.api.app.services.ingest.IngestService.poll", fake_ingest_poll)
+
+    async def fake_consume(self, **kwargs):
+        del self
+        return {
+            "consumption_batch_id": uuid.uuid4(),
+            "workflow_id": "consume-batch-auth",
+            "status": "frozen",
+            "trigger_mode": kwargs["trigger_mode"],
+            "window_id": "2026-04-09@America/Los_Angeles",
+            "cutoff_at": now,
+            "source_item_count": 0,
+            "pending_window_ids": [],
+            "track_interval_minutes": 15,
+            "auto_cooldown_minutes": 60,
+            "cooldown_remaining_seconds": 0,
+        }
+
+    monkeypatch.setattr("apps.api.app.services.ingest.IngestService.consume", fake_consume)
     monkeypatch.setattr(
         "apps.api.app.services.videos.VideosService.process_video", fake_process_video
     )
@@ -2561,6 +2720,10 @@ def test_execution_endpoints_enforce_write_access(api_client: TestClient, monkey
 
     endpoints = [
         ("/api/v1/ingest/poll", {"platform": "youtube", "max_new_videos": 1}),
+        (
+            "/api/v1/ingest/consume",
+            {"trigger_mode": "manual", "timezone_name": "America/Los_Angeles"},
+        ),
         (
             "/api/v1/videos/process",
             {"video": {"platform": "youtube", "url": "https://www.youtube.com/watch?v=abc123"}},

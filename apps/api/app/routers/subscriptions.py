@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -9,7 +10,8 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..security import require_write_access, sanitize_exception_detail
-from ..services import SubscriptionsService
+from ..services import SubscriptionsService, VideosService
+from ..services.manual_source_intake import ManualSourceIntakeService
 from ..services.source_names import build_source_name_fallback, resolve_source_name
 from ..services.subscription_templates import load_subscription_template_catalog
 from ..services.subscriptions import (
@@ -137,6 +139,45 @@ class SubscriptionTemplateCatalogResponse(BaseModel):
     templates: list[SubscriptionTemplate]
 
 
+class ManualSourceIntakeRequest(BaseModel):
+    raw_input: str = Field(min_length=1, max_length=20_000)
+    category: str = "misc"
+    tags: list[str] = Field(default_factory=list)
+    priority: int = Field(default=50, ge=0, le=100)
+    enabled: bool = True
+
+
+class ManualSourceIntakeResult(BaseModel):
+    line_number: int
+    raw_input: str
+    target_kind: Literal["subscription_source", "manual_source_item", "unsupported"]
+    recommended_action: Literal["save_subscription", "add_to_today", "unsupported"]
+    applied_action: Literal["save_subscription", "add_to_today"] | None = None
+    status: Literal["created", "updated", "queued", "reused", "rejected"]
+    platform: str | None = None
+    source_type: str | None = None
+    source_value: str | None = None
+    source_url: str | None = None
+    rsshub_route: str | None = None
+    adapter_type: str | None = None
+    content_profile: str | None = None
+    support_tier: str | None = None
+    display_name: str | None = None
+    message: str
+    subscription_id: str | None = None
+    job_id: str | None = None
+
+
+class ManualSourceIntakeResponse(BaseModel):
+    processed_count: int
+    created_subscriptions: int
+    updated_subscriptions: int
+    queued_manual_items: int
+    reused_manual_items: int
+    rejected_count: int
+    results: list[ManualSourceIntakeResult]
+
+
 class BatchUpdateCategoryRequest(BaseModel):
     ids: list[uuid.UUID] = Field(default_factory=list)
     category: str = Field(min_length=1)
@@ -194,6 +235,34 @@ def upsert_subscription(payload: SubscriptionUpsertRequest, db: Session = Depend
         subscription=_to_subscription_response(row),
         created=created,
     )
+
+
+@router.post(
+    "/manual-intake",
+    response_model=ManualSourceIntakeResponse,
+    dependencies=[Depends(require_write_access)],
+)
+async def submit_manual_source_intake(
+    payload: ManualSourceIntakeRequest,
+    db: Session = Depends(get_db),
+):
+    service = ManualSourceIntakeService(
+        subscriptions_service=SubscriptionsService(db),
+        videos_service=VideosService(db),
+    )
+    try:
+        result = await service.submit(
+            raw_input=payload.raw_input,
+            category=payload.category,
+            tags=payload.tags,
+            priority=payload.priority,
+            enabled=payload.enabled,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=sanitize_exception_detail(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=sanitize_exception_detail(exc)) from exc
+    return ManualSourceIntakeResponse(**result)
 
 
 @router.post(

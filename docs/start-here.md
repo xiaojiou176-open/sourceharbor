@@ -38,6 +38,7 @@ sourceharbor help
 - the API health endpoint recorded in `.runtime-cache/run/full-stack/resolved.env`, with the canonical default local health URL remaining `http://127.0.0.1:9000/healthz` only when that port is still free
 - at least one queued or completed processing job
 - a digest feed entry or an inspectable job payload
+- at least one published reader document or a truthful “no reader documents yet” frontstage at `/reader`
 - a local supervisor check you can rerun before you decide whether to open the long live-smoke lane
 
 ## Run Locally: Fastest Result Path
@@ -170,6 +171,7 @@ Open these UI views:
 - `/subscriptions` for strong-supported video templates plus generalized RSSHub/RSS intake, backed by the same template catalog contract that the API and MCP surfaces expose
 - `/search` for grounded search across SourceHarbor artifacts
 - `/ask` for the story-aware, briefing-backed Ask front door, with a server-owned story page payload over the answer/change/evidence view
+- `/reader` for the published-doc frontstage: merged reader docs, singleton polish docs, navigation brief, yellow warning, and source contribution drawer
 - `/feed` for the digest reading flow
 - `/jobs?job_id=<job-id>` for pipeline trace and artifacts
 - `/watchlists` for long-lived tracking objects
@@ -187,12 +189,14 @@ If you want the longer-lived workflow instead of one-off processing:
    - strong-supported YouTube/Bilibili presets when you want the richer video lane
    - generalized RSSHub / generic RSS intake when the source universe widens
    - do not treat generalized intake as route-by-route RSSHub proof
-3. Trigger `POST /api/v1/ingest/poll`
+3. Trigger `POST /api/v1/ingest/poll` to refresh the Track lane and update the pending pool
 4. Keep the returned `run_id` so you can inspect `GET /api/v1/ingest/runs/<run-id>`
-5. Read the resulting entries in `/feed`
-6. Inspect `/trends` when you want the merged-story view over repeated themes
-7. Inspect `/briefings` when you want the lower-cognitive-load unified story view for one watchlist; the selected story and Ask handoff should now stay on the same server-owned story truth instead of parallel page aliases
-8. Inspect the job page for retries, degradations, and artifact links
+5. Trigger `POST /api/v1/ingest/consume` when you want the Consume lane to freeze one batch and process queued items
+6. Trigger `POST /api/v1/reader/batches/<batch-id>/materialize` when you want the batch to become published reader docs immediately
+7. Read the resulting documents in `/reader`
+8. Inspect `/trends` when you want the merged-story view over repeated themes
+9. Inspect `/briefings` when you want the lower-cognitive-load unified story view for one watchlist; the selected story and Ask handoff should now stay on the same server-owned story truth instead of parallel page aliases
+10. Inspect the job page for retries, degradations, and artifact links
 
 That path is what turns SourceHarbor from a one-shot processor into a knowledge intake system.
 

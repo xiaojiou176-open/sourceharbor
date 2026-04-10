@@ -9,6 +9,7 @@ import {
 	FormInputField,
 	FormSelectField,
 } from "@/components/form-field";
+import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel";
 import { SubmitButton } from "@/components/submit-button";
 import { SubscriptionBatchPanel } from "@/components/subscription-batch-panel";
 import { Badge } from "@/components/ui/badge";
@@ -446,6 +447,13 @@ export default async function SubscriptionsPage({
 						</Button>
 					</CardContent>
 				</Card>
+			</section>
+
+			<section>
+				<ManualSourceIntakePanel
+					copy={copy.manualIntake}
+					sessionToken={sessionToken}
+				/>
 			</section>
 
 			<section>

@@ -65,3 +65,29 @@ def test_workflow_run_request_cleanup_payload_is_normalized() -> None:
         "cache_dir": "/tmp/cache",
         "interval_hours": 2,
     }
+
+
+def test_workflow_run_request_poll_feeds_payload_is_normalized() -> None:
+    request = WorkflowRunRequest.model_validate(
+        {
+            "workflow": "poll_feeds",
+            "payload": {
+                "interval_minutes": 15,
+                "max_new_videos": 25,
+            },
+        }
+    )
+    assert request.payload == {
+        "interval_minutes": 15,
+        "max_new_videos": 25,
+    }
+
+
+def test_workflow_run_request_poll_feeds_rejects_invalid_interval_minutes() -> None:
+    with pytest.raises(ValidationError, match="interval_minutes"):
+        WorkflowRunRequest.model_validate(
+            {
+                "workflow": "poll_feeds",
+                "payload": {"interval_minutes": 0},
+            }
+        )

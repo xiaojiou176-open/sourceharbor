@@ -28,6 +28,7 @@ class WorkflowRunResponse(BaseModel):
 
 _WORKFLOW_NAME_MAP = {
     "poll_feeds": "PollFeedsWorkflow",
+    "consume_pending": "ConsumePendingWorkflow",
     "daily_digest": "DailyDigestWorkflow",
     "notification_retry": "NotificationRetryWorkflow",
     "cleanup": "CleanupWorkspaceWorkflow",

@@ -929,6 +929,20 @@ describe("apiClient core behavior", () => {
 				new Response(JSON.stringify({ updated: 1 }), { status: 200 }),
 			)
 			.mockResolvedValueOnce(new Response(null, { status: 204 }))
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						processed_count: 1,
+						created_subscriptions: 0,
+						updated_subscriptions: 1,
+						queued_manual_items: 0,
+						reused_manual_items: 0,
+						rejected_count: 0,
+						results: [],
+					}),
+					{ status: 200 },
+				),
+			)
 			.mockResolvedValueOnce(new Response("server down", { status: 503 }));
 
 		await apiClient.listSubscriptions({
@@ -947,11 +961,14 @@ describe("apiClient core behavior", () => {
 			category: "creator",
 		});
 		await apiClient.deleteSubscription("sub-1");
+		await apiClient.submitManualSourceIntake({
+			raw_input: "https://www.youtube.com/@x",
+		});
 		await expect(
 			apiClient.getArtifactMarkdown({ job_id: "job-2" }),
 		).rejects.toThrow("ERR_REQUEST_FAILED");
 
-		expect(fetchSpy).toHaveBeenCalledTimes(5);
+		expect(fetchSpy).toHaveBeenCalledTimes(6);
 		expect(String(fetchSpy.mock.calls[0][0])).toContain(
 			"/api/v1/subscriptions",
 		);
@@ -962,6 +979,10 @@ describe("apiClient core behavior", () => {
 			"/api/v1/subscriptions/sub-1",
 		);
 		expect(fetchSpy.mock.calls[3][1]).toMatchObject({ method: "DELETE" });
+		expect(String(fetchSpy.mock.calls[4][0])).toContain(
+			"/api/v1/subscriptions/manual-intake",
+		);
+		expect(fetchSpy.mock.calls[4][1]).toMatchObject({ method: "POST" });
 	});
 
 	it("normalizes digest booleans and cursor from non-string payloads", async () => {
@@ -979,6 +1000,151 @@ describe("apiClient core behavior", () => {
 		const result = await apiClient.getDigestFeed();
 		expect(result.has_more).toBe(true);
 		expect(result.next_cursor).toBeNull();
+	});
+
+	it("calls reader pipeline routes through the shared api client", async () => {
+		const fetchSpy = vi
+			.spyOn(globalThis, "fetch")
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						consumption_batch_id: "batch-1",
+						cluster_verdict_manifest_id: "manifest-1",
+						window_id: "2026-04-09@America/Los_Angeles",
+						published_document_count: 1,
+						published_with_gap_count: 0,
+						documents: [],
+						navigation_brief: {
+							brief_kind: "sourceharbor_navigation_brief_v1",
+							generated_at: "2026-04-09T00:00:00Z",
+							window_id: "2026-04-09@America/Los_Angeles",
+							document_count: 1,
+							published_with_gap_count: 0,
+							summary: "Read 1 published reader documents.",
+							items: [],
+						},
+					}),
+					{ status: 200 },
+				),
+			)
+			.mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }))
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						id: "doc-1",
+						stable_key: "topic-ai-agents-2026-04-09",
+						slug: "ai-agents-2026-04-09-v1",
+						window_id: "2026-04-09@America/Los_Angeles",
+						title: "AI Agents",
+						summary: "Merged reader doc",
+						markdown: "# AI Agents",
+						materialization_mode: "merge_then_polish",
+						version: 1,
+						published_with_gap: false,
+						is_current: true,
+						source_item_count: 2,
+						consumption_batch_id: "batch-1",
+						cluster_verdict_manifest_id: "manifest-1",
+						supersedes_document_id: null,
+						warning: {},
+						coverage_ledger: {},
+						traceability_pack: {},
+						source_refs: [],
+						sections: [],
+						repair_history: [],
+						created_at: "2026-04-09T00:00:00Z",
+						updated_at: "2026-04-09T00:00:00Z",
+					}),
+					{ status: 200 },
+				),
+			)
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						id: "doc-1",
+						stable_key: "topic-ai-agents-2026-04-09",
+						slug: "ai-agents-2026-04-09-v2",
+						window_id: "2026-04-09@America/Los_Angeles",
+						title: "AI Agents",
+						summary: "Merged reader doc",
+						markdown: "# AI Agents",
+						materialization_mode: "repair_patch",
+						version: 2,
+						published_with_gap: true,
+						is_current: true,
+						source_item_count: 2,
+						consumption_batch_id: "batch-1",
+						cluster_verdict_manifest_id: "manifest-1",
+						supersedes_document_id: "doc-0",
+						warning: {
+							warning_kind: "coverage_gap",
+							published_with_gap: true,
+							reasons: ["1 source missing digest output"],
+							failed_source_count: 1,
+							degraded_source_count: 0,
+							missing_digest_count: 1,
+							generated_at: "2026-04-09T00:00:00Z",
+						},
+						coverage_ledger: {},
+						traceability_pack: {},
+						source_refs: [],
+						sections: [],
+						repair_history: [],
+						created_at: "2026-04-09T00:00:00Z",
+						updated_at: "2026-04-09T00:00:00Z",
+					}),
+					{ status: 200 },
+				),
+			)
+			.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						brief_kind: "sourceharbor_navigation_brief_v1",
+						generated_at: "2026-04-09T00:00:00Z",
+						window_id: "2026-04-09@America/Los_Angeles",
+						document_count: 1,
+						published_with_gap_count: 1,
+						summary: "Read 1 published reader documents.",
+						items: [],
+					}),
+					{ status: 200 },
+				),
+			);
+
+		await apiClient.materializeConsumptionBatch("batch-1");
+		await apiClient.listPublishedReaderDocuments({
+			limit: 5,
+			window_id: "2026-04-09@America/Los_Angeles",
+		});
+		await apiClient.getPublishedReaderDocument("doc-1");
+		await apiClient.repairPublishedReaderDocument("doc-1", {
+			repair_mode: "patch",
+		});
+		await apiClient.getNavigationBrief({ limit: 3 });
+
+		expect(fetchSpy).toHaveBeenCalledTimes(5);
+		expect(String(fetchSpy.mock.calls[0][0])).toContain(
+			"/api/v1/reader/batches/batch-1/materialize",
+		);
+		expect(fetchSpy.mock.calls[0][1]).toMatchObject({ method: "POST" });
+		expect(String(fetchSpy.mock.calls[1][0])).toContain(
+			"/api/v1/reader/documents",
+		);
+		expect(String(fetchSpy.mock.calls[1][0])).toContain("limit=5");
+		expect(String(fetchSpy.mock.calls[1][0])).toContain(
+			"window_id=2026-04-09%40America%2FLos_Angeles",
+		);
+		expect(String(fetchSpy.mock.calls[2][0])).toContain(
+			"/api/v1/reader/documents/doc-1",
+		);
+		expect(String(fetchSpy.mock.calls[3][0])).toContain(
+			"/api/v1/reader/documents/doc-1/repair",
+		);
+		expect(fetchSpy.mock.calls[3][1]).toMatchObject({ method: "POST" });
+		expect(String(fetchSpy.mock.calls[4][0])).toContain(
+			"/api/v1/reader/navigation-brief",
+		);
+		expect(String(fetchSpy.mock.calls[4][0])).toContain("limit=3");
 	});
 
 	it("extracts structured error code from JSON body fields", async () => {

@@ -368,6 +368,14 @@ if [[ "$SKIP_INSTALL" != "1" ]]; then
   fi
 fi
 
+if [[ -d "$WORKSPACE_SDK_DIR" ]]; then
+  if [[ "$SHELL_EXPORTS" == "1" ]]; then
+    (cd "$WORKSPACE_SDK_DIR" && npm run build) >&2
+  else
+    (cd "$WORKSPACE_SDK_DIR" && npm run build)
+  fi
+fi
+
 printf '%s\n' "$PACKAGE_HASH" > "$HASH_FILE"
 printf 'ready\n' > "$READY_FILE"
 

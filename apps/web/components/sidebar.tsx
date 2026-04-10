@@ -212,6 +212,19 @@ function SidebarNavContent({
 					</span>
 				</Link>
 				<Link
+					href="/reader"
+					className={cn(
+						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
+						pathname.startsWith("/reader")
+							? "bg-sidebar-accent text-sidebar-accent-foreground"
+							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+					)}
+					aria-current={pathname.startsWith("/reader") ? "page" : undefined}
+				>
+					<FileText className="size-4 shrink-0 opacity-80" aria-hidden />
+					<span className={collapsed ? "sr-only" : undefined}>Reader</span>
+				</Link>
+				<Link
 					href="/ops"
 					className={cn(
 						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",

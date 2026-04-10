@@ -17,7 +17,8 @@ from apps.mcp.tools._common import (
 )
 
 _WORKFLOW_PAYLOAD_ALLOWLIST: dict[str, set[str]] = {
-    "poll_feeds": {"run_once", "subscription_id", "platform", "max_new_videos"},
+    "poll_feeds": {"run_once", "subscription_id", "platform", "max_new_videos", "interval_minutes"},
+    "consume_pending": {"run_once", "interval_minutes", "timezone_name", "window_id"},
     "daily_digest": {"run_once", "timezone_name", "timezone_offset_minutes", "local_hour"},
     "notification_retry": {"run_once", "interval_minutes", "retry_batch_limit"},
     "cleanup": {
@@ -48,6 +49,9 @@ def _normalize_workflow_payload(
     int_ranges: dict[str, tuple[int, int]] = {}
     if workflow == "poll_feeds":
         int_ranges["max_new_videos"] = (1, 500)
+        int_ranges["interval_minutes"] = (1, 24 * 60)
+    elif workflow == "consume_pending":
+        int_ranges["interval_minutes"] = (60, 24 * 7)
     elif workflow == "daily_digest":
         int_ranges["timezone_offset_minutes"] = (-720, 840)
         int_ranges["local_hour"] = (0, 23)
@@ -95,7 +99,7 @@ def register_workflow_tools(mcp: FastMCP, api_call: ApiCall) -> None:
         allowed_payload_keys = _WORKFLOW_PAYLOAD_ALLOWLIST.get(normalized_workflow)
         if allowed_payload_keys is None:
             return invalid_argument(
-                "workflow must be one of: poll_feeds, daily_digest, notification_retry, cleanup, provider_canary",
+                "workflow must be one of: poll_feeds, consume_pending, daily_digest, notification_retry, cleanup, provider_canary",
                 method="POST",
                 path="/api/v1/workflows/run",
                 field="workflow",

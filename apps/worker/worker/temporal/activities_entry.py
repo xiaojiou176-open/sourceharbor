@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
+from apps.api.app.db import SessionLocal
+from apps.api.app.services.reader_pipeline import ReaderPipelineService
 from worker.config import Settings
 from worker.state.postgres_store import PostgresBusinessStore
 from worker.state.sqlite_store import SQLiteStateStore
@@ -122,6 +125,96 @@ async def cleanup_workspace_activity(payload: dict[str, Any] | None = None) -> d
     )
 
 
+@activity.defn(name="load_consumption_batch_activity")
+async def load_consumption_batch_activity(payload: dict[str, Any]) -> dict[str, Any]:
+    batch_id = str(payload.get("consumption_batch_id") or "").strip()
+    if not batch_id:
+        raise ValueError("consumption_batch_id is required")
+    settings = Settings.from_env()
+    pg_store = PostgresBusinessStore(settings.database_url)
+    return pg_store.get_consumption_batch(batch_id=batch_id)
+
+
+@activity.defn(name="prepare_consumption_batch_activity")
+async def prepare_consumption_batch_activity(payload: dict[str, Any]) -> dict[str, Any]:
+    settings = Settings.from_env()
+    pg_store = PostgresBusinessStore(settings.database_url)
+    max_items = payload.get("max_items")
+    if isinstance(max_items, bool):
+        max_items = 200
+    elif isinstance(max_items, int):
+        max_items = max(1, min(1000, max_items))
+    else:
+        max_items = 200
+    return pg_store.prepare_consumption_batch(
+        trigger_mode=str(payload.get("trigger_mode") or "auto"),
+        window_id=str(payload.get("window_id") or "").strip() or None,
+        timezone_name=str(payload.get("timezone_name") or "").strip()
+        or settings.digest_local_timezone,
+        requested_by=str(payload.get("requested_by") or "").strip() or None,
+        requested_trace_id=str(payload.get("requested_trace_id") or "").strip() or None,
+        subscription_id=str(payload.get("subscription_id") or "").strip() or None,
+        platform=str(payload.get("platform") or "").strip() or None,
+        max_items=max_items,
+    )
+
+
+@activity.defn(name="mark_consumption_batch_materialized_activity")
+async def mark_consumption_batch_materialized_activity(payload: dict[str, Any]) -> dict[str, Any]:
+    batch_id = str(payload.get("consumption_batch_id") or "").strip()
+    if not batch_id:
+        raise ValueError("consumption_batch_id is required")
+    settings = Settings.from_env()
+    pg_store = PostgresBusinessStore(settings.database_url)
+    return pg_store.mark_consumption_batch_materialized(
+        batch_id=batch_id,
+        processed_job_count=int(payload.get("processed_job_count") or 0),
+        succeeded_job_count=int(payload.get("succeeded_job_count") or 0),
+        failed_job_count=int(payload.get("failed_job_count") or 0),
+        process_summary_json=dict(payload.get("process_summary_json") or {}),
+    )
+
+
+@activity.defn(name="mark_consumption_batch_closed_activity")
+async def mark_consumption_batch_closed_activity(payload: dict[str, Any]) -> dict[str, Any]:
+    batch_id = str(payload.get("consumption_batch_id") or "").strip()
+    if not batch_id:
+        raise ValueError("consumption_batch_id is required")
+    settings = Settings.from_env()
+    pg_store = PostgresBusinessStore(settings.database_url)
+    return pg_store.mark_consumption_batch_closed(
+        batch_id=batch_id,
+        process_summary_json=dict(payload.get("process_summary_json") or {}),
+    )
+
+
+@activity.defn(name="materialize_reader_batch_activity")
+async def materialize_reader_batch_activity(payload: dict[str, Any]) -> dict[str, Any]:
+    batch_id = str(payload.get("consumption_batch_id") or "").strip()
+    if not batch_id:
+        raise ValueError("consumption_batch_id is required")
+    db = SessionLocal()
+    try:
+        service = ReaderPipelineService(db)
+        return service.materialize_batch(batch_id=uuid.UUID(batch_id))
+    finally:
+        db.close()
+
+
+@activity.defn(name="mark_consumption_batch_failed_activity")
+async def mark_consumption_batch_failed_activity(payload: dict[str, Any]) -> dict[str, Any]:
+    batch_id = str(payload.get("consumption_batch_id") or "").strip()
+    if not batch_id:
+        raise ValueError("consumption_batch_id is required")
+    settings = Settings.from_env()
+    pg_store = PostgresBusinessStore(settings.database_url)
+    return pg_store.mark_consumption_batch_failed(
+        batch_id=batch_id,
+        error_message=str(payload.get("error") or "consumption_batch_failed"),
+        reset_items_to_pending=bool(payload.get("reset_items_to_pending", True)),
+    )
+
+
 __all__ = [
     "PostgresBusinessStore",
     "SQLiteStateStore",
@@ -163,10 +256,16 @@ __all__ = [
     "_utc_now_iso",
     "cleanup_workspace_activity",
     "cleanup_workspace_media_files",
+    "load_consumption_batch_activity",
+    "materialize_reader_batch_activity",
     "mark_failed_activity",
+    "mark_consumption_batch_closed_activity",
+    "mark_consumption_batch_failed_activity",
+    "mark_consumption_batch_materialized_activity",
     "mark_running_activity",
     "mark_succeeded_activity",
     "poll_feeds_activity",
+    "prepare_consumption_batch_activity",
     "provider_canary_activity",
     "reconcile_stale_queued_jobs_activity",
     "resolve_daily_digest_timing_activity",

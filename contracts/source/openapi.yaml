@@ -58,6 +58,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionUpsertResponse'
 
+  /api/v1/subscriptions/manual-intake:
+    post:
+      operationId: submitManualSourceIntake
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualSourceIntakeRequest'
+      responses:
+        '200':
+          description: Mixed manual intake results for subscriptions and one-off source items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManualSourceIntakeResponse'
+
   /api/v1/subscriptions/templates:
     get:
       operationId: listSubscriptionTemplates
@@ -311,6 +328,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/IngestPollResponse'
 
+  /api/v1/ingest/consume:
+    post:
+      operationId: consumeIngest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumeBatchRequest'
+      responses:
+        '202':
+          description: Consumption batch accepted or cooldown/no-pending result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumeBatchResponse'
+
   /api/v1/ingest/runs:
     get:
       operationId: listIngestRuns
@@ -359,6 +393,234 @@ paths:
                 $ref: '#/components/schemas/IngestRun'
         '404':
           description: Not found
+
+  /api/v1/ingest/batches:
+    get:
+      operationId: listConsumptionBatches
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Recent consumption batches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsumptionBatchSummary'
+
+  /api/v1/ingest/batches/{batch_id}:
+    get:
+      operationId: getConsumptionBatch
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Consumption batch detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumptionBatch'
+        '404':
+          description: Not found
+
+  /api/v1/reader/batches/{batch_id}/judge:
+    post:
+      operationId: judgeConsumptionBatch
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Cluster verdict manifest generated for the consumption batch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterVerdictManifest'
+        '400':
+          description: Invalid batch state
+        '404':
+          description: Not found
+
+  /api/v1/reader/batches/{batch_id}/manifest:
+    get:
+      operationId: getClusterVerdictManifest
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cluster verdict manifest detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterVerdictManifest'
+        '404':
+          description: Not found
+
+  /api/v1/reader/batches/{batch_id}/materialize:
+    post:
+      operationId: materializeConsumptionBatch
+      parameters:
+        - in: path
+          name: batch_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterializeBatchRequest'
+      responses:
+        '201':
+          description: Published reader documents generated for the consumption batch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReaderBatchMaterializationResponse'
+        '400':
+          description: Invalid batch state
+        '404':
+          description: Not found
+
+  /api/v1/reader/documents:
+    get:
+      operationId: listPublishedReaderDocuments
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: window_id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current published reader documents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedReaderDocumentListResponse'
+
+  /api/v1/reader/documents/slug/{slug}:
+    get:
+      operationId: getPublishedReaderDocumentBySlug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Published reader document detail by slug
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedReaderDocument'
+        '404':
+          description: Not found
+
+  /api/v1/reader/documents/{document_id}:
+    get:
+      operationId: getPublishedReaderDocument
+      parameters:
+        - in: path
+          name: document_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Published reader document detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedReaderDocument'
+        '404':
+          description: Not found
+
+  /api/v1/reader/documents/{document_id}/repair:
+    post:
+      operationId: repairPublishedReaderDocument
+      parameters:
+        - in: path
+          name: document_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReaderDocumentRepairRequest'
+      responses:
+        '201':
+          description: Published reader document repaired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedReaderDocument'
+        '400':
+          description: Invalid repair request
+        '404':
+          description: Not found
+
+  /api/v1/reader/navigation-brief:
+    get:
+      operationId: getReaderNavigationBrief
+      parameters:
+        - in: query
+          name: window_id
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 8
+      responses:
+        '200':
+          description: Navigation brief over current published reader documents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NavigationBrief'
 
   /api/v1/jobs/{job_id}:
     get:
@@ -1184,6 +1446,109 @@ components:
         created:
           type: boolean
 
+    ManualSourceIntakeRequest:
+      type: object
+      required: [raw_input]
+      properties:
+        raw_input:
+          type: string
+        category:
+          type: string
+          enum: [tech, creator, macro, ops, misc]
+          default: misc
+        tags:
+          type: array
+          items:
+            type: string
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 50
+        enabled:
+          type: boolean
+          default: true
+
+    ManualSourceIntakeResult:
+      type: object
+      required:
+        [line_number, raw_input, target_kind, recommended_action, status, message]
+      properties:
+        line_number:
+          type: integer
+        raw_input:
+          type: string
+        target_kind:
+          type: string
+          enum: [subscription_source, manual_source_item, unsupported]
+        recommended_action:
+          type: string
+          enum: [save_subscription, add_to_today, unsupported]
+        applied_action:
+          type: string
+          nullable: true
+          enum: [save_subscription, add_to_today]
+        status:
+          type: string
+          enum: [created, updated, queued, reused, rejected]
+        platform:
+          type: string
+          nullable: true
+        source_type:
+          type: string
+          nullable: true
+        source_value:
+          type: string
+          nullable: true
+        source_url:
+          type: string
+          nullable: true
+        rsshub_route:
+          type: string
+          nullable: true
+        adapter_type:
+          type: string
+          nullable: true
+        content_profile:
+          type: string
+          nullable: true
+        support_tier:
+          type: string
+          nullable: true
+        display_name:
+          type: string
+          nullable: true
+        message:
+          type: string
+        subscription_id:
+          type: string
+          nullable: true
+        job_id:
+          type: string
+          nullable: true
+
+    ManualSourceIntakeResponse:
+      type: object
+      required:
+        [processed_count, created_subscriptions, updated_subscriptions, queued_manual_items, reused_manual_items, rejected_count, results]
+      properties:
+        processed_count:
+          type: integer
+        created_subscriptions:
+          type: integer
+        updated_subscriptions:
+          type: integer
+        queued_manual_items:
+          type: integer
+        reused_manual_items:
+          type: integer
+        rejected_count:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManualSourceIntakeResult'
+
     Watchlist:
       type: object
       required:
@@ -1774,7 +2139,7 @@ components:
 
     IngestPollResponse:
       type: object
-      required: [run_id, status, enqueued, candidates]
+      required: [run_id, status, enqueued, candidates, track_interval_minutes]
       properties:
         run_id:
           type: string
@@ -1792,6 +2157,84 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/IngestCandidate'
+        track_interval_minutes:
+          type: integer
+          minimum: 1
+
+    ConsumeBatchRequest:
+      type: object
+      properties:
+        trigger_mode:
+          type: string
+          enum: [manual, auto]
+          default: manual
+        subscription_id:
+          type: string
+          format: uuid
+          nullable: true
+        platform:
+          $ref: '#/components/schemas/Platform'
+          nullable: true
+        timezone_name:
+          type: string
+          nullable: true
+        window_id:
+          type: string
+          nullable: true
+        cooldown_minutes:
+          type: integer
+          minimum: 60
+          maximum: 576
+          nullable: true
+
+    ConsumeBatchResponse:
+      type: object
+      required:
+        [
+          status,
+          trigger_mode,
+          source_item_count,
+          pending_window_ids,
+          track_interval_minutes,
+          auto_cooldown_minutes,
+          cooldown_remaining_seconds
+        ]
+      properties:
+        consumption_batch_id:
+          type: string
+          format: uuid
+          nullable: true
+        workflow_id:
+          type: string
+          nullable: true
+        status:
+          type: string
+        trigger_mode:
+          type: string
+          enum: [manual, auto]
+        window_id:
+          type: string
+          nullable: true
+        cutoff_at:
+          type: string
+          format: date-time
+          nullable: true
+        source_item_count:
+          type: integer
+          minimum: 0
+        pending_window_ids:
+          type: array
+          items:
+            type: string
+        track_interval_minutes:
+          type: integer
+          minimum: 1
+        auto_cooldown_minutes:
+          type: integer
+          minimum: 60
+        cooldown_remaining_seconds:
+          type: integer
+          minimum: 0
 
     IngestRunItem:
       type: object
@@ -1841,7 +2284,7 @@ components:
           enum: [video, article]
         item_status:
           type: string
-          enum: [queued, deduped, skipped]
+          enum: [pending_consume, batch_assigned, closed, deduped, skipped]
         created_at:
           type: string
           format: date-time
@@ -1944,6 +2387,647 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/IngestRunItem'
+
+    ConsumptionBatchItem:
+      type: object
+      required:
+        [
+          id,
+          platform,
+          video_uid,
+          source_url,
+          source_effective_at,
+          discovered_at,
+          content_type,
+          source_origin,
+          created_at,
+          updated_at
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ingest_run_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        subscription_id:
+          type: string
+          format: uuid
+          nullable: true
+        video_id:
+          type: string
+          format: uuid
+          nullable: true
+        job_id:
+          type: string
+          format: uuid
+          nullable: true
+        ingest_event_id:
+          type: string
+          format: uuid
+          nullable: true
+        platform:
+          $ref: '#/components/schemas/Platform'
+        video_uid:
+          type: string
+        source_url:
+          type: string
+        title:
+          type: string
+          nullable: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        source_effective_at:
+          type: string
+          format: date-time
+        discovered_at:
+          type: string
+          format: date-time
+        entry_hash:
+          type: string
+          nullable: true
+        pipeline_mode:
+          type: string
+          nullable: true
+        content_type:
+          type: string
+          enum: [video, article]
+        source_origin:
+          type: string
+          enum: [subscription_tracked, manual_injected]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ConsumptionBatchSummary:
+      type: object
+      required:
+        [
+          id,
+          status,
+          trigger_mode,
+          window_id,
+          timezone_name,
+          cutoff_at,
+          source_item_count,
+          processed_job_count,
+          succeeded_job_count,
+          failed_job_count,
+          created_at,
+          updated_at
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        workflow_id:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [frozen, judged, materialized, closed, failed]
+        trigger_mode:
+          type: string
+          enum: [manual, auto]
+        window_id:
+          type: string
+        timezone_name:
+          type: string
+        cutoff_at:
+          type: string
+          format: date-time
+        requested_by:
+          type: string
+          nullable: true
+        requested_trace_id:
+          type: string
+          nullable: true
+        source_item_count:
+          type: integer
+          minimum: 0
+        processed_job_count:
+          type: integer
+          minimum: 0
+        succeeded_job_count:
+          type: integer
+          minimum: 0
+        failed_job_count:
+          type: integer
+          minimum: 0
+        error_message:
+          type: string
+          nullable: true
+        judged_at:
+          type: string
+          format: date-time
+          nullable: true
+        materialized_at:
+          type: string
+          format: date-time
+          nullable: true
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ConsumptionBatch:
+      allOf:
+        - $ref: '#/components/schemas/ConsumptionBatchSummary'
+        - type: object
+          required: [items]
+          properties:
+            filters_json:
+              type: object
+              nullable: true
+            base_published_doc_versions:
+              type: array
+              items:
+                type: string
+            process_summary_json:
+              type: object
+              nullable: true
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ConsumptionBatchItem'
+
+    ClusterVerdictManifestMember:
+      type: object
+      required:
+        [source_item_id, platform, source_origin, title, claim_kinds, digest_preview]
+      properties:
+        source_item_id:
+          type: string
+        job_id:
+          type: string
+          nullable: true
+        platform:
+          type: string
+        source_origin:
+          type: string
+        title:
+          type: string
+        source_url:
+          type: string
+          nullable: true
+        published_at:
+          type: string
+          nullable: true
+        claim_kinds:
+          type: array
+          items:
+            type: string
+        digest_preview:
+          type: string
+
+    ClusterVerdictCluster:
+      type: object
+      required:
+        [
+          cluster_id,
+          cluster_key,
+          topic_label,
+          decision,
+          source_item_count,
+          source_item_ids,
+          job_ids,
+          platforms,
+          claim_kinds,
+          headline,
+          digest_preview,
+          members
+        ]
+      properties:
+        cluster_id:
+          type: string
+        cluster_key:
+          type: string
+        topic_key:
+          type: string
+          nullable: true
+        topic_label:
+          type: string
+        decision:
+          type: string
+          enum: [merge_then_polish]
+        source_item_count:
+          type: integer
+          minimum: 0
+        source_item_ids:
+          type: array
+          items:
+            type: string
+        job_ids:
+          type: array
+          items:
+            type: string
+        platforms:
+          type: array
+          items:
+            type: string
+        claim_kinds:
+          type: array
+          items:
+            type: string
+        headline:
+          type: string
+        digest_preview:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterVerdictManifestMember'
+
+    ClusterVerdictSingleton:
+      type: object
+      required:
+        [
+          singleton_id,
+          source_item_id,
+          platform,
+          source_origin,
+          content_type,
+          title,
+          claim_kinds,
+          decision,
+          digest_preview
+        ]
+      properties:
+        singleton_id:
+          type: string
+        source_item_id:
+          type: string
+        ingest_run_item_id:
+          type: string
+          nullable: true
+        job_id:
+          type: string
+          nullable: true
+        platform:
+          type: string
+        source_origin:
+          type: string
+        content_type:
+          type: string
+        title:
+          type: string
+        source_url:
+          type: string
+          nullable: true
+        published_at:
+          type: string
+          nullable: true
+        topic_key:
+          type: string
+          nullable: true
+        topic_label:
+          type: string
+          nullable: true
+        claim_kinds:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+          enum: [polish_only]
+        digest_preview:
+          type: string
+
+    ClusterVerdictManifestPayload:
+      type: object
+      required:
+        [
+          manifest_kind,
+          generated_at,
+          consumption_batch_id,
+          window_id,
+          status,
+          source_item_count,
+          cluster_count,
+          singleton_count,
+          clusters,
+          singletons
+        ]
+      properties:
+        manifest_kind:
+          type: string
+        generated_at:
+          type: string
+        consumption_batch_id:
+          type: string
+        window_id:
+          type: string
+        status:
+          type: string
+          enum: [ready, gap_detected]
+        source_item_count:
+          type: integer
+          minimum: 0
+        cluster_count:
+          type: integer
+          minimum: 0
+        singleton_count:
+          type: integer
+          minimum: 0
+        clusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterVerdictCluster'
+        singletons:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterVerdictSingleton'
+
+    ClusterVerdictManifest:
+      type: object
+      required:
+        [
+          id,
+          consumption_batch_id,
+          window_id,
+          status,
+          source_item_count,
+          cluster_count,
+          singleton_count,
+          manifest,
+          created_at,
+          updated_at
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        consumption_batch_id:
+          type: string
+          format: uuid
+        window_id:
+          type: string
+        status:
+          type: string
+          enum: [ready, gap_detected]
+        source_item_count:
+          type: integer
+          minimum: 0
+        cluster_count:
+          type: integer
+          minimum: 0
+        singleton_count:
+          type: integer
+          minimum: 0
+        summary_markdown:
+          type: string
+          nullable: true
+        manifest:
+          $ref: '#/components/schemas/ClusterVerdictManifestPayload'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ReaderDocumentSection:
+      type: object
+      required: [section_id, title, markdown, source_item_ids]
+      properties:
+        section_id:
+          type: string
+        title:
+          type: string
+        markdown:
+          type: string
+        source_item_ids:
+          type: array
+          items:
+            type: string
+
+    ReaderDocumentWarning:
+      type: object
+      required: [warning_kind, published_with_gap, reasons]
+      properties:
+        warning_kind:
+          type: string
+        published_with_gap:
+          type: boolean
+        reasons:
+          type: array
+          items:
+            type: string
+        failed_source_count:
+          type: integer
+          minimum: 0
+        degraded_source_count:
+          type: integer
+          minimum: 0
+        missing_digest_count:
+          type: integer
+          minimum: 0
+        generated_at:
+          type: string
+          nullable: true
+
+    PublishedReaderDocument:
+      type: object
+      required:
+        [
+          id,
+          stable_key,
+          slug,
+          window_id,
+          title,
+          markdown,
+          materialization_mode,
+          version,
+          published_with_gap,
+          is_current,
+          source_item_count,
+          warning,
+          coverage_ledger,
+          traceability_pack,
+          source_refs,
+          sections,
+          repair_history,
+          created_at,
+          updated_at
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        stable_key:
+          type: string
+        slug:
+          type: string
+        window_id:
+          type: string
+        topic_key:
+          type: string
+          nullable: true
+        topic_label:
+          type: string
+          nullable: true
+        title:
+          type: string
+        summary:
+          type: string
+          nullable: true
+        markdown:
+          type: string
+        materialization_mode:
+          type: string
+          enum:
+            [merge_then_polish, polish_only, repair_patch, repair_section, repair_cluster]
+        version:
+          type: integer
+          minimum: 1
+        published_with_gap:
+          type: boolean
+        is_current:
+          type: boolean
+        source_item_count:
+          type: integer
+          minimum: 0
+        consumption_batch_id:
+          type: string
+          nullable: true
+        cluster_verdict_manifest_id:
+          type: string
+          nullable: true
+        supersedes_document_id:
+          type: string
+          nullable: true
+        warning:
+          $ref: '#/components/schemas/ReaderDocumentWarning'
+        coverage_ledger:
+          type: object
+        traceability_pack:
+          type: object
+        source_refs:
+          type: array
+          items:
+            type: object
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReaderDocumentSection'
+        repair_history:
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ReaderBatchMaterializationResponse:
+      type: object
+      required:
+        [
+          consumption_batch_id,
+          cluster_verdict_manifest_id,
+          window_id,
+          published_document_count,
+          published_with_gap_count,
+          documents,
+          navigation_brief
+        ]
+      properties:
+        consumption_batch_id:
+          type: string
+          format: uuid
+        cluster_verdict_manifest_id:
+          type: string
+        window_id:
+          type: string
+        published_document_count:
+          type: integer
+          minimum: 0
+        published_with_gap_count:
+          type: integer
+          minimum: 0
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishedReaderDocument'
+        navigation_brief:
+          $ref: '#/components/schemas/NavigationBrief'
+
+    ReaderDocumentRepairRequest:
+      type: object
+      required: [repair_mode]
+      properties:
+        repair_mode:
+          type: string
+          enum: [patch, section, cluster]
+        section_ids:
+          type: array
+          items:
+            type: string
+
+    MaterializeBatchRequest:
+      type: object
+      properties:
+        reader_output_locale:
+          type: string
+          default: zh-CN
+        reader_style_profile:
+          type: string
+          default: briefing
+
+    PublishedReaderDocumentListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishedReaderDocument'
+
+    NavigationBrief:
+      type: object
+      required:
+        [
+          brief_kind,
+          generated_at,
+          window_id,
+          document_count,
+          published_with_gap_count,
+          summary,
+          items
+        ]
+      properties:
+        brief_kind:
+          type: string
+        generated_at:
+          type: string
+        window_id:
+          type: string
+        document_count:
+          type: integer
+          minimum: 0
+        published_with_gap_count:
+          type: integer
+          minimum: 0
+        summary:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
 
     JobStep:
       type: object
@@ -2870,7 +3954,7 @@ components:
       properties:
         workflow:
           type: string
-          pattern: ^(poll_feeds|daily_digest|notification_retry|cleanup|provider_canary)$
+          pattern: ^(poll_feeds|consume_pending|daily_digest|notification_retry|cleanup|provider_canary)$
         run_once:
           type: boolean
           default: true

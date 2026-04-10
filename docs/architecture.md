@@ -35,15 +35,17 @@ Everything else in the repository exists to make that loop reliable, inspectable
 - retrieval
 - notifications
 - watchlists, briefing, and merged-story trend views
+- reader pipeline endpoints for cluster verdict manifests, published reader documents, repair, and navigation brief
 - operator-facing controls
 
 ### Worker
 
 `apps/worker` runs the asynchronous pipeline:
 
-- poll feeds
+- poll feeds into the pending-consume pool
 - route entries into the video lane or article/text lane
-- queue and process jobs
+- freeze consumption batches and process queued jobs
+- judge batch clusters, materialize published reader documents, and carry yellow-warning / traceability companion payloads forward
 - write artifacts
 - send video digests
 - send daily digests
@@ -59,6 +61,7 @@ Everything else in the repository exists to make that loop reliable, inspectable
 - artifacts
 - retrieval
 - notifications
+- reader documents and navigation brief
 - reports
 - UI audit hooks
 
@@ -67,11 +70,13 @@ Everything else in the repository exists to make that loop reliable, inspectable
 `apps/web` is the operator command center:
 
 - command overview
+- reader frontstage for published reader documents
 - proof boundary
 - ops inbox / diagnostics
 - watchlists, merged stories, trends, and unified briefings
 - search plus story-aware, briefing-backed Ask front door that carries selected story context into answer, change, and evidence layers through a server-owned story page payload shared with `/briefings`, with one canonical selected-story object instead of front-end stitching or duplicate page aliases
 - digest reading flow
+- source contribution drawer and yellow-warning doc detail view
 - ingest run ledger
 - knowledge layer
 - subscription management with strong-supported templates and generalized RSSHub/RSS intake, now driven by the shared subscription template catalog

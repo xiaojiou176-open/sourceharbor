@@ -389,12 +389,36 @@ export default async function DashboardPage({
 			</section>
 
 			<section
-				className="grid gap-4 xl:grid-cols-4"
+				className="grid gap-4 xl:grid-cols-5"
 				aria-label="SourceHarbor front doors"
 			>
-				<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground xl:col-span-4">
+				<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground xl:col-span-5">
 					{copy.sectionHeadings.primaryFrontDoors}
 				</h2>
+				<Card className="folo-surface border-border/70 xl:col-span-1">
+					<CardHeader>
+						<CardTitle>Reader</CardTitle>
+						<CardDescription>
+							Open the published-doc frontstage where merge docs, singleton
+							polish docs, navigation brief, and yellow-warning honesty now live
+							on one surface.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-3 pt-0">
+						<div className="flex flex-wrap items-center gap-3">
+							<Button asChild>
+								<Link href="/reader">Open Reader</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/briefings">Open Briefings</Link>
+							</Button>
+						</div>
+						<p className="text-sm text-muted-foreground">
+							Use this when you want the actual reading product, not the
+							operator controls or raw job trace.
+						</p>
+					</CardContent>
+				</Card>
 				<Card className="folo-surface border-border/70 xl:col-span-1">
 					<CardHeader>
 						<CardTitle>{copy.frontDoors.subscriptionsTitle}</CardTitle>

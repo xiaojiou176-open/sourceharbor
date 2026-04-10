@@ -31,6 +31,7 @@ It has:
 - plugin-grade Codex and Claude Code bundles
 - ClawHub package metadata and official MCP Registry metadata templates
 - Search, story-aware briefing-backed Ask, shared-story Briefings, MCP, and Ops front doors
+- a reader frontstage with published reader documents, navigation brief, yellow-warning honesty, and source contribution drawer
 - strong-supported YouTube/Bilibili intake plus generalized RSSHub/RSS source intake templates
 - watchlists, merged stories, trends, briefings, bundles, and a sample playground
 - proof and runtime-truth surfaces that explain where confidence comes from
@@ -50,7 +51,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo now has a live GitHub Release object: **`v0.1.14`**
-- `v0.1.14` is the current latest-release ledger, and this release line now catches back up with the current remote `main` head after the distribution-truth closeout landed
+- `v0.1.14` is the current latest-release ledger, but release-current truth must still be checked live against whatever `main` head you are describing because later docs/governance or reader-product landings can move `main` ahead again
 - workflow-dispatch evidence on current `main` is still its own ledger, but it
   now sits alongside a current release page instead of replacing one
 
@@ -88,8 +89,10 @@ These are the strongest current claims:
 - **Public starter surface:** `starter-packs/` is the public entry directory, while `docs/public-skills.md`, `docs/compat/*`, `templates/public-skills/*`, and `examples/*` act as companion first-cut starter assets without exposing internal `.agents/skills`
 - **Local write-route contract:** direct write APIs can be exercised with the local dev token path instead of pretending auth is an unresolved product gap
 - **Source intake contract:** strong-supported YouTube/Bilibili templates plus generalized RSSHub/RSS substrate without overclaiming full-universe proof, with the `/subscriptions` front door now consuming the same template catalog exposed through API and MCP
-- **Front doors:** `/search`, `/ask` (story-aware, briefing-backed answer/change/evidence flow with truthful raw-retrieval fallback, selected-story drill-down, and a server-owned story page payload that now reuses one canonical selected-story object from Briefings), `/briefings` (server-owned briefing page payload for selected story, compare route, and Ask handoff), `/mcp`, `/ops`, `/subscriptions`
+- **Reader pipeline:** `ClusterVerdictManifest`, `PublishedReaderDocument`, `CoverageLedger`, `TraceabilityPack`, `repair` modes, and `NavigationBrief` now exist as repo-side runtime surfaces over `ConsumptionBatch`
+- **Front doors:** `/reader`, `/search`, `/ask` (story-aware, briefing-backed answer/change/evidence flow with truthful raw-retrieval fallback, selected-story drill-down, and a server-owned story page payload that now reuses one canonical selected-story object from Briefings), `/briefings` (server-owned briefing page payload for selected story, compare route, and Ask handoff), `/mcp`, `/ops`, `/subscriptions`
 - **Compounder layer:** `/watchlists`, `/trends` (merged stories + recent evidence), `/briefings` (summary -> differences -> evidence for one watchlist, now with one shared selected-story payload that carries forward into Ask), `/playground`, and `GET /api/v1/jobs/{job_id}/bundle`
+- **Reader API + MCP surface:** `/api/v1/reader/*` plus reader MCP tools for document listing, detail, and navigation brief
 - **Truth surfaces:** [proof.md](./proof.md), [runtime-truth.md](./runtime-truth.md), [start-here.md](./start-here.md), [testing.md](./testing.md)
 
 ## Public Face And Distribution Readiness

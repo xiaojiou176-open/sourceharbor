@@ -440,3 +440,67 @@ def test_subscriptions_router_list_and_upsert_success_paths(
     )
     assert batch_response.status_code == 200
     assert batch_response.json() == {"updated": 3}
+
+
+def test_subscriptions_manual_intake_success_and_error_paths(
+    api_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async def _submit_success(self, **kwargs: Any):
+        assert kwargs["raw_input"] == "https://www.youtube.com/@demo"
+        return {
+            "processed_count": 1,
+            "created_subscriptions": 1,
+            "updated_subscriptions": 0,
+            "queued_manual_items": 0,
+            "reused_manual_items": 0,
+            "rejected_count": 0,
+            "results": [
+                {
+                    "line_number": 1,
+                    "raw_input": "https://www.youtube.com/@demo",
+                    "target_kind": "subscription_source",
+                    "recommended_action": "save_subscription",
+                    "applied_action": "save_subscription",
+                    "status": "created",
+                    "platform": "youtube",
+                    "source_type": "youtube_user",
+                    "source_value": "@demo",
+                    "source_url": "https://www.youtube.com/@demo",
+                    "rsshub_route": "/youtube/user/@demo",
+                    "adapter_type": "rsshub_route",
+                    "content_profile": "video",
+                    "support_tier": "strong_supported",
+                    "display_name": "@demo",
+                    "message": "Saved as a new subscription source.",
+                    "subscription_id": str(uuid.uuid4()),
+                    "job_id": None,
+                }
+            ],
+        }
+
+    monkeypatch.setattr(
+        "apps.api.app.routers.subscriptions.ManualSourceIntakeService.submit",
+        _submit_success,
+    )
+    response = api_client.post(
+        "/api/v1/subscriptions/manual-intake",
+        json={"raw_input": "https://www.youtube.com/@demo"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["created_subscriptions"] == 1
+    assert payload["results"][0]["source_type"] == "youtube_user"
+
+    async def _submit_error(self, **kwargs: Any):
+        raise ValueError("bad manual intake")
+
+    monkeypatch.setattr(
+        "apps.api.app.routers.subscriptions.ManualSourceIntakeService.submit",
+        _submit_error,
+    )
+    response2 = api_client.post(
+        "/api/v1/subscriptions/manual-intake",
+        json={"raw_input": "bad"},
+    )
+    assert response2.status_code == 400
+    assert response2.json()["detail"] == "bad manual intake"

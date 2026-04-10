@@ -26,6 +26,7 @@ from .routers import (
     knowledge,
     notifications,
     ops,
+    reader,
     retrieval,
     subscriptions,
     ui_audit,
@@ -248,6 +249,7 @@ app.include_router(videos.router)
 app.include_router(notifications.router)
 app.include_router(notifications.reports_router)
 app.include_router(ops.router)
+app.include_router(reader.router)
 app.include_router(artifacts.router)
 app.include_router(health.router)
 app.include_router(workflows.router)

@@ -107,10 +107,16 @@ async def run_temporal_worker(settings: Settings) -> None:
 
     from worker.temporal.activities import (
         cleanup_workspace_activity,
+        load_consumption_batch_activity,
+        mark_consumption_batch_closed_activity,
+        mark_consumption_batch_failed_activity,
+        mark_consumption_batch_materialized_activity,
         mark_failed_activity,
         mark_running_activity,
         mark_succeeded_activity,
+        materialize_reader_batch_activity,
         poll_feeds_activity,
+        prepare_consumption_batch_activity,
         provider_canary_activity,
         reconcile_stale_queued_jobs_activity,
         resolve_daily_digest_timing_activity,
@@ -121,6 +127,8 @@ async def run_temporal_worker(settings: Settings) -> None:
     )
     from worker.temporal.workflows import (
         CleanupWorkspaceWorkflow,
+        ConsumeBatchWorkflow,
+        ConsumePendingWorkflow,
         DailyDigestWorkflow,
         NotificationRetryWorkflow,
         PollFeedsWorkflow,
@@ -137,12 +145,20 @@ async def run_temporal_worker(settings: Settings) -> None:
             ProcessJobWorkflow,
             DailyDigestWorkflow,
             CleanupWorkspaceWorkflow,
+            ConsumeBatchWorkflow,
+            ConsumePendingWorkflow,
             NotificationRetryWorkflow,
             ProviderCanaryWorkflow,
         ],
         activities=[
             poll_feeds_activity,
+            prepare_consumption_batch_activity,
+            load_consumption_batch_activity,
+            materialize_reader_batch_activity,
             mark_running_activity,
+            mark_consumption_batch_materialized_activity,
+            mark_consumption_batch_closed_activity,
+            mark_consumption_batch_failed_activity,
             reconcile_stale_queued_jobs_activity,
             run_pipeline_activity,
             mark_succeeded_activity,
@@ -164,7 +180,12 @@ async def start_poll_workflow(
     subscription_id: str | None = None,
     platform: str | None = None,
     max_new_videos: int = 50,
+    run_once: bool = True,
+    interval_minutes: int = 15,
+    workflow_id: str = "poll-feeds-workflow",
 ) -> dict:
+    from temporalio.exceptions import WorkflowAlreadyStartedError
+
     from worker.temporal.workflows import PollFeedsWorkflow
 
     client = await _connect_temporal(settings)
@@ -172,14 +193,35 @@ async def start_poll_workflow(
         "subscription_id": subscription_id,
         "platform": platform,
         "max_new_videos": max_new_videos,
+        "run_once": run_once,
+        "interval_minutes": max(1, int(interval_minutes)),
     }
-    handle = await client.start_workflow(
-        PollFeedsWorkflow.run,
-        filters,
-        id=f"poll-feeds-{uuid4()}",
-        task_queue=settings.temporal_task_queue,
-    )
-    return await handle.result()
+    try:
+        handle = await client.start_workflow(
+            PollFeedsWorkflow.run,
+            filters,
+            id=f"poll-feeds-{uuid4()}" if run_once else workflow_id,
+            task_queue=settings.temporal_task_queue,
+        )
+    except WorkflowAlreadyStartedError:
+        return {
+            "ok": True,
+            "workflow_id": workflow_id,
+            "status": "already_running",
+            "run_once": run_once,
+            "interval_minutes": filters["interval_minutes"],
+        }
+    if run_once:
+        return await handle.result()
+    run_id = getattr(handle, "first_execution_run_id", None) or getattr(handle, "run_id", None)
+    return {
+        "ok": True,
+        "workflow_id": handle.id,
+        "run_id": run_id,
+        "status": "started",
+        "run_once": False,
+        "interval_minutes": filters["interval_minutes"],
+    }
 
 
 async def start_process_workflow(settings: Settings, job_id: str) -> dict:
@@ -464,6 +506,9 @@ async def _main_async(args: argparse.Namespace) -> None:
                 subscription_id=args.subscription_id,
                 platform=args.platform,
                 max_new_videos=args.max_new_videos,
+                run_once=not args.continuous,
+                interval_minutes=args.interval_minutes,
+                workflow_id=args.workflow_id,
             )
         elif args.command == "start-process-workflow":
             output = await start_process_workflow(settings, job_id=args.job_id)
@@ -546,6 +591,13 @@ def _build_parser() -> argparse.ArgumentParser:
     start_poll.add_argument("--subscription-id", default=None)
     start_poll.add_argument("--platform", default=None, choices=["bilibili", "youtube"])
     start_poll.add_argument("--max-new-videos", type=int, default=50)
+    start_poll.add_argument(
+        "--continuous",
+        action="store_true",
+        help="Keep polling on the given interval instead of running once and waiting for result",
+    )
+    start_poll.add_argument("--interval-minutes", type=int, default=15)
+    start_poll.add_argument("--workflow-id", default="poll-feeds-workflow")
 
     start_process = sub.add_parser(
         "start-process-workflow",

@@ -60,6 +60,25 @@ type UndoHistory = {
 	isError: boolean;
 };
 
+function humanizeSourceType(value: string): string {
+	if (value === "youtube_channel_id") {
+		return "YouTube channel ID";
+	}
+	if (value === "youtube_user") {
+		return "YouTube handle";
+	}
+	if (value === "bilibili_uid") {
+		return "Bilibili UID";
+	}
+	if (value === "rsshub_route") {
+		return "RSSHub route";
+	}
+	if (value === "url") {
+		return "Source URL";
+	}
+	return value;
+}
+
 export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 	const router = useRouter();
 	const [visibleSubscriptions, setVisibleSubscriptions] =
@@ -471,7 +490,7 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 										<td className="px-3 py-3">
 											<div>{item.platform}</div>
 											<div className="text-xs text-muted-foreground">
-												{item.source_type}
+												{humanizeSourceType(item.source_type)}
 											</div>
 										</td>
 										<td className="px-3 py-3">

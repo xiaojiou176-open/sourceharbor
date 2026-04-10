@@ -10,6 +10,7 @@ type SeoRoute =
 	| "ingestRuns"
 	| "feed"
 	| "subscriptions"
+	| "reader"
 	| "search"
 	| "ask"
 	| "watchlists"
@@ -48,6 +49,7 @@ const ROUTE_PATHS: Record<SeoRoute, string> = {
 	ingestRuns: "/ingest-runs",
 	feed: "/feed",
 	subscriptions: "/subscriptions",
+	reader: "/reader",
 	search: "/search",
 	ask: "/ask",
 	watchlists: "/watchlists",
@@ -108,6 +110,12 @@ const ROUTE_KEYWORDS: Record<SeoRoute, string[]> = {
 		"source intake settings",
 		"subscription control plane",
 		"ingestion sources",
+	],
+	reader: [
+		"reader frontstage",
+		"published reader documents",
+		"yellow warning reading surface",
+		"source contribution drawer",
 	],
 	search: [
 		"grounded search",

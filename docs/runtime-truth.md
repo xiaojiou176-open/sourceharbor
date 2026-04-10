@@ -122,7 +122,7 @@ These are safe:
 - SourceHarbor is source-first and proof-first
 - local routes may differ from 9000/3000 and should be read from `resolved.env`
 - Postgres, SQLite, and artifacts serve different truth roles
-- Search, Ask, MCP, and ops surfaces point at the same pipeline
+- Reader, Search, Ask, MCP, and ops surfaces point at the same pipeline
 
 These need stronger proof:
 

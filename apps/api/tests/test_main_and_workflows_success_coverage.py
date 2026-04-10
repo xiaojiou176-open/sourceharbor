@@ -190,3 +190,65 @@ def test_workflows_run_uses_stable_workflow_id_for_non_run_once_requests(
         "id": "provider_canary-workflow",
         "task_queue": "sourceharbor-worker",
     }
+
+
+def test_workflows_run_supports_consume_pending_requests(
+    api_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeWorkflowAlreadyStartedError(Exception):
+        pass
+
+    captured: dict[str, object] = {}
+
+    class _Handle:
+        id = "consume_pending-workflow"
+        run_id = "run-id-consume"
+        first_execution_run_id = "run-id-consume"
+
+    class _Connected:
+        async def start_workflow(self, workflow_name, request_payload, **kwargs):
+            captured["workflow_name"] = workflow_name
+            captured["request_payload"] = request_payload
+            captured["kwargs"] = kwargs
+            return _Handle()
+
+    class FakeClient:
+        @staticmethod
+        async def connect(*args, **kwargs):
+            del args, kwargs
+            return _Connected()
+
+    fake_temporalio = types.ModuleType("temporalio")
+    fake_client_module = types.ModuleType("temporalio.client")
+    fake_exceptions_module = types.ModuleType("temporalio.exceptions")
+    fake_client_module.Client = FakeClient
+    fake_exceptions_module.WorkflowAlreadyStartedError = FakeWorkflowAlreadyStartedError
+    fake_temporalio.client = fake_client_module  # type: ignore[attr-defined]
+    fake_temporalio.exceptions = fake_exceptions_module  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "temporalio", fake_temporalio)
+    monkeypatch.setitem(sys.modules, "temporalio.client", fake_client_module)
+    monkeypatch.setitem(sys.modules, "temporalio.exceptions", fake_exceptions_module)
+
+    response = api_client.post(
+        "/api/v1/workflows/run",
+        json={
+            "workflow": "consume_pending",
+            "run_once": False,
+            "payload": {"interval_minutes": 120, "timezone_name": "America/Los_Angeles"},
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "started"
+    assert payload["workflow_id"] == "consume_pending-workflow"
+    assert captured["workflow_name"] == "ConsumePendingWorkflow"
+    assert captured["request_payload"] == {
+        "interval_minutes": 120,
+        "timezone_name": "America/Los_Angeles",
+        "run_once": False,
+    }
+    assert captured["kwargs"] == {
+        "id": "consume_pending-workflow",
+        "task_queue": "sourceharbor-worker",
+    }

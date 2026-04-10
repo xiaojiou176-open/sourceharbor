@@ -336,6 +336,7 @@ def test_create_server_registers_tools_and_normalizes_error_payloads(
     monkeypatch.setattr(server, "register_knowledge_tools", _register_tool)
     monkeypatch.setattr(server, "register_artifact_tools", _register_tool)
     monkeypatch.setattr(server, "register_notification_tools", _register_tool)
+    monkeypatch.setattr(server, "register_reader_tools", _register_tool)
     monkeypatch.setattr(server, "register_report_tools", _register_tool)
     monkeypatch.setattr(server, "register_health_tools", _register_tool)
     monkeypatch.setattr(server, "register_workflow_tools", _register_tool)

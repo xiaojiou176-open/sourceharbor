@@ -70,7 +70,7 @@ class IngestRunItem(Base):
     __tablename__ = "ingest_run_items"
     __table_args__ = (
         CheckConstraint(
-            "item_status IN ('queued', 'deduped', 'skipped')",
+            "item_status IN ('pending_consume', 'batch_assigned', 'closed', 'deduped', 'skipped')",
             name="ingest_run_items_item_status_check",
         ),
         CheckConstraint(
@@ -114,7 +114,7 @@ class IngestRunItem(Base):
     entry_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
     pipeline_mode: Mapped[str | None] = mapped_column(String(64), nullable=True)
     content_type: Mapped[str] = mapped_column(String(32), nullable=False, default="video")
-    item_status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    item_status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending_consume")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

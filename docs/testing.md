@@ -86,6 +86,7 @@ What it covers:
 - API services and routers
 - worker pipeline logic
 - MCP tool contracts
+- reader pipeline judge/materialize/repair flows plus reader route surfaces
 
 ## Supervisor Clean Path
 
@@ -230,6 +231,7 @@ What this layer proves:
 - external-proof workflow-dispatch lanes still point at the current public truth
 - current-proof, newcomer, and current-state receipts still match the current HEAD
 - release/publication truth is being read as its own ledger instead of being mixed into the default local path
+- reader route contracts, published-doc navigation surfaces, and public-sensitive wording can be audited without pretending hosted proof already exists
 
 ## Public-Proof Boundary
 
