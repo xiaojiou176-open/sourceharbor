@@ -148,12 +148,12 @@ export default async function ReaderDetailPage({
 
 				<div className="space-y-6 lg:sticky lg:top-6">
 					<Card className="border-border/70 shadow-sm">
-					<CardHeader>
-						<h2 className="text-base font-semibold">Reader map</h2>
-						<CardDescription>
-							A compact orientation layer before you drill into evidence.
-						</CardDescription>
-					</CardHeader>
+						<CardHeader>
+							<h2 className="text-base font-semibold">Reader map</h2>
+							<CardDescription>
+								A compact orientation layer before you drill into evidence.
+							</CardDescription>
+						</CardHeader>
 						<CardContent className="space-y-4 text-sm">
 							<div className="flex flex-wrap gap-2">
 								<Badge variant="secondary">
@@ -199,12 +199,12 @@ export default async function ReaderDetailPage({
 					<SourceContributionDrawer document={document} />
 
 					<Card className="border-border/70 bg-muted/20 shadow-sm">
-					<CardHeader>
-						<h2 className="text-base font-semibold">Coverage snapshot</h2>
-						<CardDescription>
-							A secondary integrity read. Check this after the body and
-							source-contribution drawer, not before.
-						</CardDescription>
+						<CardHeader>
+							<h2 className="text-base font-semibold">Coverage snapshot</h2>
+							<CardDescription>
+								A secondary integrity read. Check this after the body and
+								source-contribution drawer, not before.
+							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-2 text-sm">
 							<p>
