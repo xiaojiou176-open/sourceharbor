@@ -51,13 +51,13 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo now has a live GitHub Release object: **`v0.1.14`**
-- `v0.1.14` is the current latest-release ledger, but release-current truth must still be checked live against whatever `main` head you are describing because later docs/governance or reader-product landings can move `main` ahead again
+- `v0.1.14` is the current latest-release ledger, but it still points behind the current remote `main` head
 - workflow-dispatch evidence on current `main` is still its own ledger, but it
   now sits alongside a current release page instead of replacing one
 
 Practical implication:
 
-- release-current proof now exists for the current canonical public repo
+- release-current proof now exists for the current canonical public repo, but it is not currently aligned to the latest remote `main` head
 - release-current wording must stay honest when current `main` has already moved ahead again after the tag cut
 - older tag-era wording should stay historical, not be reused as if it were the
   current release

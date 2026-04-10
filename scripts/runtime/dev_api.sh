@@ -92,7 +92,7 @@ if [[ ! -d "$ROOT_DIR/apps/api" ]]; then
   exit 1
 fi
 
-export PYTHONPATH="$ROOT_DIR:${PYTHONPATH:-}"
+export PYTHONPATH="$ROOT_DIR/apps/worker:$ROOT_DIR:${PYTHONPATH:-}"
 cd "$ROOT_DIR"
 
 uvicorn_args=("$API_APP" "--host" "$API_HOST" "--port" "$API_PORT")

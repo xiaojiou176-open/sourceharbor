@@ -11,18 +11,26 @@ type SourceContributionDrawerProps = {
 export function SourceContributionDrawer({
 	document,
 }: SourceContributionDrawerProps) {
+	const sourceCount = document.source_refs.length;
+	const sectionCount = document.sections.length;
+
 	return (
-		<Card className="border-border/70">
-			<CardHeader className="pb-3">
+		<Card className="border-border/70 shadow-sm">
+			<CardHeader className="space-y-2 pb-3">
 				<CardTitle className="text-base">Source contribution drawer</CardTitle>
+				<p className="text-sm text-muted-foreground">
+					Keep the main body clean, then open the drawer only when you want to
+					inspect where each claim came from.
+				</p>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				<details
-					className="rounded-xl border border-border/70 bg-background/80 p-4"
-					open
-				>
+				<div className="flex flex-wrap gap-2 text-sm">
+					<Badge variant="secondary">Sources {sourceCount}</Badge>
+					<Badge variant="outline">Sections {sectionCount}</Badge>
+				</div>
+				<details className="rounded-xl border border-border/70 bg-background/80 p-4">
 					<summary className="cursor-pointer font-medium">
-						{document.source_refs.length} linked source items
+						{sourceCount} linked source items
 					</summary>
 					<div className="mt-4 space-y-4">
 						{document.source_refs.map((source) => {
@@ -42,10 +50,11 @@ export function SourceContributionDrawer({
 								typeof source.digest_preview === "string"
 									? source.digest_preview
 									: null;
+
 							return (
 								<div
 									key={String(source.source_item_id ?? title)}
-									className="rounded-lg border border-border/60 p-3"
+									className="rounded-xl border border-border/60 p-3"
 								>
 									<div className="flex flex-wrap items-center gap-2">
 										<p className="font-medium">{title}</p>
@@ -94,7 +103,7 @@ export function SourceContributionDrawer({
 						{document.sections.map((section) => (
 							<div
 								key={section.section_id}
-								className="rounded-lg border border-border/60 p-3"
+								className="rounded-xl border border-border/60 p-3"
 							>
 								<p className="font-medium">{section.title}</p>
 								<p className="mt-1 text-muted-foreground">
