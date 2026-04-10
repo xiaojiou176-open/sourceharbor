@@ -7,6 +7,14 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-04-10
+
+### Changed
+
+- refined the reader frontstage so `/reader` reads more like an editorial landing and less like a feature explainer
+- turned the detail-state preview into a showroom specimen with calmer copy, a quieter companion rail, and a more compact warning contract
+- tightened the public version anchors to `0.1.19` so the next release can stay aligned with current `main`
+
 ## [0.1.18] - 2026-04-10
 
 ### Added

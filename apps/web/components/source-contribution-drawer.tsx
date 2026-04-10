@@ -28,8 +28,9 @@ export function SourceContributionDrawer({
 				<div className="space-y-2">
 					<h2 className="text-base font-semibold">Evidence drawer</h2>
 					<p className="text-sm leading-6 text-muted-foreground">
-						Keep the body clean, then open this backstage panel only when you
-						want to inspect where each claim, section, or warning came from.
+						Read the body first. Keep the warning in mind. Then open this
+						backstage drawer only when you want to inspect where each claim,
+						section, or warning came from.
 					</p>
 				</div>
 			</CardHeader>
@@ -43,11 +44,16 @@ export function SourceContributionDrawer({
 					traceability, not while you are still absorbing the main argument.
 				</p>
 				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
-					<summary className="cursor-pointer list-none">
-						<span className="flex items-center gap-2 font-medium text-foreground">
-							<FileStack className="h-4 w-4 text-rose-600" />
-							{sourceCount} linked source items
-						</span>
+					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/30">
+						<div className="flex items-start justify-between gap-3">
+							<span className="flex items-center gap-2 font-medium text-foreground">
+								<FileStack className="h-4 w-4 text-rose-600" />
+								{sourceCount} linked source items
+							</span>
+							<span className="text-xs text-muted-foreground">
+								Open evidence only when needed
+							</span>
+						</div>
 					</summary>
 					<div className="mt-4 space-y-4">
 						{document.source_refs.map((source) => {
@@ -113,11 +119,16 @@ export function SourceContributionDrawer({
 					</div>
 				</details>
 				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
-					<summary className="cursor-pointer list-none">
-						<span className="flex items-center gap-2 font-medium text-foreground">
-							<Braces className="h-4 w-4 text-rose-600" />
-							Section traceability
-						</span>
+					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/30">
+						<div className="flex items-start justify-between gap-3">
+							<span className="flex items-center gap-2 font-medium text-foreground">
+								<Braces className="h-4 w-4 text-rose-600" />
+								Section traceability
+							</span>
+							<span className="text-xs text-muted-foreground">
+								Check coverage after the body
+							</span>
+						</div>
 					</summary>
 					<div className="mt-4 space-y-3 text-sm">
 						{document.sections.map((section) => (

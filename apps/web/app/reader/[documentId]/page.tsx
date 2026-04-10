@@ -117,21 +117,54 @@ export default async function ReaderDetailPage({
 							{document.summary ??
 								"This document unifies the reader-facing markdown, yellow-warning contract, and source contribution drawer for one published reader unit."}
 						</p>
+						{resolved.documentId === DEMO_READER_DOCUMENT_ID ? (
+							<div className="max-w-3xl rounded-2xl border border-rose-200/70 bg-rose-50/70 p-4 text-sm leading-6 text-rose-950/80 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-100/80">
+								This is a specimen edition: read the body first, keep the
+								warning in mind, then open evidence only when you want to
+								inspect the backstage contract.
+							</div>
+						) : null}
 						<div className="flex flex-wrap gap-3 text-sm text-foreground/75">
 							<span>Window {document.window_id}</span>
 							<span>Version {document.version}</span>
 							<span>Sources {document.source_item_count}</span>
+						</div>
+						<div className="flex flex-wrap gap-2 text-sm">
+							<a
+								href="#reader-body"
+								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
+							>
+								Read the body
+							</a>
+							<a
+								href="#reader-warning"
+								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
+							>
+								Keep the warning in mind
+							</a>
+							<a
+								href="#reader-evidence"
+								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
+							>
+								Open evidence when needed
+							</a>
+							<a
+								href="#reader-coverage"
+								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
+							>
+								Check coverage last
+							</a>
 						</div>
 					</div>
 					<Card className="border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 shadow-sm dark:to-rose-950/10">
 						<CardHeader className="space-y-3 pb-4">
 							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 								<BookOpenText className="h-4 w-4 text-rose-600" />
-								Reading posture
+								Reading companion
 							</div>
 							<CardDescription className="leading-6">
-								Use the page like a reading desk: body first, warning context
-								second, provenance drawer only when you need to verify.
+								A quiet companion for the page. Keep it nearby, but let the
+								reader body stay on stage.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -141,17 +174,26 @@ export default async function ReaderDetailPage({
 										01 Body pass
 									</p>
 									<p className="mt-2 text-sm leading-6 text-muted-foreground">
-										Read the finished markdown as one deck before opening any
-										backstage surface.
+										Read the finished markdown as one deck before you touch the
+										auxiliary rail.
 									</p>
 								</div>
 								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
 									<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-										02 Evidence pass
+										02 Warning pass
 									</p>
 									<p className="mt-2 text-sm leading-6 text-muted-foreground">
-										Move to the right rail only when you need section
-										traceability, warning context, or source lineage.
+										Keep the warning in mind, but do not let it replace the main
+										body.
+									</p>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+										03 Evidence pass
+									</p>
+									<p className="mt-2 text-sm leading-6 text-muted-foreground">
+										Open evidence only when you need provenance, then check
+										coverage last.
 									</p>
 								</div>
 							</div>
@@ -171,26 +213,31 @@ export default async function ReaderDetailPage({
 				</div>
 			</section>
 
-			{document.published_with_gap ? (
-				<YellowWarningCard reasons={warningReasons} />
-			) : (
-				<Card className="border-border/70 bg-muted/20 shadow-sm">
-					<CardHeader className="space-y-3 pb-4">
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<FileStack className="h-4 w-4 text-rose-600" />
-							Reading contract
-						</div>
-						<CardDescription className="leading-6">
-							This document is published as a stable reading unit. Stay with the
-							body as the main narrative, then step into evidence only if you
-							need to inspect provenance or coverage detail.
-						</CardDescription>
-					</CardHeader>
-				</Card>
-			)}
+			<section id="reader-warning">
+				{document.published_with_gap ? (
+					<YellowWarningCard reasons={warningReasons} />
+				) : (
+					<Card className="border-border/70 bg-muted/20 shadow-sm">
+						<CardHeader className="space-y-3 pb-4">
+							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+								<FileStack className="h-4 w-4 text-rose-600" />
+								Reading contract
+							</div>
+							<CardDescription className="leading-6">
+								This document is published as a stable reading unit. Stay with
+								the body as the main narrative, then step into evidence only if
+								you need to inspect provenance or coverage detail.
+							</CardDescription>
+						</CardHeader>
+					</Card>
+				)}
+			</section>
 
 			<section className="grid gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(300px,0.9fr)]">
-				<Card className="border-border/70 bg-background/95 shadow-sm">
+				<Card
+					id="reader-body"
+					className="border-border/70 bg-background/95 shadow-sm"
+				>
 					<CardHeader className="space-y-4">
 						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 							<NotebookText className="h-4 w-4 text-rose-600" />
@@ -218,17 +265,18 @@ export default async function ReaderDetailPage({
 				</Card>
 
 				<div className="space-y-6 lg:sticky lg:top-6">
-					<Card className="border-border/70 bg-background/95 shadow-sm">
-						<CardHeader>
-							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-								<ListTree className="h-4 w-4 text-rose-600" />
-								Reader map
-							</div>
-							<CardDescription>
-								A compact orientation layer before you drill into evidence.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4 text-sm">
+					<div
+						id="reader-map"
+						className="rounded-3xl border border-border/70 bg-background/92 p-5 shadow-sm"
+					>
+						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+							<ListTree className="h-4 w-4 text-rose-600" />
+							Reader map
+						</div>
+						<p className="mt-2 text-sm leading-6 text-muted-foreground">
+							A compact orientation strip before you touch the backstage tools.
+						</p>
+						<div className="mt-4 space-y-4 text-sm">
 							<div className="flex flex-wrap gap-2">
 								<Badge variant="secondary">
 									{document.materialization_mode}
@@ -241,11 +289,15 @@ export default async function ReaderDetailPage({
 									{document.published_with_gap ? "Yellow warning" : "Clear"}
 								</Badge>
 							</div>
-							<div className="space-y-1 text-muted-foreground">
-								<p>Window {document.window_id}</p>
-								<p>Version {document.version}</p>
-								<p>Sources {document.source_item_count}</p>
-								<p>Sections {sections.length}</p>
+							<div className="grid gap-3 sm:grid-cols-2">
+								<div className="rounded-2xl border border-border/60 bg-muted/20 p-3 text-muted-foreground">
+									<p>Window {document.window_id}</p>
+									<p>Version {document.version}</p>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-muted/20 p-3 text-muted-foreground">
+									<p>Sources {document.source_item_count}</p>
+									<p>Sections {sections.length}</p>
+								</div>
 							</div>
 							{sections.length ? (
 								<div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
@@ -267,23 +319,27 @@ export default async function ReaderDetailPage({
 									</ul>
 								</div>
 							) : null}
-						</CardContent>
-					</Card>
+						</div>
+					</div>
 
-					<SourceContributionDrawer document={document} />
+					<div id="reader-evidence">
+						<SourceContributionDrawer document={document} />
+					</div>
 
-					<Card className="border-border/70 bg-muted/20 shadow-sm">
-						<CardHeader>
-							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+					<details
+						id="reader-coverage"
+						className="rounded-3xl border border-border/70 bg-muted/20 p-5 shadow-sm"
+					>
+						<summary className="cursor-pointer list-none">
+							<span className="flex items-center gap-2 text-sm font-medium text-foreground">
 								<FileStack className="h-4 w-4 text-rose-600" />
 								Coverage snapshot
-							</div>
-							<CardDescription>
-								A secondary integrity read. Check this after the body and
-								source-contribution drawer, not before.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-2 text-sm">
+							</span>
+							<p className="mt-2 text-sm leading-6 text-muted-foreground">
+								Check coverage last, after the body and evidence drawer.
+							</p>
+						</summary>
+						<div className="mt-4 space-y-2 text-sm">
 							<p>
 								Covered sources:{" "}
 								{String(
@@ -305,8 +361,8 @@ export default async function ReaderDetailPage({
 										"unknown",
 								)}
 							</p>
-						</CardContent>
-					</Card>
+						</div>
+					</details>
 				</div>
 			</section>
 		</div>

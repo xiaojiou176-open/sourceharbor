@@ -81,7 +81,7 @@ export default async function ReaderPage() {
 						</Badge>
 						<div className="space-y-4">
 							<p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-								Published reading desk
+								Editorial reading desk
 							</p>
 							<h1
 								data-route-heading
@@ -97,36 +97,24 @@ export default async function ReaderPage() {
 								back into intake or dashboard mode.
 							</CardDescription>
 						</div>
-						<div className="grid gap-3 md:grid-cols-3">
-							<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
-								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-									<BookOpenText className="h-4 w-4 text-rose-600" />
-									Read body first
-								</div>
-								<p className="mt-2 text-sm leading-6 text-muted-foreground">
-									Open the published document as a single unit instead of
-									reconstructing the story from source fragments.
-								</p>
+						<div className="flex flex-wrap gap-3 text-sm text-foreground/75">
+							<div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-2">
+								<BookOpenText className="h-4 w-4 text-rose-600" />
+								<span className="font-medium text-foreground">
+									Read the body
+								</span>
 							</div>
-							<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
-								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-									<NotebookTabs className="h-4 w-4 text-rose-600" />
-									Keep context close
-								</div>
-								<p className="mt-2 text-sm leading-6 text-muted-foreground">
-									Use the brief as a desk note, not as a second stage that
-									steals attention from the reading unit.
-								</p>
+							<div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-2">
+								<NotebookTabs className="h-4 w-4 text-rose-600" />
+								<span className="font-medium text-foreground">
+									Keep the warning in mind
+								</span>
 							</div>
-							<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
-								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-									<Search className="h-4 w-4 text-rose-600" />
-									Verify on demand
-								</div>
-								<p className="mt-2 text-sm leading-6 text-muted-foreground">
-									Only leave the page for search, trends, or intake when the
-									current deck no longer answers the question you came with.
-								</p>
+							<div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-2">
+								<Search className="h-4 w-4 text-rose-600" />
+								<span className="font-medium text-foreground">
+									Open evidence only when needed
+								</span>
 							</div>
 						</div>
 					</CardHeader>
@@ -149,14 +137,16 @@ export default async function ReaderPage() {
 							{!leadDocument ? (
 								<Button asChild variant="outline" size="lg">
 									<Link href={`/reader/${DEMO_READER_DOCUMENT_ID}`}>
-										Preview the detail view
+										Open specimen detail
 									</Link>
 								</Button>
 							) : null}
-							<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-								<Badge variant="secondary">Published {totalDocuments}</Badge>
-								<Badge variant="outline">Clear {clearDocuments.length}</Badge>
-								<Badge variant="outline">Warnings {warningCount}</Badge>
+							<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+								<span>Published {totalDocuments}</span>
+								<span aria-hidden="true">/</span>
+								<span>Clear {clearDocuments.length}</span>
+								<span aria-hidden="true">/</span>
+								<span>Warnings {warningCount}</span>
 							</div>
 						</div>
 						{leadDocument ? (
@@ -213,8 +203,8 @@ export default async function ReaderPage() {
 										Reading desk note
 									</div>
 									<p className="text-sm leading-6 text-muted-foreground">
-										Stay with this deck until you hit a question the body cannot
-										answer. The goal is fewer tabs, not more surface hopping.
+										Read the body first. Keep the warning in mind. Open evidence
+										only when the deck stops answering your question.
 									</p>
 									{leadSources.length ? (
 										<div className="rounded-2xl border border-border/60 bg-background/90 p-4">
@@ -272,27 +262,46 @@ export default async function ReaderPage() {
 								</div>
 							</div>
 						) : (
-							<div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 p-6">
-								<p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-									Lead reading deck
-								</p>
-								<p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-									Run intake, freeze a batch, and materialize the reader
-									pipeline to turn raw source items into readable documents on
-									this frontstage.
-								</p>
-								<p className="mt-3 text-sm text-muted-foreground">
-									If you want to inspect the detail-state layout before the
-									first live deck lands, open the preview detail view from the
-									hero actions above.
-								</p>
+							<div className="grid gap-4 rounded-[1.75rem] border border-dashed border-border/70 bg-muted/20 p-6 md:grid-cols-[minmax(0,1.3fr)_minmax(260px,0.8fr)]">
+								<div>
+									<p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
+										Lead reading deck
+									</p>
+									<p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
+										Run intake, freeze a batch, and materialize the reader
+										pipeline to turn raw source items into readable documents on
+										this frontstage.
+									</p>
+									<p className="mt-3 text-sm text-muted-foreground">
+										Until the first live deck lands, the specimen detail gives
+										you a truthful way to inspect the body, warning, and
+										evidence hierarchy.
+									</p>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/90 p-5">
+									<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+										Showroom specimen
+									</p>
+									<p className="mt-3 text-sm leading-6 text-muted-foreground">
+										Open one fully staged detail page first, then come back once
+										the live shelf has materialized.
+									</p>
+									<Button asChild variant="outline" className="mt-4 w-full">
+										<Link href={`/reader/${DEMO_READER_DOCUMENT_ID}`}>
+											Open specimen detail
+										</Link>
+									</Button>
+								</div>
 							</div>
 						)}
 					</CardContent>
 				</Card>
 
 				<Card className="border-border/70 bg-background/95 shadow-sm lg:sticky lg:top-6">
-					<CardHeader>
+					<CardHeader className="space-y-4">
+						<Badge variant="outline" className="w-fit">
+							Desk note
+						</Badge>
 						<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
 							Orientation note
 						</p>
@@ -304,10 +313,12 @@ export default async function ReaderPage() {
 							like a margin note, then go back to the strongest deck.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-3 text-sm">
+					<CardContent className="space-y-4 text-sm">
 						{navigationBrief ? (
 							<>
-								<p>{navigationBrief.summary}</p>
+								<p className="text-muted-foreground">
+									{navigationBrief.summary}
+								</p>
 								<div className="flex flex-wrap gap-2">
 									<Badge variant="secondary">
 										Docs {navigationBrief.document_count}
@@ -317,27 +328,53 @@ export default async function ReaderPage() {
 									</Badge>
 								</div>
 								<div className="space-y-2">
-									{navigationItems.map((item) => (
+									{navigationItems.map((item, index) => (
 										<Link
 											key={item.document_id}
 											href={item.route}
-											className="block rounded-2xl border border-border/60 p-4 transition hover:bg-muted/40"
+											className="block rounded-2xl border border-border/60 p-4 transition hover:border-rose-200/80 hover:bg-muted/40"
 										>
-											<p className="font-medium">{item.title}</p>
-											{item.summary ? (
-												<p className="mt-1 line-clamp-2 text-muted-foreground">
-													{item.summary}
-												</p>
-											) : null}
+											<div className="flex items-start gap-3">
+												<span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 text-xs font-semibold text-muted-foreground">
+													{String(index + 1).padStart(2, "0")}
+												</span>
+												<div className="min-w-0">
+													<p className="font-medium">{item.title}</p>
+													{item.summary ? (
+														<p className="mt-1 line-clamp-2 text-muted-foreground">
+															{item.summary}
+														</p>
+													) : null}
+												</div>
+											</div>
 										</Link>
 									))}
 								</div>
 							</>
 						) : (
-							<p className="text-muted-foreground">
-								No navigation brief is available yet. Materialize one
-								consumption batch first.
-							</p>
+							<div className="space-y-3">
+								<p className="text-muted-foreground">
+									No navigation brief is available yet. Until the first live
+									deck lands, use the specimen route as your sample reading
+									path.
+								</p>
+								<div className="space-y-2">
+									<div className="rounded-2xl border border-border/60 p-4">
+										<p className="font-medium">01 Open the specimen</p>
+										<p className="mt-1 text-muted-foreground">
+											Read one finished sample before you configure intake.
+										</p>
+									</div>
+									<div className="rounded-2xl border border-border/60 p-4">
+										<p className="font-medium">
+											02 Materialize the first live deck
+										</p>
+										<p className="mt-1 text-muted-foreground">
+											Freeze a batch, publish it, then return to this shelf.
+										</p>
+									</div>
+								</div>
+							</div>
 						)}
 					</CardContent>
 				</Card>

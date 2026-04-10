@@ -31,47 +31,60 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 					reading, then check the evidence drawer before you quote or reuse a
 					claim.
 				</p>
+				<div className="flex flex-wrap gap-2 text-xs font-medium">
+					<Badge
+						variant="outline"
+						className="border-amber-400/80 text-amber-950 dark:border-amber-700 dark:text-amber-100"
+					>
+						Read the body
+					</Badge>
+					<Badge
+						variant="outline"
+						className="border-amber-400/80 text-amber-950 dark:border-amber-700 dark:text-amber-100"
+					>
+						Keep the warning in mind
+					</Badge>
+					<Badge
+						variant="outline"
+						className="border-amber-400/80 text-amber-950 dark:border-amber-700 dark:text-amber-100"
+					>
+						Open evidence only when needed
+					</Badge>
+				</div>
 			</CardHeader>
-			<CardContent className="space-y-5 text-sm">
-				<div className="grid gap-3 md:grid-cols-3">
-					<div className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-						<p className="font-medium">What this means</p>
-						<p className="mt-2 leading-6">
-							One or more evidence lanes are missing or degraded, so the body is
-							informative but not fully sealed.
-						</p>
-					</div>
-					<div className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-						<p className="font-medium">How to read safely</p>
-						<p className="mt-2 leading-6">
-							Use the body for orientation first, then open provenance before
-							you export a claim into another workflow.
-						</p>
-					</div>
-					<div className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-						<p className="font-medium">What not to assume</p>
-						<p className="mt-2 leading-6">
-							Do not treat a yellow-warning document as the final proof packet
-							just because the narrative already reads well.
-						</p>
-					</div>
+			<CardContent className="space-y-4 text-sm">
+				<div className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
+					<p className="font-medium">What this means</p>
+					<p className="mt-2 leading-6">
+						One or more evidence lanes are missing or degraded, so the body is
+						informative but not fully sealed.
+					</p>
 				</div>
-				<div className="space-y-1">
-					<p className="font-medium">Safe reading checklist</p>
-					<ul className="list-disc space-y-1 pl-5">
-						<li>Read the body first.</li>
-						<li>Open the source contribution drawer before reusing a claim.</li>
-						<li>Keep the warning context in mind when comparing sources.</li>
-					</ul>
-				</div>
-				<div className="space-y-1">
-					<p className="font-medium">Why this warning exists</p>
-					<ul className="list-disc space-y-1 pl-5">
-						{reasons.map((reason) => (
-							<li key={reason}>{reason}</li>
-						))}
-					</ul>
-				</div>
+				<details className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
+					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-amber-100/70 dark:hover:bg-amber-900/20">
+						<span className="font-medium">Open full warning context</span>
+					</summary>
+					<div className="mt-4 grid gap-5 md:grid-cols-2">
+						<div className="space-y-1">
+							<p className="font-medium">Safe reading checklist</p>
+							<ul className="list-disc space-y-1 pl-5">
+								<li>Read the body first.</li>
+								<li>
+									Open the source contribution drawer before reusing a claim.
+								</li>
+								<li>Check coverage last.</li>
+							</ul>
+						</div>
+						<div className="space-y-1">
+							<p className="font-medium">Why this warning exists</p>
+							<ul className="list-disc space-y-1 pl-5">
+								{reasons.map((reason) => (
+									<li key={reason}>{reason}</li>
+								))}
+							</ul>
+						</div>
+					</div>
+				</details>
 			</CardContent>
 		</Card>
 	);

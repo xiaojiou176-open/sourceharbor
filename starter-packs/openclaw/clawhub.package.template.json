@@ -1,6 +1,6 @@
 {
   "name": "sourceharbor-openclaw-watchlist-briefing",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "SourceHarbor first-cut OpenClaw package template for watchlist briefings and MCP/API reuse.",
   "license": "MIT",
   "files": [
