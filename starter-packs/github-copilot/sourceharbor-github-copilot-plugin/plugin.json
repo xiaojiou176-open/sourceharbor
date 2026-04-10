@@ -1,6 +1,6 @@
 {
   "name": "SourceHarbor GitHub Copilot Plugin",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "GitHub Copilot plugin bundle for grounded SourceHarbor watchlist briefings through MCP and the HTTP API.",
   "skills": [
     "./skills/sourceharbor-watchlist-briefing"

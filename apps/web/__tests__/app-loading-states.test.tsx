@@ -14,6 +14,7 @@ type LoadingCase = {
 	heading: string;
 	message: string;
 	describedBy: string;
+	hasSrOnlyPageHeading?: boolean;
 };
 
 const LOADING_CASES: LoadingCase[] = [
@@ -23,6 +24,7 @@ const LOADING_CASES: LoadingCase[] = [
 		heading: "Dashboard loading",
 		message: "Loading the command center. Please wait.",
 		describedBy: "app-loading-message",
+		hasSrOnlyPageHeading: true,
 	},
 	{
 		name: "jobs loading",
@@ -62,6 +64,7 @@ describe("app loading surfaces", () => {
 		heading,
 		message,
 		describedBy,
+		hasSrOnlyPageHeading = false,
 	}) => {
 		const { container, unmount } = render(<Component />);
 
@@ -70,9 +73,19 @@ describe("app loading surfaces", () => {
 		expect(section).toHaveAttribute("aria-busy", "true");
 		expect(section).toHaveAttribute("aria-describedby", describedBy);
 
-		const headingNode = screen.getByText(heading);
+		const headingNode = screen.getByText(heading, {
+			selector: '[data-slot="card-title"]',
+		});
 		expect(headingNode).toHaveAttribute("aria-hidden", "true");
 		expect(container.querySelectorAll(".skeleton-line")).toHaveLength(3);
+		const pageHeading = screen.queryByRole("heading", {
+			level: 1,
+			name: heading,
+		});
+		expect(Boolean(pageHeading)).toBe(hasSrOnlyPageHeading);
+		expect(pageHeading?.classList.contains("sr-only") ?? false).toBe(
+			hasSrOnlyPageHeading,
+		);
 
 		const status = screen.getByRole("status");
 		expect(status).toHaveAttribute("id", describedBy);

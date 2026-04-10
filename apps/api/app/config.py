@@ -87,7 +87,7 @@ class Settings:
     def from_env(cls) -> Settings:
         return cls(
             app_name=os.getenv("APP_NAME", "SourceHarbor API"),
-            app_version=os.getenv("APP_VERSION", "0.1.17"),
+            app_version=os.getenv("APP_VERSION", "0.1.18"),
             database_url=_read_required_env("DATABASE_URL"),
             temporal_target_host=_read_required_env("TEMPORAL_TARGET_HOST"),
             temporal_namespace=_read_required_env("TEMPORAL_NAMESPACE"),

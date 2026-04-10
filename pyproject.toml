@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sourceharbor"
-version = "0.1.17"
+version = "0.1.18"
 description = "Turn YouTube, Bilibili, and RSS sources into readable digests, traceable job runs, and searchable knowledge for operators and agents."
 readme = "README.md"
 license = "MIT"

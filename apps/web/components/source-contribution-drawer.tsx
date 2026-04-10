@@ -1,4 +1,5 @@
 import type { ReaderDocument } from "@sourceharbor/sdk";
+import { Braces, FileStack } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -18,28 +19,35 @@ export function SourceContributionDrawer({
 		: "Clear provenance map";
 
 	return (
-		<Card className="border-border/70 shadow-sm">
-			<CardHeader className="space-y-2 pb-3">
-				<h2 className="text-base font-semibold">Source contribution drawer</h2>
-				<p className="text-sm text-muted-foreground">
-					Keep the main body clean, then open the drawer only when you want to
-					inspect where each claim came from.
-				</p>
+		<Card className="border-border/70 bg-background/95 shadow-sm">
+			<CardHeader className="space-y-3 pb-3">
+				<div className="flex flex-wrap items-center gap-2">
+					<Badge variant="secondary">Backstage evidence</Badge>
+					<Badge variant="outline">{warningContext}</Badge>
+				</div>
+				<div className="space-y-2">
+					<h2 className="text-base font-semibold">Evidence drawer</h2>
+					<p className="text-sm leading-6 text-muted-foreground">
+						Keep the body clean, then open this backstage panel only when you
+						want to inspect where each claim, section, or warning came from.
+					</p>
+				</div>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div className="flex flex-wrap gap-2 text-sm">
 					<Badge variant="secondary">Sources {sourceCount}</Badge>
 					<Badge variant="outline">Sections {sectionCount}</Badge>
-					<Badge variant="outline">{warningContext}</Badge>
 				</div>
 				<p className="text-sm text-muted-foreground">
-					Keep the body as the first reading pass. Open this drawer when you
-					want to inspect which source items and sections back the current
-					document.
+					Think of this as the footnote drawer. Open it when you need
+					traceability, not while you are still absorbing the main argument.
 				</p>
-				<details className="rounded-xl border border-border/70 bg-background/80 p-4">
-					<summary className="cursor-pointer font-medium">
-						{sourceCount} linked source items
+				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
+					<summary className="cursor-pointer list-none">
+						<span className="flex items-center gap-2 font-medium text-foreground">
+							<FileStack className="h-4 w-4 text-rose-600" />
+							{sourceCount} linked source items
+						</span>
 					</summary>
 					<div className="mt-4 space-y-4">
 						{document.source_refs.map((source) => {
@@ -104,9 +112,12 @@ export function SourceContributionDrawer({
 						})}
 					</div>
 				</details>
-				<details className="rounded-xl border border-border/70 bg-background/80 p-4">
-					<summary className="cursor-pointer font-medium">
-						Section traceability
+				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
+					<summary className="cursor-pointer list-none">
+						<span className="flex items-center gap-2 font-medium text-foreground">
+							<Braces className="h-4 w-4 text-rose-600" />
+							Section traceability
+						</span>
 					</summary>
 					<div className="mt-4 space-y-3 text-sm">
 						{document.sections.map((section) => (

@@ -1,6 +1,6 @@
 {
   "name": "@sourceharbor/sdk",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "Thin public TypeScript SDK for the SourceHarbor HTTP API.",
   "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
   "repository": {
@@ -34,9 +34,10 @@
     "retrieval",
     "knowledge-pipeline"
   ],
-  "scripts": {
-    "build": "npx --yes -p typescript tsc -p tsconfig.build.json",
-    "typecheck": "npx --yes -p typescript tsc -p tsconfig.build.json --noEmit",
-    "pack:dry": "npm pack --dry-run"
-  }
+	"scripts": {
+		"build": "npx --yes -p typescript tsc -p tsconfig.build.json",
+		"prepare": "npm run build",
+		"typecheck": "npx --yes -p typescript tsc -p tsconfig.build.json --noEmit",
+		"pack:dry": "npm pack --dry-run"
+	}
 }

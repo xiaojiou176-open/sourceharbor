@@ -1,3 +1,10 @@
+import {
+	ArrowRight,
+	BookOpenText,
+	LibraryBig,
+	NotebookTabs,
+	Search,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -11,6 +18,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
+import { DEMO_READER_DOCUMENT_ID } from "@/lib/reader/demo-document";
 import { buildProductMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildProductMetadata({
@@ -43,6 +51,10 @@ export default async function ReaderPage() {
 		(document) => !document.published_with_gap,
 	);
 	const leadDocument = clearDocuments[0] ?? documents[0] ?? null;
+	const totalDocuments = documents.length;
+	const warningCount = documents.filter(
+		(document) => document.published_with_gap,
+	).length;
 	const leadSources =
 		leadDocument && Array.isArray(leadDocument.source_refs)
 			? leadDocument.source_refs.slice(0, 3)
@@ -57,31 +69,70 @@ export default async function ReaderPage() {
 	);
 
 	return (
-		<main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:px-6">
-			<section className="grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
-				<Card className="border-border/70 shadow-sm">
-					<CardHeader className="space-y-4">
-						<Badge variant="outline" className="w-fit">
+		<div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 py-8 md:px-6">
+			<section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.92fr)]">
+				<Card className="overflow-hidden border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 shadow-sm dark:to-rose-950/10">
+					<CardHeader className="space-y-6 pb-4">
+						<Badge
+							variant="outline"
+							className="w-fit border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200"
+						>
 							Reader frontstage
 						</Badge>
-						<div className="space-y-3">
+						<div className="space-y-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+								Published reading desk
+							</p>
 							<h1
 								data-route-heading
-								className="text-3xl font-semibold md:text-4xl"
+								className="max-w-4xl font-serif text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl"
 							>
-								Start with a finished reading unit
+								Read the strongest finished unit before you touch the operator
+								rails
 							</h1>
-							<CardDescription className="max-w-3xl text-base leading-7">
-								Open the strongest published document first, use the brief to
-								orient yourself, and only leave the reader when you need more
-								intake or trend context. This page is the frontstage for
-								reading, not the operator control panel.
+							<CardDescription className="max-w-3xl text-base leading-8 text-foreground/75">
+								Start where the story is already materialized. The lead deck
+								gives you one clean reading unit, the brief keeps you oriented,
+								and the rest of the library stays available without dragging you
+								back into intake or dashboard mode.
 							</CardDescription>
 						</div>
+						<div className="grid gap-3 md:grid-cols-3">
+							<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
+								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+									<BookOpenText className="h-4 w-4 text-rose-600" />
+									Read body first
+								</div>
+								<p className="mt-2 text-sm leading-6 text-muted-foreground">
+									Open the published document as a single unit instead of
+									reconstructing the story from source fragments.
+								</p>
+							</div>
+							<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
+								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+									<NotebookTabs className="h-4 w-4 text-rose-600" />
+									Keep context close
+								</div>
+								<p className="mt-2 text-sm leading-6 text-muted-foreground">
+									Use the brief as a desk note, not as a second stage that
+									steals attention from the reading unit.
+								</p>
+							</div>
+							<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
+								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+									<Search className="h-4 w-4 text-rose-600" />
+									Verify on demand
+								</div>
+								<p className="mt-2 text-sm leading-6 text-muted-foreground">
+									Only leave the page for search, trends, or intake when the
+									current deck no longer answers the question you came with.
+								</p>
+							</div>
+						</div>
 					</CardHeader>
-					<CardContent className="space-y-6">
-						<div className="flex flex-wrap gap-3">
-							<Button asChild size="lg">
+					<CardContent className="space-y-8 pb-8">
+						<div className="flex flex-wrap items-center gap-3">
+							<Button asChild size="lg" className="gap-2">
 								<Link
 									href={
 										leadDocument
@@ -92,58 +143,54 @@ export default async function ReaderPage() {
 									{leadDocument
 										? "Continue reading"
 										: "Create the first reader document"}
+									<ArrowRight className="h-4 w-4" />
 								</Link>
 							</Button>
+							{!leadDocument ? (
+								<Button asChild variant="outline" size="lg">
+									<Link href={`/reader/${DEMO_READER_DOCUMENT_ID}`}>
+										Preview the detail view
+									</Link>
+								</Button>
+							) : null}
+							<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+								<Badge variant="secondary">Published {totalDocuments}</Badge>
+								<Badge variant="outline">Clear {clearDocuments.length}</Badge>
+								<Badge variant="outline">Warnings {warningCount}</Badge>
+							</div>
 						</div>
-						<p className="text-sm text-muted-foreground">
-							Need a different surface?{" "}
-							<Link className="underline underline-offset-4" href="/briefings">
-								Briefings
-							</Link>{" "}
-							for the story-first summary,{" "}
-							<Link className="underline underline-offset-4" href="/trends">
-								Trends
-							</Link>{" "}
-							for repeated themes, or{" "}
-							<Link
-								className="underline underline-offset-4"
-								href="/subscriptions"
-							>
-								Source intake
-							</Link>{" "}
-							when you need to add more material.
-						</p>
 						{leadDocument ? (
-							<div className="rounded-2xl border border-border/70 bg-muted/20 p-6">
-								<div className="flex flex-wrap items-center gap-2">
-									<Badge variant="secondary">Lead document</Badge>
-									<Badge
-										variant={
-											leadDocument.published_with_gap
-												? "destructive"
-												: "outline"
-										}
-									>
-										{leadDocument.published_with_gap
-											? "Yellow warning"
-											: "Clear"}
-									</Badge>
-									{leadDocument.topic_label ? (
-										<Badge variant="outline">{leadDocument.topic_label}</Badge>
-									) : null}
-								</div>
-								<div className="mt-5 space-y-4">
+							<div className="grid gap-6 rounded-[1.75rem] border border-border/70 bg-background/80 p-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.78fr)]">
+								<div className="space-y-5">
+									<div className="flex flex-wrap items-center gap-2">
+										<Badge variant="secondary">Lead document</Badge>
+										<Badge
+											variant={
+												leadDocument.published_with_gap
+													? "destructive"
+													: "outline"
+											}
+										>
+											{leadDocument.published_with_gap
+												? "Yellow warning"
+												: "Clear"}
+										</Badge>
+										{leadDocument.topic_label ? (
+											<Badge variant="outline">
+												{leadDocument.topic_label}
+											</Badge>
+										) : null}
+									</div>
 									<div className="space-y-3">
-										<CardTitle className="text-3xl leading-tight tracking-tight md:text-4xl">
+										<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+											Today&apos;s strongest deck
+										</p>
+										<CardTitle className="font-serif text-4xl leading-[1.02] tracking-tight md:text-5xl">
 											{leadDocument.title}
 										</CardTitle>
-										<p className="max-w-3xl text-base leading-7 text-muted-foreground">
+										<p className="max-w-3xl text-base leading-8 text-foreground/75">
 											{leadDocument.summary ??
 												"Open the current lead document to inspect the merged markdown, warning state, and source contribution ledger in one place."}
-										</p>
-										<p className="text-sm text-muted-foreground">
-											Read the body first. Open source contribution only when
-											you want to inspect provenance or warning detail.
 										</p>
 									</div>
 									<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
@@ -151,10 +198,28 @@ export default async function ReaderPage() {
 										<span>Version {leadDocument.version}</span>
 										<span>Sources {leadDocument.source_item_count}</span>
 									</div>
+									<div className="flex flex-wrap gap-3">
+										<Button asChild variant="outline" className="gap-2">
+											<Link href="/search">
+												Search evidence
+												<ArrowRight className="h-4 w-4" />
+											</Link>
+										</Button>
+									</div>
+								</div>
+								<div className="space-y-4 rounded-3xl border border-border/60 bg-muted/20 p-5">
+									<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+										<LibraryBig className="h-4 w-4 text-rose-600" />
+										Reading desk note
+									</div>
+									<p className="text-sm leading-6 text-muted-foreground">
+										Stay with this deck until you hit a question the body cannot
+										answer. The goal is fewer tabs, not more surface hopping.
+									</p>
 									{leadSources.length ? (
 										<div className="rounded-2xl border border-border/60 bg-background/90 p-4">
 											<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-												Evidence sources
+												First three evidence lanes
 											</p>
 											<ul className="mt-3 space-y-2 text-sm text-muted-foreground">
 												{leadSources.map((source) => (
@@ -178,10 +243,31 @@ export default async function ReaderPage() {
 											</ul>
 										</div>
 									) : null}
-									<div className="flex flex-wrap gap-3">
-										<Button asChild variant="outline">
-											<Link href="/search">Search evidence</Link>
-										</Button>
+									<div className="space-y-2 text-sm text-muted-foreground">
+										<p>Need another rail?</p>
+										<p>
+											<Link
+												className="underline underline-offset-4"
+												href="/briefings"
+											>
+												Briefings
+											</Link>{" "}
+											for the story-first sweep,{" "}
+											<Link
+												className="underline underline-offset-4"
+												href="/trends"
+											>
+												Trends
+											</Link>{" "}
+											for repeated themes, or{" "}
+											<Link
+												className="underline underline-offset-4"
+												href="/subscriptions"
+											>
+												Source intake
+											</Link>{" "}
+											when the shelf itself needs more material.
+										</p>
 									</div>
 								</div>
 							</div>
@@ -195,18 +281,27 @@ export default async function ReaderPage() {
 									pipeline to turn raw source items into readable documents on
 									this frontstage.
 								</p>
+								<p className="mt-3 text-sm text-muted-foreground">
+									If you want to inspect the detail-state layout before the
+									first live deck lands, open the preview detail view from the
+									hero actions above.
+								</p>
 							</div>
 						)}
 					</CardContent>
 				</Card>
 
-				<Card className="border-border/70 shadow-sm lg:sticky lg:top-6">
+				<Card className="border-border/70 bg-background/95 shadow-sm lg:sticky lg:top-6">
 					<CardHeader>
-						<CardTitle className="text-xl">30-second brief</CardTitle>
+						<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+							Orientation note
+						</p>
+						<h2 className="font-serif text-2xl font-semibold leading-none tracking-tight">
+							30-second brief
+						</h2>
 						<CardDescription>
-							A compact route map over the current published-doc layer. Use it
-							to orient yourself, then return to the library or open the lead
-							document.
+							A compact route map over the current published-doc layer. Read it
+							like a margin note, then go back to the strongest deck.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-3 text-sm">
@@ -226,7 +321,7 @@ export default async function ReaderPage() {
 										<Link
 											key={item.document_id}
 											href={item.route}
-											className="block rounded-xl border border-border/60 p-3 transition hover:bg-muted/40"
+											className="block rounded-2xl border border-border/60 p-4 transition hover:bg-muted/40"
 										>
 											<p className="font-medium">{item.title}</p>
 											{item.summary ? (
@@ -251,7 +346,7 @@ export default async function ReaderPage() {
 			{needsAttentionDocuments.length ? (
 				<section className="space-y-4">
 					<div className="space-y-2">
-						<h2 className="text-2xl font-semibold tracking-tight">
+						<h2 className="font-serif text-3xl tracking-tight">
 							Needs attention
 						</h2>
 						<p className="text-sm text-muted-foreground">
@@ -262,7 +357,10 @@ export default async function ReaderPage() {
 					</div>
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{needsAttentionDocuments.map((document) => (
-							<Card key={document.id} className="border-amber-300/70 shadow-sm">
+							<Card
+								key={document.id}
+								className="border-amber-300/70 bg-amber-50/40 shadow-sm dark:bg-amber-950/10"
+							>
 								<CardHeader className="space-y-3">
 									<div className="flex flex-wrap items-center gap-2">
 										<Badge variant="destructive">Yellow warning</Badge>
@@ -270,8 +368,11 @@ export default async function ReaderPage() {
 											<Badge variant="outline">{document.topic_label}</Badge>
 										) : null}
 									</div>
-									<div>
-										<CardTitle className="text-xl leading-7">
+									<div className="space-y-2">
+										<p className="text-xs font-semibold uppercase tracking-[0.26em] text-amber-800/80 dark:text-amber-200/80">
+											Read with caution
+										</p>
+										<CardTitle className="font-serif text-2xl leading-7">
 											{document.title}
 										</CardTitle>
 										<CardDescription className="mt-2 leading-6">
@@ -301,7 +402,7 @@ export default async function ReaderPage() {
 			<section className="space-y-4">
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 					<div>
-						<h2 className="text-2xl font-semibold tracking-tight">
+						<h2 className="font-serif text-3xl tracking-tight">
 							Reader library
 						</h2>
 						<p className="text-sm text-muted-foreground">
@@ -317,7 +418,10 @@ export default async function ReaderPage() {
 				{libraryDocuments.length ? (
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{libraryDocuments.map((document) => (
-							<Card key={document.id} className="border-border/70 shadow-sm">
+							<Card
+								key={document.id}
+								className="border-border/70 bg-background/95 shadow-sm"
+							>
 								<CardHeader className="space-y-3">
 									<div className="flex flex-wrap items-center gap-2">
 										<Badge variant="secondary">
@@ -328,8 +432,11 @@ export default async function ReaderPage() {
 											<Badge variant="outline">{document.topic_label}</Badge>
 										) : null}
 									</div>
-									<div>
-										<CardTitle className="text-xl leading-7">
+									<div className="space-y-2">
+										<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+											Published unit
+										</p>
+										<CardTitle className="font-serif text-2xl leading-7">
 											{document.title}
 										</CardTitle>
 										<CardDescription className="mt-2 leading-6">
@@ -381,6 +488,6 @@ export default async function ReaderPage() {
 					</Card>
 				)}
 			</section>
-		</main>
+		</div>
 	);
 }

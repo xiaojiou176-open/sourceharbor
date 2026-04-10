@@ -1,7 +1,7 @@
 {
   "name": "io.github.xiaojiou176-open/sourceharbor-mcp",
   "title": "SourceHarbor MCP",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "short_description": "Source-first AI knowledge control tower MCP server for YouTube, Bilibili, RSSHub, and RSS.",
   "long_description": "SourceHarbor MCP gives agent clients the same source-first, proof-first control-tower surface the web and operator routes use: search, Ask, watchlists, briefings, subscriptions, job traces, and grounded evidence reuse.",
   "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",

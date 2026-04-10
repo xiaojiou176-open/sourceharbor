@@ -1,6 +1,6 @@
 {
   "name": "@sourceharbor/cli",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "Thin public CLI for SourceHarbor with repo-aware delegation.",
   "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
   "repository": {
