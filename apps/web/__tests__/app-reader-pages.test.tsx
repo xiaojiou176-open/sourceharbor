@@ -163,9 +163,14 @@ describe("reader pages", () => {
 		);
 
 		expect(
-			screen.getByRole("heading", { name: "Reader specimen edition", level: 1 }),
+			screen.getByRole("heading", {
+				name: "Reader specimen edition",
+				level: 1,
+			}),
 		).toBeInTheDocument();
-		expect(screen.getAllByText("Specimen edition").length).toBeGreaterThanOrEqual(1);
+		expect(
+			screen.getAllByText("Specimen edition").length,
+		).toBeGreaterThanOrEqual(1);
 		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(
 			1,
 		);
