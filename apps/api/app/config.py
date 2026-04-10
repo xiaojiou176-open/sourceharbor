@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from datetime import datetime
 
 
 def _parse_bool(raw: str | None, *, default: bool) -> bool:
@@ -48,6 +49,14 @@ def _sourceharbor_cache_root() -> str:
     )
 
 
+def _system_timezone_name() -> str:
+    local_tz = datetime.now().astimezone().tzinfo
+    tz_name = getattr(local_tz, "key", None) or getattr(local_tz, "zone", None)
+    if isinstance(tz_name, str) and tz_name.strip():
+        return tz_name.strip()
+    return "UTC"
+
+
 @dataclass(frozen=True)
 class Settings:
     app_name: str
@@ -72,6 +81,7 @@ class Settings:
     gemini_embedding_model: str
     gemini_thinking_level: str
     ui_audit_gemini_enabled: bool
+    digest_local_timezone: str
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -121,6 +131,9 @@ class Settings:
             ui_audit_gemini_enabled=_parse_bool(
                 os.getenv("UI_AUDIT_GEMINI_ENABLED"),
                 default=True,
+            ),
+            digest_local_timezone=(
+                os.getenv("DIGEST_LOCAL_TIMEZONE", _system_timezone_name()).strip() or "UTC"
             ),
         )
 
