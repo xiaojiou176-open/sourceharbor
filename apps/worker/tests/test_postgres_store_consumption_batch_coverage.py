@@ -220,10 +220,53 @@ def test_consumption_batch_lifecycle_methods_cover_get_and_mark_operations() -> 
             ),
         ]
     )
-    workflow_conn = _FakeConnection([_FakeResult(rows=[{"id": "batch-1", "workflow_id": "wf-2", "status": "frozen"}])])
-    materialized_conn = _FakeConnection([_FakeResult(rows=[{"id": "batch-1", "status": "materialized", "materialized_at": datetime(2026, 4, 9, 12, 30, tzinfo=UTC), "updated_at": datetime(2026, 4, 9, 12, 30, tzinfo=UTC)}])])
-    closed_conn = _FakeConnection([_FakeResult(), _FakeResult(rows=[{"id": "batch-1", "status": "closed", "closed_at": datetime(2026, 4, 9, 12, 45, tzinfo=UTC), "updated_at": datetime(2026, 4, 9, 12, 45, tzinfo=UTC)}])])
-    failed_conn = _FakeConnection([_FakeResult(), _FakeResult(rows=[{"id": "batch-1", "status": "failed", "error_message": "boom", "closed_at": datetime(2026, 4, 9, 13, 0, tzinfo=UTC)}])])
+    workflow_conn = _FakeConnection(
+        [_FakeResult(rows=[{"id": "batch-1", "workflow_id": "wf-2", "status": "frozen"}])]
+    )
+    materialized_conn = _FakeConnection(
+        [
+            _FakeResult(
+                rows=[
+                    {
+                        "id": "batch-1",
+                        "status": "materialized",
+                        "materialized_at": datetime(2026, 4, 9, 12, 30, tzinfo=UTC),
+                        "updated_at": datetime(2026, 4, 9, 12, 30, tzinfo=UTC),
+                    }
+                ]
+            )
+        ]
+    )
+    closed_conn = _FakeConnection(
+        [
+            _FakeResult(),
+            _FakeResult(
+                rows=[
+                    {
+                        "id": "batch-1",
+                        "status": "closed",
+                        "closed_at": datetime(2026, 4, 9, 12, 45, tzinfo=UTC),
+                        "updated_at": datetime(2026, 4, 9, 12, 45, tzinfo=UTC),
+                    }
+                ]
+            ),
+        ]
+    )
+    failed_conn = _FakeConnection(
+        [
+            _FakeResult(),
+            _FakeResult(
+                rows=[
+                    {
+                        "id": "batch-1",
+                        "status": "failed",
+                        "error_message": "boom",
+                        "closed_at": datetime(2026, 4, 9, 13, 0, tzinfo=UTC),
+                    }
+                ]
+            ),
+        ]
+    )
     store, _engine = _make_store(
         get_conn, workflow_conn, materialized_conn, closed_conn, failed_conn
     )
