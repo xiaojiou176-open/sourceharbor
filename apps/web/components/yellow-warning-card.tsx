@@ -69,7 +69,9 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 							<p className="font-medium">Safe reading checklist</p>
 							<ul className="list-disc space-y-1 pl-5">
 								<li>Read the body first.</li>
-								<li>Open the source contribution drawer before reusing a claim.</li>
+								<li>
+									Open the source contribution drawer before reusing a claim.
+								</li>
 								<li>Check coverage last.</li>
 							</ul>
 						</div>

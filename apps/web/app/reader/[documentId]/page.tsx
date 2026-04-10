@@ -218,23 +218,26 @@ export default async function ReaderDetailPage({
 					<YellowWarningCard reasons={warningReasons} />
 				) : (
 					<Card className="border-border/70 bg-muted/20 shadow-sm">
-					<CardHeader className="space-y-3 pb-4">
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<FileStack className="h-4 w-4 text-rose-600" />
-							Reading contract
-						</div>
-						<CardDescription className="leading-6">
-							This document is published as a stable reading unit. Stay with the
-							body as the main narrative, then step into evidence only if you
-							need to inspect provenance or coverage detail.
-						</CardDescription>
-					</CardHeader>
+						<CardHeader className="space-y-3 pb-4">
+							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+								<FileStack className="h-4 w-4 text-rose-600" />
+								Reading contract
+							</div>
+							<CardDescription className="leading-6">
+								This document is published as a stable reading unit. Stay with
+								the body as the main narrative, then step into evidence only if
+								you need to inspect provenance or coverage detail.
+							</CardDescription>
+						</CardHeader>
 					</Card>
 				)}
 			</section>
 
 			<section className="grid gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(300px,0.9fr)]">
-				<Card id="reader-body" className="border-border/70 bg-background/95 shadow-sm">
+				<Card
+					id="reader-body"
+					className="border-border/70 bg-background/95 shadow-sm"
+				>
 					<CardHeader className="space-y-4">
 						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 							<NotebookText className="h-4 w-4 text-rose-600" />
@@ -288,12 +291,12 @@ export default async function ReaderDetailPage({
 							</div>
 							<div className="grid gap-3 sm:grid-cols-2">
 								<div className="rounded-2xl border border-border/60 bg-muted/20 p-3 text-muted-foreground">
-								<p>Window {document.window_id}</p>
-								<p>Version {document.version}</p>
+									<p>Window {document.window_id}</p>
+									<p>Version {document.version}</p>
 								</div>
 								<div className="rounded-2xl border border-border/60 bg-muted/20 p-3 text-muted-foreground">
-								<p>Sources {document.source_item_count}</p>
-								<p>Sections {sections.length}</p>
+									<p>Sources {document.source_item_count}</p>
+									<p>Sections {sections.length}</p>
 								</div>
 							</div>
 							{sections.length ? (
@@ -355,7 +358,7 @@ export default async function ReaderDetailPage({
 								Ledger kind:{" "}
 								{String(
 									(coverageLedger as { ledger_kind?: string }).ledger_kind ??
-									"unknown",
+										"unknown",
 								)}
 							</p>
 						</div>

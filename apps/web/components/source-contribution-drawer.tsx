@@ -46,10 +46,10 @@ export function SourceContributionDrawer({
 				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
 					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/30">
 						<div className="flex items-start justify-between gap-3">
-						<span className="flex items-center gap-2 font-medium text-foreground">
-							<FileStack className="h-4 w-4 text-rose-600" />
-							{sourceCount} linked source items
-						</span>
+							<span className="flex items-center gap-2 font-medium text-foreground">
+								<FileStack className="h-4 w-4 text-rose-600" />
+								{sourceCount} linked source items
+							</span>
 							<span className="text-xs text-muted-foreground">
 								Open evidence only when needed
 							</span>
@@ -121,10 +121,10 @@ export function SourceContributionDrawer({
 				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
 					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/30">
 						<div className="flex items-start justify-between gap-3">
-						<span className="flex items-center gap-2 font-medium text-foreground">
-							<Braces className="h-4 w-4 text-rose-600" />
-							Section traceability
-						</span>
+							<span className="flex items-center gap-2 font-medium text-foreground">
+								<Braces className="h-4 w-4 text-rose-600" />
+								Section traceability
+							</span>
 							<span className="text-xs text-muted-foreground">
 								Check coverage after the body
 							</span>

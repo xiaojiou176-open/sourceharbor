@@ -100,7 +100,9 @@ export default async function ReaderPage() {
 						<div className="flex flex-wrap gap-3 text-sm text-foreground/75">
 							<div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-2">
 								<BookOpenText className="h-4 w-4 text-rose-600" />
-								<span className="font-medium text-foreground">Read the body</span>
+								<span className="font-medium text-foreground">
+									Read the body
+								</span>
 							</div>
 							<div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-2">
 								<NotebookTabs className="h-4 w-4 text-rose-600" />
@@ -201,8 +203,8 @@ export default async function ReaderPage() {
 										Reading desk note
 									</div>
 									<p className="text-sm leading-6 text-muted-foreground">
-										Read the body first. Keep the warning in mind. Open
-										evidence only when the deck stops answering your question.
+										Read the body first. Keep the warning in mind. Open evidence
+										only when the deck stops answering your question.
 									</p>
 									{leadSources.length ? (
 										<div className="rounded-2xl border border-border/60 bg-background/90 p-4">
@@ -314,7 +316,9 @@ export default async function ReaderPage() {
 					<CardContent className="space-y-4 text-sm">
 						{navigationBrief ? (
 							<>
-								<p className="text-muted-foreground">{navigationBrief.summary}</p>
+								<p className="text-muted-foreground">
+									{navigationBrief.summary}
+								</p>
 								<div className="flex flex-wrap gap-2">
 									<Badge variant="secondary">
 										Docs {navigationBrief.document_count}
@@ -336,11 +340,11 @@ export default async function ReaderPage() {
 												</span>
 												<div className="min-w-0">
 													<p className="font-medium">{item.title}</p>
-											{item.summary ? (
-												<p className="mt-1 line-clamp-2 text-muted-foreground">
-													{item.summary}
-												</p>
-											) : null}
+													{item.summary ? (
+														<p className="mt-1 line-clamp-2 text-muted-foreground">
+															{item.summary}
+														</p>
+													) : null}
 												</div>
 											</div>
 										</Link>
@@ -362,7 +366,9 @@ export default async function ReaderPage() {
 										</p>
 									</div>
 									<div className="rounded-2xl border border-border/60 p-4">
-										<p className="font-medium">02 Materialize the first live deck</p>
+										<p className="font-medium">
+											02 Materialize the first live deck
+										</p>
 										<p className="mt-1 text-muted-foreground">
 											Freeze a batch, publish it, then return to this shelf.
 										</p>
