@@ -333,4 +333,3 @@ def repair_published_reader_document(
         code = 404 if "not found" in detail.lower() else 400
         raise HTTPException(status_code=code, detail=detail) from exc
     return _coerce_document_payload(result)
-
