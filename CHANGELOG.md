@@ -7,6 +7,18 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-04-10
+
+### Added
+
+- added a truthful `/reader/demo` preview detail route so the reader detail frontstage can be inspected before the first live document lands
+
+### Changed
+
+- deepened the reader frontstage hierarchy so `/reader` behaves more like an editorial reading desk and less like a dashboard shell
+- refined the reader detail layout, yellow-warning contract, and evidence drawer copy so body-first reading stays primary while backstage proof remains on demand
+- tightened loading-state semantics and refreshed the public version anchors to `0.1.18` so current `main` and the next release can stay aligned
+
 ## [0.1.17] - 2026-04-10
 
 ### Added
