@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: SourceHarbor API
-  version: 0.1.18
+  version: 0.1.19
   description: API contract for subscriptions, ingest polling, jobs, videos and artifacts.
 servers:
   - url: http://127.0.0.1:9000

@@ -1,6 +1,6 @@
 {
   "name": "@sourceharbor/sdk",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Thin public TypeScript SDK for the SourceHarbor HTTP API.",
   "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
   "repository": {
