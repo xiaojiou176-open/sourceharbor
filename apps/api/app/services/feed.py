@@ -242,10 +242,9 @@ class FeedService:
             )
             subscription_id = str(row.get("subscription_id") or "").strip() or None
             source_item_id = str(row.get("source_item_id") or "").strip() or None
-            reader_bridge = (
-                reader_bridge_by_source_item.get(source_item_id or "")
-                or reader_bridge_by_job_id.get(job_id)
-            )
+            reader_bridge = reader_bridge_by_source_item.get(
+                source_item_id or ""
+            ) or reader_bridge_by_job_id.get(job_id)
             identity = build_identity_payload(
                 platform=source_platform,
                 display_name=source_name,
@@ -277,9 +276,7 @@ class FeedService:
                     "avatar_label": identity.avatar_label,
                     "identity_status": identity.identity_status,
                     "published_document_id": reader_bridge.get("id") if reader_bridge else None,
-                    "published_document_slug": reader_bridge.get("slug")
-                    if reader_bridge
-                    else None,
+                    "published_document_slug": reader_bridge.get("slug") if reader_bridge else None,
                     "published_document_title": reader_bridge.get("title")
                     if reader_bridge
                     else None,
