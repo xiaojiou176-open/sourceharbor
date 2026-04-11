@@ -253,8 +253,7 @@ def test_feed_service_lists_reader_bridge_when_source_item_matches_current_docum
     assert result["items"][0]["published_document_publish_status"] == "published"
 
 
-def test_feed_service_build_reader_bridge_index_maps_source_item_and_job_ids(
-) -> None:
+def test_feed_service_build_reader_bridge_index_maps_source_item_and_job_ids() -> None:
     service = FeedService(db=object())  # type: ignore[arg-type]
     documents = [
         _FakeDocument(
