@@ -99,8 +99,8 @@ export default async function ReaderPage() {
 								<p className="max-w-2xl text-sm leading-7 text-foreground/75">
 									Think of this shelf like the front page of a magazine, not a
 									control room. Pick one finished deck, read it straight
-									through, then open warning or evidence only if the story
-									stops answering you.
+									through, then open warning or evidence only if the story stops
+									answering you.
 								</p>
 							</div>
 							<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground md:justify-end">
@@ -122,9 +122,7 @@ export default async function ReaderPage() {
 											: `/reader/${DEMO_READER_DOCUMENT_ID}`
 									}
 								>
-									{leadDocument
-										? "Continue reading"
-										: "Open specimen detail"}
+									{leadDocument ? "Continue reading" : "Open specimen detail"}
 									<ArrowRight className="h-4 w-4" />
 								</Link>
 							</Button>
@@ -306,9 +304,9 @@ export default async function ReaderPage() {
 							30-second brief
 						</h2>
 						<CardDescription>
-							A compact route map over the current published-doc layer. Treat
-							it like the note in the edge of a printed page, then go back to
-							the strongest deck.
+							A compact route map over the current published-doc layer. Treat it
+							like the note in the edge of a printed page, then go back to the
+							strongest deck.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4 text-sm">

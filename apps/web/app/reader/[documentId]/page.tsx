@@ -150,9 +150,9 @@ export default async function ReaderDetailPage({
 							Margin note
 						</div>
 						<p className="mt-2 text-sm leading-6 text-muted-foreground">
-							This rail is here to keep your place, not to compete with the
-							main narrative. Read the body like a finished article, then step
-							into warning, footnotes, and coverage in that order.
+							This rail is here to keep your place, not to compete with the main
+							narrative. Read the body like a finished article, then step into
+							warning, footnotes, and coverage in that order.
 						</p>
 						<ol className="mt-4 space-y-3 text-sm">
 							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
@@ -217,8 +217,8 @@ export default async function ReaderDetailPage({
 						Reader body
 					</div>
 					<CardDescription className="max-w-3xl leading-6">
-						The published markdown unit. Treat this as the frontstage and let
-						it carry the first pass before you inspect supporting rails.
+						The published markdown unit. Treat this as the frontstage and let it
+						carry the first pass before you inspect supporting rails.
 					</CardDescription>
 					{sections.length ? (
 						<div className="flex flex-wrap gap-2">

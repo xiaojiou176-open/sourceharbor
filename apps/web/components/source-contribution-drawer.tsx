@@ -28,9 +28,9 @@ export function SourceContributionDrawer({
 				<div className="space-y-2">
 					<h2 className="text-base font-semibold">Evidence drawer</h2>
 					<p className="text-sm leading-6 text-muted-foreground">
-						Read the body first. Keep the warning in mind. Then open this
-						drawer like a footnote rail only when you want to inspect where a
-						claim, section, or warning came from.
+						Read the body first. Keep the warning in mind. Then open this drawer
+						like a footnote rail only when you want to inspect where a claim,
+						section, or warning came from.
 					</p>
 				</div>
 			</CardHeader>

@@ -27,10 +27,10 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 					Yellow warning
 				</h2>
 				<p className="max-w-4xl text-sm leading-6 text-amber-950/80 dark:text-amber-100/80">
-					The story is readable, but the proof packet is not fully sealed.
-					Treat this panel like the contract taped beside an article: it tells
-					you what the warning means, how to read safely, and why the caution
-					exists without pulling you away from the body.
+					The story is readable, but the proof packet is not fully sealed. Treat
+					this panel like the contract taped beside an article: it tells you
+					what the warning means, how to read safely, and why the caution exists
+					without pulling you away from the body.
 				</p>
 			</CardHeader>
 			<CardContent className="grid gap-4 text-sm md:grid-cols-3">
