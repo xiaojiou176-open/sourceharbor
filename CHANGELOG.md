@@ -7,6 +7,23 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.21] - 2026-04-10
+
+### Changed
+
+- reshaped the reader frontstage so `/reader` behaves more like a single-entry editorial shelf with a quieter margin note and a clearer reading order
+- reordered the reader detail flow so the body leads, the yellow warning reads like a safety contract, the evidence drawer behaves like footnotes, and coverage stays last
+
+### Fixed
+
+- bumped the unreleased dependency drift forward by carrying the `cryptography==46.0.7` security update into the next release line
+
+## [0.1.20] - 2026-04-10
+
+### Changed
+
+- tightened public distribution wording across the front door and builder-facing docs so repository readiness, listing receipts, and external acceptance no longer read like the same layer of truth
+
 ## [0.1.19] - 2026-04-10
 
 ### Changed

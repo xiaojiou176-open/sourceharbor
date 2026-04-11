@@ -19,7 +19,7 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 						variant="outline"
 						className="border-amber-400/80 text-amber-900 dark:border-amber-700 dark:text-amber-100"
 					>
-						Readable, not fully sealed
+						Reading contract
 					</Badge>
 				</div>
 				<h2 className="flex items-center gap-2 text-lg font-semibold">
@@ -27,64 +27,36 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 					Yellow warning
 				</h2>
 				<p className="max-w-4xl text-sm leading-6 text-amber-950/80 dark:text-amber-100/80">
-					The story is readable, but the proof packet is not fully sealed. Keep
-					reading, then check the evidence drawer before you quote or reuse a
-					claim.
+					The story is readable, but the proof packet is not fully sealed. Treat
+					this panel like the contract taped beside an article: it tells you
+					what the warning means, how to read safely, and why the caution exists
+					without pulling you away from the body.
 				</p>
-				<div className="flex flex-wrap gap-2 text-xs font-medium">
-					<Badge
-						variant="outline"
-						className="border-amber-400/80 text-amber-950 dark:border-amber-700 dark:text-amber-100"
-					>
-						Read the body
-					</Badge>
-					<Badge
-						variant="outline"
-						className="border-amber-400/80 text-amber-950 dark:border-amber-700 dark:text-amber-100"
-					>
-						Keep the warning in mind
-					</Badge>
-					<Badge
-						variant="outline"
-						className="border-amber-400/80 text-amber-950 dark:border-amber-700 dark:text-amber-100"
-					>
-						Open evidence only when needed
-					</Badge>
-				</div>
 			</CardHeader>
-			<CardContent className="space-y-4 text-sm">
-				<div className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-					<p className="font-medium">What this means</p>
+			<CardContent className="grid gap-4 text-sm md:grid-cols-3">
+				<section className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
+					<h3 className="font-medium">What this means</h3>
 					<p className="mt-2 leading-6">
 						One or more evidence lanes are missing or degraded, so the body is
-						informative but not fully sealed.
+						informative but not fully sealed for quoting or downstream reuse.
 					</p>
-				</div>
-				<details className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
-					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-amber-100/70 dark:hover:bg-amber-900/20">
-						<span className="font-medium">Open full warning context</span>
-					</summary>
-					<div className="mt-4 grid gap-5 md:grid-cols-2">
-						<div className="space-y-1">
-							<p className="font-medium">Safe reading checklist</p>
-							<ul className="list-disc space-y-1 pl-5">
-								<li>Read the body first.</li>
-								<li>
-									Open the source contribution drawer before reusing a claim.
-								</li>
-								<li>Check coverage last.</li>
-							</ul>
-						</div>
-						<div className="space-y-1">
-							<p className="font-medium">Why this warning exists</p>
-							<ul className="list-disc space-y-1 pl-5">
-								{reasons.map((reason) => (
-									<li key={reason}>{reason}</li>
-								))}
-							</ul>
-						</div>
-					</div>
-				</details>
+				</section>
+				<section className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
+					<h3 className="font-medium">How to read safely</h3>
+					<ol className="mt-2 space-y-2 leading-6">
+						<li>1. Read the body first.</li>
+						<li>2. Open the footnote drawer before reusing a claim.</li>
+						<li>3. Check coverage last.</li>
+					</ol>
+				</section>
+				<section className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 dark:border-amber-800/80 dark:bg-amber-950/20">
+					<h3 className="font-medium">Why this warning exists</h3>
+					<ul className="mt-2 list-disc space-y-2 pl-5 leading-6">
+						{reasons.map((reason) => (
+							<li key={reason}>{reason}</li>
+						))}
+					</ul>
+				</section>
 			</CardContent>
 		</Card>
 	);

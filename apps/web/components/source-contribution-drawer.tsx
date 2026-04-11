@@ -22,36 +22,54 @@ export function SourceContributionDrawer({
 		<Card className="border-border/70 bg-background/95 shadow-sm">
 			<CardHeader className="space-y-3 pb-3">
 				<div className="flex flex-wrap items-center gap-2">
-					<Badge variant="secondary">Backstage evidence</Badge>
+					<Badge variant="secondary">Backstage footnotes</Badge>
 					<Badge variant="outline">{warningContext}</Badge>
 				</div>
 				<div className="space-y-2">
 					<h2 className="text-base font-semibold">Evidence drawer</h2>
 					<p className="text-sm leading-6 text-muted-foreground">
-						Read the body first. Keep the warning in mind. Then open this
-						backstage drawer only when you want to inspect where each claim,
+						Read the body first. Keep the warning in mind. Then open this drawer
+						like a footnote rail only when you want to inspect where a claim,
 						section, or warning came from.
 					</p>
 				</div>
 			</CardHeader>
 			<CardContent className="space-y-4">
-				<div className="flex flex-wrap gap-2 text-sm">
-					<Badge variant="secondary">Sources {sourceCount}</Badge>
-					<Badge variant="outline">Sections {sectionCount}</Badge>
+				<div className="grid gap-3 text-sm md:grid-cols-3">
+					<div className="rounded-2xl border border-border/60 bg-muted/15 p-4">
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							Sources
+						</p>
+						<p className="mt-2 text-lg font-semibold text-foreground">
+							{sourceCount}
+						</p>
+					</div>
+					<div className="rounded-2xl border border-border/60 bg-muted/15 p-4">
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							Sections
+						</p>
+						<p className="mt-2 text-lg font-semibold text-foreground">
+							{sectionCount}
+						</p>
+					</div>
+					<div className="rounded-2xl border border-border/60 bg-muted/15 p-4">
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							Use
+						</p>
+						<p className="mt-2 leading-6 text-muted-foreground">
+							Open on demand for provenance, not as a second reading column.
+						</p>
+					</div>
 				</div>
-				<p className="text-sm text-muted-foreground">
-					Think of this as the footnote drawer. Open it when you need
-					traceability, not while you are still absorbing the main argument.
-				</p>
 				<details className="rounded-2xl border border-border/70 bg-background/80 p-4">
 					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/30">
 						<div className="flex items-start justify-between gap-3">
 							<span className="flex items-center gap-2 font-medium text-foreground">
 								<FileStack className="h-4 w-4 text-rose-600" />
-								{sourceCount} linked source items
+								Open footnotes by source
 							</span>
 							<span className="text-xs text-muted-foreground">
-								Open evidence only when needed
+								{sourceCount} linked source items
 							</span>
 						</div>
 					</summary>
@@ -123,10 +141,10 @@ export function SourceContributionDrawer({
 						<div className="flex items-start justify-between gap-3">
 							<span className="flex items-center gap-2 font-medium text-foreground">
 								<Braces className="h-4 w-4 text-rose-600" />
-								Section traceability
+								Open section trace map
 							</span>
 							<span className="text-xs text-muted-foreground">
-								Check coverage after the body
+								Check after the body
 							</span>
 						</div>
 					</summary>

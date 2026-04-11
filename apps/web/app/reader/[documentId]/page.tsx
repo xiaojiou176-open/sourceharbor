@@ -1,10 +1,4 @@
-import {
-	ArrowUpRight,
-	BookOpenText,
-	FileStack,
-	ListTree,
-	NotebookText,
-} from "lucide-react";
+import { BookOpenText, FileStack, ListTree, NotebookText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,13 +6,7 @@ import { notFound } from "next/navigation";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { SourceContributionDrawer } from "@/components/source-contribution-drawer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { YellowWarningCard } from "@/components/yellow-warning-card";
 import { apiClient } from "@/lib/api/client";
 import {
@@ -72,8 +60,8 @@ export default async function ReaderDetailPage({
 		: [];
 
 	return (
-		<div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:px-6">
-			<section className="space-y-5">
+		<div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 md:px-6">
+			<section className="space-y-6">
 				<div className="flex flex-wrap items-center gap-3 text-sm text-foreground/80">
 					<Link
 						href="/reader"
@@ -86,7 +74,7 @@ export default async function ReaderDetailPage({
 					<span>/</span>
 					<span>{document.topic_label ?? "Published document"}</span>
 				</div>
-				<div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.82fr)]">
+				<div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.78fr)]">
 					<div className="space-y-4">
 						<div className="flex flex-wrap items-center gap-2">
 							<Badge variant="secondary">{document.materialization_mode}</Badge>
@@ -156,61 +144,97 @@ export default async function ReaderDetailPage({
 							</a>
 						</div>
 					</div>
-					<Card className="border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 shadow-sm dark:to-rose-950/10">
-						<CardHeader className="space-y-3 pb-4">
-							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-								<BookOpenText className="h-4 w-4 text-rose-600" />
-								Reading companion
-							</div>
-							<CardDescription className="leading-6">
-								A quiet companion for the page. Keep it nearby, but let the
-								reader body stay on stage.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="grid gap-3">
-								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-									<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-										01 Body pass
-									</p>
-									<p className="mt-2 text-sm leading-6 text-muted-foreground">
-										Read the finished markdown as one deck before you touch the
-										auxiliary rail.
-									</p>
+					<aside className="rounded-3xl border border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 p-5 shadow-sm dark:to-rose-950/10">
+						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+							<BookOpenText className="h-4 w-4 text-rose-600" />
+							Margin note
+						</div>
+						<p className="mt-2 text-sm leading-6 text-muted-foreground">
+							This rail is here to keep your place, not to compete with the main
+							narrative. Read the body like a finished article, then step into
+							warning, footnotes, and coverage in that order.
+						</p>
+						<ol className="mt-4 space-y-3 text-sm">
+							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
+								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+									01 Body pass
+								</p>
+								<p className="mt-2 leading-6 text-muted-foreground">
+									Read the finished markdown as one deck before touching the
+									backstage tools.
+								</p>
+							</li>
+							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
+								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+									02 Warning pass
+								</p>
+								<p className="mt-2 leading-6 text-muted-foreground">
+									Keep the caution in view, but do not let it replace the main
+									argument.
+								</p>
+							</li>
+							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
+								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+									03 Footnote pass
+								</p>
+								<p className="mt-2 leading-6 text-muted-foreground">
+									Open evidence only when you need provenance, then check
+									coverage last.
+								</p>
+							</li>
+						</ol>
+						{sections.length ? (
+							<div className="mt-4 rounded-2xl border border-border/60 bg-background/85 p-4">
+								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+									<ListTree className="h-4 w-4 text-rose-600" />
+									Section outline
 								</div>
-								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-									<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-										02 Warning pass
-									</p>
-									<p className="mt-2 text-sm leading-6 text-muted-foreground">
-										Keep the warning in mind, but do not let it replace the main
-										body.
-									</p>
-								</div>
-								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-									<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-										03 Evidence pass
-									</p>
-									<p className="mt-2 text-sm leading-6 text-muted-foreground">
-										Open evidence only when you need provenance, then check
-										coverage last.
-									</p>
-								</div>
+								<ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+									{sections.map((section) => (
+										<li
+											key={section.section_id}
+											className="rounded-xl border border-border/50 px-3 py-2"
+										>
+											<p className="font-medium text-foreground">
+												{section.title}
+											</p>
+											<p className="mt-1 text-xs">
+												Linked source items: {section.source_item_ids.length}
+											</p>
+										</li>
+									))}
+								</ul>
 							</div>
-							<div className="flex flex-wrap gap-3">
-								<Button asChild variant="outline">
-									<Link href="/reader">Back to reader</Link>
-								</Button>
-								<Button asChild variant="secondary" className="gap-2">
-									<Link href="/search">
-										Search evidence
-										<ArrowUpRight className="h-4 w-4" />
-									</Link>
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
+						) : null}
+					</aside>
 				</div>
+			</section>
+
+			<section id="reader-body" className="space-y-5">
+				<div className="space-y-2">
+					<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+						<NotebookText className="h-4 w-4 text-rose-600" />
+						Reader body
+					</div>
+					<CardDescription className="max-w-3xl leading-6">
+						The published markdown unit. Treat this as the frontstage and let it
+						carry the first pass before you inspect supporting rails.
+					</CardDescription>
+					{sections.length ? (
+						<div className="flex flex-wrap gap-2">
+							{sections.map((section) => (
+								<Badge key={section.section_id} variant="outline">
+									{section.title}
+								</Badge>
+							))}
+						</div>
+					) : null}
+				</div>
+				<article className="rounded-[2rem] border border-border/70 bg-background/95 shadow-sm">
+					<div className="mx-auto max-w-[74ch] p-5 md:p-8">
+						<MarkdownPreview markdown={document.markdown} />
+					</div>
+				</article>
 			</section>
 
 			<section id="reader-warning">
@@ -233,138 +257,59 @@ export default async function ReaderDetailPage({
 				)}
 			</section>
 
-			<section className="grid gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(300px,0.9fr)]">
-				<Card
-					id="reader-body"
-					className="border-border/70 bg-background/95 shadow-sm"
-				>
-					<CardHeader className="space-y-4">
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<NotebookText className="h-4 w-4 text-rose-600" />
-							Reader body
-						</div>
-						<CardDescription className="leading-6">
-							The published markdown unit. Treat this as the frontstage. The
-							right rail is deliberately secondary.
-						</CardDescription>
-						{sections.length ? (
-							<div className="flex flex-wrap gap-2">
-								{sections.map((section) => (
-									<Badge key={section.section_id} variant="outline">
-										{section.title}
-									</Badge>
-								))}
-							</div>
-						) : null}
-					</CardHeader>
-					<CardContent>
-						<div className="mx-auto max-w-[74ch] rounded-[2rem] border border-border/60 bg-background p-5 md:p-8">
-							<MarkdownPreview markdown={document.markdown} />
-						</div>
-					</CardContent>
-				</Card>
-
-				<div className="space-y-6 lg:sticky lg:top-6">
-					<div
-						id="reader-map"
-						className="rounded-3xl border border-border/70 bg-background/92 p-5 shadow-sm"
-					>
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<ListTree className="h-4 w-4 text-rose-600" />
-							Reader map
-						</div>
-						<p className="mt-2 text-sm leading-6 text-muted-foreground">
-							A compact orientation strip before you touch the backstage tools.
-						</p>
-						<div className="mt-4 space-y-4 text-sm">
-							<div className="flex flex-wrap gap-2">
-								<Badge variant="secondary">
-									{document.materialization_mode}
-								</Badge>
-								<Badge
-									variant={
-										document.published_with_gap ? "destructive" : "outline"
-									}
-								>
-									{document.published_with_gap ? "Yellow warning" : "Clear"}
-								</Badge>
-							</div>
-							<div className="grid gap-3 sm:grid-cols-2">
-								<div className="rounded-2xl border border-border/60 bg-muted/20 p-3 text-muted-foreground">
-									<p>Window {document.window_id}</p>
-									<p>Version {document.version}</p>
-								</div>
-								<div className="rounded-2xl border border-border/60 bg-muted/20 p-3 text-muted-foreground">
-									<p>Sources {document.source_item_count}</p>
-									<p>Sections {sections.length}</p>
-								</div>
-							</div>
-							{sections.length ? (
-								<div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-									<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-										Section outline
-									</p>
-									<ul className="mt-3 space-y-2">
-										{sections.map((section) => (
-											<li
-												key={section.section_id}
-												className="rounded-xl bg-background/90 p-3"
-											>
-												<p className="font-medium">{section.title}</p>
-												<p className="mt-1 text-xs text-muted-foreground">
-													Linked source items: {section.source_item_ids.length}
-												</p>
-											</li>
-										))}
-									</ul>
-								</div>
-							) : null}
-						</div>
-					</div>
-
-					<div id="reader-evidence">
-						<SourceContributionDrawer document={document} />
-					</div>
-
-					<details
-						id="reader-coverage"
-						className="rounded-3xl border border-border/70 bg-muted/20 p-5 shadow-sm"
-					>
-						<summary className="cursor-pointer list-none">
-							<span className="flex items-center gap-2 text-sm font-medium text-foreground">
-								<FileStack className="h-4 w-4 text-rose-600" />
-								Coverage snapshot
-							</span>
-							<p className="mt-2 text-sm leading-6 text-muted-foreground">
-								Check coverage last, after the body and evidence drawer.
-							</p>
-						</summary>
-						<div className="mt-4 space-y-2 text-sm">
-							<p>
-								Covered sources:{" "}
-								{String(
-									(coverageLedger as { covered_source_count?: number })
-										.covered_source_count ?? "n/a",
-								)}
-							</p>
-							<p>
-								Gap sources:{" "}
-								{String(
-									(coverageLedger as { gap_source_count?: number })
-										.gap_source_count ?? "n/a",
-								)}
-							</p>
-							<p>
-								Ledger kind:{" "}
-								{String(
-									(coverageLedger as { ledger_kind?: string }).ledger_kind ??
-										"unknown",
-								)}
-							</p>
-						</div>
-					</details>
-				</div>
+			<section id="reader-evidence">
+				<SourceContributionDrawer document={document} />
 			</section>
+
+			<details
+				id="reader-coverage"
+				className="rounded-3xl border border-border/70 bg-muted/20 p-5 shadow-sm"
+			>
+				<summary className="cursor-pointer list-none">
+					<span className="flex items-center gap-2 text-sm font-medium text-foreground">
+						<FileStack className="h-4 w-4 text-rose-600" />
+						Coverage snapshot
+					</span>
+					<p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+						Check coverage last, after the body, warning, and footnote drawer.
+					</p>
+				</summary>
+				<div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
+					<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							Covered sources
+						</p>
+						<p className="mt-2 text-lg font-semibold text-foreground">
+							{String(
+								(coverageLedger as { covered_source_count?: number })
+									.covered_source_count ?? "n/a",
+							)}
+						</p>
+					</div>
+					<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							Gap sources
+						</p>
+						<p className="mt-2 text-lg font-semibold text-foreground">
+							{String(
+								(coverageLedger as { gap_source_count?: number })
+									.gap_source_count ?? "n/a",
+							)}
+						</p>
+					</div>
+					<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							Ledger kind
+						</p>
+						<p className="mt-2 break-all text-sm text-foreground">
+							{String(
+								(coverageLedger as { ledger_kind?: string }).ledger_kind ??
+									"unknown",
+							)}
+						</p>
+					</div>
+				</div>
+			</details>
 		</div>
 	);
 }
