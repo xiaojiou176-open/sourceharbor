@@ -185,10 +185,10 @@ This is the short scoreboard for the directions most likely to get overstated.
 | GitHub Copilot plugin bundle | **ship-now** | `starter-packs/github-copilot/sourceharbor-github-copilot-plugin/` now gives GitHub Copilot a real source-installable plugin bundle over the same MCP/API truth |
 | Claude Code plugin bundle | **ship-now** | `starter-packs/claude-code/sourceharbor-claude-plugin/` is now the strongest public submission-ready bundle for Claude Code |
 | VS Code agent plugin bundle | **ship-now** | `starter-packs/vscode-agent/sourceharbor-vscode-agent-plugin/` now gives VS Code agent workflows a real source-installable plugin bundle over the same MCP/API truth |
-| OpenClaw via local starter pack + MCP / HTTP substrate | **first-cut** | the repo now ships a public compatibility page plus a first-cut local OpenClaw starter pack, but it still is not a marketplace or primary front-door claim |
-| OpenClaw ClawHub package template | **first-cut** | the repo now ships a publish-ready metadata template, but not a live ClawHub publish receipt |
-| MCP Registry metadata template | **first-cut** | the repo now ships an official-registry-shaped `server.json` template, but registry publication still needs a public install artifact and namespace verification |
-| Site-specific MCP directory packets | **first-cut** | `config/public/mcp-directory-profile.json` plus `docs/submission/*.md` now give the repo a real per-directory submission packet layer, but live submit/read-back is still separate |
+| OpenClaw via local starter pack + MCP / HTTP substrate | **first-cut** | the repo ships a compatibility page plus a first-cut local OpenClaw starter pack, but it still is not a marketplace or primary front-door claim |
+| OpenClaw ClawHub package template | **first-cut** | the repo ships a publish-ready metadata template, but there is still no live ClawHub publish receipt and `CLAWHUB_TOKEN` is currently unset locally |
+| Official MCP Registry listing + metadata template | **ship-now** | the registry now has a live active `SourceHarbor MCP` entry; the remaining work is version refresh, not first publication |
+| Site-specific MCP directory packets | **first-cut** | `config/public/mcp-directory-profile.json` plus `docs/submission/*.md` give the repo a real per-directory packet layer, but same-day submit/read-back still varies per site |
 | Public Python SDK | **later** | no public package surface exists yet |
 | Public skills pack / templates | **first-cut** | `docs/public-skills.md`, `docs/compat/*`, `templates/public-skills/*`, and `examples/*` now provide a usable first public starter surface, but not a fully hardened ecosystem product yet |
 | Plugin / extension marketplace as the primary product identity | **no-go now** | plugin-first positioning would still overstate the current repo truth even after the new bundle/template surfaces landed |
@@ -205,7 +205,11 @@ current maintainer re-audit:
 
 - Resend live delivery still needs a real sender identity chain: `RESEND_FROM_EMAIL`, a verified sender/domain, and a destination mailbox
 - the strict YouTube live-smoke lane now has recent local proof, but the full lane still needs operator-managed YouTube API access when it is reopened
-- official-surface public distribution still needs true submit/read-back proof on the target platform even when the repo-side package/template work is already done
+- official-surface public distribution is now split more sharply:
+  - Official MCP Registry is already live, but still lagging the newest repo snapshot
+  - `awesome-opencode` is submitted and waiting on maintainer review
+  - `mcpservers.org` and `MCP.so` still need same-day public read-back proof
+  - ClawHub still needs a real publish step and auth
 - the GitHub social preview image still remains a manual platform upload step even though the tracked asset chain already exists
 
 Raw non-empty values for `YOUTUBE_API_KEY`, `RESEND_API_KEY`, and
@@ -218,6 +222,8 @@ are more specific than generic "secret missing" language.
 | --- | --- | --- | --- |
 | Resend sender identity | provider canary still reports `config_error`; sender configuration remains incomplete because `RESEND_FROM_EMAIL` is still missing | repo code already exposes notifications and settings; GitHub/release truth is no longer the missing piece | set `RESEND_FROM_EMAIL`, verify the sender/domain in Resend, choose a real destination mailbox, then rerun the provider canary or strict live-smoke lane |
 | YouTube strict live-smoke | recent local proof now passes direct probe, provider canary, and strict live-smoke preflight; the remaining step is restoring operator-managed YouTube API access whenever the full live lane is reopened | repo-side implementation is no longer the blocker; the remaining action is making the intended YouTube API access available when the lane is rerun | restore the intended YouTube API access in the environment used for the live-smoke lane, then rerun the strict live-smoke lane when you want the full end-to-end receipt |
+| Official MCP Registry version refresh | the registry currently lists an active `SourceHarbor MCP` entry, but its public package snapshot still reads `0.1.14` while the repo snapshot has moved on | the repo already has the package, template, and listing truth; the missing step is a deliberate publish/refresh action with package credentials | publish the intended current package version when the right credentials are available, then read the updated version back from the official registry |
+| GitHub social preview | GitHub still reports `usesCustomOpenGraphImage=false` even though the tracked asset already exists in-repo | the remaining step is a manual upload in GitHub repo settings, not a repo-code change | upload `docs/assets/sourceharbor-social-preview.png` in GitHub repo social preview settings, then read the live setting back |
 
 ## Remote Truth Reading Rules
 

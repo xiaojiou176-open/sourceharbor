@@ -7,6 +7,13 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.22] - 2026-04-10
+
+### Changed
+
+- refreshed the public distribution ledger so the Official MCP Registry now reads as already live-listed, while MCP.so, PulseMCP, mcpservers.org, and ClawHub each keep their sharper current-state boundaries
+- refreshed project-status so external blocker wording now reflects the new split between live registry truth, pending marketplace review, manual GitHub social preview upload, and remaining provider-side actions
+
 ## [0.1.21] - 2026-04-10
 
 ### Changed
