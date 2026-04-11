@@ -169,10 +169,12 @@ async def run_pipeline(
     overrides: dict[str, Any] | None = None,
     step_handlers: list[tuple[str, StepHandler, bool]] | None = None,
     pipeline_steps: list[str] | None = None,
+    content_type: str | None = None,
 ) -> dict[str, Any]:
     raw_mode = "full" if mode is _DEFAULT_MODE_UNSET else mode
     pipeline_mode = normalize_pipeline_mode(raw_mode)
     llm_input_mode = normalize_llm_input_mode(getattr(settings, "pipeline_llm_input_mode", "auto"))
+    resolved_content_type = str(content_type or "video").strip().lower() or "video"
     ctx = build_context(settings, sqlite_store, pg_store, job_id=job_id, attempt=attempt)
 
     resolved_overrides = normalize_overrides_payload(overrides)
@@ -182,7 +184,11 @@ async def run_pipeline(
     platform = str(ctx.job_record.get("platform") or "").strip().lower()
     comments_policy = build_comments_policy(settings, resolved_overrides, platform=platform)
     frame_policy = build_frame_policy(settings, resolved_overrides)
-    llm_policy = build_llm_policy(settings, resolved_overrides)
+    llm_policy = build_llm_policy(
+        settings,
+        resolved_overrides,
+        content_type=resolved_content_type,
+    )
 
     steps_list = pipeline_steps if pipeline_steps is not None else PIPELINE_STEPS
     checkpoint = sqlite_store.get_checkpoint(job_id)
@@ -194,6 +200,7 @@ async def run_pipeline(
         "job_id": job_id,
         "attempt": attempt,
         "mode": pipeline_mode,
+        "content_type": resolved_content_type,
         "source_url": ctx.job_record.get("source_url"),
         "title": ctx.job_record.get("title"),
         "platform": ctx.job_record.get("platform"),
@@ -296,9 +303,12 @@ async def run_pipeline(
         )
         # Only hard-required LLM failures should stop the pipeline early.
         if (
-            llm_hard_required
-            and step_name in {"llm_outline", "llm_digest"}
+            step_name in {"llm_outline", "llm_digest"}
             and step_record.get("status") == "failed"
+            and (
+                llm_hard_required
+                or bool(dict(step_record.get("output") or {}).get("contract_fail_close"))
+            )
         ):
             state["fatal_error"] = (
                 f"{step_name}:{step_record.get('error') or step_record.get('reason') or 'failed'}"
@@ -319,6 +329,7 @@ async def run_pipeline(
         "job_id": job_id,
         "attempt": attempt,
         "mode": pipeline_mode,
+        "content_type": resolved_content_type,
         "final_status": final_status,
         "steps": state["steps"],
         "artifact_dir": state.get("artifact_dir"),

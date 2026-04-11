@@ -12,6 +12,7 @@ _STRING_ITEM_KEYS = ("text", "summary", "title", "content", "label", "value")
 _DEFAULT_LIST_LIMIT = 12
 _COMMENT_SORTS = {"hot", "new"}
 _PIPELINE_MODES = {"text_only", "refresh_comments", "refresh_llm"}
+_ANALYSIS_MODES = {"advanced", "economy"}
 
 
 def coerce_bool(value: Any, default: bool = False) -> bool:
@@ -71,6 +72,13 @@ def _normalize_media_resolution_policy(
 
     base = _normalize_media_resolution(value, default=default)
     return {"default": base, "frame": base, "image": base, "pdf": base}
+
+
+def _normalize_analysis_mode(value: Any, *, default: str) -> str:
+    text = str(value or "").strip().lower().replace("-", "_")
+    if text in _ANALYSIS_MODES:
+        return text
+    return default
 
 
 def normalize_overrides_payload(value: Any) -> dict[str, Any]:
@@ -182,7 +190,12 @@ def build_llm_policy_section(
     }
 
 
-def build_llm_policy(settings: Settings, overrides: dict[str, Any]) -> dict[str, Any]:
+def build_llm_policy(
+    settings: Settings,
+    overrides: dict[str, Any],
+    *,
+    content_type: str | None = None,
+) -> dict[str, Any]:
     section = override_section(overrides, "llm")
     speed_priority = coerce_bool(section.get("speed_priority"))
     thinking_level = str(section.get("thinking_level") or "").strip().lower()
@@ -195,10 +208,79 @@ def build_llm_policy(settings: Settings, overrides: dict[str, Any]) -> dict[str,
     media_resolution = _normalize_media_resolution_policy(
         section.get("media_resolution"), default="medium"
     )
+    normalized_content_type = str(content_type or "video").strip().lower() or "video"
+    is_video_content = normalized_content_type == "video"
+    raw_stage_section = {}
+    raw_stage_value = section.get("raw_stage")
+    if isinstance(raw_stage_value, dict):
+        raw_stage_section.update(raw_stage_value)
+    top_level_raw_stage = override_section(overrides, "raw_stage")
+    if top_level_raw_stage:
+        raw_stage_section = {**raw_stage_section, **top_level_raw_stage}
+    for key in (
+        "analysis_mode",
+        "video_first",
+        "video_input_required",
+        "preprocess_enabled",
+        "preprocess_model",
+        "preprocess_input_mode",
+        "review_required",
+        "review_model",
+        "review_input_mode",
+        "primary_input_mode",
+    ):
+        if key in section and key not in raw_stage_section:
+            raw_stage_section[key] = section[key]
+    analysis_mode = _normalize_analysis_mode(
+        raw_stage_section.get("analysis_mode"),
+        default="advanced" if is_video_content else "economy",
+    )
+    video_first = bool(
+        is_video_content and coerce_bool(raw_stage_section.get("video_first"), default=True)
+    )
+    video_input_required = bool(
+        is_video_content
+        and coerce_bool(
+            raw_stage_section.get("video_input_required"),
+            default=video_first,
+        )
+    )
+    preprocess_enabled = bool(
+        is_video_content
+        and coerce_bool(
+            raw_stage_section.get("preprocess_enabled"),
+            default=analysis_mode == "advanced",
+        )
+    )
+    review_required = bool(
+        is_video_content
+        and coerce_bool(
+            raw_stage_section.get("review_required"),
+            default=analysis_mode == "advanced",
+        )
+    )
+    preprocess_model = (
+        str(raw_stage_section.get("preprocess_model") or settings.gemini_fast_model).strip()
+        or settings.gemini_fast_model
+    )
+    preprocess_input_mode = normalize_llm_input_mode(
+        raw_stage_section.get("preprocess_input_mode") or "text"
+    )
+    primary_input_mode = normalize_llm_input_mode(
+        raw_stage_section.get("primary_input_mode") or "video_text"
+    )
+    review_model = (
+        str(raw_stage_section.get("review_model") or settings.gemini_model).strip()
+        or settings.gemini_model
+    )
+    review_input_mode = normalize_llm_input_mode(
+        raw_stage_section.get("review_input_mode") or "video_text"
+    )
     section = {
         **section,
         "include_thoughts": include_thoughts,
         "media_resolution": media_resolution,
+        "analysis_mode": analysis_mode,
     }
 
     default_model = settings.gemini_model
@@ -258,12 +340,26 @@ def build_llm_policy(settings: Settings, overrides: dict[str, Any]) -> dict[str,
         "max_function_call_rounds": max_function_call_rounds,
         "speed_priority": speed_priority,
         "thinking_level": thinking_level,
+        "analysis_mode": analysis_mode,
         "include_thoughts": include_thoughts,
         "enable_computer_use": enable_computer_use,
         "computer_use_require_confirmation": computer_use_require_confirmation,
         "computer_use_max_steps": computer_use_max_steps,
         "computer_use_timeout_seconds": computer_use_timeout_seconds,
         "media_resolution": media_resolution,
+        "raw_stage": {
+            "analysis_mode": analysis_mode,
+            "content_type": normalized_content_type,
+            "video_first": video_first,
+            "video_input_required": video_input_required,
+            "preprocess_enabled": preprocess_enabled,
+            "preprocess_model": preprocess_model,
+            "preprocess_input_mode": preprocess_input_mode,
+            "primary_input_mode": primary_input_mode,
+            "review_required": review_required,
+            "review_model": review_model,
+            "review_input_mode": review_input_mode,
+        },
         "outline": outline,
         "digest": digest,
     }

@@ -80,6 +80,36 @@ def build_digest_prompt(
     return "\n\n".join(prompt_parts)
 
 
+def build_digest_review_prompt(
+    *,
+    metadata: dict[str, Any],
+    outline: dict[str, Any],
+    draft_digest: dict[str, Any],
+    transcript: str,
+    comments: dict[str, Any],
+    frames: list[dict[str, Any]],
+    source_url: str,
+    include_frame_context: bool,
+) -> str:
+    prompt_parts = [
+        "You are a senior reader-product reviewer. Review the draft digest against the original multimodal evidence and return a corrected JSON digest.",
+        "Output contract: return JSON only. Do not return Markdown or fenced code blocks.",
+        "Language contract: every reader-facing field must be Simplified Chinese. Proper nouns, product names, and code identifiers may remain in English.",
+        "Field contract: the object must contain title, summary, tldr, highlights, action_items, code_blocks, timestamp_references, and fallback_notes.",
+        "Review contract: keep supported claims, remove unsupported claims, fill major omissions, and tighten evidence wording when the draft overstates certainty.",
+        f"Metadata:\n{json.dumps(jsonable(metadata), ensure_ascii=False)}",
+        f"Outline:\n{json.dumps(jsonable(outline), ensure_ascii=False)}",
+        f"Draft Digest:\n{json.dumps(jsonable(draft_digest), ensure_ascii=False)}",
+        f"Transcript (truncated):\n{transcript[:12000]}",
+        f"Comment Highlights:\n{build_comments_prompt_context(comments)}",
+    ]
+    if include_frame_context:
+        prompt_parts.append(
+            f"Frame Summaries (optional grounding):\n{build_frames_prompt_context(frames, source_url)}"
+        )
+    return "\n\n".join(prompt_parts)
+
+
 def select_supporting_frames(
     frame_summaries: list[dict[str, Any]] | None = None,
     max_items: int = 5,

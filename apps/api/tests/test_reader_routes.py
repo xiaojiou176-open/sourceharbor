@@ -24,6 +24,7 @@ def _sample_document_payload(now: datetime, *, batch_id: uuid.UUID) -> dict[str,
         "reader_style_profile": "briefing",
         "materialization_mode": "merge_then_polish",
         "version": 1,
+        "publish_status": "published",
         "published_with_gap": False,
         "is_current": True,
         "source_item_count": 2,
@@ -154,6 +155,7 @@ def test_reader_documents_routes_return_list_and_detail(api_client, monkeypatch)
     slug_response = api_client.get(f"/api/v1/reader/documents/slug/{document['slug']}")
     assert list_response.status_code == 200
     assert list_response.json()[0]["stable_key"] == "topic-ai-agents-2026-04-09"
+    assert list_response.json()[0]["publish_status"] == "published"
     assert slug_response.status_code == 200
     assert slug_response.json()["slug"] == document["slug"]
 

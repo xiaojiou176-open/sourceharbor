@@ -10,6 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ..repositories import FeedFeedbackRepository, JobsRepository
+from .source_identity import build_identity_payload
 from .source_names import resolve_source_name
 
 
@@ -217,6 +218,19 @@ class FeedService:
             content_type = self._normalize_content_type(row.get("content_type"))
             source_type = str(row.get("subscription_source_type") or "")
             source_value = str(row.get("subscription_source_value") or "")
+            source_name = resolve_source_name(
+                source_type=source_type,
+                source_value=source_value,
+                fallback=source_platform,
+            )
+            subscription_id = str(row.get("subscription_id") or "").strip() or None
+            identity = build_identity_payload(
+                platform=source_platform,
+                display_name=source_name,
+                source_homepage_url=source_url,
+                source_url=source_url,
+                source_universe_label=source_name or source_platform,
+            )
             feedback_label = str(row.get("feedback_label") or "").strip().lower() or None
             if feedback_label not in {"useful", "noisy", "dismissed", "archived"}:
                 feedback_label = None
@@ -227,11 +241,18 @@ class FeedService:
                     "video_url": source_url,
                     "title": self._resolve_title(row),
                     "source": source_platform,
-                    "source_name": resolve_source_name(
-                        source_type=source_type,
-                        source_value=source_value,
-                        fallback=source_platform,
-                    ),
+                    "source_name": source_name,
+                    "canonical_source_name": source_name,
+                    "canonical_author_name": source_name,
+                    "subscription_id": subscription_id,
+                    "affiliation_label": source_name if subscription_id else "Unmatched source",
+                    "relation_kind": "matched_subscription"
+                    if subscription_id
+                    else "unmatched_source",
+                    "thumbnail_url": identity.thumbnail_url,
+                    "avatar_url": identity.avatar_url,
+                    "avatar_label": identity.avatar_label,
+                    "identity_status": identity.identity_status,
                     "category": str(row.get("category") or "misc"),
                     "published_at": self._iso(published_at),
                     "summary_md": summary_md,

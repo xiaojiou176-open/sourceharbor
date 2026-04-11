@@ -12,6 +12,7 @@ from ..db import get_db
 from ..security import require_write_access, sanitize_exception_detail
 from ..services import SubscriptionsService, VideosService
 from ..services.manual_source_intake import ManualSourceIntakeService
+from ..services.source_identity import build_identity_payload
 from ..services.source_names import build_source_name_fallback, resolve_source_name
 from ..services.subscription_templates import load_subscription_template_catalog
 from ..services.subscriptions import (
@@ -46,6 +47,14 @@ class SubscriptionResponse(BaseModel):
     adapter_type: str = "rsshub_route"
     source_url: str | None = None
     rsshub_route: str
+    creator_display_name: str | None = None
+    creator_handle: str | None = None
+    source_homepage_url: str | None = None
+    avatar_url: str | None = None
+    avatar_label: str | None = None
+    thumbnail_url: str | None = None
+    source_universe_label: str | None = None
+    identity_status: str = "derived_identity"
     category: str = "misc"
     tags: list[str] = Field(default_factory=list)
     priority: int = 50
@@ -62,23 +71,33 @@ def _to_subscription_response(row) -> SubscriptionResponse:
     explicit_source_name = str(getattr(row, "source_name", "") or "").strip()
     priority_value = getattr(row, "priority", None)
     resolved_priority = 50 if priority_value is None else int(priority_value)
+    resolved_source_name = resolve_source_name(
+        source_type=source_type,
+        source_value=source_value,
+        fallback=explicit_source_name
+        or build_source_name_fallback(
+            platform=platform,
+            source_type=source_type,
+            source_value=source_value,
+            source_url=getattr(row, "source_url", None),
+            rsshub_route=getattr(row, "rsshub_route", None),
+        ),
+    )
+    creator_handle = source_value if source_value.startswith("@") else None
+    identity = build_identity_payload(
+        platform=platform,
+        display_name=resolved_source_name,
+        creator_handle=creator_handle,
+        source_homepage_url=getattr(row, "source_url", None) or getattr(row, "rsshub_route", None),
+        source_url=getattr(row, "source_url", None),
+        source_universe_label=resolved_source_name,
+    )
     return SubscriptionResponse(
         id=row.id,
         platform=platform,
         source_type=source_type,
         source_value=source_value,
-        source_name=resolve_source_name(
-            source_type=source_type,
-            source_value=source_value,
-            fallback=explicit_source_name
-            or build_source_name_fallback(
-                platform=platform,
-                source_type=source_type,
-                source_value=source_value,
-                source_url=getattr(row, "source_url", None),
-                rsshub_route=getattr(row, "rsshub_route", None),
-            ),
-        ),
+        source_name=resolved_source_name,
         support_tier=resolve_subscription_support_tier(
             platform=platform,
             source_type=source_type,
@@ -91,6 +110,14 @@ def _to_subscription_response(row) -> SubscriptionResponse:
         adapter_type=adapter_type,
         source_url=getattr(row, "source_url", None),
         rsshub_route=row.rsshub_route,
+        creator_display_name=identity.creator_display_name,
+        creator_handle=identity.creator_handle,
+        source_homepage_url=identity.source_homepage_url,
+        avatar_url=identity.avatar_url,
+        avatar_label=identity.avatar_label,
+        thumbnail_url=identity.thumbnail_url,
+        source_universe_label=identity.source_universe_label,
+        identity_status=identity.identity_status,
         category=getattr(row, "category", "misc"),
         tags=list(getattr(row, "tags", []) or []),
         priority=resolved_priority,
@@ -163,6 +190,17 @@ class ManualSourceIntakeResult(BaseModel):
     content_profile: str | None = None
     support_tier: str | None = None
     display_name: str | None = None
+    relation_kind: str | None = None
+    matched_subscription_id: str | None = None
+    matched_subscription_name: str | None = None
+    matched_by: str | None = None
+    match_confidence: str | None = None
+    source_universe_label: str | None = None
+    creator_display_name: str | None = None
+    creator_handle: str | None = None
+    thumbnail_url: str | None = None
+    avatar_url: str | None = None
+    avatar_label: str | None = None
     message: str
     subscription_id: str | None = None
     job_id: str | None = None

@@ -100,6 +100,78 @@ version-gap contract addendum 负责：
 
 - `.agents/Plans/2026-04-09__omega-P1-cluster-judge-closeout.md`
 
+## 0.3 2026-04-11 Video-First Raw Stage Addendum
+
+从 `2026-04-11` 开始，视频类 `RawReaderDocument` 的底层 contract 再抬一档：
+
+- 默认模式改为 `advanced`
+- `economy` 只作为显式省 token 选项
+- 小模型预处理层正式进入 `S2 初步解读阶段`
+- 高级模式必须强制第二轮 Gemini 审稿
+- 视频链必须 `fail-close`
+
+这里最容易搞混的点，要先说清楚：
+
+- 字幕
+- 评论区
+- metadata
+- 抽帧
+
+这些现在都仍然有价值，但它们只算**辅助证据层**，不再允许单独冒充“视频本体已经被理解”。
+
+### 0.3.1 新的模式合同
+
+#### `advanced`（默认）
+
+1. 先用较轻模型读取：
+   - 字幕
+   - 评论区
+   - metadata
+2. 产出：
+   - 初步结构
+   - Raw 大纲
+   - signal / risk 提示
+3. 再让主模型读取：
+   - 视频本体
+   - 字幕 / metadata / 评论区
+   - 上一步产出的预处理大纲
+4. 产出第一版 raw digest
+5. 强制第二轮 Gemini 审稿，再次带上视频本体与第一版草稿，补缺、修漏、压缩 unsupported claim
+
+#### `economy`
+
+- 不跑小模型预处理
+- 不跑第二轮审稿
+- 但主模型仍必须把**视频本体**作为 primary input 读取
+
+### 0.3.2 新的 fail-close 边界
+
+对视频类 `SourceItem`，以下情况不再允许以“degraded success”混过去：
+
+- 没拿到视频文件 / 视频本体输入
+- 主模型从 `video_text` 静默退到 `frames_text`
+- 主模型从 `video_text` 静默退到 `text`
+- 高级模式的第二轮审稿没有发生
+- 高级模式第二轮审稿发生了，但再次没有真正吃到视频本体
+
+说得更直白一点：
+
+> 以后“还能写出一份摘要”不等于“这条视频 Raw 已达标”。
+> 对视频内容，**吃到视频本体** 才是合格线。
+
+### 0.3.3 当前 repo 内的最小落点
+
+本 addendum 在当前 repo 的最小 contract 落点是：
+
+- canonical override key = `overrides.llm.analysis_mode`
+- 允许值：
+  - `advanced`
+  - `economy`
+- artifact proof 需要额外写回：
+  - primary/review 实际使用的 `media_input`
+  - preprocess / review 是否真的发生
+  - `video_contract_satisfied`
+
 ## 1. 产品一句话定义
 
 `SourceHarbor` 的下一阶段目标是：把多源长内容 intake 先落成高保真单信息源文档，再按主题无损合并/润色成面向读者的阅读成品，并通过 reader-first 首页、详情页与导航日报交付给用户。

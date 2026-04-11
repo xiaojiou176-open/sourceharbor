@@ -184,6 +184,38 @@
 | minimum states | `pending`, `ready`, `degraded`, `failed` |
 | `W1-B` 保留项 | extraction version key、artifact manifest exact schema |
 
+#### 2026-04-11 addendum — video-first compliance
+
+当 `SourceItem.content_type = video` 时，`RawReaderDocument` 的合格线进一步收紧：
+
+1. `transcript / comments / frames / metadata` 仍然是有效证据，但它们只是**辅助层**
+2. 真正决定这份 Raw 是否合格的，是主模型有没有把**视频本体**当 primary input 读进去
+3. 若主模型只退到：
+   - `frames_text`
+   - `text`
+   那么这次视频 Raw 不得视作 `ready`
+4. `advanced` 模式下，第二轮 Gemini 审稿必须真的发生，且仍然要再次以视频本体为 primary input
+
+因此，视频类 `RawReaderDocument` 的最小 proof 不再只是“生成了 outline/digest”，还必须能说明：
+
+- `analysis_mode`
+- `primary_media_input`
+- `review_required`
+- `review_media_input`
+- `video_contract_satisfied`
+
+如果这些 proof 不成立，正确状态应是：
+
+- `failed`
+
+而不是把“字幕主导成功”包装成合格 `ready`。
+
+这条 addendum 不影响 article/text lane。它只收紧视频 lane 的合格定义。
+
+当前 repo 内部的 canonical override 约定是：
+
+- `overrides.llm.analysis_mode = advanced|economy`
+
 ### 5.4 `ConsumptionBatch`
 
 它是什么：

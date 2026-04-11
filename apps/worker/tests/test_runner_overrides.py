@@ -409,6 +409,10 @@ def test_build_llm_policy_supports_thoughts_media_and_function_rounds(tmp_path: 
     assert policy["outline"]["max_function_call_rounds"] == 1
     assert policy["outline"]["media_resolution"]["image"] == "medium"
     assert policy["digest"]["include_thoughts"] is True
+    assert policy["analysis_mode"] == "advanced"
+    assert policy["raw_stage"]["analysis_mode"] == "advanced"
+    assert policy["raw_stage"]["video_input_required"] is True
+    assert policy["raw_stage"]["review_required"] is True
 
 
 def test_build_llm_policy_blocks_computer_use_override_when_globally_disabled(
@@ -431,3 +435,4 @@ def test_build_llm_policy_blocks_computer_use_override_when_globally_disabled(
     assert policy["enable_computer_use"] is False
     assert policy["outline"]["enable_computer_use"] is False
     assert policy["digest"]["enable_computer_use"] is False
+    assert policy["raw_stage"]["analysis_mode"] == "advanced"

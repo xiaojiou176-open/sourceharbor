@@ -101,6 +101,10 @@ def test_manual_source_submit_supports_partial_success_and_counts() -> None:
     assert result["rejected_count"] == 1
     statuses = [item["status"] for item in result["results"]]
     assert statuses == ["created", "queued", "created", "rejected"]
+    assert result["results"][0]["relation_kind"] == "new_source_universe"
+    assert result["results"][1]["relation_kind"] == "manual_one_off"
+    assert result["results"][1]["thumbnail_url"]
+    assert result["results"][0]["avatar_label"]
 
 
 def test_manual_source_plan_handles_empty_invalid_and_unsupported_urls() -> None:
@@ -141,3 +145,6 @@ def test_manual_source_submit_tracks_updates_and_reused_items() -> None:
     assert result["queued_manual_items"] == 0
     assert result["reused_manual_items"] == 1
     assert [item["status"] for item in result["results"]] == ["updated", "reused"]
+    assert result["results"][0]["relation_kind"] == "matched_subscription"
+    assert result["results"][0]["matched_subscription_id"]
+    assert result["results"][0]["matched_subscription_name"] == "@existing-channel"

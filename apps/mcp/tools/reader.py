@@ -31,6 +31,7 @@ def _normalize_reader_document(payload: Any) -> dict[str, Any]:
         "markdown": to_optional_str(source.get("markdown")),
         "materialization_mode": to_optional_str(source.get("materialization_mode")),
         "version": to_optional_int(source.get("version")),
+        "publish_status": to_optional_str(source.get("publish_status")),
         "published_with_gap": to_optional_bool(source.get("published_with_gap")),
         "source_item_count": to_optional_int(source.get("source_item_count")),
         "warning": to_optional_dict(source.get("warning")),

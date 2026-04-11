@@ -12,6 +12,15 @@ class DigestFeedItem(BaseModel):
     title: str
     source: str
     source_name: str
+    canonical_source_name: str | None = None
+    canonical_author_name: str | None = None
+    subscription_id: str | None = None
+    affiliation_label: str | None = None
+    relation_kind: str | None = None
+    thumbnail_url: str | None = None
+    avatar_url: str | None = None
+    avatar_label: str | None = None
+    identity_status: str | None = None
     category: str
     published_at: str
     summary_md: str

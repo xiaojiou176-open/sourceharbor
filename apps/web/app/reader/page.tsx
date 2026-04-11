@@ -2,6 +2,7 @@ import { ArrowRight, LibraryBig } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +13,10 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
+import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
 import { DEMO_READER_DOCUMENT_ID } from "@/lib/reader/demo-document";
 import { buildProductMetadata } from "@/lib/seo";
+import { resolveReaderSourceIdentity } from "@/lib/source-identity";
 
 export const metadata: Metadata = buildProductMetadata({
 	title: "Reader",
@@ -63,7 +66,9 @@ export default async function ReaderPage() {
 	);
 
 	return (
-		<div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 py-8 md:px-6">
+		<div
+			className={`mx-auto flex w-full max-w-7xl flex-col gap-14 px-4 py-8 md:px-6 ${editorialSans.className}`}
+		>
 			<section className="grid gap-6 xl:grid-cols-[minmax(0,1.52fr)_minmax(280px,0.72fr)]">
 				<Card className="overflow-hidden border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 shadow-sm dark:to-rose-950/10">
 					<CardHeader className="space-y-7 pb-4">
@@ -79,7 +84,7 @@ export default async function ReaderPage() {
 							</p>
 							<h1
 								data-route-heading
-								className="max-w-4xl font-serif text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl"
+								className={`max-w-4xl text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl ${editorialSerif.className}`}
 							>
 								Read the strongest finished unit before you touch the operator
 								rails
@@ -203,29 +208,18 @@ export default async function ReaderPage() {
 											<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
 												First three footnotes
 											</p>
-											<ol className="mt-3 space-y-2 text-sm text-muted-foreground">
+											<div className="mt-3 space-y-2 text-sm text-muted-foreground">
 												{leadSources.map((source, index) => (
-													<li
+													<SourceIdentityCard
 														key={String(source.source_item_id ?? source.title)}
-														className="rounded-xl border border-border/50 px-3 py-2"
-													>
-														<p className="font-medium text-foreground">
-															<span className="mr-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-																{String(index + 1).padStart(2, "0")}
-															</span>
-															{typeof source.title === "string" &&
-															source.title.trim()
-																? source.title
-																: "Untitled source"}
-														</p>
-														{typeof source.digest_preview === "string" ? (
-															<p className="mt-1 line-clamp-2">
-																{source.digest_preview}
-															</p>
-														) : null}
-													</li>
+														identity={{
+															...resolveReaderSourceIdentity(source),
+															eyebrow: `Footnote ${String(index + 1).padStart(2, "0")}`,
+														}}
+														compact
+													/>
 												))}
-											</ol>
+											</div>
 										</div>
 									) : null}
 									<div className="space-y-2 text-sm text-muted-foreground">

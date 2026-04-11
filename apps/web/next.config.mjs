@@ -10,6 +10,14 @@ const nextConfig = {
 	experimental: {
 		externalDir: true,
 	},
+	images: {
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "i.ytimg.com",
+			},
+		],
+	},
 	outputFileTracingRoot: monorepoRoot,
 	transpilePackages: ["@sourceharbor/sdk"],
 	turbopack: {

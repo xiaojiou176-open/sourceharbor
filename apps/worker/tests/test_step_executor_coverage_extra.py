@@ -350,7 +350,7 @@ def test_build_step_cache_info_signature_contract_for_non_default_version(tmp_pa
     }
     info = step_executor.build_step_cache_info(ctx, state, "llm_digest")
     inputs = step_executor._step_input_payload(ctx, state, "llm_digest")
-    expected_payload = {"step": "llm_digest", "version": "v6", "inputs": inputs}
+    expected_payload = {"step": "llm_digest", "version": "v7", "inputs": inputs}
     expected_signature = hashlib.sha256(
         json.dumps(
             expected_payload,
@@ -360,9 +360,9 @@ def test_build_step_cache_info_signature_contract_for_non_default_version(tmp_pa
         ).encode("utf-8")
     ).hexdigest()[:24]
 
-    assert info["version"] == "v6"
+    assert info["version"] == "v7"
     assert info["signature"] == expected_signature
-    assert info["cache_key"] == f"llm_digest:v6:{expected_signature}"
+    assert info["cache_key"] == f"llm_digest:v7:{expected_signature}"
 
 
 def test_write_step_cache_preserves_existing_cache_meta_fields(tmp_path: Path) -> None:

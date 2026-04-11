@@ -10,6 +10,7 @@ import {
 	FormSelectField,
 } from "@/components/form-field";
 import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel";
+import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SubmitButton } from "@/components/submit-button";
 import { SubscriptionBatchPanel } from "@/components/subscription-batch-panel";
 import { Badge } from "@/components/ui/badge";
@@ -25,12 +26,14 @@ import type {
 	SubscriptionTemplate,
 	SubscriptionTemplateCatalogResponse,
 } from "@/lib/api/types";
+import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import {
 	resolveSearchParams,
 	type SearchParamsInput,
 } from "@/lib/search-params";
 import { buildProductMetadata } from "@/lib/seo";
+import { resolveSubscriptionIdentity } from "@/lib/source-identity";
 
 const subscriptionsCopy = getLocaleMessages().subscriptionsPage;
 
@@ -267,12 +270,18 @@ export default async function SubscriptionsPage({
 	);
 	const pageErrorCode =
 		subscriptionsResult.errorCode ?? templateCatalogResult.errorCode;
+	const highlightedSubscriptions = subscriptions.slice(0, 6);
 
 	return (
-		<div className="folo-page-shell folo-unified-shell">
+		<div
+			className={`folo-page-shell folo-unified-shell ${editorialSans.className}`}
+		>
 			<div className="folo-page-header">
 				<p className="folo-page-kicker">{copy.kicker}</p>
-				<h1 className="folo-page-title" data-route-heading>
+				<h1
+					className={`folo-page-title ${editorialSerif.className}`}
+					data-route-heading
+				>
 					{copy.heroTitle}
 				</h1>
 				<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
@@ -296,6 +305,89 @@ export default async function SubscriptionsPage({
 					</CardContent>
 				</Card>
 			) : null}
+
+			<section className="grid gap-4 xl:grid-cols-[1.28fr_0.92fr]">
+				<Card className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
+					<CardHeader className="gap-2">
+						<h2
+							className={`text-2xl font-semibold ${editorialSerif.className}`}
+						>
+							Tracked universes
+						</h2>
+						<CardDescription>
+							Start by seeing who already belongs to your reading desk. This
+							frontstage should feel like an atlas of sources, not a tax form.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+						{highlightedSubscriptions.length ? (
+							highlightedSubscriptions.map((subscription) => (
+								<SourceIdentityCard
+									key={subscription.id}
+									identity={resolveSubscriptionIdentity(subscription)}
+									compact
+								/>
+							))
+						) : (
+							<div className="rounded-[1.2rem] border border-dashed border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
+								No tracked universes yet. Use the workbench below to create the
+								first one and make today&apos;s intake feel attached to a real
+								source world.
+							</div>
+						)}
+					</CardContent>
+				</Card>
+
+				<Card className="folo-surface border-border/70">
+					<CardHeader className="gap-2">
+						<h2
+							className={`text-2xl font-semibold ${editorialSerif.className}`}
+						>
+							Intake posture
+						</h2>
+						<CardDescription>
+							Strong lanes should feel immediate. General lanes should stay
+							honest about proof boundaries. Manual intake should always tell
+							you whether an input belongs to an existing universe or starts a
+							new one.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-3 text-sm text-muted-foreground">
+						<div className="rounded-[1.1rem] border border-border/60 bg-muted/20 p-4">
+							<p className="font-medium text-foreground">
+								1. Pick the universe
+							</p>
+							<p className="mt-2">
+								Choose a strong-supported lane when you know the creator, or a
+								general lane when the source is only proven as feed intake.
+							</p>
+						</div>
+						<div className="rounded-[1.1rem] border border-border/60 bg-muted/20 p-4">
+							<p className="font-medium text-foreground">
+								2. Run manual intake
+							</p>
+							<p className="mt-2">
+								The result cards below should tell you whether the input matched
+								a tracked universe, created a new one, or stayed a one-off lane.
+							</p>
+						</div>
+						<div className="rounded-[1.1rem] border border-border/60 bg-muted/20 p-4">
+							<p className="font-medium text-foreground">3. Read the product</p>
+							<p className="mt-2">
+								Use{" "}
+								<Link href="/feed" className="underline underline-offset-4">
+									Feed
+								</Link>{" "}
+								and{" "}
+								<Link href="/reader" className="underline underline-offset-4">
+									Reader
+								</Link>{" "}
+								as the frontstage once the source universe has materialized.
+							</p>
+						</div>
+					</CardContent>
+				</Card>
+			</section>
 
 			<section className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
 				<Card className="folo-surface border-border/70">

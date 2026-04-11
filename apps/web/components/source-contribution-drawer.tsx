@@ -2,8 +2,11 @@ import type { ReaderDocument } from "@sourceharbor/sdk";
 import { Braces, FileStack } from "lucide-react";
 import Link from "next/link";
 
+import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
+import { resolveReaderSourceIdentity } from "@/lib/source-identity";
 
 type SourceContributionDrawerProps = {
 	document: ReaderDocument;
@@ -19,14 +22,18 @@ export function SourceContributionDrawer({
 		: "Clear provenance map";
 
 	return (
-		<Card className="border-border/70 bg-background/95 shadow-sm">
+		<Card
+			className={`border-border/70 bg-background/95 shadow-sm ${editorialSans.className}`}
+		>
 			<CardHeader className="space-y-3 pb-3">
 				<div className="flex flex-wrap items-center gap-2">
 					<Badge variant="secondary">Backstage footnotes</Badge>
 					<Badge variant="outline">{warningContext}</Badge>
 				</div>
 				<div className="space-y-2">
-					<h2 className="text-base font-semibold">Evidence drawer</h2>
+					<h2 className={`text-base font-semibold ${editorialSerif.className}`}>
+						Evidence drawer
+					</h2>
 					<p className="text-sm leading-6 text-muted-foreground">
 						Read the body first. Keep the warning in mind. Then open this drawer
 						like a footnote rail only when you want to inspect where a claim,
@@ -92,46 +99,38 @@ export function SourceContributionDrawer({
 									? source.digest_preview
 									: null;
 
+							const identity = resolveReaderSourceIdentity(source);
 							return (
-								<div
+								<SourceIdentityCard
 									key={String(source.source_item_id ?? title)}
-									className="rounded-xl border border-border/60 p-3"
-								>
-									<div className="flex flex-wrap items-center gap-2">
-										<p className="font-medium">{title}</p>
-										{typeof source.platform === "string" ? (
-											<Badge variant="secondary">{source.platform}</Badge>
-										) : null}
-										{typeof source.source_origin === "string" ? (
-											<Badge variant="outline">{source.source_origin}</Badge>
-										) : null}
-									</div>
-									{digestPreview ? (
-										<p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-											{digestPreview}
-										</p>
-									) : null}
-									<div className="mt-3 flex flex-wrap gap-3 text-sm">
-										{sourceUrl ? (
-											<a
-												className="underline underline-offset-4"
-												href={sourceUrl}
-												target="_blank"
-												rel="noreferrer"
-											>
-												Open source
-											</a>
-										) : null}
-										{jobBundleRoute ? (
-											<Link
-												href={jobBundleRoute}
-												className="underline underline-offset-4"
-											>
-												Open job bundle
-											</Link>
-										) : null}
-									</div>
-								</div>
+									identity={{
+										...identity,
+										description: digestPreview || identity.description,
+									}}
+									compact
+									action={
+										<div className="flex flex-wrap gap-3 text-sm">
+											{sourceUrl ? (
+												<a
+													className="underline underline-offset-4"
+													href={sourceUrl}
+													target="_blank"
+													rel="noreferrer"
+												>
+													Open source
+												</a>
+											) : null}
+											{jobBundleRoute ? (
+												<Link
+													href={jobBundleRoute}
+													className="underline underline-offset-4"
+												>
+													Open job bundle
+												</Link>
+											) : null}
+										</div>
+									}
+								/>
 							);
 						})}
 					</div>

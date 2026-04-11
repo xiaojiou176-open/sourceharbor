@@ -437,6 +437,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 							publishedDateLabel={formatPublishedDateLabel(
 								selectedItem?.published_at,
 							)}
+							identity={selectedItem ?? undefined}
 						/>
 					</div>
 				</div>

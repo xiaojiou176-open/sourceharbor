@@ -58,6 +58,7 @@ def test_reader_tools_normalize_document_and_navigation_payloads() -> None:
                     "markdown": "# AI Agents",
                     "materialization_mode": "merge_then_polish",
                     "version": 1,
+                    "publish_status": "published_with_gap",
                     "published_with_gap": True,
                     "source_item_count": 2,
                     "warning": {"warning_kind": "yellow_warning"},
@@ -73,6 +74,7 @@ def test_reader_tools_normalize_document_and_navigation_payloads() -> None:
                 "markdown": "# AI Agents",
                 "materialization_mode": "merge_then_polish",
                 "version": 1,
+                "publish_status": "published",
                 "published_with_gap": False,
                 "source_item_count": 2,
                 "warning": {"warning_kind": "clear"},
@@ -102,5 +104,7 @@ def test_reader_tools_normalize_document_and_navigation_payloads() -> None:
     navigation_payload = mcp.tools["sourceharbor.reader.navigation.get"](limit=3)
 
     assert list_payload["items"][0]["stable_key"] == "topic-ai-agents-2026-04-09"
+    assert list_payload["items"][0]["publish_status"] == "published_with_gap"
     assert detail_payload["id"] == UUID_1
+    assert detail_payload["publish_status"] == "published"
     assert navigation_payload["document_count"] == 1

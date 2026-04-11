@@ -374,6 +374,7 @@ async def step_write_artifacts(ctx: PipelineContext, state: dict[str, Any]) -> S
         meta_payload = {
             "job": ctx.job_record,
             "metadata": metadata,
+            "raw_stage_contract": dict(state.get("raw_stage_contract") or {}),
             "download_mode": state.get("download_mode"),
             "media_path": state.get("media_path"),
             "subtitle_files": state.get("subtitle_files") or [],

@@ -73,6 +73,10 @@ function asString(value: unknown): string {
 	return typeof value === "string" ? value : "";
 }
 
+function asNullableString(value: unknown): string | null {
+	return typeof value === "string" && value.trim() ? value : null;
+}
+
 function asBoolean(value: unknown): boolean {
 	if (typeof value === "boolean") {
 		return value;
@@ -205,6 +209,15 @@ function normalizeDigestFeedResponse(payload: unknown): DigestFeedResponse {
 				title: asString(record.title),
 				source: asString(record.source),
 				source_name: asString(record.source_name),
+				canonical_source_name: asNullableString(record.canonical_source_name),
+				canonical_author_name: asNullableString(record.canonical_author_name),
+				subscription_id: asNullableString(record.subscription_id),
+				affiliation_label: asNullableString(record.affiliation_label),
+				relation_kind: asNullableString(record.relation_kind),
+				thumbnail_url: asNullableString(record.thumbnail_url),
+				avatar_url: asNullableString(record.avatar_url),
+				avatar_label: asNullableString(record.avatar_label),
+				identity_status: asNullableString(record.identity_status),
 				category: safeCategory,
 				published_at: asString(record.published_at),
 				summary_md: asString(record.summary_md),

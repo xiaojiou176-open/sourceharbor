@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getFlashMessage, toErrorCode } from "@/app/flash-message";
+import { SourceIdentityCard } from "@/components/source-identity-card";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,9 @@ import {
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api/client";
 import type { Subscription, SubscriptionCategory } from "@/lib/api/types";
+import { editorialMono, editorialSans } from "@/lib/editorial-fonts";
 import { formatDateTime } from "@/lib/format";
+import { resolveSubscriptionIdentity } from "@/lib/source-identity";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES: SubscriptionCategory[] = [
@@ -413,7 +416,7 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 	}
 
 	return (
-		<Card>
+		<Card className={editorialSans.className}>
 			<CardHeader className="gap-2">
 				<CardTitle className="text-base">Bulk subscription actions</CardTitle>
 				<CardDescription>
@@ -476,15 +479,16 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 										</td>
 										<td className="px-3 py-3">
 											<div className="font-medium leading-5">
-												{getSubscriptionDisplayName(item)}
-											</div>
-											<div className="text-xs text-muted-foreground">
-												{item.adapter_type}
-												{item.source_url
-													? ` · ${item.source_url}`
-													: item.rsshub_route
-														? ` · ${item.rsshub_route}`
-														: ""}
+												<SourceIdentityCard
+													identity={{
+														...resolveSubscriptionIdentity(item),
+														description:
+															item.source_homepage_url ||
+															item.source_url ||
+															item.rsshub_route,
+													}}
+													compact
+												/>
 											</div>
 										</td>
 										<td className="px-3 py-3">
@@ -517,7 +521,10 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 											/>
 										</td>
 										<td className="px-3 py-3 text-xs text-muted-foreground">
-											{formatDateTime(item.updated_at)}
+											<div>{formatDateTime(item.updated_at)}</div>
+											<div className={editorialMono.className}>
+												{item.id.slice(0, 8)}…
+											</div>
 										</td>
 										<td className="px-3 py-3">
 											{pendingDeleteId === item.id ? (

@@ -41,6 +41,14 @@ export type Subscription = {
 	adapter_type: SubscriptionAdapterType;
 	source_url: string | null;
 	rsshub_route: string;
+	creator_display_name?: string | null;
+	creator_handle?: string | null;
+	source_homepage_url?: string | null;
+	avatar_url?: string | null;
+	avatar_label?: string | null;
+	thumbnail_url?: string | null;
+	source_universe_label?: string | null;
+	identity_status?: string | null;
 	category: SubscriptionCategory;
 	tags: string[];
 	priority: number;
@@ -91,6 +99,17 @@ export type ManualSourceIntakeResult = {
 	content_profile: ContentType | string | null;
 	support_tier: "strong_supported" | "generic_supported" | string | null;
 	display_name: string | null;
+	relation_kind?: string | null;
+	matched_subscription_id?: string | null;
+	matched_subscription_name?: string | null;
+	matched_by?: string | null;
+	match_confidence?: string | null;
+	source_universe_label?: string | null;
+	creator_display_name?: string | null;
+	creator_handle?: string | null;
+	thumbnail_url?: string | null;
+	avatar_url?: string | null;
+	avatar_label?: string | null;
 	message: string;
 	subscription_id: string | null;
 	job_id: string | null;
@@ -298,7 +317,63 @@ export type ReaderDocumentWarning = {
 	failed_source_count: number;
 	degraded_source_count: number;
 	missing_digest_count: number;
+	warning_kinds?: string[];
+	affected_scope?: {
+		source_item_ids?: string[];
+		section_ids?: string[];
+		source_item_count?: number;
+		section_count?: number;
+	};
+	version?: number | null;
+	readable_why?: string | null;
+	not_fully_sealed_why?: string | null;
+	status?: string | null;
 	generated_at: string | null;
+};
+
+export type RawStageContractReceipt = {
+	content_type?: string | null;
+	analysis_mode?: string | null;
+	video_first?: boolean | null;
+	video_input_required?: boolean | null;
+	preprocess_enabled?: boolean | null;
+	preprocess_model?: string | null;
+	preprocess_input_mode?: string | null;
+	preprocess_media_input?: string | null;
+	review_required?: boolean | null;
+	review_model?: string | null;
+	review_input_mode?: string | null;
+	primary_model?: string | null;
+	primary_input_mode?: string | null;
+	primary_media_input?: string | null;
+	review_media_input?: string | null;
+	video_contract_satisfied?: boolean | null;
+};
+
+export type SourceIdentityRef = {
+	source_item_id: string;
+	job_id?: string | null;
+	platform: string;
+	source_origin: string;
+	title: string;
+	source_url?: string | null;
+	published_at?: string | null;
+	claim_kinds: string[];
+	digest_preview: string;
+	subscription_id?: string | null;
+	matched_subscription_name?: string | null;
+	relation_kind?: string | null;
+	affiliation_label?: string | null;
+	canonical_source_name?: string | null;
+	canonical_author_name?: string | null;
+	creator_display_name?: string | null;
+	creator_handle?: string | null;
+	thumbnail_url?: string | null;
+	avatar_url?: string | null;
+	avatar_label?: string | null;
+	identity_status?: string | null;
+	raw_stage_contract?: RawStageContractReceipt | null;
+	job_bundle_route?: string | null;
 };
 
 export type ReaderDocument = {
@@ -313,6 +388,7 @@ export type ReaderDocument = {
 	markdown: string;
 	materialization_mode: string;
 	version: number;
+	publish_status: string;
 	published_with_gap: boolean;
 	is_current: boolean;
 	source_item_count: number;
@@ -322,7 +398,7 @@ export type ReaderDocument = {
 	warning: ReaderDocumentWarning;
 	coverage_ledger: Record<string, unknown>;
 	traceability_pack: Record<string, unknown>;
-	source_refs: Record<string, unknown>[];
+	source_refs: SourceIdentityRef[];
 	sections: ReaderDocumentSection[];
 	repair_history: Record<string, unknown>[];
 	created_at: string;
@@ -1059,6 +1135,15 @@ export type DigestFeedItem = {
 	title: string;
 	source: Platform | string;
 	source_name: string;
+	canonical_source_name?: string | null;
+	canonical_author_name?: string | null;
+	subscription_id?: string | null;
+	affiliation_label?: string | null;
+	relation_kind?: string | null;
+	thumbnail_url?: string | null;
+	avatar_url?: string | null;
+	avatar_label?: string | null;
+	identity_status?: string | null;
 	category: SubscriptionCategory;
 	published_at: string;
 	summary_md: string;

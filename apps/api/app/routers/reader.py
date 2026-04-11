@@ -98,6 +98,51 @@ class RepairDocumentRequest(BaseModel):
     section_ids: list[str] = Field(default_factory=list)
 
 
+class RawStageContractResponse(BaseModel):
+    content_type: str | None = None
+    analysis_mode: str | None = None
+    video_first: bool | None = None
+    video_input_required: bool | None = None
+    preprocess_enabled: bool | None = None
+    preprocess_model: str | None = None
+    preprocess_input_mode: str | None = None
+    preprocess_media_input: str | None = None
+    review_required: bool | None = None
+    review_model: str | None = None
+    review_input_mode: str | None = None
+    primary_model: str | None = None
+    primary_input_mode: str | None = None
+    primary_media_input: str | None = None
+    review_media_input: str | None = None
+    video_contract_satisfied: bool | None = None
+
+
+class SourceIdentityRefResponse(BaseModel):
+    source_item_id: str
+    job_id: str | None = None
+    platform: str
+    source_origin: str
+    title: str
+    source_url: str | None = None
+    published_at: str | None = None
+    claim_kinds: list[str] = Field(default_factory=list)
+    digest_preview: str
+    subscription_id: str | None = None
+    matched_subscription_name: str | None = None
+    relation_kind: str | None = None
+    affiliation_label: str | None = None
+    canonical_source_name: str | None = None
+    canonical_author_name: str | None = None
+    creator_display_name: str | None = None
+    creator_handle: str | None = None
+    thumbnail_url: str | None = None
+    avatar_url: str | None = None
+    avatar_label: str | None = None
+    identity_status: str | None = None
+    raw_stage_contract: RawStageContractResponse | None = None
+    job_bundle_route: str | None = None
+
+
 class PublishedReaderDocumentResponse(BaseModel):
     id: str
     stable_key: str
@@ -112,6 +157,7 @@ class PublishedReaderDocumentResponse(BaseModel):
     reader_style_profile: str
     materialization_mode: str
     version: int
+    publish_status: str
     published_with_gap: bool
     is_current: bool
     source_item_count: int
@@ -121,7 +167,7 @@ class PublishedReaderDocumentResponse(BaseModel):
     warning: dict[str, Any] = Field(default_factory=dict)
     coverage_ledger: dict[str, Any] = Field(default_factory=dict)
     traceability_pack: dict[str, Any] = Field(default_factory=dict)
-    source_refs: list[dict[str, Any]] = Field(default_factory=list)
+    source_refs: list[SourceIdentityRefResponse] = Field(default_factory=list)
     sections: list[dict[str, Any]] = Field(default_factory=list)
     repair_history: list[dict[str, Any]] = Field(default_factory=list)
     created_at: datetime
@@ -173,6 +219,7 @@ def _coerce_document_payload(payload: dict[str, Any]) -> PublishedReaderDocument
         reader_style_profile=str(payload.get("reader_style_profile") or "briefing"),
         materialization_mode=str(payload["materialization_mode"]),
         version=int(payload.get("version") or 1),
+        publish_status=str(payload.get("publish_status") or "published"),
         published_with_gap=bool(payload.get("published_with_gap")),
         is_current=bool(payload.get("is_current")),
         source_item_count=int(payload.get("source_item_count") or 0),

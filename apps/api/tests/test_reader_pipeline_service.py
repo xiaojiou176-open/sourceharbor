@@ -10,8 +10,9 @@ from apps.api.app.services.reader_pipeline import ReaderPipelineService
 
 
 class _DummyDb:
-    def __init__(self) -> None:
+    def __init__(self, *, records: dict[uuid.UUID, SimpleNamespace] | None = None) -> None:
         self.commits = 0
+        self.records = records or {}
 
     def commit(self) -> None:
         self.commits += 1
@@ -22,17 +23,27 @@ class _DummyDb:
     def add(self, _obj) -> None:
         return None
 
+    def get(self, _model, key):
+        if isinstance(key, uuid.UUID):
+            return self.records.get(key)
+        return None
+
 
 class _BatchRepoStub:
     def __init__(self, batch) -> None:
         self.batch = batch
         self.marked_judged: list[dict[str, object]] = []
+        self.marked_materialized: list[dict[str, object]] = []
 
     def get_with_items(self, *, batch_id):
         return self.batch if batch_id == self.batch.id else None
 
     def mark_judged(self, **kwargs):
         self.marked_judged.append(dict(kwargs))
+        return self.batch
+
+    def mark_materialized(self, **kwargs):
+        self.marked_materialized.append(dict(kwargs))
         return self.batch
 
 
@@ -152,9 +163,9 @@ class _JobsServiceStub:
         }
 
 
-def _build_service(*, batch, digest_map, cards_map, bundle_map=None):
+def _build_service(*, batch, digest_map, cards_map, bundle_map=None, records=None):
     service = ReaderPipelineService.__new__(ReaderPipelineService)
-    service.db = _DummyDb()
+    service.db = _DummyDb(records=records)
     service.batch_repo = _BatchRepoStub(batch)
     service.manifest_repo = _ManifestRepoStub()
     service.document_repo = _PublishedRepoStub()
@@ -240,6 +251,31 @@ def test_judge_batch_groups_shared_topics_and_keeps_singletons() -> None:
     assert singleton["topic_key"] == "postgres"
 
 
+def test_judge_batch_carries_previous_document_context_for_rebuilds() -> None:
+    batch, digest_map, cards_map = _sample_batch()
+    batch.base_published_doc_versions = ["topic-ai-agents-2026-04-09"]
+    service = _build_service(batch=batch, digest_map=digest_map, cards_map=cards_map)
+    service.document_repo.documents.append(
+        SimpleNamespace(
+            id=uuid.uuid4(),
+            stable_key="topic-ai-agents-2026-04-09",
+            version=2,
+            published_with_gap=True,
+            summary="Older merged doc",
+            coverage_ledger_json={"status": "gap_detected"},
+            traceability_pack_json={"status": "gap_detected"},
+            is_current=True,
+        )
+    )
+
+    payload = service.judge_batch(batch_id=batch.id)
+
+    cluster = payload["manifest"]["clusters"][0]
+    assert cluster["rebuild_scope"] == "affected_cluster_rebuild"
+    assert cluster["previous_document"]["version"] == 2
+    assert "previous_published_document_summary" in cluster["judge_inputs"]
+
+
 def test_materialize_batch_creates_cluster_and_singleton_documents() -> None:
     batch, digest_map, cards_map = _sample_batch()
     service = _build_service(batch=batch, digest_map=digest_map, cards_map=cards_map)
@@ -253,6 +289,7 @@ def test_materialize_batch_creates_cluster_and_singleton_documents() -> None:
     merge_doc = next(
         item for item in payload["documents"] if item["materialization_mode"] == "merge_then_polish"
     )
+    assert merge_doc["publish_status"] == "published"
     assert isinstance(merge_doc["published_with_gap"], bool)
     assert merge_doc["coverage_ledger"]["status"] == "pass"
     assert merge_doc["coverage_ledger"]["published_doc_id"] == merge_doc["id"]
@@ -261,7 +298,64 @@ def test_materialize_batch_creates_cluster_and_singleton_documents() -> None:
     assert merge_doc["traceability_pack"]["stable_key"] == merge_doc["stable_key"]
     assert merge_doc["traceability_pack"]["version"] == merge_doc["version"]
     assert isinstance(merge_doc["traceability_pack"]["source_items"], list)
+    assert service.batch_repo.marked_materialized[0]["batch_id"] == batch.id
     assert len(merge_doc["source_refs"]) == 2
+
+
+def test_materialize_batch_carries_source_identity_and_raw_stage_receipts() -> None:
+    batch, digest_map, cards_map = _sample_batch()
+    subscription_id = uuid.uuid4()
+    batch.items[0].subscription_id = subscription_id
+    records = {
+        subscription_id: SimpleNamespace(
+            id=subscription_id,
+            platform="youtube",
+            source_type="youtube_user",
+            source_value="@AgentsChannel",
+            source_url="https://www.youtube.com/@AgentsChannel",
+            rsshub_route="",
+        )
+    }
+    bundle_map = {
+        batch.items[0].job_id: {
+            "job": {"pipeline_final_status": "succeeded"},
+            "trace_summary": {"degradations": []},
+            "digest_meta": {
+                "raw_stage_contract": {
+                    "analysis_mode": "advanced",
+                    "review_required": True,
+                    "primary_media_input": "video_text",
+                    "review_media_input": "video_text",
+                    "video_contract_satisfied": True,
+                }
+            },
+            "artifact_manifest": {},
+        }
+    }
+    service = _build_service(
+        batch=batch,
+        digest_map=digest_map,
+        cards_map=cards_map,
+        bundle_map=bundle_map,
+        records=records,
+    )
+
+    payload = service.materialize_batch(batch_id=batch.id)
+
+    merge_doc = next(
+        item for item in payload["documents"] if item["materialization_mode"] == "merge_then_polish"
+    )
+    first_source = merge_doc["source_refs"][0]
+    assert first_source["subscription_id"] == str(subscription_id)
+    assert first_source["matched_subscription_name"] == "@AgentsChannel"
+    assert first_source["relation_kind"] == "matched_subscription"
+    assert first_source["identity_status"] == "matched_subscription_identity"
+    assert first_source["job_bundle_route"] == f"/api/v1/jobs/{batch.items[0].job_id}/bundle"
+    assert first_source["raw_stage_contract"]["analysis_mode"] == "advanced"
+    assert first_source["raw_stage_contract"]["video_contract_satisfied"] is True
+    trace_source = merge_doc["traceability_pack"]["source_items"][0]
+    assert trace_source["identity_status"] == "matched_subscription_identity"
+    assert trace_source["raw_stage_contract"]["primary_media_input"] == "video_text"
 
 
 def test_reader_pipeline_getters_navigation_and_warning_helpers_cover_tail_paths() -> None:
@@ -291,8 +385,10 @@ def test_reader_pipeline_getters_navigation_and_warning_helpers_cover_tail_paths
     warning = service._build_warning_json(
         coverage_ledger=coverage_ledger,
         traceability_pack={"status": "incomplete"},
+        repair_history=[],
     )
     assert warning["published_with_gap"] is True
+    assert "coverage_gap" in warning["warning_kinds"]
     assert "missing digest output" in " ".join(warning["reasons"])
 
     assert service._digest_preview(None, fallback="fallback") == "fallback"
@@ -417,6 +513,103 @@ def test_materialize_batch_marks_published_with_gap_when_digest_is_missing() -> 
     assert merge_doc["warning"]["missing_digest_count"] == 1
     assert "missing digest" in " ".join(merge_doc["warning"]["reasons"])
     assert payload["published_with_gap_count"] >= 1
+
+
+def test_coverage_ledger_flags_missing_claim_kinds_per_source() -> None:
+    service = ReaderPipelineService.__new__(ReaderPipelineService)
+    source_ref = {
+        "source_item_id": "item-1",
+        "knowledge_cards": [{"topic_key": "ai-agents"}],
+        "claim_kinds": ["summary", "risk"],
+        "digest_markdown": "# Digest",
+        "evidence_routes": {
+            "artifact_markdown": "/api/v1/artifacts/markdown?job_id=1",
+            "job_bundle": "/api/v1/jobs/1/bundle",
+            "job_knowledge_cards": "/knowledge?job_id=1",
+        },
+        "degraded_extraction": False,
+    }
+    sections = [
+        {
+            "section_id": "summary",
+            "title": "Summary",
+            "source_item_ids": ["item-1"],
+            "topic_refs": ["ai-agents"],
+            "claim_refs": ["summary"],
+            "evidence_anchor_refs": ["/api/v1/jobs/1/bundle"],
+        }
+    ]
+
+    ledger = service._build_coverage_ledger(
+        source_refs=[source_ref],
+        sections=sections,
+        repair_history=[],
+    )
+
+    assert ledger["status"] == "gap_detected"
+    assert ledger["entries"][0]["missing_claim_kinds"] == ["risk"]
+    assert "missing_claim_kinds" in ledger["entries"][0]["gap_flags"]
+
+
+def test_traceability_pack_and_warning_capture_gap_scope() -> None:
+    service = ReaderPipelineService.__new__(ReaderPipelineService)
+    source_ref = {
+        "source_item_id": "item-1",
+        "job_id": "job-1",
+        "title": "AI Agents",
+        "platform": "youtube",
+        "content_type": "video",
+        "source_url": "https://example.com/agents",
+        "published_at": "2026-04-09T08:30:00Z",
+        "digest_markdown": "# Digest",
+        "claim_kinds": ["summary"],
+        "knowledge_cards": [{"topic_key": "ai-agents"}],
+        "evidence_routes": {},
+        "evidence_bundle": {"job": {"pipeline_final_status": "degraded"}},
+        "artifact_manifest": {},
+        "degradation_flags": ["missing_transcript"],
+        "degraded_extraction": True,
+        "raw_stage_contract": {
+            "analysis_mode": "advanced",
+            "video_contract_satisfied": False,
+        },
+    }
+    sections = [
+        {
+            "section_id": "summary",
+            "section_key": "summary",
+            "title": "Summary",
+            "source_item_ids": ["item-1"],
+            "topic_refs": ["ai-agents"],
+            "claim_refs": ["summary"],
+            "evidence_anchor_refs": [],
+        }
+    ]
+
+    coverage = service._build_coverage_ledger(
+        source_refs=[source_ref],
+        sections=sections,
+        repair_history=[],
+    )
+    traceability = service._build_traceability_pack(
+        source_refs=[source_ref],
+        sections=sections,
+        repair_history=[],
+    )
+    warning = service._build_warning_json(
+        coverage_ledger=coverage,
+        traceability_pack=traceability,
+        repair_history=[],
+    )
+
+    assert traceability["status"] == "gap_detected"
+    assert traceability["section_contributions"][0]["status"] == "gap_detected"
+    assert "traceability_gap" in warning["warning_kinds"]
+    assert "degraded_extraction" in warning["warning_kinds"]
+    assert "video raw-stage contract failed to satisfy video-first requirements" in " ".join(
+        warning["reasons"]
+    )
+    assert warning["affected_scope"]["source_item_count"] == 1
 
 
 def test_judge_batch_raises_for_missing_batch() -> None:

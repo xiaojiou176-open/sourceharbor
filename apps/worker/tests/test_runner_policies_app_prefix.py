@@ -353,6 +353,7 @@ def test_llm_policy_defaults_are_stable_without_overrides() -> None:
         "max_function_call_rounds": 2,
         "speed_priority": False,
         "thinking_level": "high",
+        "analysis_mode": "advanced",
         "include_thoughts": False,
         "enable_computer_use": True,
         "computer_use_require_confirmation": True,
@@ -363,6 +364,19 @@ def test_llm_policy_defaults_are_stable_without_overrides() -> None:
             "frame": "medium",
             "image": "medium",
             "pdf": "medium",
+        },
+        "raw_stage": {
+            "analysis_mode": "advanced",
+            "content_type": "video",
+            "video_first": True,
+            "video_input_required": True,
+            "preprocess_enabled": True,
+            "preprocess_model": "gemini-flash",
+            "preprocess_input_mode": "text",
+            "primary_input_mode": "video_text",
+            "review_required": True,
+            "review_model": "gemini-pro",
+            "review_input_mode": "video_text",
         },
         "outline": {
             **section,
@@ -407,6 +421,7 @@ def test_llm_policy_respects_explicit_false_and_clamped_values() -> None:
 
     assert policy["speed_priority"] is False
     assert policy["thinking_level"] == "low"
+    assert policy["analysis_mode"] == "advanced"
     assert policy["include_thoughts"] is False
     assert policy["temperature"] == 0.0
     assert policy["max_output_tokens"] is None
@@ -425,6 +440,8 @@ def test_llm_policy_respects_explicit_false_and_clamped_values() -> None:
     assert policy["outline"]["max_output_tokens"] == 32
     assert policy["digest"]["temperature"] == 1.75
     assert policy["digest"]["max_function_call_rounds"] == 5
+    assert policy["raw_stage"]["video_input_required"] is True
+    assert policy["raw_stage"]["review_required"] is True
 
 
 def test_llm_policy_speed_priority_uses_explicit_model_and_blank_subsection_fallbacks() -> None:
@@ -449,6 +466,7 @@ def test_llm_policy_speed_priority_uses_explicit_model_and_blank_subsection_fall
     assert policy["model"] == "explicit-main-model"
     assert policy["outline"]["model"] == "gemini-outline"
     assert policy["digest"]["model"] == "explicit-digest-model"
+    assert policy["raw_stage"]["analysis_mode"] == "advanced"
 
 
 def test_llm_policy_speed_priority_uses_fast_models_without_any_model_overrides() -> None:
@@ -460,6 +478,7 @@ def test_llm_policy_speed_priority_uses_fast_models_without_any_model_overrides(
     assert policy["model"] == "gemini-flash"
     assert policy["outline"]["model"] == "gemini-flash"
     assert policy["digest"]["model"] == "gemini-flash"
+    assert policy["raw_stage"]["preprocess_model"] == "gemini-flash"
 
 
 def test_llm_policy_speed_priority_blank_main_model_uses_section_defaults() -> None:
@@ -509,6 +528,32 @@ def test_llm_policy_inherits_include_thoughts_and_media_resolution_to_subsection
         "image": "high",
         "pdf": "high",
     }
+
+
+def test_build_llm_policy_supports_video_raw_stage_modes_and_article_opt_out() -> None:
+    video_policy = runner_policies.build_llm_policy(
+        _settings(),
+        {
+            "llm": {
+                "analysis_mode": "economy",
+                "review_required": False,
+            }
+        },
+        content_type="video",
+    )
+    article_policy = runner_policies.build_llm_policy(
+        _settings(),
+        {},
+        content_type="article",
+    )
+
+    assert video_policy["analysis_mode"] == "economy"
+    assert video_policy["raw_stage"]["analysis_mode"] == "economy"
+    assert video_policy["raw_stage"]["preprocess_enabled"] is False
+    assert video_policy["raw_stage"]["review_required"] is False
+    assert article_policy["raw_stage"]["content_type"] == "article"
+    assert article_policy["raw_stage"]["video_first"] is False
+    assert article_policy["raw_stage"]["video_input_required"] is False
 
 
 def test_llm_policy_section_accepts_bool_token_budget_values() -> None:

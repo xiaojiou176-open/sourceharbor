@@ -417,4 +417,5 @@ async def run_pipeline(
         overrides=overrides,
         step_handlers=step_handlers,
         pipeline_steps=pipeline_steps,
+        content_type=resolved_content_type,
     )

@@ -5,15 +5,18 @@ import { notFound } from "next/navigation";
 
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { SourceContributionDrawer } from "@/components/source-contribution-drawer";
+import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { YellowWarningCard } from "@/components/yellow-warning-card";
 import { apiClient } from "@/lib/api/client";
+import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
 import {
 	buildDemoReaderDocument,
 	DEMO_READER_DOCUMENT_ID,
 } from "@/lib/reader/demo-document";
 import { buildProductMetadata } from "@/lib/seo";
+import { resolveReaderSourceIdentity } from "@/lib/source-identity";
 
 type ReaderDetailPageProps = {
 	params: Promise<{ documentId: string }> | { documentId: string };
@@ -55,12 +58,17 @@ export default async function ReaderDetailPage({
 			? document.coverage_ledger
 			: {};
 	const sections = Array.isArray(document.sections) ? document.sections : [];
+	const topSources = Array.isArray(document.source_refs)
+		? document.source_refs.slice(0, 2)
+		: [];
 	const warningReasons = Array.isArray(document.warning?.reasons)
 		? document.warning.reasons
 		: [];
 
 	return (
-		<div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 md:px-6">
+		<div
+			className={`mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-8 md:px-6 ${editorialSans.className}`}
+		>
 			<section className="space-y-6">
 				<div className="flex flex-wrap items-center gap-3 text-sm text-foreground/80">
 					<Link
@@ -97,7 +105,7 @@ export default async function ReaderDetailPage({
 						</p>
 						<h1
 							data-route-heading
-							className="max-w-4xl font-serif text-4xl leading-[0.98] tracking-tight md:text-5xl xl:text-6xl"
+							className={`max-w-4xl text-4xl leading-[0.98] tracking-tight md:text-5xl xl:text-6xl ${editorialSerif.className}`}
 						>
 							{document.title}
 						</h1>
@@ -105,6 +113,25 @@ export default async function ReaderDetailPage({
 							{document.summary ??
 								"This document unifies the reader-facing markdown, yellow-warning contract, and source contribution drawer for one published reader unit."}
 						</p>
+						{topSources.length ? (
+							<div className="space-y-3">
+								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+									Source universe
+								</p>
+								<div className="grid gap-3 md:grid-cols-2">
+									{topSources.map((source, index) => (
+										<SourceIdentityCard
+											key={String(source.source_item_id ?? index)}
+											identity={{
+												...resolveReaderSourceIdentity(source),
+												eyebrow: `Primary source ${String(index + 1).padStart(2, "0")}`,
+											}}
+											compact
+										/>
+									))}
+								</div>
+							</div>
+						) : null}
 						{resolved.documentId === DEMO_READER_DOCUMENT_ID ? (
 							<div className="max-w-3xl rounded-2xl border border-rose-200/70 bg-rose-50/70 p-4 text-sm leading-6 text-rose-950/80 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-100/80">
 								This is a specimen edition: read the body first, keep the

@@ -858,7 +858,7 @@ def test_run_pipeline_prefers_explicit_overrides_over_job_record_fallback(
     monkeypatch.setattr(
         orchestrator,
         "build_llm_policy",
-        lambda _settings, overrides: {"from_overrides": dict(overrides)},
+        lambda _settings, overrides, **_kwargs: {"from_overrides": dict(overrides)},
         raising=False,
     )
     monkeypatch.setattr(orchestrator, "execute_step", _fake_execute_step, raising=False)
@@ -936,7 +936,7 @@ def test_run_pipeline_initial_state_contract_strict_keys_and_defaults(
     monkeypatch.setattr(
         orchestrator,
         "build_llm_policy",
-        lambda _settings, _overrides: dict(llm_policy),
+        lambda _settings, _overrides, **_kwargs: dict(llm_policy),
         raising=False,
     )
     monkeypatch.setattr(orchestrator, "execute_step", _fake_execute_step, raising=False)
@@ -974,6 +974,7 @@ def test_run_pipeline_initial_state_contract_strict_keys_and_defaults(
         "job_id",
         "attempt",
         "mode",
+        "content_type",
         "source_url",
         "title",
         "platform",
@@ -1001,6 +1002,7 @@ def test_run_pipeline_initial_state_contract_strict_keys_and_defaults(
     }
     state = observed["state"]
     assert set(state.keys()) == expected_keys
+    assert state["content_type"] == "video"
     assert state["source_url"] == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     assert state["title"] == "Demo State Contract"
     assert state["video_uid"] == "u-123"
@@ -1055,6 +1057,7 @@ def test_run_pipeline_return_payload_contract_includes_expected_keys(
         "job_id",
         "attempt",
         "mode",
+        "content_type",
         "final_status",
         "steps",
         "artifact_dir",
@@ -1072,6 +1075,7 @@ def test_run_pipeline_return_payload_contract_includes_expected_keys(
     assert result["artifact_dir"] is None
     assert result["artifacts"] == {}
     assert result["degradations"] == []
+    assert result["content_type"] == "video"
     assert result["llm_media_input"] == {"video_available": False, "frame_count": 0}
     assert result["resume"] == {
         "checkpoint_step": None,
@@ -1248,7 +1252,7 @@ def test_run_pipeline_defaults_mode_llm_input_and_platform_policy(
     monkeypatch.setattr(
         orchestrator,
         "build_llm_policy",
-        lambda settings, overrides: (
+        lambda settings, overrides, **_kwargs: (
             captured.setdefault(
                 "llm_policy",
                 {"settings": settings, "overrides": dict(overrides)},
@@ -1760,8 +1764,17 @@ def test_run_pipeline_policy_builders_use_resolved_overrides_and_normalized_plat
         captured["frame_policy_args"] = {"settings": settings, "overrides": dict(overrides)}
         return {"method": "fps", "max_frames": 2}
 
-    def _capture_llm_policy(settings: Settings, overrides: dict[str, Any]) -> dict[str, Any]:
-        captured["llm_policy_args"] = {"settings": settings, "overrides": dict(overrides)}
+    def _capture_llm_policy(
+        settings: Settings,
+        overrides: dict[str, Any],
+        *,
+        content_type: str | None = None,
+    ) -> dict[str, Any]:
+        captured["llm_policy_args"] = {
+            "settings": settings,
+            "overrides": dict(overrides),
+            "content_type": content_type,
+        }
         return {"hard_required": False}
 
     monkeypatch.setattr(
@@ -1806,7 +1819,11 @@ def test_run_pipeline_policy_builders_use_resolved_overrides_and_normalized_plat
         "platform": "youtube",
     }
     assert captured["frame_policy_args"] == {"settings": settings, "overrides": job_overrides}
-    assert captured["llm_policy_args"] == {"settings": settings, "overrides": job_overrides}
+    assert captured["llm_policy_args"] == {
+        "settings": settings,
+        "overrides": job_overrides,
+        "content_type": "video",
+    }
     assert result["llm_required"] is False
 
 
@@ -2041,7 +2058,7 @@ def test_run_pipeline_llm_policy_hard_required_override_prevents_hard_break(
     monkeypatch.setattr(
         orchestrator,
         "build_llm_policy",
-        lambda _settings, _overrides: {"hard_required": False},
+        lambda _settings, _overrides, **_kwargs: {"hard_required": False},
         raising=False,
     )
     monkeypatch.setattr(orchestrator, "execute_step", _fake_execute_step, raising=False)
@@ -2188,7 +2205,7 @@ def test_run_pipeline_passes_llm_policy_to_hard_required_resolver(
     monkeypatch.setattr(
         orchestrator,
         "build_llm_policy",
-        lambda _settings, _overrides: {"hard_required": True, "from_builder": "yes"},
+        lambda _settings, _overrides, **_kwargs: {"hard_required": True, "from_builder": "yes"},
         raising=False,
     )
     monkeypatch.setattr(

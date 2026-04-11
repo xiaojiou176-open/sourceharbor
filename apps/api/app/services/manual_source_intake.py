@@ -4,6 +4,7 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+from .source_identity import build_identity_payload
 from .source_names import build_source_name_fallback
 from .subscriptions import (
     SubscriptionsService,
@@ -43,6 +44,17 @@ class ManualSourcePlan:
     support_tier: str | None
     display_name: str | None
     message: str
+    relation_kind: str | None = None
+    matched_subscription_id: str | None = None
+    matched_subscription_name: str | None = None
+    matched_by: str | None = None
+    match_confidence: str | None = None
+    source_universe_label: str | None = None
+    creator_display_name: str | None = None
+    creator_handle: str | None = None
+    thumbnail_url: str | None = None
+    avatar_url: str | None = None
+    avatar_label: str | None = None
 
 
 class ManualSourceIntakeService:
@@ -204,6 +216,17 @@ class ManualSourceIntakeService:
                 "content_profile": plan.content_profile,
                 "support_tier": plan.support_tier,
                 "display_name": plan.display_name,
+                "relation_kind": plan.relation_kind,
+                "matched_subscription_id": plan.matched_subscription_id,
+                "matched_subscription_name": plan.matched_subscription_name,
+                "matched_by": plan.matched_by,
+                "match_confidence": plan.match_confidence,
+                "source_universe_label": plan.source_universe_label,
+                "creator_display_name": plan.creator_display_name,
+                "creator_handle": plan.creator_handle,
+                "thumbnail_url": plan.thumbnail_url,
+                "avatar_url": plan.avatar_url,
+                "avatar_label": plan.avatar_label,
                 "message": plan.message,
                 "subscription_id": None,
                 "job_id": None,
@@ -232,6 +255,38 @@ class ManualSourceIntakeService:
                         source_url=getattr(row, "source_url", plan.source_url),
                         rsshub_route=getattr(row, "rsshub_route", plan.rsshub_route),
                     )
+                    identity = build_identity_payload(
+                        platform=getattr(row, "platform", plan.platform or ""),
+                        display_name=result["display_name"],
+                        creator_handle=self._creator_handle(
+                            source_type=getattr(row, "source_type", plan.source_type or ""),
+                            source_value=getattr(row, "source_value", plan.source_value or ""),
+                        ),
+                        source_homepage_url=getattr(row, "source_url", None)
+                        or getattr(row, "rsshub_route", None),
+                        source_url=getattr(row, "source_url", plan.source_url),
+                        source_universe_label=result["display_name"],
+                    )
+                    relation_kind = "matched_subscription" if not created else "new_source_universe"
+                    result["relation_kind"] = relation_kind
+                    result["matched_subscription_id"] = (
+                        result["subscription_id"] if not created else None
+                    )
+                    result["matched_subscription_name"] = (
+                        result["display_name"] if not created else None
+                    )
+                    result["matched_by"] = self._match_basis(
+                        source_type=getattr(row, "source_type", plan.source_type or ""),
+                        source_url=getattr(row, "source_url", plan.source_url),
+                        rsshub_route=getattr(row, "rsshub_route", plan.rsshub_route),
+                    )
+                    result["match_confidence"] = "exact" if not created else "new"
+                    result["source_universe_label"] = identity.source_universe_label
+                    result["creator_display_name"] = identity.creator_display_name
+                    result["creator_handle"] = identity.creator_handle
+                    result["thumbnail_url"] = identity.thumbnail_url
+                    result["avatar_url"] = identity.avatar_url
+                    result["avatar_label"] = identity.avatar_label
                     result["message"] = (
                         "Saved as a new subscription source."
                         if created
@@ -253,6 +308,25 @@ class ManualSourceIntakeService:
                     result["applied_action"] = "add_to_today"
                     result["status"] = "reused" if bool(payload.get("reused")) else "queued"
                     result["job_id"] = str(payload.get("job_id") or "") or None
+                    identity = build_identity_payload(
+                        platform=plan.platform or "youtube",
+                        display_name=plan.display_name,
+                        creator_handle=plan.creator_handle,
+                        source_homepage_url=plan.source_url,
+                        source_url=plan.source_url,
+                        source_universe_label=plan.source_universe_label or plan.display_name,
+                    )
+                    result["relation_kind"] = "manual_one_off"
+                    result["matched_subscription_id"] = None
+                    result["matched_subscription_name"] = None
+                    result["matched_by"] = None
+                    result["match_confidence"] = None
+                    result["source_universe_label"] = identity.source_universe_label
+                    result["creator_display_name"] = identity.creator_display_name
+                    result["creator_handle"] = identity.creator_handle
+                    result["thumbnail_url"] = identity.thumbnail_url
+                    result["avatar_url"] = identity.avatar_url
+                    result["avatar_label"] = identity.avatar_label
                     result["message"] = (
                         "Added to today through the existing one-off video lane."
                         if not payload.get("reused")
@@ -319,6 +393,33 @@ class ManualSourceIntakeService:
                 source_url=source_url,
                 rsshub_route=rsshub_route,
             ),
+            relation_kind="subscription_candidate",
+            matched_subscription_id=None,
+            matched_subscription_name=None,
+            matched_by=self._match_basis(
+                source_type=source_type,
+                source_url=source_url,
+                rsshub_route=rsshub_route,
+            ),
+            match_confidence=None,
+            source_universe_label=build_source_name_fallback(
+                platform=platform,
+                source_type=source_type,
+                source_value=source_value,
+                source_url=source_url,
+                rsshub_route=rsshub_route,
+            ),
+            creator_display_name=build_source_name_fallback(
+                platform=platform,
+                source_type=source_type,
+                source_value=source_value,
+                source_url=source_url,
+                rsshub_route=rsshub_route,
+            ),
+            creator_handle=self._creator_handle(
+                source_type=source_type,
+                source_value=source_value,
+            ),
             message=message,
         )
 
@@ -337,6 +438,14 @@ class ManualSourceIntakeService:
             content_profile="video",
             support_tier="strong_supported",
             display_name=source_url,
+            relation_kind="manual_one_off",
+            matched_subscription_id=None,
+            matched_subscription_name=None,
+            matched_by=None,
+            match_confidence=None,
+            source_universe_label="Today lane",
+            creator_display_name=source_url,
+            creator_handle=None,
             message=message,
         )
 
@@ -473,3 +582,24 @@ class ManualSourceIntakeService:
             or "feed=" in query
             or "rss=" in query
         )
+
+    @staticmethod
+    def _creator_handle(*, source_type: str, source_value: str) -> str | None:
+        normalized_type = str(source_type or "").strip().lower()
+        normalized_value = str(source_value or "").strip()
+        if normalized_value.startswith("@"):
+            return normalized_value
+        if normalized_type == "youtube_user" and normalized_value:
+            return normalized_value
+        return None
+
+    @staticmethod
+    def _match_basis(*, source_type: str, source_url: str | None, rsshub_route: str | None) -> str:
+        normalized_type = str(source_type or "").strip().lower()
+        if normalized_type in {"youtube_channel_id", "youtube_user", "bilibili_uid"}:
+            return normalized_type
+        if str(rsshub_route or "").strip():
+            return "rsshub_route"
+        if str(source_url or "").strip():
+            return "source_url"
+        return "source_value"

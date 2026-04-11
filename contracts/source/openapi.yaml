@@ -1123,7 +1123,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/DigestFeedResponse'
 
   /api/v1/feed/feedback:
     get:
@@ -1308,6 +1308,30 @@ components:
           nullable: true
         rsshub_route:
           type: string
+        creator_display_name:
+          type: string
+          nullable: true
+        creator_handle:
+          type: string
+          nullable: true
+        source_homepage_url:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        avatar_label:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          nullable: true
+        source_universe_label:
+          type: string
+          nullable: true
+        identity_status:
+          type: string
+          nullable: true
         category:
           type: string
         tags:
@@ -1516,6 +1540,39 @@ components:
           type: string
           nullable: true
         display_name:
+          type: string
+          nullable: true
+        relation_kind:
+          type: string
+          nullable: true
+        matched_subscription_id:
+          type: string
+          nullable: true
+        matched_subscription_name:
+          type: string
+          nullable: true
+        matched_by:
+          type: string
+          nullable: true
+        match_confidence:
+          type: string
+          nullable: true
+        source_universe_label:
+          type: string
+          nullable: true
+        creator_display_name:
+          type: string
+          nullable: true
+        creator_handle:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        avatar_label:
           type: string
           nullable: true
         message:
@@ -2819,6 +2876,10 @@ components:
       properties:
         warning_kind:
           type: string
+        warning_kinds:
+          type: array
+          items:
+            type: string
         published_with_gap:
           type: boolean
         reasons:
@@ -2834,6 +2895,21 @@ components:
         missing_digest_count:
           type: integer
           minimum: 0
+        affected_scope:
+          type: object
+          additionalProperties: true
+        version:
+          type: integer
+          nullable: true
+        readable_why:
+          type: string
+          nullable: true
+        not_fully_sealed_why:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
         generated_at:
           type: string
           nullable: true
@@ -2850,6 +2926,7 @@ components:
           markdown,
           materialization_mode,
           version,
+          publish_status,
           published_with_gap,
           is_current,
           source_item_count,
@@ -2892,6 +2969,9 @@ components:
         version:
           type: integer
           minimum: 1
+        publish_status:
+          type: string
+          enum: [published, published_with_gap, superseded]
         published_with_gap:
           type: boolean
         is_current:
@@ -2917,7 +2997,7 @@ components:
         source_refs:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/SourceIdentityRef'
         sections:
           type: array
           items:
@@ -3181,6 +3261,206 @@ components:
             - string
             - 'null'
           format: date-time
+
+    DigestFeedItem:
+      type: object
+      required:
+        [feed_id, job_id, video_url, title, source, source_name, category, published_at, summary_md, artifact_type, content_type]
+      properties:
+        feed_id:
+          type: string
+        job_id:
+          type: string
+          format: uuid
+        video_url:
+          type: string
+        title:
+          type: string
+        source:
+          $ref: '#/components/schemas/Platform'
+        source_name:
+          type: string
+        canonical_source_name:
+          type: string
+          nullable: true
+        canonical_author_name:
+          type: string
+          nullable: true
+        subscription_id:
+          type: string
+          nullable: true
+        affiliation_label:
+          type: string
+          nullable: true
+        relation_kind:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        avatar_label:
+          type: string
+          nullable: true
+        identity_status:
+          type: string
+          nullable: true
+        category:
+          type: string
+        published_at:
+          type: string
+        summary_md:
+          type: string
+        artifact_type:
+          type: string
+          enum: [digest, outline]
+        content_type:
+          type: string
+          enum: [video, article]
+        saved:
+          type: boolean
+          default: false
+        feedback_label:
+          type: string
+          nullable: true
+
+    DigestFeedResponse:
+      type: object
+      required: [items, has_more, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DigestFeedItem'
+        has_more:
+          type: boolean
+        next_cursor:
+          type: string
+          nullable: true
+
+    SourceIdentityRef:
+      type: object
+      required:
+        [source_item_id, platform, source_origin, title, claim_kinds, digest_preview]
+      properties:
+        source_item_id:
+          type: string
+        job_id:
+          type: string
+          nullable: true
+        platform:
+          type: string
+        source_origin:
+          type: string
+        title:
+          type: string
+        source_url:
+          type: string
+          nullable: true
+        published_at:
+          type: string
+          nullable: true
+        claim_kinds:
+          type: array
+          items:
+            type: string
+        digest_preview:
+          type: string
+        subscription_id:
+          type: string
+          nullable: true
+        matched_subscription_name:
+          type: string
+          nullable: true
+        relation_kind:
+          type: string
+          nullable: true
+        affiliation_label:
+          type: string
+          nullable: true
+        canonical_source_name:
+          type: string
+          nullable: true
+        canonical_author_name:
+          type: string
+          nullable: true
+        creator_display_name:
+          type: string
+          nullable: true
+        creator_handle:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        avatar_label:
+          type: string
+          nullable: true
+        identity_status:
+          type: string
+          nullable: true
+        raw_stage_contract:
+          $ref: '#/components/schemas/RawStageContractReceipt'
+        job_bundle_route:
+          type: string
+          nullable: true
+
+    RawStageContractReceipt:
+      type: object
+      properties:
+        content_type:
+          type: string
+          nullable: true
+        analysis_mode:
+          type: string
+          nullable: true
+        video_first:
+          type: boolean
+          nullable: true
+        video_input_required:
+          type: boolean
+          nullable: true
+        preprocess_enabled:
+          type: boolean
+          nullable: true
+        preprocess_model:
+          type: string
+          nullable: true
+        preprocess_input_mode:
+          type: string
+          nullable: true
+        preprocess_media_input:
+          type: string
+          nullable: true
+        review_required:
+          type: boolean
+          nullable: true
+        review_model:
+          type: string
+          nullable: true
+        review_input_mode:
+          type: string
+          nullable: true
+        primary_model:
+          type: string
+          nullable: true
+        primary_input_mode:
+          type: string
+          nullable: true
+        primary_media_input:
+          type: string
+          nullable: true
+        review_media_input:
+          type: string
+          nullable: true
+        video_contract_satisfied:
+          type: boolean
+          nullable: true
 
     FeedFeedbackUpdateRequest:
       type: object

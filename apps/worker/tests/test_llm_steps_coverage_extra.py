@@ -61,6 +61,7 @@ def _digest_payload() -> dict[str, Any]:
 
 def _base_state() -> dict[str, Any]:
     return {
+        "content_type": "article",
         "metadata": {"title": "Demo"},
         "title": "Demo",
         "transcript": "transcript",
@@ -464,3 +465,190 @@ def test_step_llm_digest_failure_and_success_paths(monkeypatch: Any, tmp_path: P
     assert success.status == "succeeded"
     assert success.state_updates["digest"]["generated_by"] == "gemini"
     assert success.state_updates["digest"]["generated_at"] == "2026-03-08T00:00:00Z"
+
+
+def test_step_llm_outline_advanced_video_preprocess_uses_fast_text_mode(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    monkeypatch.setattr(llm_steps, "build_outline_prompt", lambda **_: "outline-prompt")
+    monkeypatch.setattr(llm_steps, "frame_paths_from_frames", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(llm_steps, "_computer_use_options", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(llm_steps, "_thinking_level_from_policy", lambda *_args, **_kwargs: "high")
+    monkeypatch.setattr(llm_steps, "_media_resolution_from_policy", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(llm_steps, "_max_function_call_rounds", lambda *_args, **_kwargs: 1)
+    monkeypatch.setattr(llm_steps, "should_include_frame_prompt", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(llm_steps, "_include_thoughts_from_policy", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "_outline_quality_ok", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "outline_is_chinese", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "normalize_outline_payload", lambda parsed, _state: dict(parsed))
+    monkeypatch.setattr(llm_steps, "utc_now_iso", lambda: "2026-04-11T00:00:00Z")
+
+    def _fake_generate(*_args: Any, **kwargs: Any) -> tuple[str, str, dict[str, Any]]:
+        calls.append(dict(kwargs))
+        return (
+            json.dumps(_outline_payload()),
+            "text",
+            {"thinking": {"include_thoughts": True, "thought_signatures": ["sig-outline"]}},
+        )
+
+    state = _base_state()
+    state.update(
+        {
+            "content_type": "video",
+            "media_path": str((tmp_path / "video.mp4").resolve()),
+            "llm_policy": {
+                "analysis_mode": "advanced",
+                "raw_stage": {
+                    "analysis_mode": "advanced",
+                    "preprocess_enabled": True,
+                    "preprocess_model": "gemini-fast-preprocess",
+                    "preprocess_input_mode": "text",
+                    "video_first": True,
+                    "video_input_required": True,
+                    "review_required": True,
+                    "review_input_mode": "video_text",
+                },
+            },
+        }
+    )
+    ctx = _ctx(tmp_path, gemini_api_key="k")
+
+    execution = asyncio.run(
+        llm_steps.step_llm_outline(ctx, state, gemini_generate_fn=_fake_generate)
+    )
+
+    assert execution.status == "succeeded"
+    assert calls[0]["llm_input_mode"] == "text"
+    assert calls[0]["model"] == "gemini-fast-preprocess"
+    assert calls[0]["media_path"] == ""
+    assert execution.state_updates["raw_stage_contract"]["preprocess_enabled"] is True
+    assert execution.state_updates["raw_stage_contract"]["preprocess_input_mode"] == "text"
+
+
+def test_step_llm_digest_video_contract_runs_advanced_review_and_records_receipt(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    monkeypatch.setattr(llm_steps, "build_digest_prompt", lambda **_: "digest-prompt")
+    monkeypatch.setattr(llm_steps, "build_digest_review_prompt", lambda **_: "digest-review-prompt")
+    monkeypatch.setattr(llm_steps, "frame_paths_from_frames", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(llm_steps, "_computer_use_options", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(llm_steps, "_thinking_level_from_policy", lambda *_args, **_kwargs: "high")
+    monkeypatch.setattr(llm_steps, "_media_resolution_from_policy", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(llm_steps, "_max_function_call_rounds", lambda *_args, **_kwargs: 1)
+    monkeypatch.setattr(llm_steps, "should_include_frame_prompt", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(llm_steps, "_include_thoughts_from_policy", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "_digest_quality_ok", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "digest_is_chinese", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "normalize_outline_payload", lambda parsed, _state: dict(parsed))
+    monkeypatch.setattr(llm_steps, "normalize_digest_payload", lambda parsed, _state: dict(parsed))
+    monkeypatch.setattr(llm_steps, "utc_now_iso", lambda: "2026-04-11T00:00:00Z")
+
+    def _fake_generate(*_args: Any, **kwargs: Any) -> tuple[str, str, dict[str, Any]]:
+        calls.append(dict(kwargs))
+        return (
+            json.dumps(_digest_payload()),
+            "video_text",
+            {
+                "thinking": {
+                    "include_thoughts": True,
+                    "thought_signatures": [f"sig-{len(calls)}"],
+                }
+            },
+        )
+
+    video_path = tmp_path / "video.mp4"
+    video_path.write_bytes(b"video")
+    state = _base_state()
+    state.update(
+        {
+            "content_type": "video",
+            "outline": _outline_payload(),
+            "media_path": str(video_path.resolve()),
+            "llm_policy": {
+                "analysis_mode": "advanced",
+                "raw_stage": {
+                    "analysis_mode": "advanced",
+                    "video_first": True,
+                    "video_input_required": True,
+                    "review_required": True,
+                    "review_model": "gemini-review-pro",
+                    "review_input_mode": "video_text",
+                    "primary_input_mode": "video_text",
+                },
+            },
+        }
+    )
+    ctx = _ctx(tmp_path, gemini_api_key="k")
+
+    execution = asyncio.run(
+        llm_steps.step_llm_digest(ctx, state, gemini_generate_fn=_fake_generate)
+    )
+
+    assert execution.status == "succeeded"
+    assert len(calls) == 2
+    assert calls[0]["llm_input_mode"] == "video_text"
+    assert calls[1]["model"] == "gemini-review-pro"
+    assert execution.output["review_required"] is True
+    assert execution.output["review_completed"] is True
+    assert execution.state_updates["raw_stage_contract"]["video_contract_satisfied"] is True
+    assert execution.state_updates["raw_stage_contract"]["primary_media_input"] == "video_text"
+    assert execution.state_updates["raw_stage_contract"]["review_media_input"] == "video_text"
+
+
+def test_step_llm_digest_video_contract_fail_closes_on_frames_fallback(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(llm_steps, "build_digest_prompt", lambda **_: "digest-prompt")
+    monkeypatch.setattr(llm_steps, "frame_paths_from_frames", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(llm_steps, "_computer_use_options", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(llm_steps, "_thinking_level_from_policy", lambda *_args, **_kwargs: "high")
+    monkeypatch.setattr(llm_steps, "_media_resolution_from_policy", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(llm_steps, "_max_function_call_rounds", lambda *_args, **_kwargs: 1)
+    monkeypatch.setattr(llm_steps, "should_include_frame_prompt", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(llm_steps, "_include_thoughts_from_policy", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "_digest_quality_ok", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "digest_is_chinese", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(llm_steps, "normalize_outline_payload", lambda parsed, _state: dict(parsed))
+    monkeypatch.setattr(llm_steps, "normalize_digest_payload", lambda parsed, _state: dict(parsed))
+
+    video_path = tmp_path / "video.mp4"
+    video_path.write_bytes(b"video")
+    state = _base_state()
+    state.update(
+        {
+            "content_type": "video",
+            "outline": _outline_payload(),
+            "media_path": str(video_path.resolve()),
+            "llm_policy": {
+                "analysis_mode": "economy",
+                "raw_stage": {
+                    "analysis_mode": "economy",
+                    "video_first": True,
+                    "video_input_required": True,
+                    "review_required": False,
+                    "primary_input_mode": "video_text",
+                },
+            },
+        }
+    )
+    ctx = _ctx(tmp_path, gemini_api_key="k")
+
+    execution = asyncio.run(
+        llm_steps.step_llm_digest(
+            ctx,
+            state,
+            gemini_generate_fn=lambda *_args, **_kwargs: (
+                json.dumps(_digest_payload()),
+                "frames_text",
+                {"thinking": {"include_thoughts": True, "thought_signatures": ["sig"]}},
+            ),
+        )
+    )
+
+    assert execution.status == "failed"
+    assert execution.reason == "video_body_input_required"
+    assert execution.output["contract_fail_close"] is True

@@ -8,12 +8,15 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from ..models import Subscription
 from ..repositories import (
     ClusterVerdictManifestsRepository,
     ConsumptionBatchesRepository,
     PublishedReaderDocumentsRepository,
 )
 from .jobs import JobsService
+from .source_identity import build_identity_payload
+from .source_names import build_source_name_fallback, resolve_source_name
 
 _TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 
@@ -59,6 +62,11 @@ class ReaderPipelineService:
             raise ValueError("consumption batch has no items to judge")
 
         items = [self._build_source_item_payload(item) for item in batch.items]
+        baseline_versions = [
+            str(value).strip()
+            for value in (getattr(batch, "base_published_doc_versions", []) or [])
+            if str(value).strip()
+        ]
         cluster_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
         singletons: list[dict[str, Any]] = []
 
@@ -67,14 +75,34 @@ class ReaderPipelineService:
             if cluster_key.startswith("topic:"):
                 cluster_groups[cluster_key].append(item)
             else:
-                singletons.append(self._build_singleton_payload(item))
+                singletons.append(
+                    self._build_singleton_payload(
+                        item,
+                        window_id=batch.window_id,
+                        baseline_versions=baseline_versions,
+                    )
+                )
 
         clusters: list[dict[str, Any]] = []
         for cluster_key, members in sorted(cluster_groups.items()):
             if len(members) < 2:
-                singletons.extend(self._build_singleton_payload(member) for member in members)
+                singletons.extend(
+                    self._build_singleton_payload(
+                        member,
+                        window_id=batch.window_id,
+                        baseline_versions=baseline_versions,
+                    )
+                    for member in members
+                )
                 continue
-            clusters.append(self._build_cluster_payload(cluster_key=cluster_key, members=members))
+            clusters.append(
+                self._build_cluster_payload(
+                    cluster_key=cluster_key,
+                    members=members,
+                    window_id=batch.window_id,
+                    baseline_versions=baseline_versions,
+                )
+            )
 
         clusters.sort(
             key=lambda item: (item["source_item_count"], item["topic_label"], item["cluster_key"]),
@@ -85,7 +113,23 @@ class ReaderPipelineService:
         cluster_count = len(clusters)
         singleton_count = len(singletons)
         source_item_count = len(items)
-        status = "gap_detected" if singleton_count and cluster_count == 0 else "ready"
+        affected_document_keys = sorted(
+            {
+                str(item.get("stable_key") or "").strip()
+                for item in [*clusters, *singletons]
+                if str(item.get("rebuild_scope") or "").strip() != "new_document"
+                and str(item.get("stable_key") or "").strip()
+            }
+        )
+        judge_gap_flags = sorted(
+            {
+                str(flag).strip()
+                for item in [*clusters, *singletons]
+                for flag in (item.get("judge_gap_flags") or [])
+                if str(flag).strip()
+            }
+        )
+        status = "ready" if not judge_gap_flags else "gap_detected"
         generated_at = datetime.now(UTC).isoformat()
         summary_markdown = self._build_summary_markdown(
             window_id=batch.window_id,
@@ -102,6 +146,24 @@ class ReaderPipelineService:
             "source_item_count": source_item_count,
             "cluster_count": cluster_count,
             "singleton_count": singleton_count,
+            "base_published_doc_versions": baseline_versions,
+            "affected_document_keys": affected_document_keys,
+            "judge_gap_flags": judge_gap_flags,
+            "judge_input_contract": {
+                "inputs": [
+                    "consumption_batch.items",
+                    "job.digest_markdown",
+                    "job.knowledge_cards",
+                    "job.evidence_bundle",
+                    "base_published_doc_versions",
+                    "previous_published_document_summary",
+                    "previous_coverage_ledger",
+                    "previous_traceability_pack",
+                ],
+                "grouping_rule": "dominant_topic_key",
+                "singleton_fallback": "no_dominant_topic",
+                "rebuild_semantics": "affected_cluster_rebuild",
+            },
             "clusters": clusters,
             "singletons": singletons,
         }
@@ -228,6 +290,18 @@ class ReaderPipelineService:
         for document in documents:
             self.db.refresh(document)
         document_payloads = [self._to_document_payload(document) for document in documents]
+        process_results = [
+            {
+                "document_id": item["id"],
+                "stable_key": item["stable_key"],
+                "publish_status": item["publish_status"],
+                "published_with_gap": bool(item.get("published_with_gap")),
+                "ok": True,
+            }
+            for item in document_payloads
+        ]
+        if hasattr(self.batch_repo, "mark_materialized"):
+            self.batch_repo.mark_materialized(batch_id=batch.id, process_results=process_results)
         navigation_brief = self.build_navigation_brief(
             window_id=batch.window_id,
             limit=max(len(documents), 1),
@@ -305,12 +379,23 @@ class ReaderPipelineService:
         source_refs = [item for item in (document.source_refs_json or []) if isinstance(item, dict)]
         if not source_refs:
             raise ValueError("published reader document has no source refs to repair")
+        existing_sections = [
+            item for item in (document.sections_json or []) if isinstance(item, dict)
+        ]
+        gap_report = self._build_gap_report(
+            coverage_ledger=dict(document.coverage_ledger_json or {}),
+            traceability_pack=dict(document.traceability_pack_json or {}),
+            warning_json=dict(document.warning_json or {}),
+        )
+        normalized_section_ids = [
+            str(value).strip() for value in (section_ids or []) if str(value).strip()
+        ]
 
         if normalized_strategy == "patch":
-            summary = str(document.summary or "").strip() or self._repair_summary(source_refs)
-            sections = [
-                item for item in (document.sections_json or []) if isinstance(item, dict)
-            ] or self._build_singleton_sections(source_refs)
+            summary = str(document.summary or "").strip() or self._repair_summary(
+                source_refs, gap_report=gap_report
+            )
+            sections = existing_sections or self._build_singleton_sections(source_refs)
             markdown = self._render_sections_as_markdown(
                 title=str(document.title),
                 summary=summary,
@@ -319,8 +404,13 @@ class ReaderPipelineService:
             )
             materialization_mode = "repair_patch"
         else:
-            summary = self._repair_summary(source_refs)
-            sections = self._build_repair_sections(source_refs)
+            summary = self._repair_summary(source_refs, gap_report=gap_report)
+            sections = self._build_repair_sections(
+                source_refs,
+                existing_sections=existing_sections,
+                target_section_ids=normalized_section_ids,
+                gap_report=gap_report,
+            )
             markdown = self._render_sections_as_markdown(
                 title=str(document.title),
                 summary=summary,
@@ -353,7 +443,7 @@ class ReaderPipelineService:
                 item for item in (document.repair_history_json or []) if isinstance(item, dict)
             ],
             repaired_from_document_id=document.id,
-            section_ids=section_ids or [],
+            section_ids=normalized_section_ids,
         )
         self.db.commit()
         self.db.refresh(replacement)
@@ -384,20 +474,6 @@ class ReaderPipelineService:
         previous = self.document_repo.get_current_by_stable_key(stable_key=stable_key)
         next_version = int(getattr(previous, "version", 0) or 0) + 1
         slug = f"{base_slug}-v{next_version}"
-        sections = (
-            self._build_cluster_sections(source_refs)
-            if materialization_mode == "merge_then_polish"
-            else self._build_singleton_sections(source_refs)
-        )
-        if materialization_mode.startswith("repair_"):
-            sections = self._build_repair_sections(source_refs)
-        coverage = self._build_coverage_ledger(source_refs=source_refs, sections=sections)
-        traceability = self._build_traceability_pack(source_refs=source_refs, sections=sections)
-        warning_json = self._build_warning_json(
-            coverage_ledger=coverage,
-            traceability_pack=traceability,
-        )
-        published_with_gap = bool(warning_json.get("published_with_gap"))
         repair_history = list(prior_repair_history or [])
         if strategy:
             repair_history.append(
@@ -411,6 +487,34 @@ class ReaderPipelineService:
                     "generated_at": datetime.now(UTC).isoformat(),
                 }
             )
+        sections = (
+            self._build_cluster_sections(source_refs)
+            if materialization_mode == "merge_then_polish"
+            else self._build_singleton_sections(source_refs)
+        )
+        if materialization_mode.startswith("repair_"):
+            sections = self._build_repair_sections(
+                source_refs,
+                existing_sections=None,
+                target_section_ids=list(section_ids or []),
+                gap_report=None,
+            )
+        coverage = self._build_coverage_ledger(
+            source_refs=source_refs,
+            sections=sections,
+            repair_history=repair_history,
+        )
+        traceability = self._build_traceability_pack(
+            source_refs=source_refs,
+            sections=sections,
+            repair_history=repair_history,
+        )
+        warning_json = self._build_warning_json(
+            coverage_ledger=coverage,
+            traceability_pack=traceability,
+            repair_history=repair_history,
+        )
+        published_with_gap = bool(warning_json.get("published_with_gap"))
         document = self.document_repo.replace_current(
             stable_key=stable_key,
             slug=slug,
@@ -441,10 +545,25 @@ class ReaderPipelineService:
             cluster_verdict_manifest_id=cluster_verdict_manifest_id,
         )
         coverage["published_doc_id"] = str(document.id)
+        coverage["stable_key"] = stable_key
+        coverage["version"] = int(document.version or 0)
         traceability["published_doc_id"] = str(document.id)
         traceability["stable_key"] = stable_key
         traceability["version"] = int(document.version or 0)
         traceability["warning_summary"] = warning_json if published_with_gap else None
+        warning_json["version"] = int(document.version or 0)
+        warning_json["publish_status"] = self._derive_publish_status(
+            is_current=True,
+            published_with_gap=published_with_gap,
+        )
+        document.markdown = self._render_sections_as_markdown(
+            title=title,
+            summary=summary,
+            sections=sections,
+            warning_json=warning_json,
+            body_markdown=markdown,
+        )
+        document.warning_json = warning_json
         document.coverage_ledger_json = coverage
         document.traceability_pack_json = traceability
         self.db.add(document)
@@ -452,13 +571,17 @@ class ReaderPipelineService:
 
     def _build_source_item_payload(self, item: Any) -> dict[str, Any]:
         job_id = getattr(item, "job_id", None)
+        job_id_uuid = job_id if isinstance(job_id, uuid.UUID) else None
         digest_markdown: str | None = None
         knowledge_cards: list[dict[str, Any]] = []
-        if isinstance(job_id, uuid.UUID):
+        evidence_bundle: dict[str, Any] = {}
+        if job_id_uuid is not None:
             digest_markdown = self.jobs_service.get_artifact_digest_md(
-                job_id=job_id, video_url=None
+                job_id=job_id_uuid, video_url=None
             )
-            knowledge_cards = self.jobs_service.get_knowledge_cards(job_id=job_id) or []
+            knowledge_cards = self.jobs_service.get_knowledge_cards(job_id=job_id_uuid) or []
+            if hasattr(self.jobs_service, "build_evidence_bundle"):
+                evidence_bundle = self.jobs_service.build_evidence_bundle(job_id=job_id_uuid) or {}
         topic_counter: Counter[str] = Counter()
         topic_labels: dict[str, str] = {}
         claim_kinds: set[str] = set()
@@ -481,25 +604,138 @@ class ReaderPipelineService:
         )
         title = str(getattr(item, "title", None) or "").strip() or "Untitled source item"
         digest_preview = self._digest_preview(digest_markdown, fallback=title)
+        evidence_routes = self._build_source_evidence_routes(
+            job_id=str(job_id_uuid) if job_id_uuid else None,
+            source_url=str(getattr(item, "source_url", "") or "").strip() or None,
+        )
+        digest_meta = evidence_bundle.get("digest_meta")
+        if not isinstance(digest_meta, dict):
+            digest_meta = {}
+        raw_stage_contract = dict(digest_meta.get("raw_stage_contract") or {})
+        trace_summary = evidence_bundle.get("trace_summary")
+        if not isinstance(trace_summary, dict):
+            trace_summary = {}
+        artifact_manifest = evidence_bundle.get("artifact_manifest")
+        if not isinstance(artifact_manifest, dict):
+            artifact_manifest = {}
+        pipeline_final_status = None
+        job_payload = evidence_bundle.get("job")
+        if isinstance(job_payload, dict):
+            pipeline_final_status = (
+                str(job_payload.get("pipeline_final_status") or "").strip() or None
+            )
+        degradation_flags = [
+            str(item).strip()
+            for item in (trace_summary.get("degradations") or [])
+            if str(item).strip()
+        ]
+        source_origin = (
+            str(getattr(item, "source_origin", "") or "").strip() or "subscription_tracked"
+        )
+        subscription_id = getattr(item, "subscription_id", None)
+        subscription_row = (
+            self.db.get(Subscription, subscription_id)
+            if isinstance(subscription_id, uuid.UUID) and hasattr(self.db, "get")
+            else None
+        )
+        resolved_platform = str(getattr(item, "platform", "") or "").strip() or "unknown"
+        resolved_source_url = str(getattr(item, "source_url", "") or "").strip() or None
+        source_name = title
+        creator_handle: str | None = None
+        identity_status = "derived_identity"
+        relation_kind = source_origin
+        affiliation_label: str | None = "Today lane" if source_origin == "manual_injected" else None
+        if subscription_row is not None:
+            source_name = resolve_source_name(
+                source_type=str(getattr(subscription_row, "source_type", "") or ""),
+                source_value=str(getattr(subscription_row, "source_value", "") or ""),
+                fallback=build_source_name_fallback(
+                    platform=str(getattr(subscription_row, "platform", "") or ""),
+                    source_type=str(getattr(subscription_row, "source_type", "") or ""),
+                    source_value=str(getattr(subscription_row, "source_value", "") or ""),
+                    source_url=getattr(subscription_row, "source_url", None),
+                    rsshub_route=getattr(subscription_row, "rsshub_route", None),
+                ),
+            )
+            source_value = str(getattr(subscription_row, "source_value", "") or "").strip()
+            creator_handle = source_value if source_value.startswith("@") else None
+            identity_status = "matched_subscription_identity"
+            relation_kind = "matched_subscription"
+            affiliation_label = source_name
+        identity = build_identity_payload(
+            platform=str(
+                getattr(subscription_row, "platform", resolved_platform) or resolved_platform
+            ),
+            display_name=source_name,
+            creator_handle=creator_handle,
+            source_homepage_url=getattr(subscription_row, "source_url", None)
+            or getattr(subscription_row, "rsshub_route", None)
+            or resolved_source_url,
+            source_url=resolved_source_url,
+            source_universe_label=source_name
+            if subscription_row is not None
+            else affiliation_label or title,
+            identity_status=identity_status,
+        )
+        judge_gap_flags = []
+        if not dominant_topic_key:
+            judge_gap_flags.append("insufficient_topic_signal")
+        if not digest_markdown:
+            judge_gap_flags.append("missing_digest")
+        if degradation_flags:
+            judge_gap_flags.append("degraded_extraction")
+        if job_id_uuid is not None and not evidence_bundle:
+            judge_gap_flags.append("missing_evidence_bundle")
+        if (
+            str(getattr(item, "content_type", "") or "").strip().lower() == "video"
+            and raw_stage_contract
+            and raw_stage_contract.get("video_contract_satisfied") is False
+        ):
+            judge_gap_flags.append("video_contract_gap")
         return {
             "source_item_id": str(item.id),
             "ingest_run_item_id": str(getattr(item, "ingest_run_item_id", None) or "").strip()
             or None,
-            "job_id": str(job_id) if isinstance(job_id, uuid.UUID) else None,
-            "platform": str(getattr(item, "platform", "") or "").strip() or "unknown",
-            "source_origin": str(getattr(item, "source_origin", "") or "").strip()
-            or "subscription_tracked",
+            "job_id": str(job_id_uuid) if job_id_uuid else None,
+            "platform": resolved_platform,
+            "source_origin": source_origin,
             "content_type": str(getattr(item, "content_type", "") or "").strip() or "video",
             "title": title,
-            "source_url": str(getattr(item, "source_url", "") or "").strip() or None,
+            "source_url": resolved_source_url,
             "published_at": self._isoformat(getattr(item, "published_at", None)),
             "claim_kinds": sorted(claim_kinds),
             "topic_keys": sorted(topic_counter),
+            "required_topics": sorted(topic_counter),
+            "required_claim_kinds": sorted(claim_kinds),
             "dominant_topic_key": dominant_topic_key,
             "topic_label": dominant_topic_label,
             "digest_markdown": digest_markdown,
             "digest_preview": digest_preview,
             "knowledge_cards": knowledge_cards,
+            "evidence_bundle": evidence_bundle,
+            "artifact_manifest": artifact_manifest,
+            "trace_summary": trace_summary,
+            "evidence_routes": evidence_routes,
+            "pipeline_final_status": pipeline_final_status,
+            "degradation_flags": degradation_flags,
+            "degraded_extraction": bool(degradation_flags),
+            "raw_stage_contract": raw_stage_contract,
+            "subscription_id": str(subscription_id)
+            if isinstance(subscription_id, uuid.UUID)
+            else None,
+            "matched_subscription_name": source_name if subscription_row is not None else None,
+            "relation_kind": relation_kind,
+            "affiliation_label": affiliation_label,
+            "canonical_source_name": source_name if subscription_row is not None else None,
+            "canonical_author_name": source_name if subscription_row is not None else None,
+            "creator_display_name": identity.creator_display_name,
+            "creator_handle": identity.creator_handle,
+            "thumbnail_url": identity.thumbnail_url,
+            "avatar_url": identity.avatar_url,
+            "avatar_label": identity.avatar_label,
+            "identity_status": identity.identity_status,
+            "job_bundle_route": str(evidence_routes.get("job_bundle") or "").strip() or None,
+            "judge_gap_flags": sorted(set(judge_gap_flags)),
             "cluster_key": (
                 f"topic:{dominant_topic_key}" if dominant_topic_key else f"singleton:{item.id}"
             ),
@@ -507,7 +743,12 @@ class ReaderPipelineService:
         }
 
     def _build_cluster_payload(
-        self, *, cluster_key: str, members: list[dict[str, Any]]
+        self,
+        *,
+        cluster_key: str,
+        members: list[dict[str, Any]],
+        window_id: str,
+        baseline_versions: list[str],
     ) -> dict[str, Any]:
         topic_key = cluster_key.removeprefix("topic:").strip() or None
         topic_label = next(
@@ -526,9 +767,21 @@ class ReaderPipelineService:
                 if isinstance(claim_kind, str) and claim_kind.strip()
             }
         )
+        stable_key = self._stable_key(
+            topic_key=topic_key,
+            source_item_id=str(members[0]["source_item_id"]),
+            window_id=window_id,
+        )
+        previous_document = self.document_repo.get_current_by_stable_key(stable_key=stable_key)
+        rebuild_scope = (
+            "affected_cluster_rebuild"
+            if previous_document is not None or stable_key in baseline_versions
+            else "new_document"
+        )
         return {
             "cluster_id": f"cluster-{self._slugify(cluster_key)}",
             "cluster_key": cluster_key,
+            "stable_key": stable_key,
             "topic_key": topic_key,
             "topic_label": topic_label,
             "decision": "merge_then_polish",
@@ -545,10 +798,36 @@ class ReaderPipelineService:
             "claim_kinds": claim_kinds,
             "headline": topic_label or f"Cluster {cluster_key}",
             "digest_preview": members[0]["digest_preview"],
+            "judge_gap_flags": sorted(
+                {
+                    str(flag).strip()
+                    for member in members
+                    for flag in (member.get("judge_gap_flags") or [])
+                    if str(flag).strip()
+                }
+            ),
+            "judge_inputs": self._judge_input_list(
+                previous_document=previous_document,
+                baseline_versions=baseline_versions,
+            ),
+            "rebuild_scope": rebuild_scope,
+            "previous_document": self._previous_document_summary(previous_document),
             "members": [self._to_member_payload(item) for item in members],
         }
 
-    def _build_singleton_payload(self, item: dict[str, Any]) -> dict[str, Any]:
+    def _build_singleton_payload(
+        self,
+        item: dict[str, Any],
+        *,
+        window_id: str,
+        baseline_versions: list[str],
+    ) -> dict[str, Any]:
+        stable_key = self._stable_key(
+            topic_key=item.get("dominant_topic_key"),
+            source_item_id=str(item["source_item_id"]),
+            window_id=window_id,
+        )
+        previous_document = self.document_repo.get_current_by_stable_key(stable_key=stable_key)
         return {
             "singleton_id": f"singleton-{self._slugify(str(item['source_item_id']))}",
             "source_item_id": str(item["source_item_id"]),
@@ -560,11 +839,23 @@ class ReaderPipelineService:
             "title": item.get("title"),
             "source_url": item.get("source_url"),
             "published_at": item.get("published_at"),
+            "stable_key": stable_key,
             "topic_key": item.get("dominant_topic_key"),
             "topic_label": item.get("topic_label"),
             "claim_kinds": list(item.get("claim_kinds") or []),
             "decision": "polish_only",
             "digest_preview": item.get("digest_preview"),
+            "judge_gap_flags": list(item.get("judge_gap_flags") or []),
+            "judge_inputs": self._judge_input_list(
+                previous_document=previous_document,
+                baseline_versions=baseline_versions,
+            ),
+            "rebuild_scope": (
+                "affected_cluster_rebuild"
+                if previous_document is not None or stable_key in baseline_versions
+                else "new_document"
+            ),
+            "previous_document": self._previous_document_summary(previous_document),
         }
 
     def _to_member_payload(self, item: dict[str, Any]) -> dict[str, Any]:
@@ -578,6 +869,20 @@ class ReaderPipelineService:
             "published_at": item.get("published_at"),
             "claim_kinds": list(item.get("claim_kinds") or []),
             "digest_preview": item.get("digest_preview"),
+            "subscription_id": item.get("subscription_id"),
+            "matched_subscription_name": item.get("matched_subscription_name"),
+            "relation_kind": item.get("relation_kind"),
+            "affiliation_label": item.get("affiliation_label"),
+            "canonical_source_name": item.get("canonical_source_name"),
+            "canonical_author_name": item.get("canonical_author_name"),
+            "creator_display_name": item.get("creator_display_name"),
+            "creator_handle": item.get("creator_handle"),
+            "thumbnail_url": item.get("thumbnail_url"),
+            "avatar_url": item.get("avatar_url"),
+            "avatar_label": item.get("avatar_label"),
+            "identity_status": item.get("identity_status"),
+            "raw_stage_contract": dict(item.get("raw_stage_contract") or {}),
+            "job_bundle_route": item.get("job_bundle_route"),
         }
 
     def _to_manifest_payload(self, instance: Any) -> dict[str, Any]:
@@ -597,6 +902,10 @@ class ReaderPipelineService:
         }
 
     def _to_document_payload(self, instance: Any) -> dict[str, Any]:
+        publish_status = self._derive_publish_status(
+            is_current=bool(instance.is_current),
+            published_with_gap=bool(instance.published_with_gap),
+        )
         return {
             "id": str(instance.id),
             "stable_key": instance.stable_key,
@@ -611,6 +920,7 @@ class ReaderPipelineService:
             "reader_style_profile": instance.reader_style_profile,
             "materialization_mode": instance.materialization_mode,
             "version": instance.version,
+            "publish_status": publish_status,
             "published_with_gap": bool(instance.published_with_gap),
             "is_current": bool(instance.is_current),
             "source_item_count": int(instance.source_item_count or 0),
@@ -630,9 +940,16 @@ class ReaderPipelineService:
             "sections": [
                 {
                     "section_id": str(item.get("section_id") or item.get("section_key") or ""),
+                    "section_key": str(item.get("section_key") or item.get("section_id") or ""),
                     "title": str(item.get("title") or ""),
+                    "kind": str(item.get("kind") or ""),
                     "markdown": str(item.get("markdown") or ""),
                     "source_item_ids": list(item.get("source_item_ids") or []),
+                    "primary_source_item_ids": list(item.get("primary_source_item_ids") or []),
+                    "topic_refs": list(item.get("topic_refs") or []),
+                    "claim_refs": list(item.get("claim_refs") or []),
+                    "evidence_anchor_refs": list(item.get("evidence_anchor_refs") or []),
+                    "status": str(item.get("status") or ""),
                 }
                 for item in (instance.sections_json or [])
                 if isinstance(item, dict)
@@ -695,127 +1012,160 @@ class ReaderPipelineService:
         return f"{title} remains a polish-only reader document from {platform}."
 
     def _build_cluster_sections(self, source_refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        topic_items = sorted(
-            {
-                str(card.get("topic_label") or card.get("topic_key") or "").strip()
-                for source_ref in source_refs
-                for card in (source_ref.get("knowledge_cards") or [])
-                if isinstance(card, dict)
-                and str(card.get("topic_label") or card.get("topic_key") or "").strip()
-            }
+        topic_items = self._all_topic_refs(source_refs)
+        claim_items = self._all_claim_refs(source_refs)
+        all_source_item_ids = [str(item["source_item_id"]) for item in source_refs]
+        merged_markdown = "\n".join(
+            [
+                f"- Theme focus: {', '.join(topic_items[:4])}"
+                if topic_items
+                else "- Theme focus: mixed sources",
+                f"- Cross-source signals: {', '.join(claim_items[:4])}"
+                if claim_items
+                else "- Cross-source signals: editorial synthesis",
+                f"- Source count: {len(source_refs)}",
+            ]
         )
-        claim_items = sorted(
-            {
-                str(claim_kind).strip()
-                for source_ref in source_refs
-                for claim_kind in (source_ref.get("claim_kinds") or [])
-                if str(claim_kind).strip()
-            }
-        )
-        overview_markdown = "\n".join(
-            [f"- {item}" for item in topic_items[:6]]
-            or [f"- {source_ref['digest_preview']}" for source_ref in source_refs[:3]]
-        )
-        signal_markdown = "\n".join(
-            [f"- {item}" for item in claim_items[:6]]
-            or [f"- {source_ref['digest_preview']}" for source_ref in source_refs[:3]]
-        )
-        source_notes = []
-        for source_ref in source_refs:
-            title = str(source_ref.get("title") or "").strip() or "Untitled source"
-            preview = str(source_ref.get("digest_preview") or "").strip() or title
-            source_url = str(source_ref.get("source_url") or "").strip()
-            platform = str(source_ref.get("platform") or "").strip() or "unknown"
-            source_notes.append(
-                "\n".join(
+        sections = [
+            self._section_payload(
+                section_key="merged-thesis",
+                title="Merged Thesis",
+                kind="merged_thesis",
+                markdown=merged_markdown,
+                source_item_ids=all_source_item_ids,
+                primary_source_item_ids=all_source_item_ids[:1],
+                topic_refs=topic_items,
+                claim_refs=claim_items,
+                evidence_anchor_refs=self._all_evidence_anchor_refs(source_refs),
+            ),
+            self._section_payload(
+                section_key="cross-source-signals",
+                title="Cross-Source Signals",
+                kind="cross_source_signals",
+                markdown="\n".join(
                     [
-                        f"### {title}",
-                        f"- Platform: {platform}",
-                        f"- Preview: {preview}",
-                        f"- Source: {source_url}" if source_url else "- Source: unavailable",
+                        f"- {self._source_title(source_ref)}: {self._source_preview(source_ref)}"
+                        for source_ref in source_refs
                     ]
+                ),
+                source_item_ids=all_source_item_ids,
+                primary_source_item_ids=all_source_item_ids[:2],
+                topic_refs=topic_items,
+                claim_refs=claim_items,
+                evidence_anchor_refs=self._all_evidence_anchor_refs(source_refs),
+            ),
+        ]
+        for source_ref in source_refs:
+            source_item_id = str(source_ref["source_item_id"])
+            sections.append(
+                self._section_payload(
+                    section_key=f"source-contribution-{self._slugify(source_item_id)}",
+                    title=f"Source Contribution · {self._source_title(source_ref)}",
+                    kind="source_contribution",
+                    markdown="\n".join(
+                        [
+                            f"- Platform: {self._source_platform(source_ref)}",
+                            f"- Topics: {', '.join(self._source_topic_refs(source_ref)) or 'none captured'}",
+                            f"- Claim kinds: {', '.join(self._source_claim_refs(source_ref)) or 'none captured'}",
+                            f"- Preview: {self._source_preview(source_ref)}",
+                            f"- Source: {source_ref.get('source_url')}"
+                            if source_ref.get("source_url")
+                            else "- Source: unavailable",
+                        ]
+                    ),
+                    source_item_ids=[source_item_id],
+                    primary_source_item_ids=[source_item_id],
+                    topic_refs=self._source_topic_refs(source_ref),
+                    claim_refs=self._source_claim_refs(source_ref),
+                    evidence_anchor_refs=self._source_evidence_anchor_refs(source_ref),
                 )
             )
-        all_source_item_ids = [str(item["source_item_id"]) for item in source_refs]
-        return [
-            {
-                "section_key": "overview",
-                "section_id": "overview",
-                "title": "Overview",
-                "kind": "overview",
-                "markdown": overview_markdown,
-                "source_item_ids": all_source_item_ids,
-            },
-            {
-                "section_key": "key-signals",
-                "section_id": "key-signals",
-                "title": "Key Signals",
-                "kind": "signals",
-                "markdown": signal_markdown,
-                "source_item_ids": all_source_item_ids,
-            },
-            {
-                "section_key": "source-contributions",
-                "section_id": "source-contributions",
-                "title": "Source Contributions",
-                "kind": "source_contributions",
-                "markdown": "\n\n".join(source_notes),
-                "source_item_ids": all_source_item_ids,
-            },
-        ]
+        return sections
 
     def _build_singleton_sections(self, source_refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         source_ref = source_refs[0]
         source_item_id = str(source_ref["source_item_id"])
-        preview = str(source_ref.get("digest_preview") or "").strip() or "No preview available."
+        preview = self._source_preview(source_ref)
         source_url = str(source_ref.get("source_url") or "").strip()
-        source_markdown = "\n".join(
-            [
-                f"- Platform: {str(source_ref.get('platform') or '').strip() or 'unknown'}",
-                f"- Source origin: {str(source_ref.get('source_origin') or '').strip() or 'subscription_tracked'}",
-                f"- Source: {source_url}" if source_url else "- Source: unavailable",
-            ]
-        )
         return [
-            {
-                "section_key": "summary",
-                "section_id": "summary",
-                "title": "Summary",
-                "kind": "summary",
-                "markdown": preview,
-                "source_item_ids": [source_item_id],
-            },
-            {
-                "section_key": "source-context",
-                "section_id": "source-context",
-                "title": "Source Context",
-                "kind": "source_context",
-                "markdown": source_markdown,
-                "source_item_ids": [source_item_id],
-            },
+            self._section_payload(
+                section_key="summary",
+                title="Summary",
+                kind="summary",
+                markdown=preview,
+                source_item_ids=[source_item_id],
+                primary_source_item_ids=[source_item_id],
+                topic_refs=self._source_topic_refs(source_ref),
+                claim_refs=self._source_claim_refs(source_ref),
+                evidence_anchor_refs=self._source_evidence_anchor_refs(source_ref),
+            ),
+            self._section_payload(
+                section_key="source-context",
+                title="Source Context",
+                kind="source_context",
+                markdown="\n".join(
+                    [
+                        f"- Platform: {self._source_platform(source_ref)}",
+                        f"- Source origin: {str(source_ref.get('source_origin') or '').strip() or 'subscription_tracked'}",
+                        f"- Topics: {', '.join(self._source_topic_refs(source_ref)) or 'none captured'}",
+                        f"- Claim kinds: {', '.join(self._source_claim_refs(source_ref)) or 'none captured'}",
+                        f"- Source: {source_url}" if source_url else "- Source: unavailable",
+                    ]
+                ),
+                source_item_ids=[source_item_id],
+                primary_source_item_ids=[source_item_id],
+                topic_refs=self._source_topic_refs(source_ref),
+                claim_refs=self._source_claim_refs(source_ref),
+                evidence_anchor_refs=self._source_evidence_anchor_refs(source_ref),
+            ),
         ]
 
-    def _build_repair_sections(self, source_refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        sections = (
+    def _build_repair_sections(
+        self,
+        source_refs: list[dict[str, Any]],
+        *,
+        existing_sections: list[dict[str, Any]] | None,
+        target_section_ids: list[str],
+        gap_report: dict[str, Any] | None,
+    ) -> list[dict[str, Any]]:
+        rebuilt_sections = (
             self._build_cluster_sections(source_refs)
             if len(source_refs) > 1
             else self._build_singleton_sections(source_refs)
         )
-        missing_ref_lines = []
-        for source_ref in source_refs:
-            title = str(source_ref.get("title") or "").strip() or "Untitled source"
-            preview = str(source_ref.get("digest_preview") or "").strip() or "No preview available."
-            missing_ref_lines.append(f"- {title}: {preview}")
-        sections.append(
-            {
-                "section_key": "repair-notes",
-                "section_id": "repair-notes",
-                "title": "Repair Notes",
-                "kind": "repair_notes",
-                "markdown": "\n".join(missing_ref_lines),
-                "source_item_ids": [str(item["source_item_id"]) for item in source_refs],
+        if not existing_sections:
+            sections = list(rebuilt_sections)
+        elif target_section_ids:
+            rebuilt_map = {
+                str(section.get("section_id") or section.get("section_key") or "").strip(): section
+                for section in rebuilt_sections
             }
-        )
+            sections = []
+            replaced = set()
+            for section in existing_sections:
+                section_id = str(
+                    section.get("section_id") or section.get("section_key") or ""
+                ).strip()
+                if section_id in target_section_ids and section_id in rebuilt_map:
+                    sections.append(rebuilt_map[section_id])
+                    replaced.add(section_id)
+                else:
+                    sections.append(section)
+            for section_id in target_section_ids:
+                if section_id not in replaced and section_id in rebuilt_map:
+                    sections.append(rebuilt_map[section_id])
+        else:
+            sections = list(rebuilt_sections)
+        if gap_report:
+            gap_section = self._gap_report_section(source_refs=source_refs, gap_report=gap_report)
+            if gap_section is not None:
+                sections = [
+                    section
+                    for section in sections
+                    if str(section.get("section_id") or section.get("section_key") or "").strip()
+                    != "gap-report"
+                ]
+                sections.append(gap_section)
         return sections
 
     def _render_cluster_markdown(
@@ -874,52 +1224,128 @@ class ReaderPipelineService:
         return "\n".join(lines).strip()
 
     def _build_coverage_ledger(
-        self, *, source_refs: list[dict[str, Any]], sections: list[dict[str, Any]]
+        self,
+        *,
+        source_refs: list[dict[str, Any]],
+        sections: list[dict[str, Any]],
+        repair_history: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        section_index = {
-            str(section.get("section_key") or "").strip(): [
-                str(source_item_id).strip()
-                for source_item_id in (section.get("source_item_ids") or [])
-                if str(source_item_id).strip()
-            ]
+        section_index = [
+            {
+                "section_id": str(
+                    section.get("section_id") or section.get("section_key") or ""
+                ).strip(),
+                "title": str(section.get("title") or "").strip(),
+                "source_item_ids": [
+                    str(source_item_id).strip()
+                    for source_item_id in (section.get("source_item_ids") or [])
+                    if str(source_item_id).strip()
+                ],
+                "topic_refs": [
+                    str(topic).strip()
+                    for topic in (section.get("topic_refs") or [])
+                    if str(topic).strip()
+                ],
+                "claim_refs": [
+                    str(claim).strip()
+                    for claim in (section.get("claim_refs") or [])
+                    if str(claim).strip()
+                ],
+                "evidence_anchor_refs": [
+                    str(route).strip()
+                    for route in (section.get("evidence_anchor_refs") or [])
+                    if str(route).strip()
+                ],
+            }
             for section in sections
             if isinstance(section, dict)
-        }
+        ]
         entries = []
         gap_count = 0
+        repair_budget = 2
+        repair_attempts = len(repair_history)
+        affected_source_item_ids: list[str] = []
         for source_ref in source_refs:
             source_item_id = str(source_ref.get("source_item_id") or "").strip()
             missing_digest = not str(source_ref.get("digest_markdown") or "").strip()
-            required_topics = sorted(
+            required_topics = self._source_topic_refs(source_ref)
+            required_claim_kinds = self._source_claim_refs(source_ref)
+            coverage_sections = [
+                section for section in section_index if source_item_id in section["source_item_ids"]
+            ]
+            covered_topics = sorted(
                 {
-                    str(card.get("topic_key") or "").strip()
-                    for card in (source_ref.get("knowledge_cards") or [])
-                    if isinstance(card, dict) and str(card.get("topic_key") or "").strip()
+                    topic
+                    for section in coverage_sections
+                    for topic in section.get("topic_refs") or []
+                    if topic in required_topics
                 }
             )
-            coverage_sections = [
-                section_key
-                for section_key, source_item_ids in section_index.items()
-                if source_item_id in source_item_ids
+            covered_claim_kinds = sorted(
+                {
+                    claim
+                    for section in coverage_sections
+                    for claim in section.get("claim_refs") or []
+                    if claim in required_claim_kinds
+                }
+            )
+            missing_topics = sorted(set(required_topics) - set(covered_topics))
+            missing_claim_kinds = sorted(set(required_claim_kinds) - set(covered_claim_kinds))
+            missing_evidence_routes = [
+                key
+                for key in ("artifact_markdown", "job_bundle", "job_knowledge_cards")
+                if not str((source_ref.get("evidence_routes") or {}).get(key) or "").strip()
             ]
-            covered_topics = required_topics if coverage_sections else []
-            missing_topics = [] if covered_topics else required_topics
+            degraded_extraction = bool(source_ref.get("degraded_extraction"))
             gap_flags = []
             if missing_topics:
                 gap_flags.append("missing_topics")
+            if missing_claim_kinds:
+                gap_flags.append("missing_claim_kinds")
             if missing_digest:
                 gap_flags.append("missing_digest")
-            entry_status = "pass" if not gap_flags else "gap_detected"
+            if missing_evidence_routes:
+                gap_flags.append("missing_evidence_routes")
+            if degraded_extraction:
+                gap_flags.append("degraded_extraction")
+            raw_stage_contract = source_ref.get("raw_stage_contract")
+            if not isinstance(raw_stage_contract, dict):
+                raw_stage_contract = {}
+            if (
+                str(source_ref.get("content_type") or "").strip().lower() == "video"
+                and raw_stage_contract
+                and raw_stage_contract.get("video_contract_satisfied") is False
+            ):
+                gap_flags.append("video_contract_gap")
+            entry_status = "pass"
+            if gap_flags:
+                entry_status = (
+                    "repair_exhausted" if repair_attempts >= repair_budget else "gap_detected"
+                )
+                affected_source_item_ids.append(source_item_id)
             if entry_status != "pass":
                 gap_count += 1
             entries.append(
                 {
                     "source_item_id": source_item_id,
+                    "coverage_ledger_id": str(uuid.uuid4()),
                     "required_topics": required_topics,
                     "covered_topics": covered_topics,
                     "missing_topics": missing_topics,
-                    "sections": coverage_sections,
+                    "required_claim_kinds": required_claim_kinds,
+                    "covered_claim_kinds": covered_claim_kinds,
+                    "missing_claim_kinds": missing_claim_kinds,
+                    "sections": [
+                        {
+                            "section_id": section["section_id"],
+                            "title": section["title"],
+                        }
+                        for section in coverage_sections
+                    ],
                     "missing_digest": missing_digest,
+                    "missing_evidence_routes": missing_evidence_routes,
+                    "degraded_extraction": degraded_extraction,
+                    "raw_stage_contract": raw_stage_contract,
                     "gap_flags": gap_flags,
                     "status": entry_status,
                 }
@@ -932,19 +1358,31 @@ class ReaderPipelineService:
                 if isinstance(flag, str) and flag.strip()
             }
         )
+        status = "pass"
+        if any(entry.get("status") == "repair_exhausted" for entry in entries):
+            status = "repair_exhausted"
+        elif gap_count:
+            status = "gap_detected"
         return {
             "ledger_kind": "sourceharbor_coverage_ledger_v1",
             "coverage_ledger_id": str(uuid.uuid4()),
             "published_doc_id": None,
             "generated_at": datetime.now(UTC).isoformat(),
-            "status": "pass" if gap_count == 0 else "gap_detected",
+            "status": status,
             "gap_count": gap_count,
             "gap_reasons": gap_reasons,
+            "affected_source_item_ids": sorted(set(affected_source_item_ids)),
+            "repair_budget": repair_budget,
+            "repair_attempts": repair_attempts,
             "entries": entries,
         }
 
     def _build_traceability_pack(
-        self, *, source_refs: list[dict[str, Any]], sections: list[dict[str, Any]]
+        self,
+        *,
+        source_refs: list[dict[str, Any]],
+        sections: list[dict[str, Any]],
+        repair_history: list[dict[str, Any]],
     ) -> dict[str, Any]:
         section_contributions = []
         for section in sections:
@@ -963,6 +1401,21 @@ class ReaderPipelineService:
                 for item in contributing_refs
                 if str(item.get("job_id") or "").strip()
             ]
+            evidence_anchor_refs = sorted(
+                {
+                    str(route).strip()
+                    for route in (
+                        list(section.get("evidence_anchor_refs") or [])
+                        + [
+                            route
+                            for source_ref in contributing_refs
+                            for route in self._source_evidence_anchor_refs(source_ref)
+                        ]
+                    )
+                    if str(route).strip()
+                }
+            )
+            section_status = "ready" if source_item_ids and evidence_anchor_refs else "gap_detected"
             section_contributions.append(
                 {
                     "section_key": str(section.get("section_key") or "").strip(),
@@ -974,15 +1427,25 @@ class ReaderPipelineService:
                     "source_item_ids": source_item_ids,
                     "primary_source_item_ids": source_item_ids[:1],
                     "claim_refs": sorted(
-                        {
+                        set(section.get("claim_refs") or [])
+                        | {
                             str(claim_kind).strip()
                             for item in contributing_refs
                             for claim_kind in (item.get("claim_kinds") or [])
                             if str(claim_kind).strip()
                         }
                     ),
-                    "evidence_anchor_refs": [f"/api/v1/jobs/{job_id}/bundle" for job_id in job_ids],
+                    "topic_refs": sorted(
+                        set(section.get("topic_refs") or [])
+                        | {
+                            topic
+                            for item in contributing_refs
+                            for topic in self._source_topic_refs(item)
+                        }
+                    ),
+                    "evidence_anchor_refs": evidence_anchor_refs,
                     "job_ids": job_ids,
+                    "status": section_status,
                 }
             )
         source_item_map = []
@@ -990,16 +1453,32 @@ class ReaderPipelineService:
             "artifact_markdown": [],
             "job_bundle": [],
             "job_knowledge_cards": [],
+            "source_url": [],
         }
+        affected_source_item_ids: list[str] = []
         for source_ref in source_refs:
             job_id = str(source_ref.get("job_id") or "").strip()
-            routes = {
-                "artifact_markdown": f"/api/v1/artifacts/markdown?job_id={job_id}&include_meta=true"
-                if job_id
-                else None,
-                "job_bundle": f"/api/v1/jobs/{job_id}/bundle" if job_id else None,
-                "job_knowledge_cards": f"/knowledge?job_id={job_id}" if job_id else None,
-            }
+            routes = dict(source_ref.get("evidence_routes") or {})
+            available_routes = {key: value for key, value in routes.items() if value}
+            artifact_manifest = source_ref.get("artifact_manifest")
+            if not isinstance(artifact_manifest, dict):
+                artifact_manifest = {}
+            raw_stage_contract = source_ref.get("raw_stage_contract")
+            if not isinstance(raw_stage_contract, dict):
+                raw_stage_contract = {}
+            evidence_status = "ready"
+            if (
+                not available_routes
+                or not dict(source_ref.get("evidence_bundle") or {})
+                or bool(source_ref.get("degraded_extraction"))
+                or (
+                    str(source_ref.get("content_type") or "").strip().lower() == "video"
+                    and raw_stage_contract
+                    and raw_stage_contract.get("video_contract_satisfied") is False
+                )
+            ):
+                evidence_status = "gap_detected"
+                affected_source_item_ids.append(str(source_ref.get("source_item_id") or "").strip())
             source_item_map.append(
                 {
                     "source_item_id": str(source_ref.get("source_item_id") or "").strip(),
@@ -1010,18 +1489,37 @@ class ReaderPipelineService:
                     "published_at": source_ref.get("published_at"),
                     "raw_artifacts": {
                         "digest": str(source_ref.get("digest_markdown") or "").strip() or None,
-                        "transcript": None,
-                        "comments": None,
-                        "outline": None,
-                        "frames": None,
+                        "transcript": self._artifact_manifest_has(artifact_manifest, "transcript"),
+                        "comments": self._artifact_manifest_has(artifact_manifest, "comment"),
+                        "outline": self._artifact_manifest_has(artifact_manifest, "outline"),
+                        "frames": self._artifact_manifest_has(artifact_manifest, "frame"),
                     },
                     "routes": routes,
+                    "artifact_manifest": artifact_manifest,
+                    "degradation_flags": list(source_ref.get("degradation_flags") or []),
+                    "raw_stage_contract": raw_stage_contract,
+                    "subscription_id": source_ref.get("subscription_id"),
+                    "matched_subscription_name": source_ref.get("matched_subscription_name"),
+                    "relation_kind": source_ref.get("relation_kind"),
+                    "affiliation_label": source_ref.get("affiliation_label"),
+                    "canonical_source_name": source_ref.get("canonical_source_name"),
+                    "canonical_author_name": source_ref.get("canonical_author_name"),
+                    "creator_display_name": source_ref.get("creator_display_name"),
+                    "creator_handle": source_ref.get("creator_handle"),
+                    "thumbnail_url": source_ref.get("thumbnail_url"),
+                    "avatar_url": source_ref.get("avatar_url"),
+                    "avatar_label": source_ref.get("avatar_label"),
+                    "identity_status": source_ref.get("identity_status"),
+                    "pipeline_final_status": source_ref.get("pipeline_final_status"),
+                    "status": evidence_status,
                 }
             )
-            for key, value in routes.items():
+            for key, value in available_routes.items():
                 if value:
                     evidence_routes[key].append(value)
-        has_gap = any(not item["source_item_ids"] for item in section_contributions)
+        has_gap = any(item.get("status") != "ready" for item in section_contributions) or any(
+            item.get("status") != "ready" for item in source_item_map
+        )
         return {
             "pack_kind": "sourceharbor_traceability_pack_v1",
             "generated_at": datetime.now(UTC).isoformat(),
@@ -1033,25 +1531,51 @@ class ReaderPipelineService:
             "source_item_map": source_item_map,
             "evidence_routes": evidence_routes,
             "section_contributions": section_contributions,
+            "affected_source_item_ids": sorted(set(affected_source_item_ids)),
+            "repair_attempts": len(repair_history),
             "warning_summary": None,
         }
 
     def _build_warning_json(
-        self, *, coverage_ledger: dict[str, Any], traceability_pack: dict[str, Any]
+        self,
+        *,
+        coverage_ledger: dict[str, Any],
+        traceability_pack: dict[str, Any],
+        repair_history: list[dict[str, Any]],
     ) -> dict[str, Any]:
         coverage_status = str(coverage_ledger.get("status") or "").strip()
         traceability_status = str(traceability_pack.get("status") or "").strip()
+        warning_kinds: list[str] = []
+        if coverage_status != "pass":
+            warning_kinds.append("coverage_gap")
+        if traceability_status != "ready":
+            warning_kinds.append("traceability_gap")
+        if any(
+            bool(entry.get("degraded_extraction"))
+            for entry in (coverage_ledger.get("entries") or [])
+            if isinstance(entry, dict)
+        ):
+            warning_kinds.append("degraded_extraction")
+        if coverage_status == "repair_exhausted" or len(repair_history) >= 2:
+            warning_kinds.append("repair_budget_exhausted")
         if coverage_status == "pass" and traceability_status == "ready":
             return {
                 "warning_kind": "none",
+                "warning_kinds": [],
                 "published_with_gap": False,
                 "reasons": [],
                 "failed_source_count": 0,
                 "degraded_source_count": 0,
                 "missing_digest_count": 0,
+                "affected_scope": {
+                    "source_item_ids": [],
+                    "section_ids": [],
+                    "source_item_count": 0,
+                    "section_count": 0,
+                },
+                "version": None,
                 "generated_at": datetime.now(UTC).isoformat(),
             }
-        kind = "coverage_gap" if coverage_status != "pass" else "traceability_gap"
         reasons = []
         if coverage_status != "pass":
             missing_digest_count = sum(
@@ -1063,11 +1587,41 @@ class ReaderPipelineService:
                 reasons.append(f"{missing_digest_count} source missing digest output")
             if "missing_topics" in set(coverage_ledger.get("gap_reasons") or []):
                 reasons.append("coverage ledger reported uncovered source topics")
+            if "missing_claim_kinds" in set(coverage_ledger.get("gap_reasons") or []):
+                reasons.append("coverage ledger reported uncovered source claim kinds")
+            if "video_contract_gap" in set(coverage_ledger.get("gap_reasons") or []):
+                reasons.append(
+                    "video raw-stage contract failed to satisfy video-first requirements"
+                )
         if traceability_status != "ready":
             reasons.append("traceability pack reported incomplete section contributions")
+        if "degraded_extraction" in warning_kinds:
+            reasons.append("source extraction degraded and still needs a cleaner evidence chain")
+        if "repair_budget_exhausted" in warning_kinds:
+            reasons.append("repair budget has been exhausted for the current stable key")
+        affected_section_ids = [
+            str(item.get("section_id") or "").strip()
+            for item in (traceability_pack.get("section_contributions") or [])
+            if isinstance(item, dict) and item.get("status") != "ready"
+        ]
+        affected_source_item_ids = sorted(
+            {
+                *[
+                    str(item).strip()
+                    for item in (coverage_ledger.get("affected_source_item_ids") or [])
+                    if str(item).strip()
+                ],
+                *[
+                    str(item).strip()
+                    for item in (traceability_pack.get("affected_source_item_ids") or [])
+                    if str(item).strip()
+                ],
+            }
+        )
         return {
-            "warning_kind": kind,
-            "kind": kind,
+            "warning_kind": warning_kinds[0],
+            "warning_kinds": warning_kinds,
+            "kind": warning_kinds[0],
             "published_with_gap": True,
             "reasons": reasons,
             "failed_source_count": sum(
@@ -1082,23 +1636,266 @@ class ReaderPipelineService:
                 if isinstance(entry, dict) and entry.get("missing_digest")
             ),
             "generated_at": datetime.now(UTC).isoformat(),
-            "summary": "This reader document is readable, but coverage or traceability is still incomplete.",
-            "affected_source_item_ids": [
-                str(entry.get("source_item_id") or "").strip()
-                for entry in (coverage_ledger.get("entries") or [])
-                if isinstance(entry, dict) and entry.get("status") != "pass"
-            ],
+            "summary": "This reader document is readable, but it is still published with gap until coverage and traceability both pass.",
+            "readable_why": "正文仍然可读，已有可用的合并/单源内容与现有证据入口。",
+            "not_fully_sealed_why": "Coverage, traceability, or repair-budget contract is still incomplete for at least one source.",
+            "affected_source_item_ids": affected_source_item_ids,
+            "affected_scope": {
+                "source_item_ids": affected_source_item_ids,
+                "section_ids": affected_section_ids,
+                "source_item_count": len(affected_source_item_ids),
+                "section_count": len(affected_section_ids),
+            },
+            "version": None,
             "status": "published_with_gap",
         }
 
-    def _repair_summary(self, source_refs: list[dict[str, Any]]) -> str:
+    def _repair_summary(
+        self, source_refs: list[dict[str, Any]], *, gap_report: dict[str, Any] | None = None
+    ) -> str:
         titles = [
             str(source_ref.get("title") or "").strip()
             for source_ref in source_refs
             if str(source_ref.get("title") or "").strip()
         ]
         joined = ", ".join(titles[:3]) if titles else "the current source set"
-        return f"Repair pass rebuilt missing coverage and traceability around {joined}."
+        if not gap_report:
+            return f"Repair pass rebuilt missing coverage and traceability around {joined}."
+        missing_topics = ", ".join(gap_report.get("missing_topics") or [])
+        missing_claims = ", ".join(gap_report.get("missing_claim_kinds") or [])
+        focus = missing_topics or missing_claims or "the current gap report"
+        return f"Repair pass targeted {focus} around {joined}."
+
+    @staticmethod
+    def _derive_publish_status(*, is_current: bool, published_with_gap: bool) -> str:
+        if not is_current:
+            return "superseded"
+        return "published_with_gap" if published_with_gap else "published"
+
+    def _judge_input_list(
+        self,
+        *,
+        previous_document: Any | None,
+        baseline_versions: list[str],
+    ) -> list[str]:
+        inputs = [
+            "consumption_batch.items",
+            "job.digest_markdown",
+            "job.knowledge_cards",
+            "job.evidence_bundle",
+        ]
+        if previous_document is not None:
+            inputs.extend(
+                [
+                    "previous_published_document_summary",
+                    "previous_coverage_ledger",
+                    "previous_traceability_pack",
+                ]
+            )
+        if baseline_versions:
+            inputs.append("base_published_doc_versions")
+        return inputs
+
+    def _previous_document_summary(self, document: Any | None) -> dict[str, Any] | None:
+        if document is None:
+            return None
+        return {
+            "document_id": str(document.id),
+            "version": int(getattr(document, "version", 0) or 0),
+            "published_with_gap": bool(getattr(document, "published_with_gap", False)),
+            "summary": str(getattr(document, "summary", "") or "").strip() or None,
+            "coverage_status": str(
+                (getattr(document, "coverage_ledger_json", {}) or {}).get("status") or ""
+            ).strip()
+            or None,
+            "traceability_status": str(
+                (getattr(document, "traceability_pack_json", {}) or {}).get("status") or ""
+            ).strip()
+            or None,
+        }
+
+    @staticmethod
+    def _build_source_evidence_routes(
+        *, job_id: str | None, source_url: str | None
+    ) -> dict[str, str | None]:
+        return {
+            "artifact_markdown": f"/api/v1/artifacts/markdown?job_id={job_id}&include_meta=true"
+            if job_id
+            else None,
+            "job_bundle": f"/api/v1/jobs/{job_id}/bundle" if job_id else None,
+            "job_knowledge_cards": f"/knowledge?job_id={job_id}" if job_id else None,
+            "source_url": source_url or None,
+        }
+
+    @staticmethod
+    def _artifact_manifest_has(artifact_manifest: dict[str, Any], keyword: str) -> bool:
+        return keyword.lower() in str(artifact_manifest).lower()
+
+    @staticmethod
+    def _source_title(source_ref: dict[str, Any]) -> str:
+        return str(source_ref.get("title") or "").strip() or "Untitled source"
+
+    @staticmethod
+    def _source_platform(source_ref: dict[str, Any]) -> str:
+        return str(source_ref.get("platform") or "").strip() or "unknown"
+
+    @staticmethod
+    def _source_preview(source_ref: dict[str, Any]) -> str:
+        return str(source_ref.get("digest_preview") or "").strip() or "No preview available."
+
+    @staticmethod
+    def _source_topic_refs(source_ref: dict[str, Any]) -> list[str]:
+        return sorted(
+            {
+                str(card.get("topic_key") or "").strip()
+                for card in (source_ref.get("knowledge_cards") or [])
+                if isinstance(card, dict) and str(card.get("topic_key") or "").strip()
+            }
+        )
+
+    @staticmethod
+    def _source_claim_refs(source_ref: dict[str, Any]) -> list[str]:
+        return sorted(
+            {
+                str(claim).strip()
+                for claim in (source_ref.get("claim_kinds") or [])
+                if str(claim).strip()
+            }
+        )
+
+    def _source_evidence_anchor_refs(self, source_ref: dict[str, Any]) -> list[str]:
+        return sorted(
+            {
+                str(route).strip()
+                for route in (source_ref.get("evidence_routes") or {}).values()
+                if str(route).strip()
+            }
+        )
+
+    def _all_topic_refs(self, source_refs: list[dict[str, Any]]) -> list[str]:
+        return sorted(
+            {topic for source_ref in source_refs for topic in self._source_topic_refs(source_ref)}
+        )
+
+    def _all_claim_refs(self, source_refs: list[dict[str, Any]]) -> list[str]:
+        return sorted(
+            {claim for source_ref in source_refs for claim in self._source_claim_refs(source_ref)}
+        )
+
+    def _all_evidence_anchor_refs(self, source_refs: list[dict[str, Any]]) -> list[str]:
+        return sorted(
+            {
+                route
+                for source_ref in source_refs
+                for route in self._source_evidence_anchor_refs(source_ref)
+            }
+        )
+
+    @staticmethod
+    def _section_payload(
+        *,
+        section_key: str,
+        title: str,
+        kind: str,
+        markdown: str,
+        source_item_ids: list[str],
+        primary_source_item_ids: list[str],
+        topic_refs: list[str],
+        claim_refs: list[str],
+        evidence_anchor_refs: list[str],
+    ) -> dict[str, Any]:
+        status = "ready" if source_item_ids and evidence_anchor_refs else "gap_detected"
+        return {
+            "section_key": section_key,
+            "section_id": section_key,
+            "title": title,
+            "kind": kind,
+            "markdown": markdown,
+            "source_item_ids": source_item_ids,
+            "primary_source_item_ids": primary_source_item_ids,
+            "topic_refs": topic_refs,
+            "claim_refs": claim_refs,
+            "evidence_anchor_refs": evidence_anchor_refs,
+            "status": status,
+        }
+
+    def _build_gap_report(
+        self,
+        *,
+        coverage_ledger: dict[str, Any],
+        traceability_pack: dict[str, Any],
+        warning_json: dict[str, Any],
+    ) -> dict[str, Any]:
+        missing_topics = sorted(
+            {
+                str(topic).strip()
+                for entry in (coverage_ledger.get("entries") or [])
+                if isinstance(entry, dict)
+                for topic in (entry.get("missing_topics") or [])
+                if str(topic).strip()
+            }
+        )
+        missing_claim_kinds = sorted(
+            {
+                str(claim).strip()
+                for entry in (coverage_ledger.get("entries") or [])
+                if isinstance(entry, dict)
+                for claim in (entry.get("missing_claim_kinds") or [])
+                if str(claim).strip()
+            }
+        )
+        warning_kinds = [
+            str(value).strip()
+            for value in (warning_json.get("warning_kinds") or [])
+            if str(value).strip()
+        ]
+        if not warning_kinds:
+            warning_kind = str(warning_json.get("warning_kind") or "").strip()
+            if warning_kind and warning_kind != "none":
+                warning_kinds = [warning_kind]
+        return {
+            "missing_topics": missing_topics,
+            "missing_claim_kinds": missing_claim_kinds,
+            "warning_kinds": warning_kinds,
+            "affected_source_item_ids": [
+                str(value).strip()
+                for value in (warning_json.get("affected_source_item_ids") or [])
+                if str(value).strip()
+            ],
+            "affected_section_ids": [
+                str(item.get("section_id") or "").strip()
+                for item in (traceability_pack.get("section_contributions") or [])
+                if isinstance(item, dict) and item.get("status") != "ready"
+            ],
+        }
+
+    def _gap_report_section(
+        self, *, source_refs: list[dict[str, Any]], gap_report: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        warning_kinds = list(gap_report.get("warning_kinds") or [])
+        missing_topics = list(gap_report.get("missing_topics") or [])
+        missing_claim_kinds = list(gap_report.get("missing_claim_kinds") or [])
+        if not warning_kinds and not missing_topics and not missing_claim_kinds:
+            return None
+        lines = []
+        if warning_kinds:
+            lines.append(f"- Warning kinds: {', '.join(warning_kinds)}")
+        if missing_topics:
+            lines.append(f"- Missing topics: {', '.join(missing_topics)}")
+        if missing_claim_kinds:
+            lines.append(f"- Missing claim kinds: {', '.join(missing_claim_kinds)}")
+        source_item_ids = [str(item["source_item_id"]) for item in source_refs]
+        return self._section_payload(
+            section_key="gap-report",
+            title="Gap Report",
+            kind="gap_report",
+            markdown="\n".join(lines),
+            source_item_ids=source_item_ids,
+            primary_source_item_ids=source_item_ids[:1],
+            topic_refs=missing_topics,
+            claim_refs=missing_claim_kinds,
+            evidence_anchor_refs=self._all_evidence_anchor_refs(source_refs),
+        )
 
     def _stable_key(self, *, topic_key: str | None, source_item_id: str, window_id: str) -> str:
         date_key = str(window_id or "").split("@", 1)[0] or "window"

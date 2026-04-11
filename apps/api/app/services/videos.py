@@ -127,7 +127,27 @@ def _normalize_mode(raw_mode: str) -> str:
 
 
 def _normalize_overrides(overrides: dict[str, object] | None) -> dict[str, object]:
-    return dict(overrides or {})
+    normalized = dict(overrides or {})
+    llm = normalized.get("llm")
+    canonical_llm = dict(llm) if isinstance(llm, dict) else {}
+    raw_stage = normalized.get("raw_stage")
+    raw_stage_payload = dict(raw_stage) if isinstance(raw_stage, dict) else {}
+    analysis_mode = (
+        raw_stage_payload.get("mode")
+        or raw_stage_payload.get("analysis_mode")
+        or canonical_llm.get("analysis_mode")
+        or normalized.get("analysis_mode")
+        or normalized.get("raw_stage_mode")
+    )
+    if analysis_mode is not None:
+        text = str(analysis_mode).strip().lower().replace("-", "_")
+        if text in {"advanced", "economy"}:
+            canonical_llm["analysis_mode"] = text
+    if canonical_llm:
+        normalized["llm"] = canonical_llm
+    normalized.pop("analysis_mode", None)
+    normalized.pop("raw_stage_mode", None)
+    return normalized
 
 
 def _build_process_workflow_id(job_id: UUID) -> str:

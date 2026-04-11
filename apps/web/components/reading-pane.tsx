@@ -8,6 +8,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MarkdownPreview } from "@/components/markdown-preview";
+import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Button } from "@/components/ui/button";
 import {
 	Collapsible,
@@ -16,7 +17,14 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiClient } from "@/lib/api/client";
+import type { DigestFeedItem } from "@/lib/api/types";
 import { sanitizeExternalUrl } from "@/lib/api/url";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
+import { resolveFeedIdentity } from "@/lib/source-identity";
 
 function extractHeadings(
 	markdown: string,
@@ -54,6 +62,23 @@ type ReadingPaneProps = {
 	videoUrl?: string;
 	publishedAt?: string;
 	publishedDateLabel?: string;
+	identity?: Pick<
+		DigestFeedItem,
+		| "source"
+		| "source_name"
+		| "canonical_source_name"
+		| "canonical_author_name"
+		| "subscription_id"
+		| "affiliation_label"
+		| "relation_kind"
+		| "thumbnail_url"
+		| "avatar_url"
+		| "avatar_label"
+		| "video_url"
+		| "title"
+		| "category"
+		| "content_type"
+	>;
 };
 
 export function ReadingPane({
@@ -64,6 +89,7 @@ export function ReadingPane({
 	videoUrl,
 	publishedAt,
 	publishedDateLabel,
+	identity,
 }: ReadingPaneProps) {
 	const [markdown, setMarkdown] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -163,13 +189,28 @@ export function ReadingPane({
 	const headings = markdown ? extractHeadings(markdown) : [];
 	const safeVideoUrl = videoUrl ? sanitizeExternalUrl(videoUrl) : null;
 	const sourceLabel = source ? toSourceLabel(source) : null;
+	const identityModel = identity
+		? resolveFeedIdentity({
+				...identity,
+				feed_id: jobId,
+				job_id: jobId,
+				published_at: publishedAt || "",
+				summary_md: "",
+				artifact_type: "digest",
+			})
+		: null;
 
 	return (
-		<div className="feed-reading-pane-shell" data-reading-state="content">
+		<div
+			className={`feed-reading-pane-shell ${editorialSans.className}`}
+			data-reading-state="content"
+		>
 			<ScrollArea className="flex-1">
 				<article className="prose prose-sm dark:prose-invert reading-pane-prose feed-reading-article">
 					<header className="feed-reading-header">
-						<h2 className="feed-reading-title">{title || "Untitled"}</h2>
+						<h2 className={`feed-reading-title ${editorialSerif.className}`}>
+							{title || "Untitled"}
+						</h2>
 						<div className="feed-reading-meta">
 							{sourceLabel ? (
 								<span>
@@ -185,7 +226,7 @@ export function ReadingPane({
 						<div className="feed-reading-links">
 							<Link
 								href={`/jobs?job_id=${encodeURIComponent(jobId)}`}
-								className="feed-reading-link"
+								className={`feed-reading-link ${editorialMono.className}`}
 								data-interaction="link-muted"
 							>
 								{jobId.slice(0, 8)}…
@@ -195,7 +236,7 @@ export function ReadingPane({
 									href={safeVideoUrl}
 									target="_blank"
 									rel="noreferrer noopener"
-									className="feed-reading-link"
+									className={`feed-reading-link ${editorialMono.className}`}
 									data-interaction="link-primary"
 								>
 									Open original
@@ -203,6 +244,11 @@ export function ReadingPane({
 								</a>
 							) : null}
 						</div>
+						{identityModel ? (
+							<div className="mt-4">
+								<SourceIdentityCard identity={identityModel} compact />
+							</div>
+						) : null}
 					</header>
 
 					{headings.length > 0 ? (

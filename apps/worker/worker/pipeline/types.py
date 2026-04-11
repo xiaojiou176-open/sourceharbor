@@ -31,10 +31,10 @@ STEP_VERSIONS: dict[str, str] = dict.fromkeys(PIPELINE_STEPS, "v1")
 STEP_VERSIONS["download_media"] = "v2"
 STEP_VERSIONS["collect_subtitles"] = "v2"
 STEP_VERSIONS["collect_comments"] = "v4"
-STEP_VERSIONS["llm_outline"] = "v5"
-STEP_VERSIONS["llm_digest"] = "v6"
+STEP_VERSIONS["llm_outline"] = "v6"
+STEP_VERSIONS["llm_digest"] = "v7"
 STEP_VERSIONS["build_embeddings"] = "v1"
-STEP_VERSIONS["write_artifacts"] = "v2"
+STEP_VERSIONS["write_artifacts"] = "v3"
 
 ARTICLE_PIPELINE_STEPS: list[str] = [
     "fetch_article_content",
@@ -102,6 +102,7 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
     "collect_comments": ("source_url", "platform", "video_uid", "comments_policy"),
     "extract_frames": ("media_path", "frame_policy"),
     "llm_outline": (
+        "content_type",
         "title",
         "metadata",
         "transcript",
@@ -113,6 +114,7 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
         "llm_policy",
     ),
     "llm_digest": (
+        "content_type",
         "title",
         "metadata",
         "outline",
@@ -130,6 +132,7 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
         "outline",
     ),
     "write_artifacts": (
+        "content_type",
         "source_url",
         "platform",
         "video_uid",
@@ -140,6 +143,7 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
         "transcript",
         "degradations",
         "frames",
+        "raw_stage_contract",
     ),
 }
 

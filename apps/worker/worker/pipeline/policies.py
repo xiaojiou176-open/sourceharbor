@@ -159,9 +159,14 @@ def pipeline_llm_max_retries(
     return max(0, parsed)
 
 
-def build_llm_policy(settings: Settings, overrides: dict[str, Any]) -> dict[str, Any]:
+def build_llm_policy(
+    settings: Settings,
+    overrides: dict[str, Any],
+    *,
+    content_type: str | None = None,
+) -> dict[str, Any]:
     section = override_section(overrides, "llm")
-    policy = _build_llm_policy(settings, overrides)
+    policy = _build_llm_policy(settings, overrides, content_type=content_type)
     policy["hard_required"] = pipeline_llm_hard_required(settings, section)
     policy["fail_on_provider_error"] = pipeline_llm_fail_on_provider_error(settings, section)
     policy["max_retries"] = pipeline_llm_max_retries(settings, section)
