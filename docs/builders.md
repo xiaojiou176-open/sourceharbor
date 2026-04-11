@@ -185,7 +185,7 @@ Do not treat every container surface as builder distribution:
 | --- | --- | --- |
 | `infra/compose/core-services.compose.yml` | repo-local core runtime helpers | local boot aid only |
 | `.devcontainer/devcontainer.json` | contributor workspace parity | development environment only |
-| `ghcr.io/xiaojiou176-open/sourceharbor-api` | dedicated API image route | product-facing API container lane; GHCR read-back now exists, but anonymous pull is still blocked until package visibility becomes public |
+| `ghcr.io/xiaojiou176-open/sourceharbor-api` | dedicated API image route | product-facing API container lane; the product package now reads back as `visibility: public`, but it still stays a separate API-image builder surface rather than the default install story |
 | `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` | strict CI and devcontainer parity image | infrastructure image, **not** newcomer-facing product container distribution |
 
 The actual newcomer-facing builder surfaces are MCP, HTTP API, packaged CLI,

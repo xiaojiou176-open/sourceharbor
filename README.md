@@ -219,7 +219,7 @@ product container.
 | --- | --- | --- |
 | **`infra/compose/core-services.compose.yml`** | repo-local core services for Postgres and Temporal | local operator/runtime helper for SourceHarbor boot; not a public product container distribution |
 | **`.devcontainer/devcontainer.json` + `.devcontainer/Dockerfile`** | contributor workspace parity | local development environment for people working inside a checkout; not a packaged newcomer product artifact |
-| **`infra/docker/sourceharbor-api.Dockerfile` + `ghcr.io/xiaojiou176-open/sourceharbor-api`** | dedicated product API image route | builder-facing API container lane; the GHCR package URL now exists, but anonymous pull is still blocked while the package visibility remains private |
+| **`infra/docker/sourceharbor-api.Dockerfile` + `ghcr.io/xiaojiou176-open/sourceharbor-api`** | dedicated product API image route | builder-facing API container lane; the GHCR package now reads back as `visibility: public`, but it still is a separate API-image builder surface rather than the default install story |
 | **`infra/config/strict_ci_contract.json` + `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard`** | strict CI and devcontainer parity image | infrastructure image for CI, attestation, and repeatable tooling; **not** newcomer-facing product container distribution |
 
 So the honest newcomer path stays:
