@@ -248,6 +248,7 @@ def test_app_prefix_runner_run_pipeline_builds_expected_step_contracts(monkeypat
         overrides: dict[str, Any] | None,
         step_handlers: list[tuple[str, Any, bool]],
         pipeline_steps: list[str],
+        content_type: str,
     ) -> dict[str, Any]:
         captured.append(
             {
@@ -261,6 +262,7 @@ def test_app_prefix_runner_run_pipeline_builds_expected_step_contracts(monkeypat
                 "step_names": [name for name, _, _ in step_handlers],
                 "critical_flags": [critical for _, _, critical in step_handlers],
                 "pipeline_steps": list(pipeline_steps),
+                "content_type": content_type,
             }
         )
         return {"final_status": "succeeded"}
@@ -307,6 +309,7 @@ def test_app_prefix_runner_run_pipeline_builds_expected_step_contracts(monkeypat
     assert video_call["attempt"] == 1
     assert video_call["mode"] == "full"
     assert video_call["overrides"] == {"k": "v"}
+    assert video_call["content_type"] == "video"
     assert video_call["pipeline_steps"] == PIPELINE_STEPS
     assert video_call["step_names"] == PIPELINE_STEPS
     assert video_call["critical_flags"][-1] is True
@@ -318,6 +321,7 @@ def test_app_prefix_runner_run_pipeline_builds_expected_step_contracts(monkeypat
     assert article_call["job_id"] == "job-article"
     assert article_call["attempt"] == 2
     assert article_call["mode"] == "article"
+    assert article_call["content_type"] == "article"
     assert article_call["overrides"] is None
     assert article_call["pipeline_steps"] == ARTICLE_PIPELINE_STEPS
     assert article_call["step_names"] == ARTICLE_PIPELINE_STEPS
