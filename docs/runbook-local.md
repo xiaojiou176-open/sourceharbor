@@ -30,6 +30,7 @@ UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$SOURCE_HARBOR_CACHE_ROOT/proj
 - Structured full-stack logs: `.runtime-cache/logs/components/full-stack`
 - Generated evidence and reports: `.runtime-cache/reports`
 - Canonical repo-side web runtime: `.runtime-cache/tmp/web-runtime/workspace/apps/web`
+- Canonical mutation stats receipt: `.runtime-cache/reports/mutation/mutmut-cicd-stats.json`
 - Disk-space audit: `./bin/disk-space-audit`
 - Disk-space audit report check: `./bin/disk-space-audit-check`
 - Dry-run cleanup planning: `./bin/disk-space-cleanup --wave safe`
@@ -47,6 +48,16 @@ footprint. Use `runtime-cache-maintenance` for repo-side maintenance, and use
 `disk-space-cleanup --wave ...` only when you are intentionally running a
 governed cleanup wave from
 [reference/disk-space-governance.md](./reference/disk-space-governance.md).
+
+The two runtime-heavy local caches worth recognizing by name are:
+
+- `.runtime-cache/tmp/web-runtime/` for the repo-managed Next.js workspace copy
+- `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` for the latest
+  mutation-readiness receipt consumed by repo-side strict CI
+
+If you create an ad-hoc mutation workspace such as `.runtime-cache/tmp/mutation-debug`,
+delete it after the debugging turn ends so the `tmp/` budget does not fail-close
+future governance runs.
 
 Do not hand-delete the repo-owned external cache root resolved by
 `SOURCE_HARBOR_CACHE_ROOT` either.

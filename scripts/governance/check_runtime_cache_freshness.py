@@ -12,6 +12,8 @@ if str(ROOT / "scripts" / "governance") not in sys.path:
 
 from common import (
     artifact_age_hours,
+    ensure_runtime_metadata,
+    is_runtime_metadata_managed_artifact,
     load_governance_json,
     read_runtime_metadata,
     write_json_artifact,
@@ -38,14 +40,27 @@ def main() -> int:
         for artifact in sorted(
             item
             for item in base.rglob("*")
-            if item.is_file() and not item.name.endswith(".meta.json")
+            if is_runtime_metadata_managed_artifact(item)
         ):
             metadata = read_runtime_metadata(artifact)
             if metadata is None:
-                errors.append(
-                    f"{artifact}: missing runtime metadata for freshness-required artifact"
-                )
-                continue
+                try:
+                    metadata = ensure_runtime_metadata(
+                        artifact,
+                        source_entrypoint="scripts/governance/check_runtime_cache_freshness.py",
+                        verification_scope=f"runtime:{name}",
+                        freshness_window_hours=int(subconfig.get("ttl_days", 0)) * 24,
+                        extra={
+                            "classification": str(subconfig.get("classification") or ""),
+                            "runtime_subdir": name,
+                            "owner": str(subconfig.get("owner") or ""),
+                        },
+                    )
+                except RuntimeError:
+                    errors.append(
+                        f"{artifact}: missing runtime metadata for freshness-required artifact"
+                    )
+                    continue
             freshness_window_hours = metadata.get("freshness_window_hours")
             if not isinstance(freshness_window_hours, int):
                 errors.append(

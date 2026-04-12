@@ -11,7 +11,12 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "scripts" / "governance") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts" / "governance"))
 
-from common import load_governance_json, read_runtime_metadata, rel_path
+from common import (
+    is_runtime_metadata_managed_artifact,
+    load_governance_json,
+    read_runtime_metadata,
+    rel_path,
+)
 
 
 def main() -> int:
@@ -59,14 +64,14 @@ def main() -> int:
         for artifact in sorted(
             item
             for item in evidence_root.rglob("*")
-            if item.is_file() and not item.name.endswith(".meta.json")
+            if is_runtime_metadata_managed_artifact(item)
         ):
             _check_artifact(artifact)
     if reports_root.exists():
         for artifact in sorted(
             item
             for item in reports_root.rglob("*")
-            if item.is_file() and not item.name.endswith(".meta.json")
+            if is_runtime_metadata_managed_artifact(item)
         ):
             _check_artifact(artifact)
 

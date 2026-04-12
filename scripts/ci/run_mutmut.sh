@@ -58,13 +58,18 @@ mutmut_run_exit=0
 (
   cd "$WORKSPACE"
   inner_mutmut_run_exit=0
+  set +e
   DATABASE_URL='sqlite+pysqlite:///:memory:' \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH="$WORKSPACE:$WORKSPACE/apps/worker" \
-    uv run --extra dev --with mutmut mutmut run || inner_mutmut_run_exit=$?
-  PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH="$WORKSPACE:$WORKSPACE/apps/worker" \
-    uv run --extra dev --with mutmut mutmut export-cicd-stats
+    uv run --extra dev --with mutmut mutmut run
+  inner_mutmut_run_exit=$?
+  set -e
+  python3 "$ROOT_DIR/scripts/governance/check_mutation_stats.py" \
+    --summarize-mutants \
+    "$WORKSPACE/mutants" \
+    "$WORKSPACE/mutants/mutmut-cicd-stats.json" \
+    "$inner_mutmut_run_exit"
   exit "$inner_mutmut_run_exit"
 ) || mutmut_run_exit=$?
 

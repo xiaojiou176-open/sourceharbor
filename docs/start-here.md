@@ -56,6 +56,11 @@ UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$SOURCE_HARBOR_CACHE_ROOT/proj
 bash scripts/ci/prepare_web_runtime.sh >/dev/null
 ```
 
+That last command refreshes the repo-managed web runtime workspace under
+`.runtime-cache/tmp/web-runtime/workspace/apps/web`. The local web app and the
+repo-side quality gates both read from that same runtime copy instead of
+building ad-hoc node state in the repo root.
+
 The default local database path is container-first:
 
 - `CORE_POSTGRES_PORT=15432`

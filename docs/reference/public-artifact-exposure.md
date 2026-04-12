@@ -33,5 +33,7 @@ Two special cases matter in the current repo:
 - browser/login proof receipts can explain local operator state without turning third-party account surfaces into public product claims
 - generated required-check ledgers and current-state summaries are public-safe only when they stay aligned to the current live branch-protection contract and current HEAD; stale snapshots must be treated as historical
 - a tracked release-ready artifact or social-preview asset is still an input to public proof, not the same thing as the current remote `main` head or a completed live platform upload
+- the repo-managed web runtime workspace under `.runtime-cache/tmp/web-runtime/` is an internal verification substrate, not a public artifact to expose or cite as shipped output
+- mutation receipts under `.runtime-cache/reports/mutation/` are public-safe only as proof summaries; they must not be mistaken for a published package, release, or registry surface
 
 For public presentation files under `docs/assets/`, use the file-level ledger in [public-assets-provenance.md](./public-assets-provenance.md).

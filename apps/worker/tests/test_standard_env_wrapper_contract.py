@@ -233,6 +233,7 @@ def test_standard_env_wrapper_and_helper_contract_exist() -> None:
     assert '-e PYTHONPATH="${PYTHONPATH:-}"' in helper
     assert '-e TEMPORAL_NAMESPACE="${TEMPORAL_NAMESPACE:-}"' in helper
     assert '-e TEMPORAL_TASK_QUEUE="${TEMPORAL_TASK_QUEUE:-}"' in helper
+    assert '-e PYTHON_TESTS_XDIST_WORKERS="${PYTHON_TESTS_XDIST_WORKERS:-}"' in helper
 
 
 def test_standard_env_wrapper_falls_back_to_local_debug_image_when_local_pull_is_forbidden() -> (

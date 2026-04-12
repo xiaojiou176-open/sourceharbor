@@ -7,13 +7,13 @@ import tempfile
 import types
 import uuid
 from datetime import UTC, datetime
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 from starlette import status
 
+from apps.api.app import main as api_main
 from apps.api.app.security import sanitize_exception_detail
 
 pytestmark = pytest.mark.allow_unauth_write
@@ -39,8 +39,7 @@ def test_metrics_endpoint_exposes_prometheus_text(api_client: TestClient) -> Non
 
 def test_trace_id_is_echoed_back_in_response_header(api_client: TestClient) -> None:
     trace_id = "trace-audit-0001"
-    repo_root = Path(__file__).resolve().parents[3]
-    app_log_path = repo_root / ".runtime-cache" / "logs" / "app" / "api-http.jsonl"
+    app_log_path = api_main._APP_LOG_PATH
     existing_lines = []
     if app_log_path.exists():
         existing_lines = [

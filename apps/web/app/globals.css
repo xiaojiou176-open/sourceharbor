@@ -548,14 +548,37 @@ body {
 	color: color-mix(in srgb, var(--color-fg) 92%, transparent);
 }
 
-a {
+a:not([data-slot="button"]) {
 	color: var(--color-primary);
 	text-decoration: none;
 	transition: opacity var(--transition-fast);
 }
 
-a:hover {
+a:not([data-slot="button"]):hover {
 	opacity: 0.8;
+}
+
+a[data-slot="button"] {
+	color: inherit;
+}
+
+a[data-slot="button"][data-variant="default"],
+a[data-slot="button"][data-variant="hero"],
+a[data-slot="button"][data-variant="success"],
+a[data-slot="button"][data-variant="destructive"] {
+	color: var(--color-primary-contrast);
+}
+
+a[data-slot="button"][data-variant="outline"],
+a[data-slot="button"][data-variant="surface"],
+a[data-slot="button"][data-variant="secondary"],
+a[data-slot="button"][data-variant="ghost"] {
+	color: var(--color-fg);
+}
+
+a[data-slot="button"][data-variant="link"],
+a[data-slot="button"][data-variant="destructiveGhost"] {
+	color: var(--color-primary);
 }
 
 /* ─── Link & CTA interaction polish ─────────────────────────── */

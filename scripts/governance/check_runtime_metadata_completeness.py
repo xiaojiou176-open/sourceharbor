@@ -10,7 +10,11 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "scripts" / "governance") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts" / "governance"))
 
-from common import load_governance_json, read_runtime_metadata
+from common import (
+    is_runtime_metadata_managed_artifact,
+    load_governance_json,
+    read_runtime_metadata,
+)
 
 REQUIRED_METADATA_FIELDS = (
     "created_at",
@@ -41,7 +45,7 @@ def main() -> int:
         for artifact in sorted(
             item
             for item in base.rglob("*")
-            if item.is_file() and not item.name.endswith(".meta.json")
+            if is_runtime_metadata_managed_artifact(item)
         ):
             metadata = read_runtime_metadata(artifact)
             if metadata is None:

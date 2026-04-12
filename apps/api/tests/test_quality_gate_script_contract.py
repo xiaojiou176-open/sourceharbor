@@ -81,3 +81,39 @@ def test_quality_gate_uses_minimal_database_url_for_contract_diff_export() -> No
         'uv run python scripts/governance/export_api_contract.py --repo-root "$ROOT_DIR" --output "$head_json"'
         in script
     )
+
+
+def test_quality_gate_reuses_python_test_script_and_excludes_coverage_sidecars() -> None:
+    script = (_repo_root() / "scripts" / "governance" / "quality_gate.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'PYTHON_TESTS_XDIST_WORKERS="${PYTHON_TESTS_XDIST_WORKERS:-0}" \\' in script
+    assert "bash scripts/ci/python_tests.sh" in script
+    assert (
+        "find \"$coverage_dir\" -maxdepth 1 -type f -name '.coverage.*' ! -name '*.meta.json' -print"
+        in script
+    )
+    assert 'uv run coverage combine --keep "${coverage_candidates[@]}" >/dev/null' in script
+    assert 'gate_state="$(ps -o stat= -p "$gate_pid" 2>/dev/null | tr -d \'[:space:]\')"' in script
+    assert '[[ -n "$gate_state" && "$gate_state" != *Z* ]]' in script
+
+
+def test_run_mutmut_script_summarizes_meta_statuses_instead_of_trusting_truncated_export() -> None:
+    script = (_repo_root() / "scripts" / "ci" / "run_mutmut.sh").read_text(encoding="utf-8")
+
+    assert 'python3 "$ROOT_DIR/scripts/governance/check_mutation_stats.py" \\' in script
+    assert "--summarize-mutants \\" in script
+    assert '"$WORKSPACE/mutants" \\' in script
+    assert '"$WORKSPACE/mutants/mutmut-cicd-stats.json" \\' in script
+    assert "mutmut export-cicd-stats" not in script
+
+
+def test_quality_gate_reuses_fresh_current_commit_mutation_stats_before_rerun() -> None:
+    script = (_repo_root() / "scripts" / "governance" / "quality_gate.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'echo "[quality-gate] mutation gate reusing fresh current-commit stats at $stats_file"' in script
+    assert 'if "mutmut_run_exit" not in stats:' in script
+    assert 'if str(meta.get("source_entrypoint") or "").strip() != "scripts/ci/run_mutmut.sh":' in script

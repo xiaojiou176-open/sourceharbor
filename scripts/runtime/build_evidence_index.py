@@ -15,6 +15,7 @@ if str(ROOT / "scripts" / "governance") not in sys.path:
 
 from common import (
     current_git_commit,
+    is_runtime_metadata_managed_artifact,
     load_governance_json,
     read_runtime_metadata,
     rel_path,
@@ -34,7 +35,7 @@ def _candidate_artifacts() -> list[Path]:
             sorted(
                 item
                 for item in base.rglob("*")
-                if item.is_file() and not item.name.endswith(".meta.json")
+                if is_runtime_metadata_managed_artifact(item)
             )
         )
     return candidates

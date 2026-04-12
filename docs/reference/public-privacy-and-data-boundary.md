@@ -35,3 +35,4 @@ Two current examples:
 - login state, sender identity, and secure operator credential updates remain human-only or policy-gated even when the surrounding repo code is already real
 - maintainer-local browser proof helpers such as `GITHUB_COOKIE`, `GOOGLE_COOKIE`, `RESEND_COOKIE`, and `YOUTUBE_COOKIE` may exist in `.env`, but they stay local-only secrets and must never be committed or treated as public integration contract
 - public proof ledgers may safely describe release/current-main drift or required-check mismatches, but they must not reveal private tokens, mailbox state, browser-session content, or other operator-only data while doing so
+- repo-managed runtime workspaces such as `.runtime-cache/tmp/web-runtime/` and mutation debug sandboxes stay local-only verification state; they must be governed and cleaned, not exposed as public repository artifacts

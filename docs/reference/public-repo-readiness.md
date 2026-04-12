@@ -32,6 +32,8 @@ Two current reading rules are worth keeping explicit:
 
 - a live GitHub Release object can exist while current remote `main` has already moved ahead again
 - the live branch-protected required-check set is its own remote contract; if GitHub protection changes, tracked required-check docs and summaries must be refreshed before the repo repeats a "current remote proof" claim
+- the repo-managed web runtime under `.runtime-cache/tmp/web-runtime/workspace/apps/web` is local operator proof only; it is a staging copy for local verification, not a public distribution artifact
+- a current-commit mutation receipt under `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` can support repo-side strict CI, but it still belongs to the local/manual proof ledger until a fresh strict receipt or remote check says otherwise
 
 That separation matters because SourceHarbor can honestly advance one layer without pretending all the other layers moved with it.
 

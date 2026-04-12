@@ -68,6 +68,14 @@ Three quick reasons developers keep reading:
 - **Proof sits next to the product story.** The README, proof ladder, runtime truth, and job receipts all point at the same contract, so the repo earns trust instead of asking for it.
 - **Strong lanes plus honest boundaries.** YouTube and Bilibili are the rich lanes today, RSSHub and generic RSS widen the source universe, and the docs say plainly where route-by-route proof still stops.
 
+Two repo-managed runtime details matter when you verify changes locally:
+
+- the web app runs from the repo-owned runtime workspace under
+  `.runtime-cache/tmp/web-runtime/workspace/apps/web`
+- repo-side strict CI reads the current-commit mutation receipt from
+  `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` when that artifact
+  already exists and matches the current HEAD
+
 The honest intake boundary today is:
 
 - **strong support:** YouTube channels and Bilibili creators

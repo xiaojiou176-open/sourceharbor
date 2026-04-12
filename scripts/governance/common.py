@@ -127,6 +127,20 @@ def runtime_metadata_path(path: Path) -> Path:
     return path.with_name(f"{path.name}.meta.json")
 
 
+def is_runtime_metadata_managed_artifact(path: Path) -> bool:
+    if not path.is_file() or path.name.endswith(".meta.json"):
+        return False
+    # Coverage shard databases under reports/python are transient combine inputs,
+    # not durable evidence artifacts that should receive sidecars or indexing.
+    if (
+        path.name.startswith(".coverage.")
+        and path.parent.name == "python"
+        and path.parent.parent.name == "reports"
+    ):
+        return False
+    return True
+
+
 def read_runtime_metadata(path: Path) -> dict[str, Any] | None:
     metadata_path = runtime_metadata_path(path)
     if not metadata_path.is_file():

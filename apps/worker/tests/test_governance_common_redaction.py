@@ -97,3 +97,19 @@ def test_write_runtime_metadata_redacts_sensitive_extra_values(tmp_path: Path) -
     assert metadata["token"] == "***REDACTED***"
     assert metadata["nested"]["cookie"] == "***REDACTED***"
     assert metadata["nested"]["safe"] == "ok"
+
+
+def test_is_runtime_metadata_managed_artifact_skips_python_coverage_shards(tmp_path: Path) -> None:
+    module = _load_module()
+    shard = tmp_path / "reports" / "python" / ".coverage.demo.pid123"
+    shard.parent.mkdir(parents=True, exist_ok=True)
+    shard.write_text("stub", encoding="utf-8")
+
+    combined = shard.with_name(".coverage")
+    combined.write_text("stub", encoding="utf-8")
+    report = shard.with_name("python-coverage.xml")
+    report.write_text("<coverage/>", encoding="utf-8")
+
+    assert module.is_runtime_metadata_managed_artifact(shard) is False
+    assert module.is_runtime_metadata_managed_artifact(combined) is True
+    assert module.is_runtime_metadata_managed_artifact(report) is True

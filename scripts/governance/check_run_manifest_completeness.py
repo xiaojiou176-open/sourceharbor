@@ -11,7 +11,12 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "scripts" / "governance") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts" / "governance"))
 
-from common import load_governance_json, read_runtime_metadata, rel_path
+from common import (
+    is_runtime_metadata_managed_artifact,
+    load_governance_json,
+    read_runtime_metadata,
+    rel_path,
+)
 
 
 def _log_has_complete_event(log_path: Path, run_id: str) -> bool:
@@ -38,7 +43,33 @@ def _log_has_complete_event(log_path: Path, run_id: str) -> bool:
     return False
 
 
-def _runtime_artifacts_for_run(run_id: str) -> list[Path]:
+def _shared_log_file(path: Path) -> bool:
+    if path.suffix != ".jsonl":
+        return False
+    seen_run_ids: set[str] = set()
+    try:
+        for raw in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            try:
+                payload = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            candidate = str(
+                payload.get("run_id")
+                or payload.get("test_run_id")
+                or payload.get("gate_run_id")
+                or ""
+            ).strip()
+            if not candidate:
+                continue
+            seen_run_ids.add(candidate)
+            if len(seen_run_ids) > 1:
+                return True
+    except OSError:
+        return False
+    return False
+
+
+def _runtime_artifacts_for_run(run_id: str, *, manifest_log_path: Path | None) -> list[Path]:
     artifacts: list[Path] = []
     contract = load_governance_json("evidence-contract.json")
     for bucket_config in contract.get("buckets", {}).values():
@@ -46,7 +77,7 @@ def _runtime_artifacts_for_run(run_id: str) -> list[Path]:
         if not base.exists():
             continue
         for item in base.rglob("*"):
-            if not item.is_file() or item.name.endswith(".meta.json"):
+            if not is_runtime_metadata_managed_artifact(item):
                 continue
             if item.is_relative_to(ROOT / ".runtime-cache" / "reports" / "evidence-index"):
                 continue
@@ -54,6 +85,8 @@ def _runtime_artifacts_for_run(run_id: str) -> list[Path]:
             if metadata is None:
                 continue
             if str(metadata.get("source_run_id") or "").strip() == run_id:
+                if item != manifest_log_path and _shared_log_file(item):
+                    continue
                 artifacts.append(item)
     return sorted(artifacts)
 
@@ -102,7 +135,7 @@ def main() -> int:
                 f"{rel_path(manifest_path)}: log metadata source_run_id does not match manifest run_id"
             )
 
-        artifacts = _runtime_artifacts_for_run(run_id)
+        artifacts = _runtime_artifacts_for_run(run_id, manifest_log_path=log_path)
         run_complete = _log_has_complete_event(log_path, run_id)
         if not artifacts:
             if run_complete:

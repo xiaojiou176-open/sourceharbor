@@ -17,6 +17,7 @@ if str(ROOT / "scripts" / "governance") not in sys.path:
 from common import (
     artifact_age_hours,
     ensure_runtime_metadata,
+    is_runtime_metadata_managed_artifact,
     load_governance_json,
     parse_iso8601,
     rel_path,
@@ -27,9 +28,7 @@ from common import (
 
 
 def _iter_runtime_files(path: Path) -> list[Path]:
-    return sorted(
-        item for item in path.rglob("*") if item.is_file() and not item.name.endswith(".meta.json")
-    )
+    return sorted(item for item in path.rglob("*") if is_runtime_metadata_managed_artifact(item))
 
 
 def _infer_source_run_id(path: Path) -> str:

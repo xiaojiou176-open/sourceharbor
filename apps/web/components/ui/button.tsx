@@ -9,23 +9,23 @@ const buttonVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "bg-primary text-primary-foreground hover:bg-primary/90",
-				hero: "border border-primary/80 bg-primary text-primary-foreground shadow-[var(--shadow-primary)] hover:bg-[color:var(--color-primary-dark)] hover:shadow-[0_6px_18px_var(--color-ring-primary-35)]",
+				default: "bg-primary !text-white hover:bg-primary/90",
+				hero: "border border-primary/80 bg-primary !text-white shadow-[var(--shadow-primary)] hover:bg-[color:var(--color-primary-dark)] hover:shadow-[0_6px_18px_var(--color-ring-primary-35)]",
 				destructive:
-					"bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
+					"bg-destructive !text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
 				destructiveGhost:
-					"text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/20 dark:hover:bg-destructive/20 dark:focus-visible:ring-destructive/40",
+					"!text-[color:var(--color-destructive)] hover:bg-destructive/10 hover:!text-[color:var(--color-destructive)] focus-visible:ring-destructive/20 dark:hover:bg-destructive/20 dark:focus-visible:ring-destructive/40",
 				outline:
-					"border bg-background text-foreground no-underline shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+					"border bg-background !text-[color:var(--color-fg)] no-underline shadow-xs hover:bg-accent hover:!text-[color:var(--color-fg)] dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
 				surface:
-					"border border-border/80 bg-background/95 text-foreground shadow-none hover:border-primary/30 hover:bg-accent/60 hover:text-accent-foreground",
+					"border border-border/80 bg-background/95 !text-[color:var(--color-fg)] shadow-none hover:border-primary/30 hover:bg-accent/60 hover:!text-[color:var(--color-fg)]",
 				secondary:
-					"bg-secondary text-secondary-foreground hover:bg-secondary/80",
+					"bg-secondary !text-[color:var(--color-fg)] hover:bg-secondary/80",
 				success:
-					"border border-[color:var(--color-success)] bg-[color:var(--color-success)] text-[color:var(--color-primary-contrast)] shadow-[0_4px_14px_var(--color-ring-success-20)] hover:border-[color:var(--color-success-text-strong)] hover:bg-[color:var(--color-success-text-strong)]",
+					"border border-[color:var(--color-success)] bg-[color:var(--color-success)] !text-white shadow-[0_4px_14px_var(--color-ring-success-20)] hover:border-[color:var(--color-success-text-strong)] hover:bg-[color:var(--color-success-text-strong)]",
 				ghost:
-					"hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-				link: "text-primary underline-offset-4 hover:underline",
+					"!text-[color:var(--color-fg)] hover:bg-accent hover:!text-[color:var(--color-fg)] dark:hover:bg-accent/50",
+				link: "!text-[color:var(--color-primary)] underline-offset-4 hover:underline",
 			},
 			size: {
 				default: "h-9 px-4 py-2 has-[>svg]:px-3",

@@ -224,6 +224,19 @@ python3 scripts/governance/render_newcomer_result_proof.py && python3 scripts/go
 python3 scripts/governance/render_current_state_summary.py && python3 scripts/governance/check_current_state_summary.py
 ```
 
+Mutation-readiness note:
+
+- `repo-side-strict-ci` now prefers a fresh current-commit mutation stats
+  artifact at `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` when one
+  already exists for the current HEAD.
+- If that artifact is missing or stale, the mutation gate reruns
+  `scripts/ci/run_mutmut.sh` and rewrites the report before evaluating the
+  thresholds.
+- The mutation report is expected to carry the real status split (`killed`,
+  `survived`, `no_tests`, `timeout`, `not_checked`, `caught_by_type_check`) so
+  a failed mutation lane points at an exact leaf instead of a blank
+  `killed+survived=0` summary.
+
 What this layer proves:
 
 - the live remote required-check contract still matches the tracked docs
