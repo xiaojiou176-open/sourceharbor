@@ -105,8 +105,10 @@ What this layer answers:
 Current release-side truth still needs one extra sentence kept explicit:
 
 - the current public repo has a live GitHub Release object
-- that release object is current only while it still matches the remote head you
-  are describing
+- the latest live release is currently `v0.1.24`, and the latest live read-back
+  shows it matching the remote head being described again
+- that release object stays current only while it continues to match the remote
+  head you are describing
 - uploaded social preview state is also part of this layer: the tracked asset can
   exist in-repo before the live GitHub upload is performed
 
@@ -117,6 +119,10 @@ Current remote-proof reading rule:
 - treat the current branch-protected required-check set as its own live contract; if GitHub protection now requires `CodeQL`, `dependency-review`, `trivy-fs`, `trufflehog`, or `zizmor`, the generated required-checks ledger and any summary docs must match that live set
 - live GitHub description, homepage, topics, and discussions should be checked live against `config/public/github-profile.json` before repeating the claim
 - workflow-dispatch lanes such as standard-image publish or release attestation can still be blocked by repo policy, account permission, or required approval even when current `main` itself is healthy
+- the current head now also has fresh successful workflow-dispatch receipts for
+  release evidence attestation, the public API image lane, and the strict CI
+  standard-image lane; those receipts still belong to the external-proof ledger,
+  not the default install story
 - release-side proof must still be checked against the latest live tag, because current `main` can move ahead again after docs/governance closeout merges
 - provider-backed live proof still stays separate from GitHub/release truth
 - a tracked social-preview asset path is not the same thing as the asset being uploaded live in GitHub repo settings

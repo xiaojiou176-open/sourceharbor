@@ -51,14 +51,19 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo has a live GitHub Release object
-- the latest-release ledger must still be checked live against the current remote `main` head before any release-aligned claim is repeated
-- workflow-dispatch evidence on current `main` is still its own ledger, but it
-  now sits alongside a current release page instead of replacing one
+- the latest live release is currently `v0.1.24`, and the latest live read-back
+  shows it aligned with the current remote `main` head again
+- workflow-dispatch evidence on current `main` is still its own ledger, but the
+  current head now also has fresh successful runs for release evidence
+  attestation, the public API image lane, and the strict CI standard-image lane
 
 Practical implication:
 
-- release-current proof now exists for the current canonical public repo, but it should be treated as a separate ledger from the latest remote `main` head until a fresh live read-back says otherwise
-- release-current wording must stay honest when current `main` has already moved ahead again after the tag cut
+- release-current proof now exists for the current canonical public repo, and
+  the latest live read-back currently says the release and remote `main` are
+  aligned again
+- release-current wording must stay honest the next time current `main` moves
+  ahead again after the tag cut
 - older tag-era wording should stay historical, not be reused as if it were the
   current release
 - if `main` moves again after this point, re-check whether release-current truth
@@ -69,9 +74,11 @@ Practical implication:
 The public repo now has strong current-`main` proof, but release-current truth
 and official-surface distribution truth are still separate ledgers.
 
-- current `main` is active and externally verifiable through GitHub checks and workflow-dispatch lanes
+- current `main` is active and externally verifiable through GitHub checks and
+  fresh workflow-dispatch lanes
 - the public distribution artifacts are real, but several official-surface submissions still need true submit/read-back proof
-- the current public repo has a live GitHub Release object
+- the current public repo has a live GitHub Release object that currently matches
+  the latest remote `main` read-back
 - official-surface listing truth is still separate from GitHub Release truth
 
 Use:

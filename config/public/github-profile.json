@@ -1,5 +1,5 @@
 {
-  "description": "AI knowledge control tower and MCP server for YouTube, Bilibili, RSSHub, and RSS, with grounded search, public CLI/TypeScript SDK surfaces, plugin-grade builder bundles, and first-cut starter packs.",
+  "description": "Reader-first source intelligence and MCP server for YouTube, Bilibili, RSSHub, and RSS, with grounded search, published reader docs, public CLI/TypeScript SDK surfaces, and plugin-grade builder bundles.",
   "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
   "topics": [
     "sourceharbor",
