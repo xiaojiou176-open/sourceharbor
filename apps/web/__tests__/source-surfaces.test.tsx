@@ -1,10 +1,17 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { FeedFeedbackPanel } from "@/components/feed-feedback-panel";
 import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel";
-import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SourceContributionDrawer } from "@/components/source-contribution-drawer";
+import { SourceIdentityCard } from "@/components/source-identity-card";
+import { formatCountPattern, getLocaleMessages } from "@/lib/i18n/messages";
 import {
 	buildThumbnailUrl,
 	resolveFeedIdentity,
@@ -12,7 +19,6 @@ import {
 	resolveReaderSourceIdentity,
 	resolveSubscriptionIdentity,
 } from "@/lib/source-identity";
-import { formatCountPattern, getLocaleMessages } from "@/lib/i18n/messages";
 import {
 	decorateAskRoute,
 	preferRoute,
@@ -23,14 +29,9 @@ const mockSubmitManualSourceIntake = vi.fn();
 const mockUpdateFeedFeedback = vi.fn();
 
 vi.mock("next/image", () => ({
-	default: ({
-		alt,
-		src,
-		...rest
-	}: {
-		alt: string;
-		src: string;
-	}) => <img alt={alt} src={src} {...rest} />,
+	default: ({ alt, src, ...rest }: { alt: string; src: string }) => (
+		<span aria-label={alt} data-mock-image={src} role="img" {...rest} />
+	),
 }));
 
 vi.mock("next/link", () => ({
@@ -67,7 +68,8 @@ const manualCopy = {
 	submitButton: "Submit",
 	submitPending: "Submitting",
 	resultsTitle: "Intake results",
-	resultsDescription: "The intake summary keeps reader, universe, and job links together.",
+	resultsDescription:
+		"The intake summary keeps reader, universe, and job links together.",
 	summaryPrefix: "Processed",
 	legend: {
 		saveSubscription: "Save subscription",
@@ -122,7 +124,8 @@ describe("source surfaces", () => {
 					published_document_title: "Reader edition one",
 					published_document_publish_status: "published",
 					reader_route: "/reader/doc-1",
-					message: "Added to today and matched back to an existing tracked universe.",
+					message:
+						"Added to today and matched back to an existing tracked universe.",
 					subscription_id: "sub-manual-1",
 					job_id: "job-manual-1",
 				},
@@ -161,7 +164,12 @@ describe("source surfaces", () => {
 			],
 		});
 
-		render(<ManualSourceIntakePanel copy={manualCopy} sessionToken="session-token" />);
+		render(
+			<ManualSourceIntakePanel
+				copy={manualCopy}
+				sessionToken="session-token"
+			/>,
+		);
 
 		fireEvent.change(screen.getByLabelText("URLs / handles / pages"), {
 			target: { value: "https://www.youtube.com/watch?v=demo" },
@@ -174,21 +182,22 @@ describe("source surfaces", () => {
 
 		expect(screen.getByText("Intake results")).toBeInTheDocument();
 		expect(
-			screen.getByText(/Processed 2 · subscriptions \+1\/~0 · today \+1\/=0 · rejected 1/i),
+			screen.getByText(
+				/Processed 2 · subscriptions \+1\/~0 · today \+1\/=0 · rejected 1/i,
+			),
 		).toBeInTheDocument();
-		expect(screen.getByRole("link", { name: "Open reader edition" })).toHaveAttribute(
-			"href",
-			"/reader/doc-1",
-		);
-		expect(screen.getByRole("link", { name: "Open tracked universe" })).toHaveAttribute(
-			"href",
-			"/feed?sub=sub-manual-1",
-		);
-		expect(screen.getByRole("link", { name: "Open job trace" })).toHaveAttribute(
-			"href",
-			"/jobs?job_id=job-manual-1",
-		);
-		expect(screen.getByText(/Published unit · Reader edition one · published/)).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Open reader edition" }),
+		).toHaveAttribute("href", "/reader/doc-1");
+		expect(
+			screen.getByRole("link", { name: "Open tracked universe" }),
+		).toHaveAttribute("href", "/feed?sub=sub-manual-1");
+		expect(
+			screen.getByRole("link", { name: "Open job trace" }),
+		).toHaveAttribute("href", "/jobs?job_id=job-manual-1");
+		expect(
+			screen.getByText(/Published unit · Reader edition one · published/),
+		).toBeInTheDocument();
 		expect(screen.getByText("No description yet")).toBeInTheDocument();
 	});
 
@@ -245,21 +254,23 @@ describe("source surfaces", () => {
 			"href",
 			"https://www.youtube.com/watch?v=demo",
 		);
-		expect(screen.getByRole("link", { name: "Open job bundle" })).toHaveAttribute(
-			"href",
-			"/api/v1/jobs/job-1/bundle",
-		);
-		expect(screen.getByRole("link", { name: "Open tracked universe" })).toHaveAttribute(
-			"href",
-			"/feed?sub=sub-doc-1",
-		);
+		expect(
+			screen.getByRole("link", { name: "Open job bundle" }),
+		).toHaveAttribute("href", "/api/v1/jobs/job-1/bundle");
+		expect(
+			screen.getByRole("link", { name: "Open tracked universe" }),
+		).toHaveAttribute("href", "/feed?sub=sub-doc-1");
 
 		fireEvent.click(screen.getByText("Open section trace map"));
 		const sectionCard = screen.getByText("Section one").closest("div");
 		expect(sectionCard).not.toBeNull();
-		expect(within(sectionCard as HTMLElement).getByText(/Section id: section-1/)).toBeInTheDocument();
 		expect(
-			within(sectionCard as HTMLElement).getByText(/Linked source items: source-1/),
+			within(sectionCard as HTMLElement).getByText(/Section id: section-1/),
+		).toBeInTheDocument();
+		expect(
+			within(sectionCard as HTMLElement).getByText(
+				/Linked source items: source-1/,
+			),
 		).toBeInTheDocument();
 	});
 
@@ -315,8 +326,12 @@ describe("source surfaces", () => {
 
 		expect(screen.getByText("Clear provenance map")).toBeInTheDocument();
 		fireEvent.click(screen.getByText("Open footnotes by source"));
-		expect(screen.queryByRole("link", { name: "Open source" })).not.toBeInTheDocument();
-		expect(screen.queryByRole("link", { name: "Open job bundle" })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("link", { name: "Open source" }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("link", { name: "Open job bundle" }),
+		).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole("link", { name: "Open tracked universe" }),
 		).not.toBeInTheDocument();
@@ -326,10 +341,20 @@ describe("source surfaces", () => {
 	});
 
 	it("covers source identity helpers and story routes across edge branches", () => {
-		expect(buildThumbnailUrl({ platform: "youtube", url: "https://youtu.be/demo", title: "Demo" })).toContain("i.ytimg.com");
-		expect(buildThumbnailUrl({ platform: "generic", url: "not-a-url", title: "Fallback" })).toContain(
-			"data:image/svg+xml",
-		);
+		expect(
+			buildThumbnailUrl({
+				platform: "youtube",
+				url: "https://youtu.be/demo",
+				title: "Demo",
+			}),
+		).toContain("i.ytimg.com");
+		expect(
+			buildThumbnailUrl({
+				platform: "generic",
+				url: "not-a-url",
+				title: "Fallback",
+			}),
+		).toContain("data:image/svg+xml");
 
 		const subscriptionIdentity = resolveSubscriptionIdentity({
 			id: "sub-1",
@@ -449,9 +474,12 @@ describe("source surfaces", () => {
 			expect.arrayContaining(["Video contract gap", "2 claim kinds"]),
 		);
 
-		expect(decorateAskRoute("/ask#evidence", { question: "What changed?", top_k: 5 })).toBe(
-			"/ask?question=What+changed%3F&top_k=5#evidence",
-		);
+		expect(
+			decorateAskRoute("/ask#evidence", {
+				question: "What changed?",
+				top_k: 5,
+			}),
+		).toBe("/ask?question=What+changed%3F&top_k=5#evidence");
 		expect(preferRoute("  ", "/fallback")).toBe("/fallback");
 		expect(
 			resolveBriefingSelection(
@@ -528,9 +556,9 @@ describe("source surfaces", () => {
 		expect(getLocaleMessages("en").feedPage.subscriptionFilterLabel).toBe(
 			"Tracked universe",
 		);
-		expect(getLocaleMessages("zh-CN").feedPage.activeTrackedUniverseTitle).toContain(
-			"tracked universe",
-		);
+		expect(
+			getLocaleMessages("zh-CN").feedPage.activeTrackedUniverseTitle,
+		).toContain("tracked universe");
 		expect(formatCountPattern("{count} item|{count} items", 1)).toBe("1 item");
 		expect(formatCountPattern("{count} item|{count} items", 2)).toBe("2 items");
 	});
@@ -561,13 +589,19 @@ describe("source surfaces", () => {
 						meta: ["Generic"],
 					}}
 				/>
-				<FeedFeedbackPanel initialFeedback={null} jobId="job-1" sessionToken="token" />
+				<FeedFeedbackPanel
+					initialFeedback={null}
+					jobId="job-1"
+					sessionToken="token"
+				/>
 			</div>,
 		);
 
 		expect(screen.getByText("Fallback Source")).toBeInTheDocument();
 		expect(screen.getAllByText("FS").length).toBeGreaterThan(0);
-		expect(screen.getByText("No curation signal recorded yet.")).toBeInTheDocument();
+		expect(
+			screen.getByText("No curation signal recorded yet."),
+		).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole("button", { name: "Useful" }));
 		await waitFor(() => {
@@ -577,7 +611,9 @@ describe("source surfaces", () => {
 			);
 		});
 		await waitFor(() => {
-			expect(screen.getByText("Marked as saved and useful.")).toBeInTheDocument();
+			expect(
+				screen.getByText("Marked as saved and useful."),
+			).toBeInTheDocument();
 		});
 
 		rerender(
@@ -594,7 +630,9 @@ describe("source surfaces", () => {
 		);
 		fireEvent.click(screen.getByRole("button", { name: "Noisy" }));
 		await waitFor(() => {
-			expect(screen.getByText("Feedback update failed. Please retry.")).toBeInTheDocument();
+			expect(
+				screen.getByText("Feedback update failed. Please retry."),
+			).toBeInTheDocument();
 		});
 
 		rerender(
@@ -627,7 +665,9 @@ describe("source surfaces", () => {
 	});
 
 	it("surfaces manual intake submission failures without leaving stale results behind", async () => {
-		mockSubmitManualSourceIntake.mockRejectedValueOnce(new Error("submission failed"));
+		mockSubmitManualSourceIntake.mockRejectedValueOnce(
+			new Error("submission failed"),
+		);
 
 		render(<ManualSourceIntakePanel copy={manualCopy} />);
 
