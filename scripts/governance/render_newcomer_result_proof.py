@@ -282,6 +282,8 @@ def main() -> int:
             )
             else "in_progress"
         )
+    elif any(path.is_file() for path in governance_log_candidates):
+        governance_status = "in_progress"
 
     overall_status, workspace_blockers, workspace_note = _workspace_verdict(
         newcomer_preflight_status=newcomer_preflight_status,
