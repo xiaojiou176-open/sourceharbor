@@ -132,13 +132,11 @@ def is_runtime_metadata_managed_artifact(path: Path) -> bool:
         return False
     # Coverage shard databases under reports/python are transient combine inputs,
     # not durable evidence artifacts that should receive sidecars or indexing.
-    if (
+    return not (
         path.name.startswith(".coverage.")
         and path.parent.name == "python"
         and path.parent.parent.name == "reports"
-    ):
-        return False
-    return True
+    )
 
 
 def read_runtime_metadata(path: Path) -> dict[str, Any] | None:
