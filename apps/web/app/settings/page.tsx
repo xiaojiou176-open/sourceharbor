@@ -24,6 +24,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { WebActionSessionHiddenInput } from "@/components/web-action-session-hidden-input";
 import { apiClient } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
 import { getLocaleMessages } from "@/lib/i18n/messages";
@@ -130,12 +131,7 @@ export default async function SettingsPage({
 				</CardHeader>
 				<CardContent>
 					<form action={updateNotificationConfigAction} className="grid gap-4">
-						<input
-							type="hidden"
-							name="session_token"
-							value={sessionToken}
-							suppressHydrationWarning
-						/>
+						<WebActionSessionHiddenInput sessionToken={sessionToken} />
 						<FormCheckboxField
 							name="enabled"
 							label={copy.enabledLabel}
@@ -199,12 +195,7 @@ export default async function SettingsPage({
 				</CardHeader>
 				<CardContent>
 					<form action={sendTestNotificationAction} className="grid gap-4">
-						<input
-							type="hidden"
-							name="session_token"
-							value={sessionToken}
-							suppressHydrationWarning
-						/>
+						<WebActionSessionHiddenInput sessionToken={sessionToken} />
 						<FormInputField
 							id="test_to_email"
 							name="to_email"

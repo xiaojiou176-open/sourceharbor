@@ -11,10 +11,12 @@ type ResolveOptions = {
 	strict?: boolean;
 };
 
-const env = process?.env;
+function getEnv(): Record<string, string | undefined> | undefined {
+	return process?.env;
+}
 
 function resolveLocalApiBaseUrl(): string {
-	const configuredPort = env?.API_PORT?.trim();
+	const configuredPort = getEnv()?.API_PORT?.trim();
 	if (configuredPort && /^\d+$/.test(configuredPort)) {
 		return `http://127.0.0.1:${configuredPort}`;
 	}
@@ -24,7 +26,7 @@ function resolveLocalApiBaseUrl(): string {
 export function resolveApiBaseUrl(options: ResolveOptions = {}): string {
 	const strict = options.strict === true;
 	const allowFallback = strict ? false : (options.allowFallback ?? true);
-	const rawBase = env?.NEXT_PUBLIC_API_BASE_URL;
+	const rawBase = getEnv()?.NEXT_PUBLIC_API_BASE_URL;
 	const base = rawBase?.trim();
 	if (!base) {
 		if (allowFallback) {
@@ -191,8 +193,8 @@ export function sanitizeExternalUrl(rawUrl: string): string | null {
 
 export function getWebActionSessionToken(): string {
 	return (
-		env?.WEB_ACTION_SESSION_TOKEN ??
-		env?.SOURCE_HARBOR_API_KEY ??
+		getEnv()?.WEB_ACTION_SESSION_TOKEN ??
+		getEnv()?.SOURCE_HARBOR_API_KEY ??
 		""
 	).trim();
 }

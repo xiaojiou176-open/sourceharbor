@@ -152,6 +152,13 @@ export WEB_ACTION_SESSION_TOKEN="${WEB_ACTION_SESSION_TOKEN:-$SOURCE_HARBOR_API_
 That keeps direct write calls and web server actions on the same local token
 contract instead of creating a false auth blocker.
 
+If you stay on the repo-managed `./bin/full-stack up` path, the temporary web
+runtime now writes its own `.env.local` under
+`.runtime-cache/tmp/web-runtime/workspace/apps/web/` with the resolved
+`NEXT_PUBLIC_API_BASE_URL` and the same local write-session fallback. That is
+how browser-triggered writes such as manual intake stay aligned with the API
+health route even when local env profiles carry `CI=false` style flags.
+
 ### 4. Queue a first video job
 
 Replace the sample URL with any public YouTube or Bilibili URL you can access:

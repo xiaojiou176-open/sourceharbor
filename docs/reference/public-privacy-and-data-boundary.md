@@ -34,6 +34,7 @@ Two current examples:
 - Google Account and Resend may appear in local browser proof flows, but they remain operator/proof surfaces, not public ingestion targets
 - login state, sender identity, and secure operator credential updates remain human-only or policy-gated even when the surrounding repo code is already real
 - maintainer-local browser proof helpers such as `GITHUB_COOKIE`, `GOOGLE_COOKIE`, `RESEND_COOKIE`, and `YOUTUBE_COOKIE` may exist in `.env`, but they stay local-only secrets and must never be committed or treated as public integration contract
+- maintainer-local runtime overlays such as `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` may carry local write-session fallback values; they stay private runtime state and must never be committed, mirrored, or cited as public proof
 - public proof ledgers may safely describe release/current-main drift or required-check mismatches, but they must not reveal private tokens, mailbox state, browser-session content, or other operator-only data while doing so
 - repo-managed runtime workspaces such as `.runtime-cache/tmp/web-runtime/` and mutation debug sandboxes stay local-only verification state; they must be governed and cleaned, not exposed as public repository artifacts
 - repo-owned fallback service logs under `.runtime-cache/logs/local-core/` stay private runtime diagnostics; they are meant for maintainer troubleshooting, not for public repo storytelling or artifact publication

@@ -22,6 +22,12 @@ vi.mock("next/link", () => ({
 describe("builders page", () => {
 	it("covers builder resource and official-surface CTA labels", () => {
 		render(<BuildersPage />);
+		const liveSubmissionSection = screen
+			.getByText("What still needs live submission proof")
+			.closest("section");
+		if (!liveSubmissionSection) {
+			throw new Error("Expected live submission section");
+		}
 
 		expect(
 			screen.getByRole("heading", {
@@ -59,21 +65,17 @@ describe("builders page", () => {
 			"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/public-distribution.md",
 		);
 		expect(
-			within(
-				screen
-					.getByText("What still needs live submission proof")
-					.closest("section")!,
-			).getByRole("link", { name: "Open current status board" }),
+			within(liveSubmissionSection).getByRole("link", {
+				name: "Open current status board",
+			}),
 		).toHaveAttribute(
 			"href",
 			"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/project-status.md",
 		);
 		expect(
-			within(
-				screen
-					.getByText("What still needs live submission proof")
-					.closest("section")!,
-			).getByRole("link", { name: "Open public skills guide" }),
+			within(liveSubmissionSection).getByRole("link", {
+				name: "Open public skills guide",
+			}),
 		).toHaveAttribute(
 			"href",
 			"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/public-skills.md",

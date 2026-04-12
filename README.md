@@ -470,6 +470,13 @@ If you launch the API outside `./bin/full-stack up`, export both
 `SOURCE_HARBOR_API_KEY` and `WEB_ACTION_SESSION_TOKEN` **before** starting the
 API process so write routes and web actions share the same local token contract.
 
+When you stay on the repo-managed `./bin/full-stack up` path, SourceHarbor now
+writes the local web runtime's `.env.local` inside
+`.runtime-cache/tmp/web-runtime/workspace/apps/web/` so the browser bundle and
+server actions both inherit the same local write-session fallback. This keeps
+`CI=false` style env noise from accidentally suppressing the maintainer-local
+`sourceharbor-local-dev-token` fallback.
+
 ### 3. Queue a first processing run
 
 Replace the sample URL with any public YouTube or Bilibili video:

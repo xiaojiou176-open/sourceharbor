@@ -147,13 +147,17 @@ def test_full_stack_uses_runtime_snapshot_for_data_plane_and_worker_signature() 
 def test_full_stack_only_falls_back_to_local_dev_tokens_outside_ci() -> None:
     script = (_repo_root() / "scripts" / "runtime" / "full_stack.sh").read_text(encoding="utf-8")
 
-    assert 'startup_write_token="${local_write_token:-}"' in script
-    assert 'startup_web_session_token="${local_web_session_token:-}"' in script
+    assert 'local_default_write_token="sourceharbor-local-dev-token"' in script
+    assert "ci_mode=\"$(printf '%s' \"${CI:-}\" | tr '[:upper:]' '[:lower:]')\"" in script
     assert (
-        'if [[ -z "$startup_write_token" && -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" ]]; then'
+        'if [[ "$ci_mode" == "1" || "$ci_mode" == "true" || "$ci_mode" == "yes" || "$ci_mode" == "on" || "$github_actions_mode" == "1" || "$github_actions_mode" == "true" || "$github_actions_mode" == "yes" || "$github_actions_mode" == "on" ]]; then'
         in script
     )
-    assert 'startup_write_token="${local_write_token:-sourceharbor-local-dev-token}"' not in script
+    assert 'local_write_token="${SOURCE_HARBOR_API_KEY:-$local_default_write_token}"' in script
+    assert (
+        'startup_web_session_token="${WEB_ACTION_SESSION_TOKEN:-${startup_write_token:-$local_default_write_token}}"'
+        in script
+    )
     assert "normalize_database_url_driver()" not in script
 
 
@@ -326,6 +330,7 @@ def test_http_api_helper_and_notification_scripts_use_local_write_token_headers(
     failure_alerts = (root / "scripts" / "runtime" / "run_failure_alerts.sh").read_text(
         encoding="utf-8"
     )
+    full_stack = (root / "scripts" / "runtime" / "full_stack.sh").read_text(encoding="utf-8")
 
     assert "X-API-Key: ${SOURCE_HARBOR_API_KEY}" in http_api
     assert "X-Web-Session: ${WEB_ACTION_SESSION_TOKEN}" in http_api
@@ -333,6 +338,8 @@ def test_http_api_helper_and_notification_scripts_use_local_write_token_headers(
     assert 'export WEB_ACTION_SESSION_TOKEN="$SOURCE_HARBOR_API_KEY"' in daily_digest
     assert 'export SOURCE_HARBOR_API_KEY="sourceharbor-local-dev-token"' in failure_alerts
     assert 'export WEB_ACTION_SESSION_TOKEN="$SOURCE_HARBOR_API_KEY"' in failure_alerts
+    assert 'export NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN="$local_web_session_token"' in full_stack
+    assert 'NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN="$startup_web_session_token"' in full_stack
 
 
 def test_smoke_full_stack_defaults_are_strict_for_local_validation() -> None:

@@ -111,6 +111,8 @@ Important local-truth notes:
 - do not assume `9000/3000`; bootstrap/full-stack may move to other free ports and record them in `.runtime-cache/run/full-stack/resolved.env`
 - the default local Postgres path is container-first on `CORE_POSTGRES_PORT=15432`
 - if your machine already has a host Postgres on `127.0.0.1:5432`, that is a different data plane from the core-services container path
+- the repo-managed web runtime also writes `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` so browser-triggered writes keep the same local API base URL and write-session fallback as the supervisor path
+- `CI=false` or similar non-truthy env strings must not suppress the maintainer-local `sourceharbor-local-dev-token` fallback during repo-managed full-stack startup
 
 ## Long Live Smoke Lane
 

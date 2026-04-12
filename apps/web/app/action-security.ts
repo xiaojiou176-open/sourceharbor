@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 import { cookies } from "next/headers";
 import { z } from "zod";
-import { getWebActionSessionToken, sanitizeExternalUrl } from "@/lib/api/url";
+import { sanitizeExternalUrl } from "@/lib/api/url";
 
 const MAX_TEXT_LENGTH = 512;
 const SESSION_COOKIE_NAME = "sourceharbor_web_session";
@@ -42,7 +42,12 @@ const nullableHourSchema = z.preprocess((value) => {
 }, z.coerce.number().int().min(0).max(23).nullable());
 
 function getSessionSecret(): string {
-	return getWebActionSessionToken();
+	return (
+		process.env.WEB_ACTION_SESSION_TOKEN ??
+		process.env.NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN ??
+		process.env.SOURCE_HARBOR_API_KEY ??
+		""
+	).trim();
 }
 
 function constantTimeEquals(left: string, right: string): boolean {

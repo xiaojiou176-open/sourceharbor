@@ -62,6 +62,15 @@ describe("action security session token", () => {
 			"ERR_AUTH_REQUIRED",
 		);
 	});
+
+	it("falls back to NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN when the server-only token is absent", () => {
+		delete process.env.WEB_ACTION_SESSION_TOKEN;
+		process.env.NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN = "public-dev-token";
+
+		const token = getActionSessionTokenForForm();
+		expect(token).toContain(".");
+		expect(token).not.toBe("public-dev-token");
+	});
 });
 
 describe("isNextRedirectError", () => {

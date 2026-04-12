@@ -89,9 +89,21 @@ export function buildArtifactAssetUrl(jobId: string, path: string): string {
 export function getWebActionSessionToken(): string {
 	return (
 		process.env.WEB_ACTION_SESSION_TOKEN ??
+		process.env.NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN ??
 		process.env.SOURCE_HARBOR_API_KEY ??
 		""
 	).trim();
+}
+
+export function resolveWriteSessionToken(
+	sessionToken?: string | null,
+): string | null {
+	const explicit = String(sessionToken ?? "").trim();
+	if (explicit) {
+		return explicit;
+	}
+	const fallback = getWebActionSessionToken();
+	return fallback || null;
 }
 
 export { isSensitiveQueryKey, sanitizeExternalUrl };

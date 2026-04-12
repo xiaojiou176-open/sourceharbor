@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api/client";
+import { resolveWriteSessionToken } from "@/lib/api/url";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ type SyncNowButtonProps = {
 };
 
 export function SyncNowButton({ sessionToken }: SyncNowButtonProps) {
+	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
 	const copy = getLocaleMessages().syncNow;
 	const [state, setState] = useState<"idle" | "loading" | "done" | "error">(
 		"idle",
@@ -83,8 +85,8 @@ export function SyncNowButton({ sessionToken }: SyncNowButtonProps) {
 	function handleSync() {
 		setState("loading");
 		clearTimer();
-		const request = sessionToken
-			? apiClient.pollIngest({}, { webSessionToken: sessionToken })
+		const request = effectiveSessionToken
+			? apiClient.pollIngest({}, { webSessionToken: effectiveSessionToken })
 			: apiClient.pollIngest({});
 		request
 			.then(() => {

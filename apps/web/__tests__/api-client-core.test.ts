@@ -998,6 +998,9 @@ describe("apiClient core behavior", () => {
 		expect(String(fetchSpy.mock.calls[4][0])).toContain(
 			"/api/v1/subscriptions/manual-intake",
 		);
+		expect(String(fetchSpy.mock.calls[4][0])).toContain(
+			"https://api.example.com/api/v1/subscriptions/manual-intake",
+		);
 		expect(fetchSpy.mock.calls[4][1]).toMatchObject({ method: "POST" });
 	});
 

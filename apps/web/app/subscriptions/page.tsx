@@ -21,6 +21,7 @@ import {
 	CardDescription,
 	CardHeader,
 } from "@/components/ui/card";
+import { WebActionSessionHiddenInput } from "@/components/web-action-session-hidden-input";
 import { apiClient } from "@/lib/api/client";
 import type {
 	SubscriptionTemplate,
@@ -643,12 +644,7 @@ export default async function SubscriptionsPage({
 								className="grid gap-5 md:grid-cols-2"
 								data-auto-disable-required="true"
 							>
-								<input
-									type="hidden"
-									name="session_token"
-									value={sessionToken}
-									suppressHydrationWarning
-								/>
+								<WebActionSessionHiddenInput sessionToken={sessionToken} />
 								<FormSelectField
 									id="platform"
 									name="platform"

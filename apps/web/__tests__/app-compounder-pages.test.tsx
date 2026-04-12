@@ -445,22 +445,22 @@ describe("compounder pages", () => {
 		expect(
 			screen.getByRole("link", { name: "Open unified briefing" }),
 		).toHaveAttribute("href", "/briefings?watchlist_id=wl-1&story_id=story-1");
+		const aiWeeklyArticle = screen
+			.getAllByText("AI Weekly")[0]
+			?.closest("article");
+		if (!aiWeeklyArticle) {
+			throw new Error("Expected AI Weekly article");
+		}
 		expect(
-			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getByRole(
-				"link",
-				{ name: "Open bundle" },
-			),
+			within(aiWeeklyArticle).getByRole("link", { name: "Open bundle" }),
 		).toHaveAttribute("href", "/api/v1/jobs/job-1/bundle");
 		expect(() =>
-			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getByRole(
-				"link",
-				{ name: "Open knowledge" },
-			),
+			within(aiWeeklyArticle).getByRole("link", { name: "Open knowledge" }),
 		).toThrow();
 		expect(
-			within(
-				screen.getAllByText("AI Weekly")[0].closest("article")!,
-			).getAllByRole("link", { name: "Open knowledge" })[0],
+			within(aiWeeklyArticle).getAllByRole("link", {
+				name: "Open knowledge",
+			})[0],
 		).toHaveAttribute("href", "/knowledge?job_id=job-1");
 		expect(
 			screen.getByRole("link", { name: "Open sample playground" }),

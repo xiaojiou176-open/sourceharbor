@@ -21,6 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { WebActionSessionHiddenInput } from "@/components/web-action-session-hidden-input";
 import { apiClient } from "@/lib/api/client";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import {
@@ -841,12 +842,7 @@ export default async function DashboardPage({
 					</CardHeader>
 					<CardContent>
 						<form action={pollIngestAction} className="grid gap-4">
-							<input
-								type="hidden"
-								name="session_token"
-								value={sessionToken}
-								suppressHydrationWarning
-							/>
+							<WebActionSessionHiddenInput sessionToken={sessionToken} />
 							<FormSelectField
 								id="poll-platform"
 								label={copy.pollIngest.platformLabel}
@@ -891,12 +887,7 @@ export default async function DashboardPage({
 							className="grid gap-4"
 							data-auto-disable-required="true"
 						>
-							<input
-								type="hidden"
-								name="session_token"
-								value={sessionToken}
-								suppressHydrationWarning
-							/>
+							<WebActionSessionHiddenInput sessionToken={sessionToken} />
 							<FormSelectField
 								id="process-platform"
 								label={copy.processVideo.platformLabel}

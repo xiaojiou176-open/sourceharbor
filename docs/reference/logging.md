@@ -49,6 +49,11 @@ SourceHarbor keeps runtime and governance logs under `.runtime-cache/logs/`.
 Both modes still write through the same strict-ci governance receipts instead of
 creating a second undocumented logging lane.
 
+Repo-managed `full_stack` startup also writes a temporary
+`.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` overlay for the
+web runtime. Treat that file as local runtime state, not as public
+documentation, and never commit it or copy it into outward-facing artifacts.
+
 ## Why This Exists
 
 The goal is simple: when a run fails, operators should be able to trace it with receipts instead of guesswork.

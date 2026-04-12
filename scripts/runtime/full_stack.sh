@@ -145,24 +145,22 @@ TEMPORAL_TASK_QUEUE="$(normalize_temporal_task_queue "$(resolve_runtime_route_va
 
 export API_PORT WEB_PORT SOURCE_HARBOR_API_BASE_URL NEXT_PUBLIC_API_BASE_URL API_HEALTH_URL
 export DATABASE_URL TEMPORAL_TARGET_HOST TEMPORAL_NAMESPACE TEMPORAL_TASK_QUEUE
-local_write_token="${SOURCE_HARBOR_API_KEY:-}"
-if [[ -z "$local_write_token" && -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" ]]; then
-  local_write_token="sourceharbor-local-dev-token"
+ci_mode="$(printf '%s' "${CI:-}" | tr '[:upper:]' '[:lower:]')"
+github_actions_mode="$(printf '%s' "${GITHUB_ACTIONS:-}" | tr '[:upper:]' '[:lower:]')"
+local_default_write_token="sourceharbor-local-dev-token"
+if [[ "$ci_mode" == "1" || "$ci_mode" == "true" || "$ci_mode" == "yes" || "$ci_mode" == "on" || "$github_actions_mode" == "1" || "$github_actions_mode" == "true" || "$github_actions_mode" == "yes" || "$github_actions_mode" == "on" ]]; then
+  local_default_write_token=""
 fi
-local_web_session_token="${WEB_ACTION_SESSION_TOKEN:-$local_write_token}"
-startup_write_token="${local_write_token:-}"
-startup_web_session_token="${local_web_session_token:-}"
-if [[ -z "$startup_write_token" && -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" ]]; then
-  startup_write_token="sourceharbor-local-dev-token"
-fi
-if [[ -z "$startup_web_session_token" ]]; then
-  startup_web_session_token="$startup_write_token"
-fi
+local_write_token="${SOURCE_HARBOR_API_KEY:-$local_default_write_token}"
+startup_write_token="${local_write_token:-$local_default_write_token}"
+startup_web_session_token="${WEB_ACTION_SESSION_TOKEN:-${startup_write_token:-$local_default_write_token}}"
+local_web_session_token="${startup_web_session_token:-$local_default_write_token}"
 if [[ -n "$local_write_token" ]]; then
   export SOURCE_HARBOR_API_KEY="$local_write_token"
 fi
 if [[ -n "$local_web_session_token" ]]; then
   export WEB_ACTION_SESSION_TOKEN="$local_web_session_token"
+  export NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN="$local_web_session_token"
 fi
 if ! [[ "$API_PORT" =~ ^[0-9]+$ ]] || (( API_PORT <= 0 || API_PORT > 65535 )); then
   echo "[full_stack] --api-port must be an integer in [1,65535]" >&2
@@ -716,9 +714,16 @@ build_web_start_command() {
   else
     WEB_RUNTIME_WEB_DIR="$ROOT_DIR/apps/web"
   fi
+  cat > "$WEB_RUNTIME_WEB_DIR/.env.local" <<EOF
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:${API_PORT}
+NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN=${startup_web_session_token}
+WEB_ACTION_SESSION_TOKEN=${startup_web_session_token}
+SOURCE_HARBOR_API_KEY=${startup_write_token}
+API_PORT=${API_PORT}
+EOF
   local next_bin="$WEB_RUNTIME_WEB_DIR/node_modules/.bin/next"
   if [[ -x "$next_bin" ]]; then
-    printf '%s\0' "bash" "-lc" "cd \"$WEB_RUNTIME_WEB_DIR\" && export SOURCE_HARBOR_REPO_ROOT=\"$ROOT_DIR\" && exec ./node_modules/.bin/next dev --hostname 127.0.0.1 --port \"$WEB_PORT\""
+    printf '%s\0' "bash" "-lc" "cd \"$WEB_RUNTIME_WEB_DIR\" && export SOURCE_HARBOR_REPO_ROOT=\"$ROOT_DIR\" && export SOURCE_HARBOR_API_KEY=\"$startup_write_token\" && export WEB_ACTION_SESSION_TOKEN=\"$startup_web_session_token\" && export NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN=\"$startup_web_session_token\" && export NEXT_PUBLIC_API_BASE_URL=\"http://127.0.0.1:${API_PORT}\" && export API_PORT=\"$API_PORT\" && exec ./node_modules/.bin/next dev --hostname 127.0.0.1 --port \"$WEB_PORT\""
     return 0
   fi
 
@@ -757,7 +762,7 @@ run_up() {
     web_cmd+=("$web_part")
   done < <(build_web_start_command)
 
-  start_one web env SOURCE_HARBOR_API_KEY="$startup_write_token" WEB_ACTION_SESSION_TOKEN="$startup_web_session_token" NEXT_PUBLIC_API_BASE_URL="http://127.0.0.1:${API_PORT}" API_PORT="$API_PORT" "${web_cmd[@]}"
+  start_one web env SOURCE_HARBOR_API_KEY="$startup_write_token" WEB_ACTION_SESSION_TOKEN="$startup_web_session_token" NEXT_PUBLIC_WEB_ACTION_SESSION_TOKEN="$startup_web_session_token" NEXT_PUBLIC_API_BASE_URL="http://127.0.0.1:${API_PORT}" API_PORT="$API_PORT" "${web_cmd[@]}"
   if [[ "$START_STATE" == "started" ]]; then
     STARTED_THIS_RUN+=("web")
   fi

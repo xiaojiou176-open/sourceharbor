@@ -5,6 +5,7 @@ import { startTransition, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api/client";
 import type { FeedFeedback } from "@/lib/api/types";
+import { resolveWriteSessionToken } from "@/lib/api/url";
 
 type FeedbackLabel = "useful" | "noisy" | "dismissed" | "archived" | null;
 
@@ -41,6 +42,7 @@ export function FeedFeedbackPanel({
 	jobId,
 	sessionToken,
 }: FeedFeedbackPanelProps) {
+	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
 	const [feedback, setFeedback] = useState<FeedFeedback | null>(
 		initialFeedback,
 	);
@@ -58,7 +60,7 @@ export function FeedFeedbackPanel({
 						saved,
 						feedback_label: feedbackLabel,
 					},
-					{ webSessionToken: sessionToken },
+					{ webSessionToken: effectiveSessionToken },
 				)
 				.then((payload) => {
 					setFeedback(payload);

@@ -28,6 +28,7 @@ import type {
 	ManualSourceIntakeResponse,
 	SubscriptionCategory,
 } from "@/lib/api/types";
+import { resolveWriteSessionToken } from "@/lib/api/url";
 import { editorialMono, editorialSans } from "@/lib/editorial-fonts";
 import { resolveManualIntakeIdentity } from "@/lib/source-identity";
 
@@ -142,6 +143,7 @@ function buildFeedUniverseHref(
 }
 
 export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
+	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
 	const [rawInput, setRawInput] = useState("");
 	const [category, setCategory] = useState<SubscriptionCategory>("misc");
 	const [tags, setTags] = useState("");
@@ -238,7 +240,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 													.filter((item) => item.length > 0),
 												enabled,
 											},
-											{ webSessionToken: sessionToken ?? null },
+											{ webSessionToken: effectiveSessionToken },
 										);
 										setResult(response);
 									} catch (error) {

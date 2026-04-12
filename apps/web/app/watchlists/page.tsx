@@ -20,6 +20,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { WebActionSessionHiddenInput } from "@/components/web-action-session-hidden-input";
 import { apiClient } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
 import { getLocaleMessages } from "@/lib/i18n/messages";
@@ -146,12 +147,7 @@ export default async function WatchlistsPage({
 					</CardHeader>
 					<CardContent>
 						<form action={upsertWatchlistAction} className="grid gap-4">
-							<input
-								type="hidden"
-								name="session_token"
-								value={sessionToken}
-								suppressHydrationWarning
-							/>
+							<WebActionSessionHiddenInput sessionToken={sessionToken} />
 							<input
 								type="hidden"
 								name="id"
@@ -382,11 +378,8 @@ export default async function WatchlistsPage({
 												</Link>
 											</Button>
 											<form action={deleteWatchlistAction}>
-												<input
-													type="hidden"
-													name="session_token"
-													value={sessionToken}
-													suppressHydrationWarning
+												<WebActionSessionHiddenInput
+													sessionToken={sessionToken}
 												/>
 												<input
 													type="hidden"

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api/client";
 import type { Subscription, SubscriptionCategory } from "@/lib/api/types";
+import { resolveWriteSessionToken } from "@/lib/api/url";
 import { editorialMono, editorialSans } from "@/lib/editorial-fonts";
 import { formatDateTime } from "@/lib/format";
 import { resolveSubscriptionIdentity } from "@/lib/source-identity";
@@ -83,6 +84,7 @@ function humanizeSourceType(value: string): string {
 }
 
 export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
+	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
 	const router = useRouter();
 	const [visibleSubscriptions, setVisibleSubscriptions] =
 		useState<Subscription[]>(subscriptions);
@@ -216,7 +218,9 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 	}
 
 	function writeOptions() {
-		return sessionToken ? { webSessionToken: sessionToken } : undefined;
+		return effectiveSessionToken
+			? { webSessionToken: effectiveSessionToken }
+			: undefined;
 	}
 
 	// In cross-origin local E2E mode, preflight may reject custom session headers.
