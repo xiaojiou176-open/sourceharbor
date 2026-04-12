@@ -23,10 +23,11 @@ type SeoRoute =
 
 const CORE_KEYWORDS = [
 	"SourceHarbor",
-	"AI knowledge control tower",
+	"reader-first source intelligence",
 	"AI knowledge pipeline",
 	"source-first AI workflow",
-	"operator command center",
+	"source-universe intake",
+	"published reader documents",
 	"grounded retrieval",
 	"evidence bundle",
 	"MCP server",
@@ -66,10 +67,11 @@ const DEFAULT_SOCIAL_PREVIEW_IMAGE =
 
 const ROUTE_KEYWORDS: Record<SeoRoute, string[]> = {
 	dashboard: [
-		"AI operator dashboard",
+		"reader-first front door",
 		"knowledge intake",
-		"retrieval front door",
-		"builder command center",
+		"digest feed",
+		"published reader documents",
+		"builder entry",
 		"AI developer tooling",
 	],
 	ops: [
@@ -204,13 +206,13 @@ export function buildAppShellMetadata(): Metadata {
 	const socialPreviewImage = resolveSocialPreviewImage();
 	return {
 		title: {
-			default: "SourceHarbor Command Center",
+			default: "SourceHarbor Front Door",
 			template: "%s | SourceHarbor",
 		},
 		metadataBase: siteUrl,
 		applicationName: "SourceHarbor",
 		description:
-			"AI knowledge control tower for grounded retrieval, job trace, MCP workflows, Codex, Claude Code, and source-first operator research.",
+			"Reader-first front door for source-universe intake, digest curation, published reader documents, and builder entry through MCP and HTTP API.",
 		keywords: dedupeKeywords([
 			...CORE_KEYWORDS,
 			...ROUTE_KEYWORDS.dashboard,
@@ -223,9 +225,9 @@ export function buildAppShellMetadata(): Metadata {
 			follow: true,
 		},
 		openGraph: {
-			title: "SourceHarbor Command Center",
+			title: "SourceHarbor Front Door",
 			description:
-				"AI knowledge control tower for grounded retrieval, job trace, MCP workflows, Codex, Claude Code, and source-first operator research.",
+				"Reader-first front door for source-universe intake, digest curation, published reader documents, and builder entry through MCP and HTTP API.",
 			type: "website",
 			siteName: "SourceHarbor",
 			url: canonical,
@@ -240,9 +242,9 @@ export function buildAppShellMetadata(): Metadata {
 		},
 		twitter: {
 			card: "summary_large_image",
-			title: "SourceHarbor Command Center",
+			title: "SourceHarbor Front Door",
 			description:
-				"AI knowledge control tower for grounded retrieval, job trace, MCP workflows, Codex, Claude Code, and source-first operator research.",
+				"Reader-first front door for source-universe intake, digest curation, published reader documents, and builder entry through MCP and HTTP API.",
 			images: [socialPreviewImage],
 		},
 	};

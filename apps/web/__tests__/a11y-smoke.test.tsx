@@ -331,7 +331,7 @@ describe("a11y smoke", () => {
 	it(
 		"dashboard/subscriptions/settings/feed/jobs/search/briefings pages have no critical accessibility violations",
 		async () => {
-			const dashboard = render(await DashboardPage({ searchParams: {} }));
+			const dashboard = render(await DashboardPage());
 			const dashboardResults = await axe(dashboard.container);
 			expect(dashboardResults.violations).toHaveLength(0);
 			dashboard.unmount();

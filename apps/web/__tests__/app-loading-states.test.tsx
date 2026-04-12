@@ -21,8 +21,8 @@ const LOADING_CASES: LoadingCase[] = [
 	{
 		name: "dashboard loading",
 		Component: AppLoading,
-		heading: "Dashboard loading",
-		message: "Loading the command center. Please wait.",
+		heading: "Front door loading",
+		message: "Loading the front door. Please wait.",
 		describedBy: "app-loading-message",
 		hasSrOnlyPageHeading: true,
 	},

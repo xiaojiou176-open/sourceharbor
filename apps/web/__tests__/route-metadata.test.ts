@@ -29,16 +29,18 @@ function toKeywordList(value: unknown): string[] {
 }
 
 describe("route metadata", () => {
-	it("keeps app-shell metadata aligned to the command-center control-tower story", () => {
+	it("keeps app-shell metadata aligned to the reader-first front-door story", () => {
 		const metadata = buildAppShellMetadata();
 
 		expect(metadata.title).toMatchObject({
-			default: "SourceHarbor Command Center",
+			default: "SourceHarbor Front Door",
 		});
-		expect(metadata.description).toMatch(/AI knowledge control tower/i);
+		expect(metadata.description).toMatch(/Reader-first front door/i);
 		expect(toKeywordList(metadata.keywords)).toEqual(
 			expect.arrayContaining([
-				"AI knowledge control tower",
+				"reader-first source intelligence",
+				"source-universe intake",
+				"published reader documents",
 				"MCP server",
 				"AI coding agent",
 				"agentic coding workflow",

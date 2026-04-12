@@ -147,7 +147,9 @@ PY
   }
 
   if ! port_listening "$TEMPORAL_PORT"; then
-    nohup temporal server start-dev --headless --ip 127.0.0.1 --port "$TEMPORAL_PORT" \
+    # Wrap Temporal in a login-less shell so the detached process survives
+    # background launch on macOS instead of exiting before the port is usable.
+    nohup bash -lc "exec temporal server start-dev --headless --ip 127.0.0.1 --port \"$TEMPORAL_PORT\"" \
       >"$TEMPORAL_LOG_PATH" 2>&1 < /dev/null &
     echo "$!" > "$TEMPORAL_PID_FILE"
   fi

@@ -165,101 +165,59 @@ describe("dashboard/settings/subscriptions pages", () => {
 	});
 
 	it(
-		"renders dashboard metrics, table rows and failure CTA",
+		"renders the reader-first front door without operator-console modules",
 		async () => {
-			mockListSubscriptions.mockResolvedValue([
-				{ id: "sub-1" },
-				{ id: "sub-2" },
-			]);
-			mockListVideos.mockResolvedValue([
-				{
-					id: "v1",
-					platform: "youtube",
-					video_uid: "yt-1",
-					source_url: "https://example.com/1",
-					title: "Video One",
-					published_at: null,
-					first_seen_at: "2026-02-01T00:00:00Z",
-					last_seen_at: "2026-02-01T00:00:00Z",
-					status: "running",
-					last_job_id: "job-111",
-				},
-				{
-					id: "v2",
-					platform: "bilibili",
-					video_uid: "bb-2",
-					source_url: "https://example.com/2",
-					title: null,
-					published_at: null,
-					first_seen_at: "2026-02-01T00:00:00Z",
-					last_seen_at: "2026-02-01T00:00:00Z",
-					status: "failed",
-					last_job_id: null,
-				},
-				{
-					id: "v3",
-					platform: "rss_generic",
-					video_uid: "rss-3",
-					source_url: "https://example.com/3",
-					title: "Video Three",
-					published_at: null,
-					first_seen_at: "2026-02-01T00:00:00Z",
-					last_seen_at: "2026-02-01T00:00:00Z",
-					status: "queued",
-					last_job_id: "job-333",
-				},
-			]);
-			mockListIngestRuns.mockResolvedValue([
-				{
-					id: "run-1",
-					subscription_id: null,
-					workflow_id: "wf-1",
-					platform: "youtube",
-					max_new_videos: 5,
-					status: "queued",
-					jobs_created: 2,
-					candidates_count: 2,
-					feeds_polled: 1,
-					entries_fetched: 3,
-					entries_normalized: 3,
-					ingest_events_created: 2,
-					ingest_event_duplicates: 1,
-					job_duplicates: 0,
-					error_message: null,
-					created_at: "2026-02-01T00:00:00Z",
-					updated_at: "2026-02-01T00:00:00Z",
-					completed_at: null,
-				},
-			]);
-
-			render(await DashboardPage({ searchParams: {} }));
+			render(await DashboardPage());
 			expect(document.querySelector(".folo-page-shell")).not.toBeNull();
 			expect(
 				document.querySelectorAll('[data-slot="card"]').length,
 			).toBeGreaterThanOrEqual(7);
 			expect(
+				screen.getByRole("heading", {
+					name: "From source intake to finished reading",
+				}),
+			).toBeInTheDocument();
+			expect(
 				screen.getByText("Build with Codex, Claude Code, and MCP clients"),
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole("heading", {
-					name: "Why builders keep reading",
+					name: "Why this front door works",
 				}),
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole("heading", {
-					name: "One truth across Web, API, and MCP",
+					name: "One reading product across Web, API, and MCP",
 				}),
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole("heading", {
-					name: "Proof sits next to the product story",
+					name: "Proof sits next to every route",
 				}),
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole("heading", {
-					name: "Worth returning to after the first run",
+					name: "Worth returning to after the first read",
 				}),
 			).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", {
+					name: "Read the finished surface first",
+				}),
+			).toBeInTheDocument();
+			expect(
+				screen.getAllByRole("link", { name: "Open Reader" })[0],
+			).toHaveAttribute("href", "/reader");
+			expect(
+				screen.getByRole("link", { name: "Open specimen detail" }),
+			).toHaveAttribute("href", "/reader/demo");
+			expect(
+				screen.getByRole("heading", { name: "Attach a source universe" }),
+			).toBeInTheDocument();
+			expect(screen.getByRole("link", { name: "Open Feed" })).toHaveAttribute(
+				"href",
+				"/feed",
+			);
 			expect(
 				screen.getByRole("heading", { name: "Source-universe intake" }),
 			).toBeInTheDocument();
@@ -282,7 +240,7 @@ describe("dashboard/settings/subscriptions pages", () => {
 				screen.getByRole("heading", { name: "Playground stays sample-proof" }),
 			).toBeInTheDocument();
 			expect(
-				screen.getByRole("link", { name: "Open Subscriptions" }),
+				screen.getAllByRole("link", { name: "Open Subscriptions" })[0],
 			).toHaveAttribute("href", "/subscriptions");
 			expect(
 				screen.getAllByRole("link", { name: "Open Briefings" }).length,
@@ -290,10 +248,9 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(
 				screen.getAllByRole("link", { name: "Open Briefings" })[0],
 			).toHaveAttribute("href", "/briefings");
-			expect(screen.getByRole("link", { name: "Open Reader" })).toHaveAttribute(
-				"href",
-				"/reader",
-			);
+			expect(
+				screen.getAllByRole("link", { name: "Open Reader" })[0],
+			).toHaveAttribute("href", "/reader");
 			for (const link of screen.getAllByRole("link", {
 				name: "Open Briefings",
 			})) {
@@ -360,209 +317,59 @@ describe("dashboard/settings/subscriptions pages", () => {
 					"https://github.com/xiaojiou176-open/sourceharbor/blob/main/docs/public-distribution.md",
 				);
 			}
-
-			const metricRegion = screen.getByRole("region", { name: "Key metrics" });
-			const metrics = Array.from(
-				metricRegion.querySelectorAll('[data-slot="card"]'),
-			);
-			expect(metrics).toHaveLength(4);
 			expect(
-				within(metrics[0] as HTMLElement).getByText("2"),
-			).toBeInTheDocument();
+				screen.queryByRole("heading", { name: "Command center metrics" }),
+			).not.toBeInTheDocument();
 			expect(
-				within(metrics[1] as HTMLElement).getByText("3"),
-			).toBeInTheDocument();
+				screen.queryByRole("heading", { name: "Poll subscriptions" }),
+			).not.toBeInTheDocument();
 			expect(
-				within(metrics[2] as HTMLElement).getByText("1"),
-			).toBeInTheDocument();
+				screen.queryByRole("heading", { name: "Process a single source" }),
+			).not.toBeInTheDocument();
 			expect(
-				within(metrics[3] as HTMLElement).getByText("1"),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("link", { name: "Open failed jobs →" }),
-			).toHaveAttribute("href", "/jobs");
-
-			const recentIngestTable = screen
-				.getByText("Recent ingest runs")
-				.closest('[data-slot="card"]');
-			expect(recentIngestTable).not.toBeNull();
-			expect(screen.getByText("run-1")).toBeInTheDocument();
-			expect(
-				screen.getByRole("link", { name: "Open all ingest runs →" }),
-			).toHaveAttribute("href", "/ingest-runs");
-			expect(screen.getByText("New jobs").tagName).toBe("TH");
-			expect(screen.getByText("Candidates").tagName).toBe("TH");
-			expect(screen.getAllByText("Queued").length).toBeGreaterThanOrEqual(1);
-
-			const tables = screen.getAllByRole("table");
-			expect(tables).toHaveLength(2);
-			const recentVideoTable = tables[1] as HTMLElement;
-			expect(
-				within(recentVideoTable).getByText("Recent video list"),
-			).toBeInTheDocument();
-			expect(within(recentVideoTable).getByText("Title").tagName).toBe("TH");
-			expect(within(recentVideoTable).getByText("Title")).toHaveAttribute(
-				"scope",
-				"col",
-			);
-			expect(within(recentVideoTable).getByText("YouTube")).toBeInTheDocument();
-			expect(
-				within(recentVideoTable).getByText("Bilibili"),
-			).toBeInTheDocument();
-			expect(
-				within(recentVideoTable).getByText("rss_generic"),
-			).toBeInTheDocument();
-			expect(within(recentVideoTable).getByText("Running")).toBeInTheDocument();
-			expect(within(recentVideoTable).getByText("Queued")).toBeInTheDocument();
-			expect(within(recentVideoTable).getByText("Failed")).toBeInTheDocument();
-
-			expect(screen.getByRole("link", { name: "job-111" })).toHaveAttribute(
-				"href",
-				"/jobs?job_id=job-111",
-			);
-			expect(screen.getByRole("link", { name: "job-333" })).toHaveAttribute(
-				"href",
-				"/jobs?job_id=job-333",
-			);
-
-			const pollForm = screen
-				.getByRole("button", { name: "Run ingest poll" })
-				.closest("form");
-			expect(pollForm).not.toBeNull();
-			expect(pollForm).not.toHaveAttribute("method");
-			expect(
-				(pollForm as HTMLElement).querySelector(
-					'input[type="hidden"][name="platform"]',
-				),
-			).toHaveValue("");
-			expect(
-				within(pollForm as HTMLElement).getByRole("spinbutton", {
-					name: "Maximum new videos",
-				}),
-			).toHaveValue(50);
-			expect(
-				(pollForm as HTMLElement).querySelector(
-					'input[type="hidden"][name="session_token"]',
-				),
-			).toHaveValue("test-session-token");
-			expect(
-				within(pollForm as HTMLElement).getByRole("button", {
-					name: "Run ingest poll",
-				}),
-			).toHaveAttribute("type", "submit");
-			expect(
-				screen.getByRole("link", { name: "Open job queue →" }),
-			).toHaveAttribute("href", "/jobs");
-
-			const processForm = screen
-				.getByRole("button", { name: "Start processing" })
-				.closest("form");
-			expect(processForm).not.toBeNull();
-			expect(processForm).toHaveAttribute("data-auto-disable-required", "true");
-			expect(processForm).not.toHaveAttribute("method");
-			expect(
-				(processForm as HTMLElement).querySelector(
-					'input[type="hidden"][name="platform"]',
-				),
-			).toHaveValue("youtube");
-			expect(
-				within(processForm as HTMLElement).getByRole("textbox", {
-					name: "Source URL *",
-				}),
-			).toBeRequired();
-			expect(
-				(processForm as HTMLElement).querySelector(
-					'input[type="hidden"][name="mode"]',
-				),
-			).toHaveValue("full");
-			expect(
-				within(processForm as HTMLElement).getByRole("checkbox", {
-					name: "Force rerun",
-				}),
-			).not.toBeChecked();
-			expect(
-				(processForm as HTMLElement).querySelector(
-					'input[type="hidden"][name="session_token"]',
-				),
-			).toHaveValue("test-session-token");
-			expect(
-				within(processForm as HTMLElement).getByRole("button", {
-					name: "Start processing",
-				}),
-			).toHaveAttribute("type", "submit");
-			expect(
-				screen.getByRole("link", { name: "Open job detail →" }),
-			).toHaveAttribute("href", "/jobs");
-			expect(
-				screen.getByRole("link", { name: "Open all jobs →" }),
-			).toHaveAttribute("href", "/jobs");
+				screen.queryByRole("heading", { name: "Recent ingest runs" }),
+			).not.toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);
 
 	it(
-		"renders dashboard load error and empty fallback copy",
+		"still renders the front door when live data calls fail",
 		async () => {
 			mockListSubscriptions.mockRejectedValue(new Error("network failed"));
 			mockListVideos.mockRejectedValue(new Error("network failed"));
 			mockListIngestRuns.mockRejectedValue(new Error("network failed"));
 
-			render(await DashboardPage({ searchParams: {} }));
+			render(await DashboardPage());
 
-			expect(screen.getByRole("alert")).toHaveTextContent(
-				"The request failed. Please try again later.",
-			);
 			expect(
-				screen.getByRole("link", { name: "Retry this page" }),
-			).toHaveAttribute("href", "/");
-			expect(
-				screen.getByText("Unable to load the video list right now."),
+				screen.getByRole("heading", {
+					name: "From source intake to finished reading",
+				}),
 			).toBeInTheDocument();
-			expect(screen.getAllByText("Data unavailable")).toHaveLength(4);
-			expect(
-				screen.getByText("Ingest run data is temporarily unavailable."),
-			).toBeInTheDocument();
-
-			const metricRegion = screen.getByRole("region", { name: "Key metrics" });
-			const metrics = Array.from(
-				metricRegion.querySelectorAll('[data-slot="card"]'),
-			);
-			expect(metrics).toHaveLength(4);
-			for (const metric of metrics) {
-				expect(
-					within(metric as HTMLElement).getByText(/--/),
-				).toBeInTheDocument();
-				expect(
-					within(metric as HTMLElement).queryByText("0"),
-				).not.toBeInTheDocument();
-			}
+			expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);
 
 	it(
-		"renders dashboard flash success from search params",
+		"keeps the front door static even if old dashboard flash params are passed",
 		async () => {
 			mockListSubscriptions.mockResolvedValue([]);
 			mockListVideos.mockResolvedValue([]);
 			mockListIngestRuns.mockResolvedValue([]);
 
-			render(
-				await DashboardPage({
-					searchParams: { status: "success", code: "POLL_INGEST_OK" },
-				}),
-			);
+			render(await DashboardPage());
 
-			const successFlash = screen
-				.getByText("Ingestion job queued.")
-				.closest("output");
-			expect(successFlash).not.toBeNull();
-			expect(successFlash).toHaveAttribute("aria-live", "polite");
-			expect(successFlash).toHaveAttribute("aria-atomic", "true");
 			expect(
-				screen.getByRole("link", { name: "Add your first subscription →" }),
-			).toHaveAttribute("href", "/subscriptions");
-			expect(screen.getByText("No videos yet.")).toBeInTheDocument();
+				screen.getByRole("heading", {
+					name: "From source intake to finished reading",
+				}),
+			).toBeInTheDocument();
+			expect(
+				screen.queryByText("Ingestion job queued."),
+			).not.toBeInTheDocument();
+			expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);

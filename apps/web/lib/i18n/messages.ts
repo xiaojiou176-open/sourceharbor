@@ -41,8 +41,8 @@ const MESSAGES = {
 		},
 		loading: {
 			app: {
-				title: "Dashboard loading",
-				message: "Loading the command center. Please wait.",
+				title: "Front door loading",
+				message: "Loading the front door. Please wait.",
 			},
 			feed: {
 				title: "Digest feed loading",
@@ -114,13 +114,13 @@ const MESSAGES = {
 			absoluteLocale: "en-US",
 		},
 		dashboard: {
-			metadataTitle: "Command Center",
+			metadataTitle: "Front Door",
 			metadataDescription:
-				"SourceHarbor command center for AI knowledge intake, grounded retrieval, operator triage, and builder entry through MCP and HTTP API.",
-			kicker: "SourceHarbor Command Center",
-			heroTitle: "AI knowledge control tower",
+				"Reader-first front door for source-universe intake, digest curation, published reader documents, and builder entry through MCP and HTTP API.",
+			kicker: "SourceHarbor front door",
+			heroTitle: "From source intake to finished reading",
 			heroSubtitle:
-				"Run intake, grounded retrieval, job orchestration, and agent reuse from one operator-facing command center.",
+				"Choose one first path: attach a source universe, browse the digest feed, or open the reader when the story is ready. Builder and ops rails stay one click away.",
 			frontDoors: {
 				subscriptionsTitle: "Source-universe intake",
 				subscriptionsDescription:
@@ -147,42 +147,42 @@ const MESSAGES = {
 				jobCta: "Inspect job evidence",
 			},
 			sectionHeadings: {
-				whyNow: "Why builders keep reading",
-				firstHop: "Choose your first path",
+				whyNow: "Why this front door works",
+				firstHop: "Choose your first route",
 				primaryFrontDoors: "Primary front doors",
 				builderEntryPoints: "Builder entry points",
 				compounderSurfaces: "Compounder surfaces",
 				keyMetrics: "Command center metrics",
 			},
 			whyNow: {
-				sharedTruthTitle: "One truth across Web, API, and MCP",
+				sharedTruthTitle: "One reading product across Web, API, and MCP",
 				sharedTruthDescription:
-					"Operators and agent builders read the same jobs, artifacts, and retrieval state instead of three parallel product shells.",
-				proofFirstTitle: "Proof sits next to the product story",
+					"Reader, feed, search, and MCP all point to the same jobs, artifacts, and story state instead of sending newcomers into parallel product shells.",
+				proofFirstTitle: "Proof sits next to every route",
 				proofFirstDescription:
-					"README, proof, runtime truth, and job receipts stay on one line so newcomers can trust what they see before they commit to a full run.",
-				returnLoopTitle: "Worth returning to after the first run",
+					"Every path stays honest about what is already real, what is preview-only, and what still needs a stronger receipt before you lean on it.",
+				returnLoopTitle: "Worth returning to after the first read",
 				returnLoopDescription:
-					"Watchlists, trends, briefings, bundles, and the playground make SourceHarbor a reusable control tower instead of a one-shot summarizer.",
+					"Watchlists, trends, briefings, bundles, and the playground make SourceHarbor feel like a reusable reading system instead of a one-shot summarizer.",
 			},
 			firstHop: {
-				evaluateTitle: "See whether the product is real",
+				evaluateTitle: "Read the finished surface first",
 				evaluateDescription:
-					"Start with the fastest no-boot preview, then read the proof ladder before you commit to a full local run.",
-				evaluatePrimaryCta: "Open no-boot tour",
-				evaluateSecondaryCta: "Open proof ladder",
-				operateTitle: "Run SourceHarbor as an operator",
+					"Start from the reader frontstage or the specimen detail when you want to understand the product before you decode the operator rails.",
+				evaluatePrimaryCta: "Open Reader",
+				evaluateSecondaryCta: "Open specimen detail",
+				operateTitle: "Attach a source universe",
 				operateDescription:
-					"Take the shortest truthful local path first, then move into subscriptions, search, and ops once the stack is up.",
-				operatePrimaryCta: "Open start-here guide",
-				operateSecondaryCta: "Start with Subscriptions",
-				operateTertiaryCta: "Open Ops inbox",
-				buildTitle: "Build with the same system truth",
+					"Start with tracked universes and manual intake, then move into the digest feed once the source is in motion.",
+				operatePrimaryCta: "Open Subscriptions",
+				operateSecondaryCta: "Open Feed",
+				operateTertiaryCta: "Open Trends",
+				buildTitle: "Build or inspect the system",
 				buildDescription:
-					"Jump into MCP, builders docs, and distribution status when you are here to integrate rather than just evaluate the product surface.",
+					"When you are here as a builder or operator, jump into MCP, builders docs, or ops after you already understand the reading path.",
 				buildPrimaryCta: "Open MCP quickstart",
 				buildSecondaryCta: "Open builders guide",
-				buildTertiaryCta: "Open distribution status",
+				buildTertiaryCta: "Open Ops inbox",
 			},
 			compounders: {
 				watchlistsTitle: "Watchlists are tracking objects",
@@ -209,7 +209,7 @@ const MESSAGES = {
 				proofCta: "Open Proof",
 				useCasesCta: "Open use case pages",
 			},
-			loadErrorTitle: "Unable to load the command center",
+			loadErrorTitle: "Unable to load the front door",
 			retryCurrentPage: "Retry this page",
 			metricsRegionLabel: "Key metrics",
 			metrics: {
@@ -1374,11 +1374,11 @@ const MESSAGES = {
 		dashboard: {
 			metadataTitle: "首页",
 			metadataDescription:
-				"SourceHarbor command center，用一个 operator-facing control tower 管 AI knowledge intake、grounded retrieval、ops triage 与 builder entry。",
-			kicker: "SourceHarbor Command Center",
-			heroTitle: "AI 知识控制塔",
+				"Reader-first front door，先带你进入 source-universe intake、digest curation、published reader docs，再进入 builder / MCP / ops。",
+			kicker: "SourceHarbor front door",
+			heroTitle: "从 source intake 走到 finished reading",
 			heroSubtitle:
-				"从一个面向运营者的 command center 里运行采集、grounded retrieval、任务编排和 agent reuse。",
+				"先选一条第一路径：挂接 source universe、进入 digest feed，或在故事成形后直接打开 reader。builder 和 ops rail 保持一跳可达。",
 			frontDoors: {
 				subscriptionsTitle: "Source-universe intake",
 				subscriptionsDescription:
@@ -1413,34 +1413,34 @@ const MESSAGES = {
 				keyMetrics: "控制塔指标",
 			},
 			whyNow: {
-				sharedTruthTitle: "Web、API 和 MCP 读的是同一套真相",
+				sharedTruthTitle: "One reading product across Web, API, and MCP",
 				sharedTruthDescription:
-					"运营者和 agent builder 看到的是同一批 jobs、artifacts 和 retrieval 状态，而不是三套互相打架的产品壳。",
-				proofFirstTitle: "Proof 和产品故事贴在一起",
+					"Reader、feed、search 和 MCP 都指向同一套 jobs、artifacts 和 story state，而不是把新人推到三套平行壳子里。",
+				proofFirstTitle: "Proof sits next to every route",
 				proofFirstDescription:
-					"README、proof、runtime truth 和 job receipts 讲的是同一份合同，所以新来的人能先建立信任，再决定是否完整跑起来。",
-				returnLoopTitle: "不是跑一次就结束的 summarizer",
+					"每条路径都会诚实说明什么已经成立、什么只是 preview、什么还需要更强 receipt。",
+				returnLoopTitle: "Worth returning to after the first read",
 				returnLoopDescription:
-					"Watchlists、trends、briefings、bundles 和 playground 让 SourceHarbor 更像会持续复用的控制塔，而不是一次性的摘要脚本。",
+					"Watchlists、trends、briefings、bundles 和 playground 让 SourceHarbor 更像可反复回来的阅读系统，而不是一次性 summarizer。",
 			},
 			firstHop: {
-				evaluateTitle: "先判断这个产品是不是真的",
+				evaluateTitle: "Read the finished surface first",
 				evaluateDescription:
-					"先看最快的 no-boot 预览，再读 proof ladder，确定它不是靠气氛撑起来的，然后再决定要不要完整本地启动。",
-				evaluatePrimaryCta: "打开 no-boot tour",
-				evaluateSecondaryCta: "打开 proof ladder",
-				operateTitle: "把 SourceHarbor 当成 operator 产品来跑",
+					"先从 reader frontstage 或 specimen detail 理解产品，不要一上来就去解码 operator rails。",
+				evaluatePrimaryCta: "Open Reader",
+				evaluateSecondaryCta: "Open specimen detail",
+				operateTitle: "Attach a source universe",
 				operateDescription:
-					"先走最短的本地真实路径，起来以后再进入 subscriptions、search 和 ops，不要一上来就试图理解所有门。",
-				operatePrimaryCta: "打开 start-here 指南",
-				operateSecondaryCta: "从 Subscriptions 开始",
-				operateTertiaryCta: "打开 Ops inbox",
-				buildTitle: "基于同一套系统真相继续构建",
+					"先从 tracked universes 和 manual intake 开始，再在 source 动起来之后进入 digest feed。",
+				operatePrimaryCta: "Open Subscriptions",
+				operateSecondaryCta: "Open Feed",
+				operateTertiaryCta: "Open Trends",
+				buildTitle: "Build or inspect the system",
 				buildDescription:
-					"如果你来这里是为了接入，而不是先当 operator 用，就直接进 MCP、builders 文档和 distribution status。",
+					"如果你是作为 builder 或 operator 进来，先理解 reading path，再进入 MCP、builders docs 或 ops。",
 				buildPrimaryCta: "打开 MCP quickstart",
 				buildSecondaryCta: "打开 builders 指南",
-				buildTertiaryCta: "打开 distribution status",
+				buildTertiaryCta: "打开 Ops inbox",
 			},
 			compounders: {
 				watchlistsTitle: "Watchlists 是 tracking object",
@@ -1467,7 +1467,7 @@ const MESSAGES = {
 				proofCta: "打开 Proof",
 				useCasesCta: "打开 use case 页面",
 			},
-			loadErrorTitle: "当前无法加载 command center",
+			loadErrorTitle: "当前无法加载 front door",
 			retryCurrentPage: "重试当前页面",
 			metricsRegionLabel: "关键指标",
 			metrics: {
