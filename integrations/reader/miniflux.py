@@ -11,7 +11,9 @@ DEFAULT_IMPORT_FEED_URL = "https://miniflux.app/feed.xml"
 DEFAULT_SYNC_LIMIT = 20
 
 
-def env(name: str, environ_get: Callable[[str, str | None], str | None], default: str | None = None) -> str:
+def env(
+    name: str, environ_get: Callable[[str, str | None], str | None], default: str | None = None
+) -> str:
     value = environ_get(name, default)
     if value is None:
         raise RuntimeError(f"Missing env: {name}")
@@ -164,9 +166,14 @@ def import_entries_with_http_json(
     imported = 0
     for item in items:
         job_id = str(item.get("job_id") or "").strip()
-        title = str(item.get("title") or "").strip() or f"AI Digest {job_id or int(datetime.now(UTC).timestamp())}"
+        title = (
+            str(item.get("title") or "").strip()
+            or f"AI Digest {job_id or int(datetime.now(UTC).timestamp())}"
+        )
         summary = str(item.get("summary_md") or "").strip()
-        url = str(item.get("video_url") or "").strip() or f"https://local.sourceharbor/jobs/{job_id}"
+        url = (
+            str(item.get("video_url") or "").strip() or f"https://local.sourceharbor/jobs/{job_id}"
+        )
         if not summary:
             continue
         payload = {

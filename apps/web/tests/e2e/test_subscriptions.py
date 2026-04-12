@@ -103,15 +103,11 @@ def test_subscriptions_batch_update_category(page: Page) -> None:
     _select_option(page, r"(批量设分类|Bulk category)", r"(运维|Operations)")
     page.get_by_test_id("subscription-apply-category").click()
 
-    expect(_subscription_row(page, source_value)).to_contain_text(
-        re.compile(r"(运维|Operations)")
-    )
+    expect(_subscription_row(page, source_value)).to_contain_text(re.compile(r"(运维|Operations)"))
     undo_button = page.get_by_test_id("subscription-undo-category")
     expect(undo_button).to_be_visible()
     undo_button.click()
-    expect(_subscription_row(page, source_value)).to_contain_text(
-        re.compile(r"(创作者|Creator)")
-    )
+    expect(_subscription_row(page, source_value)).to_contain_text(re.compile(r"(创作者|Creator)"))
 
 
 def test_subscriptions_save_generic_rsshub_route_template(page: Page) -> None:

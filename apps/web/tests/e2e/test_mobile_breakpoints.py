@@ -25,9 +25,10 @@ def _select_option(page: Page, label: str, option_name: str) -> None:
 
 
 def _expect_action_result(page: Page, success_code: str, success_message: str) -> None:
-    expect(
-        page
-    ).to_have_url(re.compile(fr".*status=(success|error).*(code={success_code}|code=ERR_REQUEST_FAILED)"), timeout=12_000)
+    expect(page).to_have_url(
+        re.compile(rf".*status=(success|error).*(code={success_code}|code=ERR_REQUEST_FAILED)"),
+        timeout=12_000,
+    )
     if success_code in page.url:
         expect(page.locator("p.alert.success")).to_contain_text(success_message)
         return
@@ -55,7 +56,9 @@ def _click_dashboard_action(
             return
         except AssertionError:
             body_text = page.locator("body").inner_text()
-            has_transient_error = "Internal Server Error" in body_text or "code=ERR_REQUEST_FAILED" in page.url
+            has_transient_error = (
+                "Internal Server Error" in body_text or "code=ERR_REQUEST_FAILED" in page.url
+            )
             if attempt == 0 and has_transient_error:
                 continue
             raise
@@ -107,8 +110,7 @@ def test_mobile_profile_layout_and_cta_visibility(page: Page) -> None:
     viewport = page.viewport_size
     assert viewport is not None
     assert viewport["width"] <= 430, (
-        "expected mobile viewport width <= 430; "
-        "run with --web-e2e-device-profile=mobile"
+        "expected mobile viewport width <= 430; run with --web-e2e-device-profile=mobile"
     )
 
     expect(page.get_by_role("heading", name="拉取采集")).to_be_visible()

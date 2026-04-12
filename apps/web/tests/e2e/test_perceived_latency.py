@@ -18,7 +18,9 @@ def _goto_feed_ready(page: Page) -> None:
     for attempt in range(3):
         page.goto("/feed", wait_until="domcontentloaded")
         try:
-            expect(page.get_by_role("heading", name=re.compile(r"Digest Feed|主阅读流"))).to_be_visible(timeout=12_000)
+            expect(
+                page.get_by_role("heading", name=re.compile(r"Digest Feed|主阅读流"))
+            ).to_be_visible(timeout=12_000)
             return
         except AssertionError:
             body_text = page.locator("body").inner_text()
@@ -87,6 +89,5 @@ def test_perceived_latency_pending_feedback_with_cpu_throttle(page: Page) -> Non
         """
     )
     assert trace_result["hasBusy"] or trace_result["hasLoading"], (
-        "expected pending/busy feedback within 450ms after click; "
-        f"trace={trace_result['trace']}"
+        f"expected pending/busy feedback within 450ms after click; trace={trace_result['trace']}"
     )

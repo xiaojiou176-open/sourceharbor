@@ -27,9 +27,7 @@ def _select_option(page: Page, label: str, option_name: str) -> None:
     page.get_by_role("option", name=option_name).click()
 
 
-def _require_mock_api_state(
-    pytestconfig: pytest.Config, request: pytest.FixtureRequest
-):
+def _require_mock_api_state(pytestconfig: pytest.Config, request: pytest.FixtureRequest):
     option_value = pytestconfig.getoption("--web-e2e-use-mock-api")
     env_value = os.environ.get("WEB_E2E_USE_MOCK_API")
     enabled = any(

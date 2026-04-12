@@ -89,8 +89,7 @@ def test_reduced_motion_route_transition_has_no_lingering_animation(page: Page) 
 
     snapshot = _collect_route_motion_snapshot(page)
     assert snapshot["mediaReduced"] is True, (
-        "expected prefers-reduced-motion: reduce; "
-        "run with --web-e2e-reduced-motion=reduce"
+        "expected prefers-reduced-motion: reduce; run with --web-e2e-reduced-motion=reduce"
     )
 
     page.wait_for_timeout(450)  # e2e-strictness: allow-hard-wait

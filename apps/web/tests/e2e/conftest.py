@@ -25,7 +25,9 @@ from support.runtime_utils import (
     worker_dist_dir,
 )
 
-PROJECT_ROOT = Path(os.environ.get("SOURCE_HARBOR_REPO_ROOT") or Path(__file__).resolve().parents[4])
+PROJECT_ROOT = Path(
+    os.environ.get("SOURCE_HARBOR_REPO_ROOT") or Path(__file__).resolve().parents[4]
+)
 WEB_DIR = PROJECT_ROOT / "apps" / "web"
 WEB_E2E_ARTIFACT_ROOT = PROJECT_ROOT / ".runtime-cache" / "evidence" / "tests" / "web-e2e-artifacts"
 WEB_E2E_VIDEO_DIR = WEB_E2E_ARTIFACT_ROOT / "videos"
@@ -44,6 +46,7 @@ class BrowserNewContextKwargs(TypedDict):
     has_touch: bool
     device_scale_factor: int
     record_video_dir: NotRequired[str]
+
 
 for artifact_dir in (WEB_E2E_VIDEO_DIR, WEB_E2E_TRACE_DIR, WEB_E2E_SCREENSHOT_DIR):
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -232,9 +235,7 @@ def _read_cpu_throttle(config: pytest.Config) -> int:
     try:
         throttle = int(raw)
     except ValueError as exc:
-        raise RuntimeError(
-            f"--web-e2e-cpu-throttle must be an integer >=1, got: {raw!r}"
-        ) from exc
+        raise RuntimeError(f"--web-e2e-cpu-throttle must be an integer >=1, got: {raw!r}") from exc
     if throttle < 1:
         raise RuntimeError(f"--web-e2e-cpu-throttle must be >=1, got: {throttle}")
     return throttle
@@ -317,9 +318,7 @@ def mock_api_server(pytestconfig: pytest.Config):
 
 
 @pytest.fixture(scope="session")
-def web_base_url(
-    pytestconfig: pytest.Config, request: pytest.FixtureRequest
-):
+def web_base_url(pytestconfig: pytest.Config, request: pytest.FixtureRequest):
     use_mock_api = _read_use_mock_api(pytestconfig)
     real_api_base_url = _read_real_api_base_url(pytestconfig)
     external_base_url = parse_external_web_base_url(
@@ -471,9 +470,7 @@ def browser(pytestconfig: pytest.Config):
 
 
 @pytest.fixture
-def page(
-    browser: Browser, web_base_url: str, request: pytest.FixtureRequest
-):
+def page(browser: Browser, web_base_url: str, request: pytest.FixtureRequest):
     artifact_slug = slugify_nodeid(request.node.nodeid)
     trace_mode = _read_trace_mode(request.config)
     video_mode = _read_video_mode(request.config)

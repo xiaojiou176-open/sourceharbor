@@ -62,9 +62,7 @@ def test_jobs_to_feed_item_navigation(page: Page, pytestconfig: pytest.Config) -
         expect(page.get_by_role("heading", name="Find a job")).to_be_visible()
 
         feed_link = page.get_by_role("link", name="View in digest feed")
-        expect(feed_link).to_have_attribute(
-            "href", re.compile(rf"/feed\?item={re.escape(job_id)}")
-        )
+        expect(feed_link).to_have_attribute("href", re.compile(rf"/feed\?item={re.escape(job_id)}"))
         feed_link.click()
     else:
         job_id = _create_real_job(pytestconfig)

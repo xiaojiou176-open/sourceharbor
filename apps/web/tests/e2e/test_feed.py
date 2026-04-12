@@ -14,7 +14,9 @@ def _select_option(page: Page, label: str, option_name: str) -> None:
     try:
         option.first.click(timeout=3_000)
     except TimeoutError:
-        page.locator("[data-slot='select-content']").get_by_text(option_name, exact=True).first.click()
+        page.locator("[data-slot='select-content']").get_by_text(
+            option_name, exact=True
+        ).first.click()
 
 
 def _goto_feed_ready(page: Page) -> None:
@@ -22,9 +24,7 @@ def _goto_feed_ready(page: Page) -> None:
     expect(page.get_by_role("heading", name="Digest Feed")).to_be_visible()
 
 
-def _require_mock_api_state(
-    pytestconfig: pytest.Config, request: pytest.FixtureRequest
-):
+def _require_mock_api_state(pytestconfig: pytest.Config, request: pytest.FixtureRequest):
     option_value = pytestconfig.getoption("--web-e2e-use-mock-api")
     env_value = os.environ.get("WEB_E2E_USE_MOCK_API")
     enabled = any(
@@ -68,7 +68,9 @@ def test_feed_empty_state_or_main_flow_renders_without_error(page: Page) -> None
     entry_links = page.locator(".feed-entry-link")
     if entry_links.count() > 0:
         entry_links.first.click()
-        expect(page.locator("[data-reading-state='content'], [data-reading-state='loading']")).to_be_visible()
+        expect(
+            page.locator("[data-reading-state='content'], [data-reading-state='loading']")
+        ).to_be_visible()
 
 
 def test_feed_pagination_links_with_mock_api(
@@ -138,7 +140,9 @@ def test_feed_retry_link_on_error_with_mock_api(
     page.goto("/feed?source=youtube&page=2&cursor=cursor-current", wait_until="domcontentloaded")
     retry_link = page.get_by_role("link", name="Retry current page")
     expect(retry_link).to_be_visible()
-    expect(retry_link).to_have_attribute("href", "/feed?source=youtube&page=2&cursor=cursor-current")
+    expect(retry_link).to_have_attribute(
+        "href", "/feed?source=youtube&page=2&cursor=cursor-current"
+    )
     retry_link.click()
     expect(page).to_have_url(re.compile(r"/feed\?source=youtube&page=2&cursor=cursor-current$"))
 

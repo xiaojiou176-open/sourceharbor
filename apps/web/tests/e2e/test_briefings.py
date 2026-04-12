@@ -46,9 +46,7 @@ def test_briefings_page_with_mock_api(page: Page, pytestconfig: pytest.Config) -
     expect(source_link).to_have_attribute("href", "https://example.com/retry-policy")
 
 
-def test_briefings_to_ask_flow_with_mock_api(
-    page: Page, pytestconfig: pytest.Config
-) -> None:
+def test_briefings_to_ask_flow_with_mock_api(page: Page, pytestconfig: pytest.Config) -> None:
     _require_mock_api(pytestconfig)
 
     page.goto("/briefings?watchlist_id=wl-1", wait_until="domcontentloaded")

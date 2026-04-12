@@ -13,7 +13,9 @@ async def fetch_article_html(
     follow_redirects: bool = True,
     async_client_cls: Any = httpx.AsyncClient,
 ) -> str:
-    async with async_client_cls(timeout=timeout_seconds, follow_redirects=follow_redirects) as client:
+    async with async_client_cls(
+        timeout=timeout_seconds, follow_redirects=follow_redirects
+    ) as client:
         response = await client.get(source_url)
         response.raise_for_status()
         return response.text
