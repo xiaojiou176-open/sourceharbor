@@ -14,7 +14,7 @@ TEMPORAL_LOG_PATH="$LOG_DIR/temporal.log"
 CORE_POSTGRES_PORT_DEFAULT="15432"
 TEMPORAL_PORT_DEFAULT="7233"
 
-# shellcheck source=../lib/load_env.sh
+# shellcheck source=scripts/lib/load_env.sh
 source "$ROOT_DIR/scripts/lib/load_env.sh"
 
 eval "$(python3 "$ROOT_DIR/scripts/ci/contract.py" shell-exports)"
