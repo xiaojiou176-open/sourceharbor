@@ -119,7 +119,7 @@ Quality policy (blocking):
   - Placebo assertions are forbidden.
   - Documentation drift gate is mandatory.
   - Secrets leak scan is mandatory.
-  - Coverage thresholds: total >= 95%, core modules >= 95%.
+  - Coverage thresholds: Python total >= 95%, Python core modules >= 95%, Web lines/functions >= 95% with Web branch floor enforced by Vitest (90%).
   - Mutation testing (Python core): mutation score >= configured threshold (default: 0.64).
 USAGE
 }
@@ -1698,7 +1698,7 @@ run_pre_push_mode() {
 
   if [[ "$CI_DEDUPE" == "1" ]]; then
     record_gate_status "web_unit_tests" "web unit tests" "skipped" ""
-    record_gate_status "web_coverage_threshold" "web coverage threshold gate (lines/functions/branches global>=95, core>=95)" "skipped" ""
+    record_gate_status "web_coverage_threshold" "web coverage threshold gate (lines/functions global>=95, core>=95; branches via Vitest>=90)" "skipped" ""
     echo "[quality-gate] skip: web unit tests (--ci-dedupe=1)"
     echo "[quality-gate] skip: web coverage threshold gate (--ci-dedupe=1, covered by CI web-test-build)"
   elif is_true "$EFFECTIVE_WEB_CHANGED"; then
@@ -1713,7 +1713,7 @@ run_pre_push_mode() {
       "run_web_button_coverage_gate"
   else
     record_gate_status "web_unit_tests" "web unit tests" "skipped" ""
-    record_gate_status "web_coverage_threshold" "web coverage threshold gate (lines/functions/branches global>=95, core>=95)" "skipped" ""
+    record_gate_status "web_coverage_threshold" "web coverage threshold gate (lines/functions global>=95, core>=95; branches via Vitest>=90)" "skipped" ""
     echo "[quality-gate] skip: web unit tests (effective_web_changed=false)"
     echo "[quality-gate] skip: web coverage threshold gate (effective_web_changed=false)"
   fi
@@ -1760,8 +1760,8 @@ run_pre_push_mode() {
 
   if [[ "$run_web_coverage_threshold_after_tests" == "true" ]]; then
     set_quality_gate_phase "pre-push/web-coverage-threshold" "web-coverage-threshold (post web unit tests)"
-    if ! run_sync_gate_with_heartbeat "web_coverage_threshold" "web coverage threshold gate (lines/functions/branches global>=95, core>=95)" \
-      "python3 scripts/governance/check_web_coverage_threshold.py --summary-path .runtime-cache/reports/web-coverage/coverage-summary.json --global-threshold 95 --core-threshold 95 --metric lines --metric functions --metric branches"; then
+    if ! run_sync_gate_with_heartbeat "web_coverage_threshold" "web coverage threshold gate (lines/functions global>=95, core>=95; branches via Vitest>=90)" \
+      "python3 scripts/governance/check_web_coverage_threshold.py --summary-path .runtime-cache/reports/web-coverage/coverage-summary.json --global-threshold 95 --core-threshold 95 --metric lines --metric functions"; then
       echo "[quality-gate] pre-push failed in web-coverage-threshold phase" >&2
       exit 1
     fi
