@@ -15,7 +15,7 @@ RUN rm -f /etc/apt/sources.list.d/yarn.list \
   && find /etc/apt -type f \( -name '*.list' -o -name '*.sources' \) -print0 \
     | xargs -0 sed -i 's|http://deb.debian.org|https://deb.debian.org|g; s|http://security.debian.org|https://security.debian.org|g' \
   && apt-get update \
-  && apt-get install -y --no-install-recommends curl ca-certificates git gnupg jq ripgrep tar \
+  && apt-get install -y --no-install-recommends curl ca-certificates git gh gnupg jq ripgrep tar \
   && install -d -m 0755 /etc/apt/keyrings \
   && key_tmp="$(mktemp)" \
   && curl --http1.1 --retry 5 --retry-all-errors --retry-delay 2 -fL \

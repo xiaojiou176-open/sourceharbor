@@ -188,11 +188,16 @@ use_local_standard_env_fallback() {
 run_in_standard_env() {
   local command=("$@")
   local runtime_database_url runtime_temporal_target_host
+  local runtime_github_token
   local extra_mounts=()
   local pull_stderr_file pull_message
 
   runtime_database_url="$(resolve_standard_env_runtime_value DATABASE_URL "${DATABASE_URL:-}")"
   runtime_temporal_target_host="$(resolve_standard_env_runtime_value TEMPORAL_TARGET_HOST "${TEMPORAL_TARGET_HOST:-}")"
+  runtime_github_token="${GITHUB_TOKEN:-}"
+  if [[ -z "$runtime_github_token" ]] && command -v gh >/dev/null 2>&1 && gh auth status -t >/dev/null 2>&1; then
+    runtime_github_token="$(gh auth token 2>/dev/null || true)"
+  fi
 
   append_standard_env_git_mounts extra_mounts
   ensure_standard_env_docker_daemon
@@ -247,6 +252,7 @@ run_in_standard_env() {
     -e TEMPORAL_TASK_QUEUE="${TEMPORAL_TASK_QUEUE:-}" \
     -e PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-$STRICT_CI_PLAYWRIGHT_BROWSERS_PATH}" \
     -e UV_CACHE_DIR="${UV_CACHE_DIR:-$STRICT_CI_UV_CACHE_DIR}" \
+    -e GITHUB_TOKEN="$runtime_github_token" \
     "$STANDARD_ENV_IMAGE" \
     "${command[@]}"
 }

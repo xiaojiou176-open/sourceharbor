@@ -259,6 +259,15 @@ def _build_observability_checks(repo_root: Path) -> list[dict[str, object]]:
             ]
 
         try:
+            fallback_env = os.environ.copy()
+            existing_pythonpath = fallback_env.get("PYTHONPATH", "")
+            fallback_pythonpath = [
+                str(repo_root),
+                str(repo_root / "apps" / "worker"),
+            ]
+            if existing_pythonpath:
+                fallback_pythonpath.append(existing_pythonpath)
+            fallback_env["PYTHONPATH"] = ":".join(fallback_pythonpath)
             probe = subprocess.run(
                 [
                     "uv",
@@ -288,6 +297,7 @@ def _build_observability_checks(repo_root: Path) -> list[dict[str, object]]:
                     ),
                 ],
                 cwd=repo_root,
+                env=fallback_env,
                 text=True,
                 capture_output=True,
                 check=False,

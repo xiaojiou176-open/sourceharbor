@@ -2,9 +2,13 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 sys.dont_write_bytecode = True
 
@@ -26,18 +30,47 @@ def _origin_repo_slug() -> str:
     raise RuntimeError(f"unsupported origin remote for GitHub alert checks: {remote}")
 
 
-def _gh_api_json(path: str) -> list[dict[str, object]]:
-    result = subprocess.run(
-        ["gh", "api", path],
-        text=True,
-        capture_output=True,
-        check=False,
+def _rest_api_json(path: str) -> list[dict[str, object]]:
+    token = os.getenv("GITHUB_TOKEN", "").strip()
+    if not token:
+        raise RuntimeError("gh unavailable and GITHUB_TOKEN not set")
+
+    request = Request(
+        f"https://api.github.com/{path}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "sourceharbor-remote-security-alerts",
+        },
     )
-    if result.returncode != 0:
-        stderr = result.stderr.strip() or result.stdout.strip()
-        raise RuntimeError(stderr or f"gh api failed for {path}")
-    payload = json.loads(result.stdout or "[]")
+    try:
+        with urlopen(request) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore").strip()
+        raise RuntimeError(detail or f"GitHub REST API failed with HTTP {exc.code}") from exc
+    except URLError as exc:
+        raise RuntimeError(f"GitHub REST API unreachable: {exc}") from exc
+
     return payload if isinstance(payload, list) else []
+
+
+def _gh_api_json(path: str) -> list[dict[str, object]]:
+    if shutil.which("gh"):
+        result = subprocess.run(
+            ["gh", "api", path],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            payload = json.loads(result.stdout or "[]")
+            return payload if isinstance(payload, list) else []
+        stderr = result.stderr.strip() or result.stdout.strip()
+        if "No such file or directory" not in stderr:
+            raise RuntimeError(stderr or f"gh api failed for {path}")
+    return _rest_api_json(path)
 
 
 def main() -> int:
