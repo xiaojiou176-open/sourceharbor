@@ -997,6 +997,148 @@ def test_render_newcomer_result_proof_records_workspace_freshness(
     assert worktree_state["workspace_freshness"] == "stale"
 
 
+def test_render_newcomer_result_proof_accepts_repo_side_strict_receipt(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _load_governance_module(
+        "render_newcomer_result_proof_repo_side_strict_test",
+        "scripts/governance/render_newcomer_result_proof.py",
+    )
+    head = "2222222222222222222222222222222222222222"
+
+    manifests_dir = tmp_path / ".runtime-cache" / "run" / "manifests"
+    logs_dir = tmp_path / ".runtime-cache" / "logs" / "governance"
+    manifests_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    repo_side_manifest = {
+        "version": 1,
+        "run_id": "repo-side-pass-run",
+        "entrypoint": "repo-side-strict-ci",
+        "channel": "governance",
+        "argv": ["--mode", "pre-push"],
+        "created_at": "2026-03-23T10:00:00Z",
+        "repo_commit": head,
+        "env_profile": "unknown",
+        "log_path": ".runtime-cache/logs/governance/repo-side-pass-run.jsonl",
+        "gate_run_id": "repo-side-pass-run",
+    }
+    (manifests_dir / "repo-side-pass-run.json").write_text(
+        json.dumps(repo_side_manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (logs_dir / "repo-side-pass-run.jsonl").write_text(
+        json.dumps(
+            {"run_id": "repo-side-pass-run", "event": "entrypoint_bootstrap"},
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (logs_dir / "governance-gate.jsonl").write_text(
+        json.dumps(
+            {"run_id": "repo-side-pass-run", "event": "complete", "message": "PASS"},
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    governance_manifest = dict(repo_side_manifest)
+    governance_manifest["run_id"] = "gov-pass-run"
+    governance_manifest["entrypoint"] = "governance-audit"
+    governance_manifest["log_path"] = ".runtime-cache/logs/governance/gov-pass-run.jsonl"
+    (manifests_dir / "gov-pass-run.json").write_text(
+        json.dumps(governance_manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (logs_dir / "gov-pass-run.jsonl").write_text(
+        json.dumps(
+            {"run_id": "gov-pass-run", "event": "complete", "message": "PASS"},
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    validate_manifest = dict(repo_side_manifest)
+    validate_manifest["run_id"] = "validate-run"
+    validate_manifest["entrypoint"] = "validate-profile"
+    validate_manifest["log_path"] = ".runtime-cache/logs/governance/validate-run.jsonl"
+    (manifests_dir / "validate-run.json").write_text(
+        json.dumps(validate_manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (logs_dir / "validate-run.jsonl").write_text(
+        json.dumps(
+            {"run_id": "validate-run", "event": "complete", "message": "PASS"},
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    resolved_env = tmp_path / ".runtime-cache" / "tmp" / ".env.local.resolved"
+    resolved_env.parent.mkdir(parents=True, exist_ok=True)
+    resolved_env.write_text("API_PORT=9000\n", encoding="utf-8")
+
+    _write_json(
+        tmp_path / ".runtime-cache/reports/evals/eval-regression.json",
+        {
+            "version": 1,
+            "status": "passed",
+            "pass_rate": 0.95,
+        },
+    )
+    _write_meta(
+        tmp_path / ".runtime-cache/reports/evals/eval-regression.json",
+        source_commit=head,
+        verification_scope="eval-regression",
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/current-proof-commit-alignment.json",
+        {"version": 1, "status": "pass"},
+    )
+    _write_meta(
+        tmp_path / ".runtime-cache/reports/governance/current-proof-commit-alignment.json",
+        source_commit=head,
+        verification_scope="current-proof-commit-alignment",
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/standard-image-publish-readiness.json",
+        {"version": 1, "status": "ready"},
+    )
+    _write_meta(
+        tmp_path / ".runtime-cache/reports/governance/standard-image-publish-readiness.json",
+        source_commit=head,
+        verification_scope="standard-image-publish-readiness",
+    )
+
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "current_git_commit", lambda: head)
+    monkeypatch.setattr(
+        module,
+        "write_json_artifact",
+        lambda _path, report, **_kwargs: captured.setdefault("report", report),
+    )
+
+    exit_code = module.main()
+
+    assert exit_code == 0
+    report = captured["report"]
+    assert isinstance(report, dict)
+    strict_receipt = report["repo_side_strict_receipt"]
+    assert isinstance(strict_receipt, dict)
+    assert strict_receipt["status"] == "pass"
+    manifest = strict_receipt["manifest"]
+    assert isinstance(manifest, dict)
+    assert manifest["entrypoint"] == "repo-side-strict-ci"
+    verdict = report["current_workspace_verdict"]
+    assert isinstance(verdict, dict)
+    assert verdict["status"] == "pass"
+
+
 def test_newcomer_workspace_verdict_missing_preflight_stays_missing_even_when_dirty() -> None:
     module = _load_governance_module(
         "render_newcomer_result_proof_missing_preflight_test",
