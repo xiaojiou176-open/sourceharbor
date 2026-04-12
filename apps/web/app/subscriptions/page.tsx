@@ -278,11 +278,11 @@ export default async function SubscriptionsPage({
 		>
 			<div className="folo-page-header">
 				<p className="folo-page-kicker">{copy.kicker}</p>
-					<h1
-						className={`folo-page-title ${editorialSerif.className}`}
-						data-route-heading
-						tabIndex={-1}
-					>
+				<h1
+					className={`folo-page-title ${editorialSerif.className}`}
+					data-route-heading
+					tabIndex={-1}
+				>
 					{copy.heroTitle}
 				</h1>
 				<p className="folo-page-subtitle">{copy.heroSubtitle}</p>

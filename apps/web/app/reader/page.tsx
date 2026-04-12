@@ -87,11 +87,11 @@ export default async function ReaderPage() {
 							<p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
 								{shelfUnavailable ? "Shelf status" : "Editorial reading desk"}
 							</p>
-								<h1
-									data-route-heading
-									tabIndex={-1}
-									className={`max-w-4xl text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl ${editorialSerif.className}`}
-								>
+							<h1
+								data-route-heading
+								tabIndex={-1}
+								className={`max-w-4xl text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl ${editorialSerif.className}`}
+							>
 								{shelfUnavailable
 									? "Reader shelf is temporarily unavailable"
 									: "Read the strongest finished unit before you touch the operator rails"}

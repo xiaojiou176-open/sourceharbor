@@ -563,9 +563,8 @@ aside[aria-label="Sidebar navigation"] a:not([data-slot="button"]) {
 }
 
 aside[aria-label="Sidebar navigation"] a:not([data-slot="button"]):hover,
-aside[aria-label="Sidebar navigation"] a[aria-current="page"]:not(
-		[data-slot="button"]
-	) {
+aside[aria-label="Sidebar navigation"]
+	a[aria-current="page"]:not([data-slot="button"]) {
 	color: var(--color-fg);
 	opacity: 1;
 }

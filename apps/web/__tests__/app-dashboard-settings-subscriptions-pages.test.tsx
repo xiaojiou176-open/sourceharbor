@@ -372,9 +372,9 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(
 				within(metrics[1] as HTMLElement).getByText("3"),
 			).toBeInTheDocument();
-				expect(
-					within(metrics[2] as HTMLElement).getByText("1"),
-				).toBeInTheDocument();
+			expect(
+				within(metrics[2] as HTMLElement).getByText("1"),
+			).toBeInTheDocument();
 			expect(
 				within(metrics[3] as HTMLElement).getByText("1"),
 			).toBeInTheDocument();

@@ -221,11 +221,12 @@ const MESSAGES = {
 				discoveredVideos: {
 					title: "Discovered videos",
 					unavailable: "Discovered video data is temporarily unavailable",
-					},
-					runningJobs: {
-						title: "Running / queued ingest runs",
-						unavailable: "Running and queued ingest run data is temporarily unavailable",
-					},
+				},
+				runningJobs: {
+					title: "Running / queued ingest runs",
+					unavailable:
+						"Running and queued ingest run data is temporarily unavailable",
+				},
 				failedJobs: {
 					title: "Failed jobs",
 					unavailable: "Failed job data is temporarily unavailable",
@@ -1478,11 +1479,11 @@ const MESSAGES = {
 				discoveredVideos: {
 					title: "已发现视频",
 					unavailable: "已发现视频数据暂不可用",
-					},
-					runningJobs: {
-						title: "运行中 / 排队 ingest runs",
-						unavailable: "运行中和排队 ingest run 数据暂不可用",
-					},
+				},
+				runningJobs: {
+					title: "运行中 / 排队 ingest runs",
+					unavailable: "运行中和排队 ingest run 数据暂不可用",
+				},
 				failedJobs: {
 					title: "失败任务",
 					unavailable: "失败任务数据暂不可用",

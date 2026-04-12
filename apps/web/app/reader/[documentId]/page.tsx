@@ -103,11 +103,11 @@ export default async function ReaderDetailPage({
 						<p className="text-xs font-semibold uppercase tracking-[0.28em] text-foreground/70">
 							Published reading unit
 						</p>
-							<h1
-								data-route-heading
-								tabIndex={-1}
-								className={`max-w-4xl text-4xl leading-[0.98] tracking-tight md:text-5xl xl:text-6xl ${editorialSerif.className}`}
-							>
+						<h1
+							data-route-heading
+							tabIndex={-1}
+							className={`max-w-4xl text-4xl leading-[0.98] tracking-tight md:text-5xl xl:text-6xl ${editorialSerif.className}`}
+						>
 							{document.title}
 						</h1>
 						<p className="max-w-4xl text-base leading-8 text-foreground/75">

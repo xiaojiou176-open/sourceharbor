@@ -125,16 +125,16 @@ export function SyncNowButton({ sessionToken }: SyncNowButtonProps) {
 					data-part="button-content"
 					data-state={state}
 				>
-						<Badge
-							variant={feedback.badgeVariant}
-							className={cn(
-								"rounded-full px-1.5 py-0 text-[10px] font-semibold",
-								state === "idle" &&
-									"border-white/30 bg-white/12 text-white dark:border-white/20 dark:bg-white/10",
-							)}
-							data-part="state-badge"
-							data-state={state}
-							aria-hidden="true"
+					<Badge
+						variant={feedback.badgeVariant}
+						className={cn(
+							"rounded-full px-1.5 py-0 text-[10px] font-semibold",
+							state === "idle" &&
+								"border-white/30 bg-white/12 text-white dark:border-white/20 dark:bg-white/10",
+						)}
+						data-part="state-badge"
+						data-state={state}
+						aria-hidden="true"
 					>
 						{feedback.badgeLabel}
 					</Badge>
