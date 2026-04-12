@@ -55,8 +55,19 @@ def _extract_aria_label(attrs: str) -> str | None:
     return match.group("double") or match.group("single")
 
 
-def _iter_source_files(source_roots: list[Path]) -> list[Path]:
+def _iter_source_files(source_roots: list[Path], source_files: list[Path]) -> list[Path]:
     files: list[Path] = []
+    if source_files:
+        for file_path in source_files:
+            if not file_path.is_file():
+                continue
+            if file_path.suffix != ".tsx":
+                continue
+            parts = set(file_path.parts)
+            if {"__tests__", "node_modules", ".next"} & parts:
+                continue
+            files.append(file_path)
+        return files
     for root in source_roots:
         for file_path in sorted(root.glob("**/*.tsx")):
             parts = set(file_path.parts)
@@ -66,9 +77,9 @@ def _iter_source_files(source_roots: list[Path]) -> list[Path]:
     return files
 
 
-def collect_interactive_labels(source_roots: list[Path]) -> dict[str, set[str]]:
+def collect_interactive_labels(source_roots: list[Path], source_files: list[Path]) -> dict[str, set[str]]:
     labels: dict[str, set[str]] = {}
-    for file_path in _iter_source_files(source_roots):
+    for file_path in _iter_source_files(source_roots, source_files):
         content = file_path.read_text(encoding="utf-8")
         for pattern in (BUTTON_PATTERN, LINK_PATTERN, ANCHOR_PATTERN):
             for match in pattern.finditer(content):
@@ -145,6 +156,13 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--source-file",
+        action="append",
+        type=Path,
+        default=[],
+        help="Specific tsx source files to audit instead of scanning whole roots.",
+    )
+    parser.add_argument(
         "--app-root",
         type=Path,
         default=None,
@@ -193,10 +211,15 @@ def main() -> int:
         if not 0 <= value <= 1:
             raise SystemExit(f"{name} must be in [0,1]")
     source_roots = list(args.source_root)
+    source_files = [path for path in args.source_file if path is not None]
     if args.app_root is not None:
         source_roots = [args.app_root]
-    if not source_roots:
+    if not source_roots and not source_files:
         source_roots = [Path("apps/web/app"), Path("apps/web/components")]
+    if source_files:
+        for source_file in source_files:
+            if not source_file.is_file():
+                raise SystemExit(f"source file not found: {source_file}")
     for source_root in source_roots:
         if not source_root.is_dir():
             raise SystemExit(f"source root not found: {source_root}")
@@ -205,7 +228,7 @@ def main() -> int:
     if not args.unit_test_root.is_dir():
         raise SystemExit(f"unit test root not found: {args.unit_test_root}")
 
-    app_labels = collect_interactive_labels(source_roots)
+    app_labels = collect_interactive_labels(source_roots, source_files)
     e2e_labels = collect_pytest_e2e_labels(args.e2e_root)
     unit_labels = collect_rtl_unit_labels(args.unit_test_root)
     total = len(app_labels)

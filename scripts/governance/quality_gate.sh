@@ -1021,6 +1021,37 @@ run_api_real_smoke_local_gate() {
   ./scripts/ci/api_real_smoke.sh --profile ci
 }
 
+run_web_button_coverage_gate() {
+  local -a args=(
+    python3
+    scripts/governance/check_web_button_coverage.py
+    --threshold 1.0
+    --e2e-threshold 0.6
+    --unit-threshold 0.93
+  )
+  local changed_source_count=0
+  local relative_path=""
+
+  if [[ -n "$CHANGED_FILE_LIST" ]]; then
+    while IFS= read -r relative_path; do
+      [[ -n "$relative_path" ]] || continue
+      [[ "$relative_path" == apps/web/* ]] || continue
+      [[ "$relative_path" == *.tsx ]] || continue
+      [[ "$relative_path" == *"/__tests__/"* ]] && continue
+      [[ "$relative_path" == *"/tests/e2e/"* ]] && continue
+      args+=(--source-file "$relative_path")
+      changed_source_count=$((changed_source_count + 1))
+    done <<< "$CHANGED_FILE_LIST"
+  fi
+
+  if (( changed_source_count == 0 )); then
+    echo "[quality-gate] web interactive coverage gate skipped: no changed interactive web sources"
+    return 0
+  fi
+
+  "${args[@]}"
+}
+
 run_web_dependency_policy_gate() {
   node - <<'JS'
 const fs = require("fs");
@@ -1679,7 +1710,7 @@ run_pre_push_mode() {
     run_async_gate "web_build" "web build" \
       "SOURCE_HARBOR_REPO_ROOT=\"$ROOT_DIR\" npm --prefix \"$WEB_RUNTIME_WEB_DIR\" run build"
     run_async_gate "web_button_coverage" "web interactive coverage gate (combined=1.0 e2e=0.6 unit=0.93)" \
-      "python3 scripts/governance/check_web_button_coverage.py --threshold 1.0 --e2e-threshold 0.6 --unit-threshold 0.93"
+      "run_web_button_coverage_gate"
   else
     record_gate_status "web_unit_tests" "web unit tests" "skipped" ""
     record_gate_status "web_coverage_threshold" "web coverage threshold gate (lines/functions/branches global>=95, core>=95)" "skipped" ""
