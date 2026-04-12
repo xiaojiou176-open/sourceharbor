@@ -80,21 +80,21 @@ const OFFICIAL_SURFACE_SNAPSHOTS = [
 	},
 	{
 		name: "Claude Code",
-		status: "Submission ready, review still pending",
+		status: "Bundle ships now, official listing still unverified",
 		detail:
-			"Bundle is ready now, but live listing still needs marketplace submit and review proof.",
+			"Source-installable bundle exists today, but any official marketplace listing still needs submit and read-back proof.",
 	},
 	{
 		name: "OpenClaw / ClawHub",
-		status: "Template ready, publish receipt still missing",
+		status: "OpenClaw pack ships now, ClawHub still needs owner publish",
 		detail:
-			"Local pack and package template exist, but a real public publish receipt is still missing.",
+			"Repo pack and publish-shaped template exist, but a live ClawHub receipt still depends on owner login and publish.",
 	},
 	{
 		name: "Official MCP Registry",
-		status: "Metadata ready, install proof still missing",
+		status: "Live listed at 0.1.14, repo packet is ahead",
 		detail:
-			"Registry-shaped metadata exists, but live registry publication still needs install-artifact and namespace proof.",
+			"The registry entry is already live, while the repo-tracked package and directory packet have moved ahead of the public version.",
 	},
 ] as const;
 

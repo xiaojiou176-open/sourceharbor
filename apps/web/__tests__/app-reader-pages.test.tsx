@@ -1,7 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ReaderDocumentPage from "@/app/reader/[documentId]/page";
 import ReaderPage from "@/app/reader/page";
+import { DEMO_READER_DOCUMENT_ID } from "@/lib/reader/demo-document";
 
 const mockListPublishedReaderDocuments = vi.fn();
 const mockGetNavigationBrief = vi.fn();
@@ -181,5 +182,31 @@ describe("reader pages", () => {
 		expect(screen.getByTestId("reader-source-drawer")).toHaveTextContent(
 			"Reader specimen edition",
 		);
+	});
+
+	it("renders an honest shelf error instead of pretending the shelf is empty", async () => {
+		mockListPublishedReaderDocuments.mockRejectedValue(new Error("network failed"));
+		mockGetNavigationBrief.mockRejectedValue(new Error("network failed"));
+
+		render(await ReaderPage());
+
+		expect(
+			screen.getByRole("heading", {
+				name: "Reader shelf is temporarily unavailable",
+				level: 1,
+			}),
+		).toBeInTheDocument();
+		const alert = screen.getByRole("alert");
+		expect(alert).toHaveTextContent("Reader shelf is temporarily unavailable");
+		expect(
+			within(alert).getByRole("link", { name: "Open specimen detail" }),
+		).toHaveAttribute("href", `/reader/${DEMO_READER_DOCUMENT_ID}`);
+		expect(within(alert).getByRole("link", { name: "Open ops desk" })).toHaveAttribute(
+			"href",
+			"/ops",
+		);
+		expect(
+			screen.queryByText("No published reader documents yet"),
+		).not.toBeInTheDocument();
 	});
 });

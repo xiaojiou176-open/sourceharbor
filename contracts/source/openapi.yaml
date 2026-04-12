@@ -1577,6 +1577,18 @@ components:
         avatar_label:
           type: string
           nullable: true
+        published_document_id:
+          type: string
+          nullable: true
+        published_document_title:
+          type: string
+          nullable: true
+        published_document_publish_status:
+          type: string
+          nullable: true
+        reader_route:
+          type: string
+          nullable: true
         message:
           type: string
         subscription_id:

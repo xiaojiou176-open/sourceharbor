@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..errors import ApiTimeoutError
-from ..repositories import JobsRepository, VideosRepository
+from ..repositories import JobsRepository, PublishedReaderDocumentsRepository, VideosRepository
 from .source_names import build_source_name_fallback, resolve_source_name
 
 YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
@@ -392,3 +392,34 @@ class VideosService:
             "display_name": display_name,
             "creator_handle": creator_handle or "",
         }
+
+    def get_reader_bridge_for_job(self, *, job_id: UUID | str) -> dict[str, str | bool] | None:
+        safe_job_id = str(job_id or "").strip()
+        if not safe_job_id:
+            return None
+
+        repo = PublishedReaderDocumentsRepository(self.db)
+        try:
+            current_documents = repo.list_current(limit=64)
+        except Exception:
+            return None
+
+        for document in current_documents:
+            publish_status = (
+                "published_with_gap"
+                if bool(getattr(document, "published_with_gap", False))
+                else "published"
+            )
+            for source_ref in list(getattr(document, "source_refs_json", None) or []):
+                if not isinstance(source_ref, dict):
+                    continue
+                if str(source_ref.get("job_id") or "").strip() != safe_job_id:
+                    continue
+                return {
+                    "id": str(document.id),
+                    "title": str(document.title),
+                    "publish_status": publish_status,
+                    "reader_route": f"/reader/{document.id}",
+                    "published_with_gap": bool(getattr(document, "published_with_gap", False)),
+                }
+        return None

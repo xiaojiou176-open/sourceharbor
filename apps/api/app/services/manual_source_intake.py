@@ -56,6 +56,10 @@ class ManualSourcePlan:
     thumbnail_url: str | None = None
     avatar_url: str | None = None
     avatar_label: str | None = None
+    published_document_id: str | None = None
+    published_document_title: str | None = None
+    published_document_publish_status: str | None = None
+    reader_route: str | None = None
 
 
 class ManualSourceIntakeService:
@@ -228,6 +232,10 @@ class ManualSourceIntakeService:
                 "thumbnail_url": plan.thumbnail_url,
                 "avatar_url": plan.avatar_url,
                 "avatar_label": plan.avatar_label,
+                "published_document_id": None,
+                "published_document_title": None,
+                "published_document_publish_status": None,
+                "reader_route": None,
                 "message": plan.message,
                 "subscription_id": None,
                 "job_id": None,
@@ -366,6 +374,22 @@ class ManualSourceIntakeService:
                             if not payload.get("reused")
                             else "Already present in the current one-off video lane."
                         )
+                    reader_bridge = self.videos_service.get_reader_bridge_for_job(
+                        job_id=str(payload.get("job_id") or "")
+                    )
+                    if reader_bridge is not None:
+                        result["published_document_id"] = str(
+                            reader_bridge.get("id") or ""
+                        ).strip() or None
+                        result["published_document_title"] = str(
+                            reader_bridge.get("title") or ""
+                        ).strip() or None
+                        result["published_document_publish_status"] = str(
+                            reader_bridge.get("publish_status") or ""
+                        ).strip() or None
+                        result["reader_route"] = str(
+                            reader_bridge.get("reader_route") or ""
+                        ).strip() or None
                     result["relation_kind"] = relation_kind
                     result["matched_subscription_id"] = matched_subscription_id
                     result["matched_subscription_name"] = matched_subscription_name

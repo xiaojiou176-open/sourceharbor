@@ -471,6 +471,10 @@ def test_subscriptions_manual_intake_success_and_error_paths(
                     "content_profile": "video",
                     "support_tier": "strong_supported",
                     "display_name": "@demo",
+                    "published_document_id": "reader-doc-1",
+                    "published_document_title": "Reader edition one",
+                    "published_document_publish_status": "published",
+                    "reader_route": "/reader/reader-doc-1",
                     "message": "Saved as a new subscription source.",
                     "subscription_id": str(uuid.uuid4()),
                     "job_id": None,
@@ -490,6 +494,8 @@ def test_subscriptions_manual_intake_success_and_error_paths(
     payload = response.json()
     assert payload["created_subscriptions"] == 1
     assert payload["results"][0]["source_type"] == "youtube_user"
+    assert payload["results"][0]["reader_route"] == "/reader/reader-doc-1"
+    assert payload["results"][0]["published_document_title"] == "Reader edition one"
 
     async def _submit_error(self, **kwargs: Any):
         raise ValueError("bad manual intake")

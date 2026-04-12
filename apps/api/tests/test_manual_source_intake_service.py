@@ -30,6 +30,7 @@ class _VideosStub:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
         self.matches: dict[str, dict[str, str]] = {}
+        self.reader_bridges: dict[str, dict[str, str | bool]] = {}
 
     async def process_video(self, **kwargs):
         job_suffix = kwargs["url"].replace("https://", "").replace("/", "-")
@@ -43,6 +44,9 @@ class _VideosStub:
 
     def get_subscription_match_for_video(self, *, video_db_id: uuid.UUID):
         return self.matches.get(str(video_db_id))
+
+    def get_reader_bridge_for_job(self, *, job_id: str):
+        return self.reader_bridges.get(str(job_id))
 
 
 def _build_service() -> ManualSourceIntakeService:
@@ -171,6 +175,14 @@ def test_manual_source_submit_matches_manual_video_back_to_existing_subscription
         "display_name": "@existing-channel",
         "creator_handle": "@existing-channel",
     }
+    job_id = match_video_url.replace("https://", "").replace("/", "-")
+    service.videos_service.reader_bridges[job_id] = {
+        "id": "reader-doc-1",
+        "title": "Reader edition one",
+        "publish_status": "published",
+        "reader_route": "/reader/reader-doc-1",
+        "published_with_gap": False,
+    }
 
     result = asyncio.run(
         service.submit(
@@ -187,3 +199,7 @@ def test_manual_source_submit_matches_manual_video_back_to_existing_subscription
     assert item["matched_subscription_id"] == "sub-existing-1"
     assert item["matched_subscription_name"] == "@existing-channel"
     assert item["match_confidence"] == "inferred_from_existing_ingest_event"
+    assert item["published_document_id"] == "reader-doc-1"
+    assert item["published_document_title"] == "Reader edition one"
+    assert item["published_document_publish_status"] == "published"
+    assert item["reader_route"] == "/reader/reader-doc-1"

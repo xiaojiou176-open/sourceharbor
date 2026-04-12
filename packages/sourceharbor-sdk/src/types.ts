@@ -110,6 +110,10 @@ export type ManualSourceIntakeResult = {
 	thumbnail_url?: string | null;
 	avatar_url?: string | null;
 	avatar_label?: string | null;
+	published_document_id?: string | null;
+	published_document_title?: string | null;
+	published_document_publish_status?: string | null;
+	reader_route?: string | null;
 	message: string;
 	subscription_id: string | null;
 	job_id: string | null;

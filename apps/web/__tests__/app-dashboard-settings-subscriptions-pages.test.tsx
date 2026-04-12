@@ -334,6 +334,9 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(screen.getByText("Worth coming back to")).toBeInTheDocument();
 			expect(screen.getByText("Official-surface status")).toBeInTheDocument();
 			expect(screen.getByText("Claude Code")).toBeInTheDocument();
+			expect(
+				screen.getByText("Live listed at 0.1.14, repo packet is ahead"),
+			).toBeInTheDocument();
 			const distributionLedgerLinks = screen.getAllByRole("link", {
 				name: "Open distribution ledger",
 			});

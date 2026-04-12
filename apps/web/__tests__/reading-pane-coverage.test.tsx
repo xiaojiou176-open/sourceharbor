@@ -52,6 +52,7 @@ describe("ReadingPane coverage", () => {
 
 	it("renders empty state when no job is selected", () => {
 		render(<ReadingPane jobId={null} />);
+		expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
 		expect(
 			screen.getByText("Select an entry to read the digest and body"),
 		).toBeInTheDocument();
@@ -72,7 +73,11 @@ describe("ReadingPane coverage", () => {
 
 		render(<ReadingPane jobId="job-loading-1" title="加载测试" />);
 
-		expect(await screen.findByText("Loading...")).toBeInTheDocument();
+		expect(await screen.findByRole("status")).toHaveAttribute(
+			"aria-busy",
+			"true",
+		);
+		expect(screen.getByText("Loading...")).toBeInTheDocument();
 		expect(mockGetArtifactMarkdown).toHaveBeenCalledWith({
 			job_id: "job-loading-1",
 			include_meta: true,
@@ -97,11 +102,9 @@ describe("ReadingPane coverage", () => {
 
 		render(<ReadingPane jobId="job-error-1" />);
 
-		expect(
-			await screen.findByText(
-				"Body content is temporarily unavailable. Please try again later.",
-			),
-		).toBeInTheDocument();
+		expect(await screen.findByRole("alert")).toHaveTextContent(
+			"Body content is temporarily unavailable. Please try again later.",
+		);
 		const retryButton = screen.getByRole("button", { name: "Retry" });
 		fireEvent.click(retryButton);
 

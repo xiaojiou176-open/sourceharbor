@@ -285,6 +285,9 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 								const jobHref = item.job_id
 									? `/jobs?job_id=${encodeURIComponent(item.job_id)}`
 									: null;
+								const readerHref = item.reader_route?.trim().startsWith("/reader/")
+									? item.reader_route.trim()
+									: null;
 								return (
 									<div
 										key={`${item.line_number}-${item.raw_input}`}
@@ -323,6 +326,14 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 											compact
 											action={
 												<div className="flex flex-wrap gap-3 text-sm">
+													{readerHref ? (
+														<Link
+															href={readerHref}
+															className="underline underline-offset-4"
+														>
+															Open reader edition
+														</Link>
+													) : null}
 													{feedUniverseHref ? (
 														<Link
 															href={feedUniverseHref}
@@ -346,6 +357,14 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 											<p className={`break-all ${editorialMono.className}`}>
 												{item.raw_input}
 											</p>
+											{item.published_document_title ? (
+												<p className="mt-2">
+													Published unit · {item.published_document_title}
+													{item.published_document_publish_status
+														? ` · ${item.published_document_publish_status}`
+														: ""}
+												</p>
+											) : null}
 											<p className="mt-2">{item.message}</p>
 										</div>
 									</div>

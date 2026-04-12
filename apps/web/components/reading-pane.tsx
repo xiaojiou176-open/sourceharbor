@@ -141,6 +141,9 @@ export function ReadingPane({
 			<div
 				className="feed-reading-pane-shell feed-reading-state"
 				data-reading-state="empty"
+				role="status"
+				aria-live="polite"
+				aria-atomic="true"
 			>
 				<p className="feed-reading-state-title">
 					Select an entry to read the digest and body
@@ -157,6 +160,10 @@ export function ReadingPane({
 			<div
 				className="feed-reading-pane-shell feed-reading-state"
 				data-reading-state="loading"
+				role="status"
+				aria-live="polite"
+				aria-atomic="true"
+				aria-busy="true"
 			>
 				<div className="feed-reading-spinner" aria-hidden="true" />
 				<p className="feed-reading-state-meta">Loading...</p>
@@ -169,6 +176,9 @@ export function ReadingPane({
 			<div
 				className="feed-reading-pane-shell feed-reading-state"
 				data-reading-state="error"
+				role="alert"
+				aria-live="assertive"
+				aria-atomic="true"
 			>
 				<p className="feed-reading-error">
 					Body content is temporarily unavailable. Please try again later.

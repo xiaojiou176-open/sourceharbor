@@ -39,6 +39,8 @@ export default async function ReaderPage() {
 
 	const documents = documentsResult.data;
 	const navigationBrief = briefResult.data;
+	const documentsUnavailable = documentsResult.error;
+	const briefUnavailable = briefResult.error;
 	const navigationItems =
 		navigationBrief && Array.isArray(navigationBrief.items)
 			? navigationBrief.items
@@ -52,6 +54,7 @@ export default async function ReaderPage() {
 	const warningCount = documents.filter(
 		(document) => document.published_with_gap,
 	).length;
+	const shelfUnavailable = documentsUnavailable && totalDocuments === 0;
 	const leadSources =
 		leadDocument && Array.isArray(leadDocument.source_refs)
 			? leadDocument.source_refs.slice(0, 3)
@@ -76,61 +79,80 @@ export default async function ReaderPage() {
 							variant="outline"
 							className="w-fit border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200"
 						>
-							Reader frontstage
+							{shelfUnavailable ? "Reader temporarily unavailable" : "Reader frontstage"}
 						</Badge>
 						<div className="space-y-4">
 							<p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-								Editorial reading desk
+								{shelfUnavailable ? "Shelf status" : "Editorial reading desk"}
 							</p>
 							<h1
 								data-route-heading
 								className={`max-w-4xl text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl ${editorialSerif.className}`}
 							>
-								Read the strongest finished unit before you touch the operator
-								rails
+								{shelfUnavailable
+									? "Reader shelf is temporarily unavailable"
+									: "Read the strongest finished unit before you touch the operator rails"}
 							</h1>
 							<CardDescription className="max-w-3xl text-base leading-8 text-foreground/75">
-								Start where the story is already materialized. The lead deck
-								gives you one clean reading unit, the brief keeps you oriented,
-								and the rest of the library stays available without dragging you
-								back into intake or dashboard mode.
+								{shelfUnavailable
+									? "The published-document shelf could not be loaded just now. Use the specimen detail or the ops desk while the reader frontstage recovers."
+									: "Start where the story is already materialized. The lead deck gives you one clean reading unit, the brief keeps you oriented, and the rest of the library stays available without dragging you back into intake or dashboard mode."}
 							</CardDescription>
 						</div>
 						<div className="grid gap-4 rounded-[1.75rem] border border-border/60 bg-background/75 p-5 md:grid-cols-[minmax(0,1.2fr)_auto] md:items-end">
 							<div className="space-y-2">
 								<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-									Reading order
+									{shelfUnavailable ? "Recovery path" : "Reading order"}
 								</p>
 								<p className="max-w-2xl text-sm leading-7 text-foreground/75">
-									Think of this shelf like the front page of a magazine, not a
-									control room. Pick one finished deck, read it straight
-									through, then open warning or evidence only if the story stops
-									answering you.
+									{shelfUnavailable
+										? "This page is in fail-close mode. Open the specimen detail for a truthful sample reading path, or use the ops desk to inspect the live runtime before you come back."
+										: "Think of this shelf like the front page of a magazine, not a control room. Pick one finished deck, read it straight through, then open warning or evidence only if the story stops answering you."}
 								</p>
 							</div>
 							<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground md:justify-end">
-								<span>Published {totalDocuments}</span>
-								<span aria-hidden="true">/</span>
-								<span>Clear {clearDocuments.length}</span>
-								<span aria-hidden="true">/</span>
-								<span>Warnings {warningCount}</span>
+								{shelfUnavailable ? (
+									<span>Live counts unavailable</span>
+								) : (
+									<>
+										<span>Published {totalDocuments}</span>
+										<span aria-hidden="true">/</span>
+										<span>Clear {clearDocuments.length}</span>
+										<span aria-hidden="true">/</span>
+										<span>Warnings {warningCount}</span>
+									</>
+								)}
 							</div>
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-8 pb-8">
 						<div className="flex flex-wrap items-center gap-3">
-							<Button asChild size="lg" className="gap-2">
-								<Link
-									href={
-										leadDocument
-											? `/reader/${leadDocument.id}`
-											: `/reader/${DEMO_READER_DOCUMENT_ID}`
-									}
-								>
-									{leadDocument ? "Continue reading" : "Open specimen detail"}
-									<ArrowRight className="h-4 w-4" />
-								</Link>
-							</Button>
+							{shelfUnavailable ? (
+								<>
+									<Button asChild size="lg" className="gap-2">
+										<Link href={`/reader/${DEMO_READER_DOCUMENT_ID}`}>
+											Open specimen detail
+											<ArrowRight className="h-4 w-4" />
+										</Link>
+									</Button>
+									<Button asChild variant="outline">
+										<Link href="/ops">Open ops desk</Link>
+									</Button>
+								</>
+							) : (
+								<Button asChild size="lg" className="gap-2">
+									<Link
+										href={
+											leadDocument
+												? `/reader/${leadDocument.id}`
+												: `/reader/${DEMO_READER_DOCUMENT_ID}`
+										}
+									>
+										{leadDocument ? "Continue reading" : "Open specimen detail"}
+										<ArrowRight className="h-4 w-4" />
+									</Link>
+								</Button>
+							)}
 						</div>
 						{leadDocument ? (
 							<div className="grid gap-6 rounded-[1.75rem] border border-border/70 bg-background/80 p-6 xl:grid-cols-[minmax(0,1.22fr)_minmax(260px,0.72fr)]">
@@ -342,11 +364,16 @@ export default async function ReaderPage() {
 								</div>
 							</>
 						) : (
-							<div className="space-y-3">
+							<div
+								className="space-y-3"
+								role={briefUnavailable ? "status" : undefined}
+								aria-live={briefUnavailable ? "polite" : undefined}
+								aria-atomic={briefUnavailable ? "true" : undefined}
+							>
 								<p className="text-muted-foreground">
-									No navigation brief is available yet. Until the first live
-									deck lands, use the specimen route as your sample reading
-									path.
+									{briefUnavailable
+										? "Navigation brief is temporarily unavailable. Open the lead deck or specimen detail directly while the margin note reloads."
+										: "No navigation brief is available yet. Until the first live deck lands, use the specimen route as your sample reading path."}
 								</p>
 								<div className="space-y-2">
 									<div className="rounded-2xl border border-border/60 p-4">
@@ -501,6 +528,31 @@ export default async function ReaderPage() {
 								New clear documents will appear here after the next batch lands.
 							</CardDescription>
 						</CardHeader>
+					</Card>
+				) : documentsUnavailable ? (
+					<Card
+						className="border-destructive/40 bg-destructive/5 shadow-sm"
+						role="alert"
+						aria-live="assertive"
+						aria-atomic="true"
+					>
+						<CardHeader className="space-y-3">
+							<CardTitle>Reader shelf is temporarily unavailable</CardTitle>
+							<CardDescription>
+								The published-document list could not be loaded just now. Open
+								the specimen detail or the ops desk while the shelf recovers.
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="flex flex-wrap gap-3 pt-0">
+							<Button asChild variant="outline">
+								<Link href={`/reader/${DEMO_READER_DOCUMENT_ID}`}>
+									Open specimen detail
+								</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/ops">Open ops desk</Link>
+							</Button>
+						</CardContent>
 					</Card>
 				) : (
 					<Card className="border-border/70 shadow-sm">

@@ -201,6 +201,10 @@ class ManualSourceIntakeResult(BaseModel):
     thumbnail_url: str | None = None
     avatar_url: str | None = None
     avatar_label: str | None = None
+    published_document_id: str | None = None
+    published_document_title: str | None = None
+    published_document_publish_status: str | None = None
+    reader_route: str | None = None
     message: str
     subscription_id: str | None = None
     job_id: str | None = None
