@@ -3,7 +3,7 @@
 
 Current deterministic PR-facing CI in this repository is intentionally small and local-proof-first.
 
-- root allowlist entries: `44`
+- root allowlist entries: `45`
 - runtime root: `.runtime-cache`
 - CI jobs in `.github/workflows/ci.yml`: `python-tests`, `web-lint`
 - Pre-commit workflow jobs in `.github/workflows/pre-commit.yml`: `pre-commit`
