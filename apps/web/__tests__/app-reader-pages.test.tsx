@@ -179,10 +179,9 @@ describe("reader pages", () => {
 		expect(screen.getAllByTestId("markdown-preview")[0]).toHaveTextContent(
 			"# AI Agents",
 		);
-		expect(screen.getByRole("link", { name: "Back to reader" })).toHaveAttribute(
-			"href",
-			"/reader",
-		);
+		expect(
+			screen.getByRole("link", { name: "Back to reader" }),
+		).toHaveAttribute("href", "/reader");
 		expect(screen.getByRole("link", { name: "Read the body" })).toHaveAttribute(
 			"href",
 			"#reader-body",

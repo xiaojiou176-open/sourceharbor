@@ -448,28 +448,26 @@ describe("compounder pages", () => {
 		expect(
 			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getByRole(
 				"link",
-				{ name: "Open bundle" }
+				{ name: "Open bundle" },
 			),
 		).toHaveAttribute("href", "/api/v1/jobs/job-1/bundle");
 		expect(() =>
 			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getByRole(
 				"link",
-				{ name: "Open knowledge" }
+				{ name: "Open knowledge" },
 			),
 		).toThrow();
 		expect(
-			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getAllByRole(
-				"link",
-				{ name: "Open knowledge" }
-			)[0],
+			within(
+				screen.getAllByText("AI Weekly")[0].closest("article")!,
+			).getAllByRole("link", { name: "Open knowledge" })[0],
 		).toHaveAttribute("href", "/knowledge?job_id=job-1");
 		expect(
 			screen.getByRole("link", { name: "Open sample playground" }),
 		).toHaveAttribute("href", "/playground");
-		expect(screen.getByRole("link", { name: "Open watchlists" })).toHaveAttribute(
-			"href",
-			"/watchlists",
-		);
+		expect(
+			screen.getByRole("link", { name: "Open watchlists" }),
+		).toHaveAttribute("href", "/watchlists");
 		expect(
 			screen.getByRole("link", { name: "Open research use case" }),
 		).toHaveAttribute("href", "/use-cases/research-pipeline");
