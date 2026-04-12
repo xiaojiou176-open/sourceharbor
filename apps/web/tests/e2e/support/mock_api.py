@@ -496,7 +496,7 @@ def _mock_handler(state: MockApiState) -> type[BaseHTTPRequestHandler]:
                 f"/api/v1/watchlists/{MOCK_WATCHLIST_ID}/briefing",
                 f"/api/v1/watchlists/{MOCK_WATCHLIST_ID}/briefing/page",
             }:
-                _briefing_payload = {
+                briefing_payload = {
                     "watchlist": {
                         "id": MOCK_WATCHLIST_ID,
                         "name": "Retry policy",
@@ -1019,7 +1019,7 @@ def _mock_handler(state: MockApiState) -> type[BaseHTTPRequestHandler]:
                     if "retry" in query_text.lower()
                     else []
                 )
-                briefing_payload = {
+                _briefing_payload = {
                     "watchlist": {
                         "id": MOCK_WATCHLIST_ID,
                         "name": "Retry policy",
