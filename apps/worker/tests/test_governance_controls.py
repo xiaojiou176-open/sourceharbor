@@ -145,7 +145,9 @@ def test_python_tests_public_entrypoint_uses_managed_uv_environment() -> None:
     assert '"bin/python-tests"' in public_entrypoints
     assert '"bin/repo-side-strict-ci"' in public_entrypoints
     assert "if docker info >/dev/null 2>&1; then" in repo_side_entrypoint
-    assert 'exec "$ROOT_DIR/bin/strict-ci" --debug-build "${FORWARD_ARGS[@]}"' in repo_side_entrypoint
+    assert (
+        'exec "$ROOT_DIR/bin/strict-ci" --debug-build "${FORWARD_ARGS[@]}"' in repo_side_entrypoint
+    )
     assert "host fallback only supports --mode pre-push" in repo_side_entrypoint
     assert 'source "$ROOT_DIR/scripts/ci/bootstrap_strict_ci_runtime.sh"' in repo_side_entrypoint
     assert 'exec "$ROOT_DIR/scripts/quality_gate.sh" \\' in repo_side_entrypoint
