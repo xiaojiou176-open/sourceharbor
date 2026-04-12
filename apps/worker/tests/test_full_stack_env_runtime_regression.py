@@ -148,13 +148,16 @@ def test_full_stack_only_falls_back_to_local_dev_tokens_outside_ci() -> None:
     script = (_repo_root() / "scripts" / "runtime" / "full_stack.sh").read_text(encoding="utf-8")
 
     assert 'local_default_write_token="sourceharbor-local-dev-token"' in script
-    assert 'ci_mode="$(printf \'%s\' "${CI:-}" | tr \'[:upper:]\' \'[:lower:]\')"' in script
+    assert "ci_mode=\"$(printf '%s' \"${CI:-}\" | tr '[:upper:]' '[:lower:]')\"" in script
     assert (
         'if [[ "$ci_mode" == "1" || "$ci_mode" == "true" || "$ci_mode" == "yes" || "$ci_mode" == "on" || "$github_actions_mode" == "1" || "$github_actions_mode" == "true" || "$github_actions_mode" == "yes" || "$github_actions_mode" == "on" ]]; then'
         in script
     )
     assert 'local_write_token="${SOURCE_HARBOR_API_KEY:-$local_default_write_token}"' in script
-    assert 'startup_web_session_token="${WEB_ACTION_SESSION_TOKEN:-${startup_write_token:-$local_default_write_token}}"' in script
+    assert (
+        'startup_web_session_token="${WEB_ACTION_SESSION_TOKEN:-${startup_write_token:-$local_default_write_token}}"'
+        in script
+    )
     assert "normalize_database_url_driver()" not in script
 
 
