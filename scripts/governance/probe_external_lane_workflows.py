@@ -21,6 +21,10 @@ WORKFLOW_MAP = {
         "workflow_file": "build-ci-standard-image.yml",
         "workflow_name": "build-ci-standard-image",
     },
+    "public-api-image": {
+        "workflow_file": "build-public-api-image.yml",
+        "workflow_name": "build-public-api-image",
+    },
     "release-evidence-attestation": {
         "workflow_file": "release-evidence-attest.yml",
         "workflow_name": "release-evidence-attest",

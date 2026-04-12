@@ -42,6 +42,31 @@
       ]
     },
     {
+      "name": "public-api-image",
+      "canonical_artifact": ".runtime-cache/reports/build-public-api-image/metadata.json",
+      "remote_workflow_artifact": ".runtime-cache/reports/governance/external-lane-workflows.json",
+      "verified_requires_current_head": true,
+      "current_head_required_statuses": [
+        "verified",
+        "queued",
+        "in_progress"
+      ],
+      "historical_state": "historical",
+      "verification_scope": "build-public-api-image-metadata",
+      "allowed_statuses": [
+        "queued",
+        "in_progress",
+        "verified",
+        "historical",
+        "blocked"
+      ],
+      "blocked_types": [
+        "buildx-runtime-preparation-failure",
+        "registry-auth-failure",
+        "package-ownership-or-write-package-failure"
+      ]
+    },
+    {
       "name": "release-evidence-attestation",
       "canonical_artifact": ".runtime-cache/reports/release/release-evidence-attest-readiness.json",
       "remote_workflow_artifact": ".runtime-cache/reports/governance/external-lane-workflows.json",

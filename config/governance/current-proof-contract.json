@@ -33,6 +33,17 @@
       "reason": "fail-close: external-lane workflow probes are required for current external semantics"
     },
     {
+      "name": "public-api-image-workflow",
+      "artifact": ".runtime-cache/reports/governance/external-lane-workflows.json",
+      "required": true,
+      "reason": "fail-close: current public API image workflow proof must be present when distribution truth references it",
+      "external_lane": "public-api-image",
+      "workflow_artifact": ".runtime-cache/reports/governance/external-lane-workflows.json",
+      "require_current_head_for_statuses": [
+        "pass"
+      ]
+    },
+    {
       "name": "release-evidence-attestation",
       "artifact": ".runtime-cache/reports/release/release-evidence-attest-readiness.json",
       "required": true,

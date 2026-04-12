@@ -10,6 +10,7 @@ It must not carry current verdict payload. Read the runtime-owned reports direct
 | --- | --- | --- |
 | `remote-platform-integrity` | `.runtime-cache/reports/governance/remote-platform-truth.json` | tracked pointer only; runtime reports decide current state |
 | `ghcr-standard-image` | `.runtime-cache/reports/governance/standard-image-publish-readiness.json` | tracked pointer only; runtime reports decide current state |
+| `public-api-image` | `.runtime-cache/reports/build-public-api-image/metadata.json` | tracked pointer only; runtime reports decide current state |
 | `release-evidence-attestation` | `.runtime-cache/reports/release/release-evidence-attest-readiness.json` | tracked pointer only; runtime reports decide current state |
 
 - tracked page is a machine-rendered pointer only

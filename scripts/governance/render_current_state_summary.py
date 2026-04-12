@@ -334,6 +334,18 @@ def render() -> str:
         )
     )
 
+    public_api_workflow = workflow_lanes.get("public-api-image") or {}
+    public_api_state = str(public_api_workflow.get("state") or "missing")
+    public_api_note = str(public_api_workflow.get("note") or "missing")
+    lines.append(
+        _lane_row(
+            "public-api-image",
+            public_api_state,
+            public_api_note,
+            ".runtime-cache/reports/build-public-api-image/metadata.json + .runtime-cache/reports/governance/external-lane-workflows.json",
+        )
+    )
+
     release_artifact_state = str((release_report or {}).get("status") or "missing")
     release_state = release_artifact_state
     release_note = str((release_report or {}).get("blocker_type") or "ok")
