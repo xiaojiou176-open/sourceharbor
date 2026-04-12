@@ -77,6 +77,22 @@ on `127.0.0.1:5432`.
 source .runtime-cache/run/full-stack/resolved.env
 ```
 
+`./bin/bootstrap-full-stack` now treats the **core stack** and the **reader
+stack** as two different floors in the building:
+
+- Postgres + Temporal are the core stack. The helper still prefers Docker
+  compose first, but it can now fall back to repo-owned local services under
+  `.runtime-cache/` when Docker is unavailable and local `postgres` /
+  `initdb` / `pg_ctl` / `temporal` binaries exist.
+- Miniflux + Nextflux stay a Docker-only optional reader stack. They no longer
+  block the base first-run path by default.
+
+If you explicitly want the reader stack too, opt in on purpose:
+
+```bash
+./bin/bootstrap-full-stack --with-reader-stack 1 --reader-env-file env/profiles/reader.local.env
+```
+
 Equivalent thin-facade path:
 
 ```bash
@@ -114,6 +130,7 @@ Why source the runtime snapshot:
 - bootstrap/full-stack may move off `9000/3000` when those ports are already occupied
 - the snapshot is the repo-managed local truth for API/Web routes
 - if the snapshot and actual services disagree, run `./bin/full-stack down` and restart the clean path
+- the snapshot records the real core-services route truth even when the helper had to leave Docker and use repo-owned local Postgres/Temporal instead
 
 ### 3. Set the local write token
 

@@ -103,7 +103,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 				<p className="folo-page-kicker">
 					{askIntent ? copy.askKicker : copy.searchKicker}
 				</p>
-				<h1 className="folo-page-title" data-route-heading>
+				<h1 className="folo-page-title" data-route-heading tabIndex={-1}>
 					{askIntent ? copy.askTitle : copy.searchTitle}
 				</h1>
 				<p className="folo-page-subtitle">

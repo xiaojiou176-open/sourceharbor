@@ -112,6 +112,14 @@ def test_dashboard_start_processing_button(page: Page) -> None:
 def test_dashboard_navigation_links_and_skip_link(page: Page) -> None:
     page.goto("/", wait_until="domcontentloaded")
 
+    english_skip_link = page.get_by_role("link", name="Skip to main content")
+    expect(english_skip_link).to_have_attribute("href", "#main-content")
+    english_skip_link.evaluate("el => { el.style.left = '8px'; }")
+    english_skip_link.click()
+    expect(page).to_have_url(re.compile(r"/#main-content$"))
+    expect(page.locator("#main-content")).to_be_focused()
+
+    page.goto("/", wait_until="domcontentloaded")
     skip_link = page.get_by_role("link", name="跳至主内容")
     expect(skip_link).to_have_attribute("href", "#main-content")
     skip_link.evaluate("el => { el.style.left = '8px'; }")
@@ -154,6 +162,15 @@ def test_dashboard_navigation_links_and_skip_link(page: Page) -> None:
     popup = popup_info.value
     expect(popup).to_have_url(re.compile(r"github\.com/.*/docs/public-distribution\.md"))
     popup.close()
+
+    page.goto("/", wait_until="domcontentloaded")
+    theme_toggle = page.get_by_role("button", name="Switch theme")
+    expect(theme_toggle).to_be_visible()
+    theme_toggle.click()
+    dark_item = page.get_by_role("menuitem", name="Dark")
+    if dark_item.count() > 0:
+        expect(dark_item).to_be_visible()
+        dark_item.click()
 
 
 def test_dashboard_empty_subscription_and_tasks_links_with_mock_api(

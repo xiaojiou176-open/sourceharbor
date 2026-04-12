@@ -113,7 +113,7 @@ export default function BuildersPage() {
 		<div className="folo-page-shell folo-unified-shell">
 			<div className="folo-page-header">
 				<p className="folo-page-kicker">SourceHarbor Builder Entry</p>
-				<h1 className="folo-page-title" data-route-heading>
+				<h1 className="folo-page-title" data-route-heading tabIndex={-1}>
 					{builderCopy.title}
 				</h1>
 				<p className="folo-page-subtitle">{builderCopy.subtitle}</p>

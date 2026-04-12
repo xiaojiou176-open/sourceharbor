@@ -5,4 +5,42 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=./scripts/runtime/entrypoint.sh
 source "$ROOT_DIR/scripts/runtime/entrypoint.sh"
 sourceharbor_entrypoint_bootstrap governance repo-side-strict-ci "" "$@"
-exec "$ROOT_DIR/bin/strict-ci" --debug-build "$@"
+
+eval "$(python3 "$ROOT_DIR/scripts/ci/contract.py" shell-exports)"
+
+MODE=""
+FORWARD_ARGS=()
+while (($# > 0)); do
+	case "$1" in
+		--mode)
+			MODE="${2:-}"
+			FORWARD_ARGS+=("$1" "$MODE")
+			shift 2
+			;;
+		*)
+			FORWARD_ARGS+=("$1")
+			shift
+			;;
+	esac
+done
+
+if docker info >/dev/null 2>&1; then
+	exec "$ROOT_DIR/bin/strict-ci" --debug-build "${FORWARD_ARGS[@]}"
+fi
+
+if [[ "$MODE" != "pre-push" ]]; then
+	echo "[repo-side-strict-ci] docker daemon unavailable; host fallback only supports --mode pre-push" >&2
+	exit 1
+fi
+
+echo "[repo-side-strict-ci] docker daemon unavailable; falling back to host-bootstrapped pre-push quality gate" >&2
+source "$ROOT_DIR/scripts/ci/bootstrap_strict_ci_runtime.sh"
+exec "$ROOT_DIR/scripts/quality_gate.sh" \
+	--mode pre-push \
+	--profile ci \
+	--profile live-smoke \
+	--heartbeat-seconds 20 \
+	--mutation-min-score "${STRICT_CI_MUTATION_MIN_SCORE}" \
+	--mutation-min-effective-ratio "${STRICT_CI_MUTATION_MIN_EFFECTIVE_RATIO}" \
+	--mutation-max-no-tests-ratio "${STRICT_CI_MUTATION_MAX_NO_TESTS_RATIO}" \
+	"${FORWARD_ARGS[@]:2}"

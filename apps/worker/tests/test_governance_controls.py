@@ -144,7 +144,13 @@ def test_python_tests_public_entrypoint_uses_managed_uv_environment() -> None:
     assert "clean_source_runtime_residue.py --apply" in script
     assert '"bin/python-tests"' in public_entrypoints
     assert '"bin/repo-side-strict-ci"' in public_entrypoints
-    assert 'exec "$ROOT_DIR/bin/strict-ci" --debug-build "$@"' in repo_side_entrypoint
+    assert "if docker info >/dev/null 2>&1; then" in repo_side_entrypoint
+    assert (
+        'exec "$ROOT_DIR/bin/strict-ci" --debug-build "${FORWARD_ARGS[@]}"' in repo_side_entrypoint
+    )
+    assert "host fallback only supports --mode pre-push" in repo_side_entrypoint
+    assert 'source "$ROOT_DIR/scripts/ci/bootstrap_strict_ci_runtime.sh"' in repo_side_entrypoint
+    assert 'exec "$ROOT_DIR/scripts/quality_gate.sh" \\' in repo_side_entrypoint
 
 
 def test_public_entrypoint_manifest_checker_loads_registry_for_python_tests() -> None:

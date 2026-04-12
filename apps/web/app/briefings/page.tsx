@@ -108,7 +108,7 @@ export default async function BriefingsPage({
 		<div className="folo-page-shell folo-unified-shell">
 			<div className="folo-page-header">
 				<p className="folo-page-kicker">{copy.kicker}</p>
-				<h1 className="folo-page-title" data-route-heading>
+				<h1 className="folo-page-title" data-route-heading tabIndex={-1}>
 					{copy.heroTitle}
 				</h1>
 				<p className="folo-page-subtitle">{copy.heroSubtitle}</p>

@@ -425,6 +425,22 @@ uses `CORE_POSTGRES_PORT=15432` together with
 so a host Postgres on `127.0.0.1:5432` does not silently become the active data
 plane.
 
+Two local runtime layers now stay explicitly separated:
+
+- **core stack:** Postgres + Temporal + API/Web/Worker. `./bin/bootstrap-full-stack`
+  still prefers Docker-backed core services first, but it can now fall back to
+  repo-owned local Postgres/Temporal under `.runtime-cache/` when Docker is
+  unavailable and local `postgres` / `initdb` / `pg_ctl` / `temporal` binaries
+  exist.
+- **reader stack:** Miniflux + Nextflux. This stays a Docker-only optional lane
+  and no longer blocks the base first-run path by default.
+
+If you intentionally want the reader stack too, opt in:
+
+```bash
+./bin/bootstrap-full-stack --with-reader-stack 1 --reader-env-file env/profiles/reader.local.env
+```
+
 Open the operator UI at the resolved web URL:
 
 - `http://127.0.0.1:${WEB_PORT}`
@@ -500,6 +516,12 @@ The truthful package story today is intentionally thin:
 ```
 
 When you want the operator-side log trail, start at `.runtime-cache/logs/components/full-stack`.
+
+If you want the stricter repo-side closeout gate on a maintainer workstation,
+`./bin/repo-side-strict-ci --mode pre-push` still prefers the standard-env
+container path while Docker is healthy, but it now falls back to the
+host-bootstrapped pre-push quality gate when the Docker daemon itself is the
+only missing layer.
 
 For a guided version with operator notes and public-proof boundaries, go to [docs/start-here.md](./docs/start-here.md).
 

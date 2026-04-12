@@ -35,6 +35,7 @@ They should not assume:
 - a latest tagged release is automatically the same snapshot as the current remote `main`
 - a generated required-check ledger remains current after GitHub branch protection adds or removes required checks
 - a repo-managed web runtime copy or a local mutation receipt automatically upgrades into public proof of hosted, packaged, or registry-listed distribution
+- a host-bootstrapped strict-CI fallback or repo-owned local core-services fallback changes the rights boundary of the public repo; both are maintainer-local verification behavior, not new public distribution rights
 
 When rights or provenance are unclear, the safer reading is:
 

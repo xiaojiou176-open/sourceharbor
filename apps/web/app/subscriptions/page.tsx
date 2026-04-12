@@ -281,6 +281,7 @@ export default async function SubscriptionsPage({
 				<h1
 					className={`folo-page-title ${editorialSerif.className}`}
 					data-route-heading
+					tabIndex={-1}
 				>
 					{copy.heroTitle}
 				</h1>

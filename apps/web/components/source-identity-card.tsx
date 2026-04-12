@@ -14,13 +14,13 @@ type SourceIdentityCardProps = {
 
 function relationBadgeTone(kind: string) {
 	if (kind === "matched_subscription" || kind === "subscription_tracked") {
-		return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700";
+		return "border-emerald-500/45 bg-emerald-500/12 text-emerald-800";
 	}
 	if (kind === "new_source_universe" || kind === "subscription_candidate") {
-		return "border-sky-500/40 bg-sky-500/10 text-sky-700";
+		return "border-sky-500/45 bg-sky-500/12 text-sky-800";
 	}
 	if (kind === "manual_one_off" || kind === "manual_injected") {
-		return "border-amber-500/40 bg-amber-500/10 text-amber-700";
+		return "border-amber-500/45 bg-amber-500/12 text-amber-800";
 	}
 	return "border-border/60 bg-muted/15 text-foreground";
 }

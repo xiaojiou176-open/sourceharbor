@@ -179,6 +179,22 @@ describe("reader pages", () => {
 		expect(screen.getAllByTestId("markdown-preview")[0]).toHaveTextContent(
 			"# AI Agents",
 		);
+		expect(
+			screen.getByRole("link", { name: "Back to reader" }),
+		).toHaveAttribute("href", "/reader");
+		expect(screen.getByRole("link", { name: "Read the body" })).toHaveAttribute(
+			"href",
+			"#reader-body",
+		);
+		expect(
+			screen.getByRole("link", { name: "Keep the warning in mind" }),
+		).toHaveAttribute("href", "#reader-warning");
+		expect(
+			screen.getByRole("link", { name: "Open evidence when needed" }),
+		).toHaveAttribute("href", "#reader-evidence");
+		expect(
+			screen.getByRole("link", { name: "Check coverage last" }),
+		).toHaveAttribute("href", "#reader-coverage");
 	});
 
 	it("renders preview detail when the demo route is requested", async () => {

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ActionLink } from "@/components/action-link";
@@ -275,6 +276,14 @@ describe("ui primitive coverage", () => {
 		expect(mockSetTheme).toHaveBeenNthCalledWith(2, "dark");
 		expect(mockSetTheme).toHaveBeenNthCalledWith(3, "system");
 	}, 15_000);
+
+	it("renders ThemeToggle loading fallback during server render", () => {
+		const html = renderToStaticMarkup(<ThemeToggle />);
+
+		expect(html).toContain("Theme menu loading");
+		expect(html).not.toContain('aria-label="Theme menu loading"');
+		expect(html).not.toContain("Switch theme");
+	});
 
 	it("covers dropdown-menu wrappers including portal/shortcut/sub items", () => {
 		const onCheckbox = vi.fn();

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -404,6 +404,9 @@ describe("compounder pages", () => {
 			"href",
 			"/ask?watchlist_id=wl-1&question=Retries+moved+from+recommendation+to+default+posture&story_id=story-1&topic_key=retry-policy&via=briefing-story",
 		);
+		expect(
+			screen.getByRole("link", { name: "Review sample-proof boundary" }),
+		).toHaveAttribute("href", "/playground");
 	});
 
 	it("renders trend page as merged story plus source coverage", async () => {
@@ -439,6 +442,128 @@ describe("compounder pages", () => {
 		expect(
 			screen.getByRole("link", { name: "Open evidence bundle" }),
 		).toHaveAttribute("href", "/api/v1/jobs/job-1/bundle");
+		expect(
+			screen.getByRole("link", { name: "Open unified briefing" }),
+		).toHaveAttribute("href", "/briefings?watchlist_id=wl-1&story_id=story-1");
+		expect(
+			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getByRole(
+				"link",
+				{ name: "Open bundle" },
+			),
+		).toHaveAttribute("href", "/api/v1/jobs/job-1/bundle");
+		expect(() =>
+			within(screen.getAllByText("AI Weekly")[0].closest("article")!).getByRole(
+				"link",
+				{ name: "Open knowledge" },
+			),
+		).toThrow();
+		expect(
+			within(
+				screen.getAllByText("AI Weekly")[0].closest("article")!,
+			).getAllByRole("link", { name: "Open knowledge" })[0],
+		).toHaveAttribute("href", "/knowledge?job_id=job-1");
+		expect(
+			screen.getByRole("link", { name: "Open sample playground" }),
+		).toHaveAttribute("href", "/playground");
+		expect(
+			screen.getByRole("link", { name: "Open watchlists" }),
+		).toHaveAttribute("href", "/watchlists");
+		expect(
+			screen.getByRole("link", { name: "Open research use case" }),
+		).toHaveAttribute("href", "/use-cases/research-pipeline");
+	});
+
+	it("renders story-card CTA labels for merged trends", async () => {
+		mockGetWatchlistTrend.mockResolvedValueOnce({
+			watchlist: {
+				id: "wl-1",
+				name: "Retry policy",
+				matcher_type: "topic_key",
+				matcher_value: "retry-policy",
+				delivery_channel: "dashboard",
+				enabled: true,
+				created_at: "2026-03-31T10:00:00Z",
+				updated_at: "2026-03-31T10:00:00Z",
+			},
+			summary: {
+				recent_runs: 2,
+				matched_cards: 4,
+				matcher_type: "topic_key",
+				matcher_value: "retry-policy",
+			},
+			source_coverage: [
+				{
+					platform: "youtube",
+					run_count: 1,
+					card_count: 2,
+					latest_created_at: "2026-03-31T10:00:00Z",
+				},
+			],
+			timeline: [
+				{
+					job_id: "job-1",
+					video_id: "video-1",
+					platform: "youtube",
+					title: "AI Weekly",
+					source_url: "https://example.com",
+					created_at: "2026-03-31T10:00:00Z",
+					matched_card_count: 2,
+					cards: [],
+					topics: ["retry-policy"],
+					claim_kinds: ["recommendation"],
+					added_topics: ["retry-policy"],
+					removed_topics: [],
+					added_claim_kinds: ["recommendation"],
+					removed_claim_kinds: [],
+				},
+			],
+			merged_stories: [
+				{
+					id: "story-1",
+					story_key: "topic:retry-policy",
+					headline: "Retries moved from recommendation to default posture",
+					topic_key: "retry-policy",
+					topic_label: "Retry policy",
+					source_urls: ["https://example.com"],
+					run_ids: ["job-1"],
+					platforms: ["youtube"],
+					claim_kinds: ["recommendation"],
+					latest_created_at: "2026-03-31T10:00:00Z",
+					cards: [
+						{
+							card_id: "card-1",
+							job_id: "job-1",
+							video_id: "video-1",
+							platform: "youtube",
+							video_title: "AI Weekly",
+							source_url: "https://example.com",
+							created_at: "2026-03-31T10:00:00Z",
+							card_type: "claim",
+							card_title: "Retry policy became explicit",
+							card_body:
+								"The workflow now treats retries as first-line safety.",
+							source_section: "Digest",
+							topic_key: "retry-policy",
+							topic_label: "Retry policy",
+							claim_kind: "recommendation",
+						},
+					],
+				},
+			],
+		});
+
+		render(
+			await TrendsPage({
+				searchParams: { watchlist_id: "wl-1" },
+			}),
+		);
+
+		expect(
+			screen.getByRole("link", { name: "Ask this story" }),
+		).toHaveAttribute(
+			"href",
+			"/ask?watchlist_id=wl-1&story_id=story-1&topic_key=retry-policy&question=Retries+moved+from+recommendation+to+default+posture",
+		);
 	});
 
 	it("renders briefing page as summary first, then differences, then evidence", async () => {
@@ -505,6 +630,15 @@ describe("compounder pages", () => {
 		).toBeInTheDocument();
 		expect(screen.getByText(/Sample boundary/i)).toBeInTheDocument();
 		expect(screen.getByText(/Sharing scope:/i)).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Open compounder front door" }),
+		).toHaveAttribute("href", "/trends");
+		expect(
+			screen.getByRole("link", { name: "Open live watchlists" }),
+		).toHaveAttribute("href", "/watchlists");
+		expect(
+			screen.getByRole("link", { name: "Open research use case" }),
+		).toHaveAttribute("href", "/use-cases/research-pipeline");
 	});
 
 	it("renders truthful use-case page", async () => {

@@ -429,22 +429,22 @@ def render_text(checks: list[DoctorCheck], live_gates: list[DoctorCheck]) -> str
 def main() -> int:
     args = parse_args()
     resolved_env = read_resolved_env(RESOLVED_ENV_PATH)
-    database_url = os.getenv("DATABASE_URL") or resolved_env.get("DATABASE_URL") or ""
+    database_url = resolved_env.get("DATABASE_URL") or os.getenv("DATABASE_URL") or ""
     temporal_target_host = (
-        os.getenv("TEMPORAL_TARGET_HOST")
-        or resolved_env.get("TEMPORAL_TARGET_HOST")
+        resolved_env.get("TEMPORAL_TARGET_HOST")
+        or os.getenv("TEMPORAL_TARGET_HOST")
         or "127.0.0.1:7233"
     )
     api_base = (
-        os.getenv("SOURCE_HARBOR_API_BASE_URL")
-        or resolved_env.get("SOURCE_HARBOR_API_BASE_URL")
+        resolved_env.get("SOURCE_HARBOR_API_BASE_URL")
+        or os.getenv("SOURCE_HARBOR_API_BASE_URL")
         or "http://127.0.0.1:9000"
     )
     web_port = resolved_env.get("WEB_PORT") or os.getenv("WEB_PORT") or "3000"
     web_url = f"http://127.0.0.1:{web_port}"
     core_port = (
-        os.getenv("CORE_POSTGRES_PORT")
-        or resolved_env.get("CORE_POSTGRES_PORT")
+        resolved_env.get("CORE_POSTGRES_PORT")
+        or os.getenv("CORE_POSTGRES_PORT")
         or CANONICAL_CORE_POSTGRES_PORT
     )
 

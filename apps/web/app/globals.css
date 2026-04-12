@@ -32,14 +32,14 @@
 	--color-surface: #fff;
 	--color-surface-hover: #f8f9ff;
 	--color-fg: #0f172a;
-	--color-muted: #64748b;
+	--color-muted: #556579;
 	--color-muted-light: #94a3b8;
 	--color-border: #e2e8f0;
 	--color-border-focus: #6366f1;
 
 	/* Primary — indigo */
-	--color-primary: #6366f1;
-	--color-primary-dark: #4f46e5;
+	--color-primary: #4f46e5;
+	--color-primary-dark: #4338ca;
 	--color-primary-light: #eef2ff;
 	--color-primary-contrast: #fff;
 
@@ -110,7 +110,7 @@
 
 	/* Component-specific accents */
 	--color-border-hover: #c7d0e0;
-	--color-primary-bright: #818cf8;
+	--color-primary-bright: #6366f1;
 	--color-destructive-bright: #fb7185;
 	--shadow-destructive-sm: 0 2px 8px rgb(225 29 72 / 25%);
 	--shadow-destructive-lg: 0 4px 14px rgb(225 29 72 / 38%);
@@ -556,6 +556,17 @@ a:not([data-slot="button"]) {
 
 a:not([data-slot="button"]):hover {
 	opacity: 0.8;
+}
+
+aside[aria-label="Sidebar navigation"] a:not([data-slot="button"]) {
+	color: color-mix(in srgb, var(--color-fg) 92%, transparent);
+}
+
+aside[aria-label="Sidebar navigation"] a:not([data-slot="button"]):hover,
+aside[aria-label="Sidebar navigation"]
+	a[aria-current="page"]:not([data-slot="button"]) {
+	color: var(--color-fg);
+	opacity: 1;
 }
 
 a[data-slot="button"] {

@@ -89,6 +89,7 @@ export default async function ReaderPage() {
 							</p>
 							<h1
 								data-route-heading
+								tabIndex={-1}
 								className={`max-w-4xl text-4xl leading-[0.96] tracking-tight md:text-6xl xl:text-7xl ${editorialSerif.className}`}
 							>
 								{shelfUnavailable

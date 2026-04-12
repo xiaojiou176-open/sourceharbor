@@ -224,6 +224,14 @@ python3 scripts/governance/render_newcomer_result_proof.py && python3 scripts/go
 python3 scripts/governance/render_current_state_summary.py && python3 scripts/governance/check_current_state_summary.py
 ```
 
+Closeout note:
+
+- `./bin/repo-side-strict-ci --mode pre-push` still prefers the repo-owned
+  standard-env container path when Docker is healthy.
+- If the Docker daemon is unavailable on a maintainer workstation, the wrapper
+  now falls back to the host-bootstrapped pre-push quality gate instead of
+  failing before the actual repo-side gates even start.
+
 Mutation-readiness note:
 
 - `repo-side-strict-ci` now prefers a fresh current-commit mutation stats

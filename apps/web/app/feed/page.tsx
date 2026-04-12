@@ -290,7 +290,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 				<div className="folo-page-title-row">
 					<div>
 						<p className="folo-page-kicker">{copy.kicker}</p>
-						<h1 className="folo-page-title" data-route-heading>
+						<h1 className="folo-page-title" data-route-heading tabIndex={-1}>
 							{copy.heroTitle}
 						</h1>
 						<p className="folo-page-subtitle">{copy.heroSubtitle}</p>

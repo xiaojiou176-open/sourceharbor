@@ -121,3 +121,25 @@ def test_subscriptions_save_generic_rsshub_route_template(page: Page) -> None:
 
     _expect_subscription_success(page)
     expect(_subscription_row(page, route_value)).to_be_visible(timeout=15_000)
+
+
+def test_subscriptions_frontstage_links(page: Page) -> None:
+    page.goto("/subscriptions", wait_until="domcontentloaded")
+
+    read_the_product_card = page.locator("div").filter(
+        has=page.get_by_text("3. Read the product", exact=True)
+    ).first
+
+    feed_link = read_the_product_card.get_by_role("link", name="Feed")
+    expect(feed_link).to_be_visible()
+    feed_link.click()
+    expect(page).to_have_url(re.compile(r"/feed(?:\?.*)?$"))
+
+    page.goto("/subscriptions", wait_until="domcontentloaded")
+    read_the_product_card = page.locator("div").filter(
+        has=page.get_by_text("3. Read the product", exact=True)
+    ).first
+    reader_link = read_the_product_card.get_by_role("link", name="Reader")
+    expect(reader_link).to_be_visible()
+    reader_link.click()
+    expect(page).to_have_url(re.compile(r"/reader(?:\?.*)?$"))

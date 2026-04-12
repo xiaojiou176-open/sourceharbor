@@ -118,6 +118,23 @@ def _latest_eval(commit: str) -> dict[str, Any] | None:
             "pass_rate": payload.get("pass_rate"),
             "metadata": metadata,
         }
+    for path in candidates:
+        if path.name.endswith(".meta.json"):
+            continue
+        metadata = read_runtime_metadata(path)
+        if metadata is None:
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        return {
+            "path": path.relative_to(ROOT).as_posix(),
+            "status": payload.get("status"),
+            "pass_rate": payload.get("pass_rate"),
+            "metadata": metadata,
+            "current_commit_aligned": False,
+        }
     return None
 
 
@@ -245,7 +262,7 @@ def main() -> int:
 
     newcomer_preflight_status = (
         "pass"
-        if validate_manifest and validate_log.is_file() and validate_resolved.is_file()
+        if validate_resolved.is_file() and (validate_manifest is None or validate_log.is_file())
         else "missing"
     )
     repo_side_strict_status = (
@@ -265,6 +282,8 @@ def main() -> int:
             )
             else "in_progress"
         )
+    elif any(path.is_file() for path in governance_log_candidates):
+        governance_status = "in_progress"
 
     overall_status, workspace_blockers, workspace_note = _workspace_verdict(
         newcomer_preflight_status=newcomer_preflight_status,

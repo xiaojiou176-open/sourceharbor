@@ -19,6 +19,18 @@ UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$SOURCE_HARBOR_CACHE_ROOT/proj
 2. Boot the stack with `./bin/bootstrap-full-stack` and `./bin/full-stack up`.
 3. Use [start-here.md](./start-here.md) to queue the first real job.
 
+Keep the local boot topology honest:
+
+- `./bin/bootstrap-full-stack` now treats the **core stack** and the **reader
+  stack** separately.
+- The core stack is Postgres + Temporal + API/Web/Worker, and it can use a
+  repo-owned local Postgres/Temporal fallback under `.runtime-cache/` when
+  Docker is unavailable but local `postgres` / `initdb` / `pg_ctl` /
+  `temporal` binaries exist.
+- The reader stack is still a Docker-only optional lane. If you want it, rerun
+  bootstrap with `--with-reader-stack 1` instead of assuming it is part of the
+  default first-run contract.
+
 ## Where To Look When Something Feels Off
 
 - API health: default is `http://127.0.0.1:9000/healthz` when that port stays free, but current local truth should always be read from `.runtime-cache/run/full-stack/resolved.env`
@@ -28,6 +40,7 @@ UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$SOURCE_HARBOR_CACHE_ROOT/proj
 - Operator diagnostics page: `/ops`
 - Python gate: `bash scripts/ci/python_tests.sh`
 - Structured full-stack logs: `.runtime-cache/logs/components/full-stack`
+- Local core-services fallback logs: `.runtime-cache/logs/local-core`
 - Generated evidence and reports: `.runtime-cache/reports`
 - Canonical repo-side web runtime: `.runtime-cache/tmp/web-runtime/workspace/apps/web`
 - Canonical mutation stats receipt: `.runtime-cache/reports/mutation/mutmut-cicd-stats.json`
@@ -131,6 +144,11 @@ If you want the longer-lived "what can still be deepened safely" map, read
 4. Use [proof.md](./proof.md) to keep local proof separate from remote proof claims.
 5. Use [runtime-truth.md](./runtime-truth.md) when Postgres, SQLite, artifacts, and release truth start sounding like one mixed story.
 6. Treat `./bin/smoke-full-stack --offline-fallback 0` as the long live-smoke lane, not as the same thing as the local supervisor proof.
+
+When you need the strict repo-side closeout gate from a maintainer workstation,
+`./bin/repo-side-strict-ci --mode pre-push` still prefers the standard-env
+container path, but it can now fall back to the host-bootstrapped pre-push
+quality gate when Docker itself is the only missing layer.
 
 ## Boundaries
 

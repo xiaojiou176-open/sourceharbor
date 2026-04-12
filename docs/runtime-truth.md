@@ -78,6 +78,18 @@ It intentionally steps into provider-backed lanes after the local supervisor
 path is already up. Treat it like an extended flight check, not like the same
 thing as `doctor + up + status`.
 
+One important split now stays explicit:
+
+- **core stack truth** = Postgres + Temporal + API/Web/Worker reachability
+- **reader stack truth** = Miniflux + Nextflux adjunct services
+
+`./bin/bootstrap-full-stack` now keeps those two ledgers separate. It can use a
+repo-owned local fallback for the core stack when Docker is unavailable but the
+local `postgres` / `initdb` / `pg_ctl` / `temporal` binaries exist. The reader
+stack still stays an explicit Docker-only optional lane, so it should not be
+treated as a first-run blocker unless you intentionally enabled
+`--with-reader-stack 1`.
+
 What `./bin/doctor` is for:
 
 - env contract readiness

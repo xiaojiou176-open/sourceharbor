@@ -16,7 +16,7 @@ source "$ROOT_DIR/scripts/lib/standard_env.sh"
 PROFILE="local"
 INSTALL_DEPS="1"
 WITH_CORE_SERVICES="1"
-WITH_READER_STACK="1"
+WITH_READER_STACK="0"
 READER_ENV_TEMPLATE_FILE="$ROOT_DIR/env/profiles/reader.env"
 READER_ENV_LOCAL_FILE="$ROOT_DIR/env/profiles/reader.local.env"
 if [[ -f "$READER_ENV_LOCAL_FILE" ]]; then
@@ -163,6 +163,10 @@ Goal:
 Examples:
   ./bin/bootstrap-full-stack
   ./bin/bootstrap-full-stack --profile gce --with-reader-stack 1 --reader-env-file env/profiles/reader.local.env
+
+Notes:
+  - core services can use Docker compose or a repo-owned local fallback when Docker is unavailable
+  - reader stack stays an explicit Docker-only optional lane
 EOF
 }
 
@@ -257,7 +261,6 @@ log "Validating env contract"
 (cd "$ROOT_DIR" && python3 scripts/governance/check_env_contract.py --strict)
 
 if is_truthy "$WITH_CORE_SERVICES"; then
-  command -v docker >/dev/null 2>&1 || fail "docker not found; required for core services"
   log "Starting core services (postgres/temporal)"
   (cd "$ROOT_DIR" && ./scripts/deploy/core_services.sh up --env-file "$ROOT_DIR/.env") || fail "core services failed"
 fi
@@ -331,7 +334,9 @@ if [[ -n "${SQLITE_PATH:-}" ]] && command -v sqlite3 >/dev/null 2>&1; then
 fi
 
 if is_truthy "$WITH_READER_STACK"; then
-  command -v docker >/dev/null 2>&1 || fail "docker not found; required for reader stack"
+  command -v docker >/dev/null 2>&1 || fail "reader stack is a Docker-only optional lane; docker not found"
+  docker compose version >/dev/null 2>&1 || fail "reader stack is a Docker-only optional lane; docker compose not available"
+  docker ps >/dev/null 2>&1 || fail "reader stack is a Docker-only optional lane; docker daemon unavailable"
   if [[ ! -f "$READER_ENV_FILE" ]]; then
     log "Reader env not found, creating template at $READER_ENV_FILE"
     mkdir -p "$(dirname "$READER_ENV_FILE")"
@@ -340,6 +345,8 @@ if is_truthy "$WITH_READER_STACK"; then
   fi
   log "Starting reader stack"
   (cd "$ROOT_DIR" && ./scripts/deploy/reader_stack.sh up --env-file "$READER_ENV_FILE") || fail "reader stack failed"
+else
+  log "Skipping reader stack; rerun with --with-reader-stack 1 when Docker compose is available"
 fi
 
 write_runtime_resolved_env "$ROOT_DIR" "$SCRIPT_NAME" \
@@ -360,6 +367,7 @@ cat <<EOF
 [$SCRIPT_NAME]   Web: http://127.0.0.1:${WEB_PORT}
 [$SCRIPT_NAME]   Database: ${DATABASE_URL}
 [$SCRIPT_NAME]   Temporal queue: ${TEMPORAL_TASK_QUEUE}
+[$SCRIPT_NAME]   Reader stack: $(if is_truthy "$WITH_READER_STACK"; then printf 'enabled (%s)' "$READER_ENV_FILE"; else printf 'skipped by default; rerun with --with-reader-stack 1 when Docker compose is available'; fi)
 [$SCRIPT_NAME] Next:
 [$SCRIPT_NAME]   1) ./bin/full-stack up
 [$SCRIPT_NAME]   2) ./scripts/ci/smoke_full_stack.sh
