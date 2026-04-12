@@ -9,11 +9,13 @@ import re
 from urllib.parse import parse_qs, urlparse
 from uuid import UUID, uuid4
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..errors import ApiTimeoutError
 from ..repositories import JobsRepository, VideosRepository
+from .source_names import build_source_name_fallback, resolve_source_name
 
 YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
 BILIBILI_HOSTS = {"bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv"}
@@ -156,6 +158,7 @@ def _build_process_workflow_id(job_id: UUID) -> str:
 
 class VideosService:
     def __init__(self, db: Session) -> None:
+        self.db = db
         self.video_repo = VideosRepository(db)
         self.jobs_repo = JobsRepository(db)
 
@@ -333,4 +336,59 @@ class VideosService:
             "force": force,
             "reused": not needs_dispatch,
             "workflow_id": workflow_id,
+        }
+
+    def get_subscription_match_for_video(self, *, video_db_id: UUID) -> dict[str, str] | None:
+        row = (
+            self.db.execute(
+                text(
+                    """
+                SELECT
+                    CAST(s.id AS TEXT) AS subscription_id,
+                    s.platform,
+                    s.source_type,
+                    s.source_value,
+                    s.source_url,
+                    s.rsshub_route
+                FROM ingest_events ie
+                JOIN subscriptions s ON s.id = ie.subscription_id
+                WHERE ie.video_id = CAST(:video_id AS UUID)
+                ORDER BY ie.created_at DESC
+                LIMIT 1
+                """
+                ),
+                {"video_id": str(video_db_id)},
+            )
+            .mappings()
+            .first()
+        )
+        if row is None:
+            return None
+
+        platform = str(row.get("platform") or "").strip()
+        source_type = str(row.get("source_type") or "").strip()
+        source_value = str(row.get("source_value") or "").strip()
+        source_url = str(row.get("source_url") or "").strip() or None
+        rsshub_route = str(row.get("rsshub_route") or "").strip() or None
+        display_name = resolve_source_name(
+            source_type=source_type,
+            source_value=source_value,
+            fallback=build_source_name_fallback(
+                platform=platform,
+                source_type=source_type,
+                source_value=source_value,
+                source_url=source_url,
+                rsshub_route=rsshub_route,
+            ),
+        )
+        creator_handle = source_value if source_value.startswith("@") else None
+        return {
+            "subscription_id": str(row.get("subscription_id") or "").strip(),
+            "platform": platform,
+            "source_type": source_type,
+            "source_value": source_value,
+            "source_url": source_url or "",
+            "rsshub_route": rsshub_route or "",
+            "display_name": display_name,
+            "creator_handle": creator_handle or "",
         }

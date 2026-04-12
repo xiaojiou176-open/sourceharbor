@@ -320,6 +320,9 @@ describe("feed/jobs/artifacts pages", () => {
 						published_at: "2026-02-10T00:00:00Z",
 						summary_md: "## summary 1",
 						artifact_type: "digest",
+						published_document_title: "Reader edition one",
+						published_document_publish_status: "published",
+						reader_route: "/reader/doc-1",
 					},
 					{
 						feed_id: "feed-reading-2",
@@ -389,6 +392,12 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(
 				screen.getByRole("link", { name: /Open original/ }),
 			).toHaveAttribute("href", "https://www.youtube.com/watch?v=reading1");
+			expect(
+				screen.getByRole("link", { name: "Open reader edition" }),
+			).toHaveAttribute("href", "/reader/doc-1");
+			expect(
+				screen.getByText("Published unit · Reader edition one · published"),
+			).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);

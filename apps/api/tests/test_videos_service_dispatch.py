@@ -169,6 +169,27 @@ class _ListRepoStub:
         return self.result
 
 
+class _MappingRowResult:
+    def __init__(self, row: dict[str, Any] | None) -> None:
+        self._row = row
+
+    def mappings(self) -> _MappingRowResult:
+        return self
+
+    def first(self) -> dict[str, Any] | None:
+        return self._row
+
+
+class _ExecuteDB:
+    def __init__(self, row: dict[str, Any] | None) -> None:
+        self.row = row
+        self.calls: list[dict[str, Any]] = []
+
+    def execute(self, stmt: Any, params: dict[str, Any]) -> _MappingRowResult:
+        self.calls.append({"stmt": str(stmt), "params": dict(params)})
+        return _MappingRowResult(self.row)
+
+
 def test_list_videos_delegates_default_filters_to_repo() -> None:
     expected_result = [{"id": "v-1"}]
     repo = _ListRepoStub(result=expected_result)
@@ -191,6 +212,36 @@ def test_list_videos_delegates_explicit_filters_to_repo() -> None:
 
     assert result is expected_result
     assert repo.calls == [{"platform": "youtube", "status": "ready", "limit": 7}]
+
+
+def test_get_subscription_match_for_video_returns_normalized_payload() -> None:
+    video_db_id = uuid.uuid4()
+    db = _ExecuteDB(
+        {
+            "subscription_id": str(uuid.uuid4()),
+            "platform": "youtube",
+            "source_type": "youtube_user",
+            "source_value": "@channel",
+            "source_url": "https://www.youtube.com/@channel",
+            "rsshub_route": "/youtube/user/@channel",
+        }
+    )
+    service = VideosService(db=db)  # type: ignore[arg-type]
+
+    result = service.get_subscription_match_for_video(video_db_id=video_db_id)
+
+    assert result is not None
+    assert result["platform"] == "youtube"
+    assert result["source_type"] == "youtube_user"
+    assert result["display_name"] == "@channel"
+    assert result["creator_handle"] == "@channel"
+    assert db.calls[0]["params"]["video_id"] == str(video_db_id)
+
+
+def test_get_subscription_match_for_video_returns_none_when_missing() -> None:
+    service = VideosService(db=_ExecuteDB(None))  # type: ignore[arg-type]
+
+    assert service.get_subscription_match_for_video(video_db_id=uuid.uuid4()) is None
 
 
 def test_process_video_marks_dispatch_failed_when_temporal_start_fails(

@@ -74,6 +74,10 @@ type ReadingPaneProps = {
 		| "thumbnail_url"
 		| "avatar_url"
 		| "avatar_label"
+		| "published_document_title"
+		| "published_document_publish_status"
+		| "published_with_gap"
+		| "reader_route"
 		| "video_url"
 		| "title"
 		| "category"
@@ -188,6 +192,9 @@ export function ReadingPane({
 
 	const headings = markdown ? extractHeadings(markdown) : [];
 	const safeVideoUrl = videoUrl ? sanitizeExternalUrl(videoUrl) : null;
+	const safeReaderRoute = identity?.reader_route?.trim().startsWith("/reader/")
+		? identity.reader_route.trim()
+		: null;
 	const sourceLabel = source ? toSourceLabel(source) : null;
 	const identityModel = identity
 		? resolveFeedIdentity({
@@ -243,7 +250,25 @@ export function ReadingPane({
 									<ExternalLinkIcon className="size-3" />
 								</a>
 							) : null}
+							{safeReaderRoute ? (
+								<Link
+									href={safeReaderRoute}
+									className={`feed-reading-link ${editorialMono.className}`}
+									data-interaction="link-primary"
+								>
+									Open reader edition
+								</Link>
+							) : null}
 						</div>
+						{identity?.published_document_title ? (
+							<p className={`feed-reading-link ${editorialMono.className}`}>
+								Published unit · {identity.published_document_title}
+								{identity.published_document_publish_status
+									? ` · ${identity.published_document_publish_status}`
+									: ""}
+								{identity.published_with_gap ? " · with gap" : ""}
+							</p>
+						) : null}
 						{identityModel ? (
 							<div className="mt-4">
 								<SourceIdentityCard identity={identityModel} compact />

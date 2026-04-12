@@ -504,6 +504,13 @@ reader-first 不是 cosmetic cleanup，而是产品主语变化。
 
 ### 部分做到
 
+> Historical note:
+> this blueprint still records the first-cut gap picture from 2026-04-08.
+> Current code truth has already moved ahead on several fronts, including
+> `PublishedReaderDocument` routes/pages, yellow-warning/frontstage delivery,
+> and the new `/feed -> current reader edition` bridge.
+> Use this section as historical contract context, not as current live truth.
+
 - reader surfaces 已存在，但 canonical framing 仍偏 operator
 - `Cluster Judge` 当前已能基于 knowledge-card topic 做 first-cut theme-first grouping，但还没有接入旧 published-doc 摘要 / old coverage ledger / affected-cluster rebuild
 - merged story 仍主要是 view-level aggregation，不是 `PublishedReaderDocument`

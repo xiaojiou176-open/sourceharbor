@@ -9,7 +9,11 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ..repositories import FeedFeedbackRepository, JobsRepository
+from ..repositories import (
+    FeedFeedbackRepository,
+    JobsRepository,
+    PublishedReaderDocumentsRepository,
+)
 from .source_identity import build_identity_payload
 from .source_names import resolve_source_name
 
@@ -152,6 +156,16 @@ class FeedService:
                             ),
                             ''
                         ) AS subscription_id,
+                        COALESCE(
+                            (
+                                SELECT CAST(cbi.id AS TEXT)
+                                FROM consumption_batch_items cbi
+                                WHERE cbi.job_id = j.id
+                                ORDER BY cbi.created_at DESC
+                                LIMIT 1
+                            ),
+                            ''
+                        ) AS source_item_id,
                         COALESCE(ff.saved, FALSE) AS feedback_saved,
                         ff.feedback_label,
                         CASE
@@ -197,6 +211,9 @@ class FeedService:
             ),
             params,
         ).mappings()
+        reader_bridge_by_source_item, reader_bridge_by_job_id = self._build_reader_bridge_index(
+            limit=max(safe_limit * 10, 200)
+        )
 
         items: list[dict[str, Any]] = []
         for row in rows:
@@ -224,6 +241,10 @@ class FeedService:
                 fallback=source_platform,
             )
             subscription_id = str(row.get("subscription_id") or "").strip() or None
+            source_item_id = str(row.get("source_item_id") or "").strip() or None
+            reader_bridge = reader_bridge_by_source_item.get(
+                source_item_id or ""
+            ) or reader_bridge_by_job_id.get(job_id)
             identity = build_identity_payload(
                 platform=source_platform,
                 display_name=source_name,
@@ -245,6 +266,7 @@ class FeedService:
                     "canonical_source_name": source_name,
                     "canonical_author_name": source_name,
                     "subscription_id": subscription_id,
+                    "source_item_id": source_item_id,
                     "affiliation_label": source_name if subscription_id else "Unmatched source",
                     "relation_kind": "matched_subscription"
                     if subscription_id
@@ -253,6 +275,18 @@ class FeedService:
                     "avatar_url": identity.avatar_url,
                     "avatar_label": identity.avatar_label,
                     "identity_status": identity.identity_status,
+                    "published_document_id": reader_bridge.get("id") if reader_bridge else None,
+                    "published_document_slug": reader_bridge.get("slug") if reader_bridge else None,
+                    "published_document_title": reader_bridge.get("title")
+                    if reader_bridge
+                    else None,
+                    "published_document_publish_status": reader_bridge.get("publish_status")
+                    if reader_bridge
+                    else None,
+                    "published_with_gap": reader_bridge.get("published_with_gap")
+                    if reader_bridge
+                    else None,
+                    "reader_route": reader_bridge.get("reader_route") if reader_bridge else None,
                     "category": str(row.get("category") or "misc"),
                     "published_at": self._iso(published_at),
                     "summary_md": summary_md,
@@ -287,6 +321,47 @@ class FeedService:
             "has_more": has_more,
             "next_cursor": next_cursor,
         }
+
+    def _build_reader_bridge_index(
+        self,
+        *,
+        limit: int,
+    ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+        if self.db is None:
+            return {}, {}
+
+        repo = PublishedReaderDocumentsRepository(self.db)
+        try:
+            current_documents = repo.list_current(limit=limit)
+        except Exception:
+            return {}, {}
+
+        by_source_item: dict[str, dict[str, Any]] = {}
+        by_job_id: dict[str, dict[str, Any]] = {}
+        for document in current_documents:
+            publish_status = (
+                "published_with_gap"
+                if bool(getattr(document, "published_with_gap", False))
+                else "published"
+            )
+            payload = {
+                "id": str(document.id),
+                "slug": str(document.slug),
+                "title": str(document.title),
+                "publish_status": publish_status,
+                "published_with_gap": bool(getattr(document, "published_with_gap", False)),
+                "reader_route": f"/reader/{document.id}",
+            }
+            for source_ref in list(getattr(document, "source_refs_json", None) or []):
+                if not isinstance(source_ref, dict):
+                    continue
+                source_item_id = str(source_ref.get("source_item_id") or "").strip()
+                job_id = str(source_ref.get("job_id") or "").strip()
+                if source_item_id and source_item_id not in by_source_item:
+                    by_source_item[source_item_id] = payload
+                if job_id and job_id not in by_job_id:
+                    by_job_id[job_id] = payload
+        return by_source_item, by_job_id
 
     def get_feedback(self, *, job_id: uuid.UUID) -> dict[str, Any]:
         row = self.feedback_repo.get_by_job_id(job_id=job_id)

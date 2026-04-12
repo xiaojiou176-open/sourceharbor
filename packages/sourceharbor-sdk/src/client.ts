@@ -212,12 +212,24 @@ function normalizeDigestFeedResponse(payload: unknown): DigestFeedResponse {
 				canonical_source_name: asNullableString(record.canonical_source_name),
 				canonical_author_name: asNullableString(record.canonical_author_name),
 				subscription_id: asNullableString(record.subscription_id),
+				source_item_id: asNullableString(record.source_item_id),
 				affiliation_label: asNullableString(record.affiliation_label),
 				relation_kind: asNullableString(record.relation_kind),
 				thumbnail_url: asNullableString(record.thumbnail_url),
 				avatar_url: asNullableString(record.avatar_url),
 				avatar_label: asNullableString(record.avatar_label),
 				identity_status: asNullableString(record.identity_status),
+				published_document_id: asNullableString(record.published_document_id),
+				published_document_slug: asNullableString(record.published_document_slug),
+				published_document_title: asNullableString(record.published_document_title),
+				published_document_publish_status: asNullableString(
+					record.published_document_publish_status,
+				),
+				published_with_gap:
+					typeof record.published_with_gap === "boolean"
+						? record.published_with_gap
+						: null,
+				reader_route: asNullableString(record.reader_route),
 				category: safeCategory,
 				published_at: asString(record.published_at),
 				summary_md: asString(record.summary_md),

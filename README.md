@@ -326,7 +326,7 @@ If you want the shortest honest summary of what is already real, what is still g
 If you only have half a minute, do not start with setup. Start with the three surfaces that explain the product fastest:
 
 1. **Command center:** one operator view for subscriptions, intake, job counts, and recent artifacts.
-2. **Digest feed:** a reading flow where entries such as `AI Weekly` and `Digest One` become reusable summaries instead of lost links.
+2. **Digest feed:** a reading flow where entries such as `AI Weekly` and `Digest One` become reusable summaries instead of lost links, and already-materialized items can jump straight into the current reader edition.
 3. **Job trace:** a step-by-step timeline with statuses, retries, degradations, and artifact references.
 
 ```text
@@ -362,7 +362,7 @@ For the lightweight evaluation path, go to [docs/see-it-fast.md](./docs/see-it-f
 | Surface | What you can do | Why it matters |
 | :-- | :-- | :-- |
 | **Subscriptions** | Start from strong YouTube/Bilibili templates or widen into RSSHub and generic RSS intake through the shared backend template catalog | Build a durable intake layer without pretending every source family is equally proven |
-| **Digest feed** | Read generated summaries in a single operator flow | Turn long-form content into an actionable daily reading stream |
+| **Digest feed** | Read generated summaries in one operator flow, then jump into the current reader edition when that digest already has a published doc bridge | Turn long-form content into an actionable daily reading stream without hiding the finished published-doc layer |
 | **Search & Ask** | Search raw evidence and turn a watchlist or selected story briefing into an answer + change + citation flow on one page, with Briefings and Ask now sharing a server-owned story read-model instead of parallel browser-side selection glue | Make the knowledge layer visible without pretending every question already has a global answer engine |
 | **Job trace** | Inspect pipeline status, retries, degradations, and artifacts | Debug with evidence instead of guessing what happened |
 | **Notifications** | Configure and send digests outward when the notification lane is enabled | Push results outward instead of trapping them in a database |

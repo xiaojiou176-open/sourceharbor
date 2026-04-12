@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from apps.api.app.errors import ApiServiceError, ApiTimeoutError, build_error_payload
+from apps.api.app.services import feed as feed_module
 from apps.api.app.services.feed import FeedService
 
 
@@ -15,6 +17,23 @@ class _FakeResult:
 
     def mappings(self) -> list[dict[str, Any]]:
         return list(self._rows)
+
+
+class _FakeDocument:
+    def __init__(
+        self,
+        *,
+        document_id: str,
+        slug: str,
+        title: str,
+        published_with_gap: bool,
+        source_refs_json: list[dict[str, Any]],
+    ) -> None:
+        self.id = uuid.UUID(document_id)
+        self.slug = slug
+        self.title = title
+        self.published_with_gap = published_with_gap
+        self.source_refs_json = source_refs_json
 
 
 class _FakeDB:
@@ -175,6 +194,127 @@ def test_feed_service_list_digest_feed_applies_cursor_filters_and_has_more(
     assert result["items"][1]["content_type"] == "video"
     assert result["items"][1]["saved"] is True
     assert result["items"][1]["feedback_label"] == "useful"
+
+
+def test_feed_service_lists_reader_bridge_when_source_item_matches_current_document(
+    tmp_path: Path, monkeypatch
+) -> None:
+    ts = datetime(2026, 2, 25, 10, 0, tzinfo=UTC)
+    digest = tmp_path / "digest.md"
+    digest.write_text("# digest", encoding="utf-8")
+
+    rows = [
+        {
+            "job_id": "11111111-1111-1111-1111-111111111111",
+            "source_url": "https://example.com/v1",
+            "source": "youtube",
+            "content_type": "video",
+            "title": "Video 1",
+            "video_uid": "v-1",
+            "published_at": ts,
+            "created_at": ts,
+            "sort_ts": ts,
+            "category": "tech",
+            "subscription_source_type": "youtube_user",
+            "subscription_source_value": "@demo",
+            "subscription_id": "sub-tech-1",
+            "source_item_id": "source-item-1",
+            "feedback_saved": False,
+            "feedback_label": None,
+            "artifact_digest_md": str(digest),
+            "artifact_root": None,
+        }
+    ]
+    fake_db = _FakeDB(rows)
+    service = FeedService(db=fake_db)  # type: ignore[arg-type]
+    published_document_id = uuid.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+    monkeypatch.setattr(
+        service,
+        "_build_reader_bridge_index",
+        lambda *, limit: (
+            {
+                "source-item-1": {
+                    "id": str(published_document_id),
+                    "slug": "reader-doc-1",
+                    "title": "Reader Doc 1",
+                    "publish_status": "published",
+                    "published_with_gap": False,
+                    "reader_route": f"/reader/{published_document_id}",
+                }
+            },
+            {},
+        ),
+    )
+
+    result = service.list_digest_feed()
+
+    assert result["items"][0]["published_document_id"] == str(published_document_id)
+    assert result["items"][0]["reader_route"] == f"/reader/{published_document_id}"
+    assert result["items"][0]["published_document_publish_status"] == "published"
+
+
+def test_feed_service_build_reader_bridge_index_maps_source_item_and_job_ids() -> None:
+    service = FeedService(db=object())  # type: ignore[arg-type]
+    documents = [
+        _FakeDocument(
+            document_id="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            slug="reader-doc-1",
+            title="Reader Doc 1",
+            published_with_gap=False,
+            source_refs_json=[
+                {"source_item_id": "source-item-1", "job_id": "job-1"},
+                {"source_item_id": "source-item-2", "job_id": "job-2"},
+            ],
+        ),
+        _FakeDocument(
+            document_id="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            slug="reader-doc-2",
+            title="Reader Doc 2",
+            published_with_gap=True,
+            source_refs_json=[{"source_item_id": "source-item-3", "job_id": "job-3"}],
+        ),
+    ]
+
+    class _Repo:
+        def __init__(self, db) -> None:
+            self.db = db
+
+        def list_current(self, *, limit: int):
+            return documents
+
+    original_repo = feed_module.PublishedReaderDocumentsRepository
+    feed_module.PublishedReaderDocumentsRepository = _Repo
+    try:
+        by_source_item, by_job_id = service._build_reader_bridge_index(limit=20)
+    finally:
+        feed_module.PublishedReaderDocumentsRepository = original_repo
+
+    assert by_source_item["source-item-1"]["reader_route"] == (
+        "/reader/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    )
+    assert by_job_id["job-2"]["title"] == "Reader Doc 1"
+    assert by_source_item["source-item-3"]["publish_status"] == "published_with_gap"
+
+
+def test_feed_service_build_reader_bridge_index_handles_reader_repo_failure() -> None:
+    service = FeedService(db=object())  # type: ignore[arg-type]
+
+    class _Repo:
+        def __init__(self, db) -> None:
+            self.db = db
+
+        def list_current(self, *, limit: int):
+            raise RuntimeError("boom")
+
+    original_repo = feed_module.PublishedReaderDocumentsRepository
+    feed_module.PublishedReaderDocumentsRepository = _Repo
+    try:
+        by_source_item, by_job_id = service._build_reader_bridge_index(limit=20)
+    finally:
+        feed_module.PublishedReaderDocumentsRepository = original_repo
+
+    assert by_source_item == {}
+    assert by_job_id == {}
 
 
 def test_feed_service_list_digest_feed_applies_feedback_filter_param(tmp_path: Path) -> None:

@@ -8,7 +8,14 @@ import pytest
 from fastapi import HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 
-from apps.api.app.security import require_write_access
+from apps.api.app.security import (
+    _allow_unauth_write,
+    _is_valid_signed_session_token,
+    _sign_session_bucket,
+    _token_bucket,
+    require_write_access,
+    sanitize_exception_detail,
+)
 
 
 def _build_web_session_token(secret: str) -> str:
@@ -163,3 +170,39 @@ def test_require_write_access_rejects_invalid_web_session_header(
 
     assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc_info.value.detail == "write access token required"
+
+
+def test_sanitize_exception_detail_uses_fallback_and_truncates() -> None:
+    assert (
+        sanitize_exception_detail(Exception("   "), fallback="fallback-value") == "fallback-value"
+    )
+
+    sanitized_secret = sanitize_exception_detail(Exception("Bearer " + ("a" * 600)), max_chars=40)
+    assert sanitized_secret == "Bearer ***REDACTED***"
+
+    long_plain = "x" * 600
+    sanitized = sanitize_exception_detail(Exception(long_plain), max_chars=40)
+    assert sanitized.endswith("...[truncated]")
+    assert sanitized.startswith("x" * 40)
+
+
+def test_signed_session_token_rejects_invalid_shape_and_stale_bucket(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret = "unit-test-token"
+    current_bucket = _token_bucket()
+
+    assert _is_valid_signed_session_token(secret, "bad-token") is False
+    assert _is_valid_signed_session_token(secret, f"{current_bucket}.nothex") is False
+
+    old_bucket = current_bucket - 2
+    stale_signature = _sign_session_bucket(secret, old_bucket)
+    assert _is_valid_signed_session_token(secret, f"{old_bucket}.{stale_signature}") is False
+
+
+def test_allow_unauth_write_rejects_non_truthy_values(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SOURCE_HARBOR_ALLOW_UNAUTH_WRITE", "0")
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "apps/api/tests/test_security_write_access.py::test")
+    assert _allow_unauth_write() is False

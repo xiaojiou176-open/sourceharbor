@@ -172,7 +172,7 @@ Open these UI views:
 - `/search` for grounded search across SourceHarbor artifacts
 - `/ask` for the story-aware, briefing-backed Ask front door, with a server-owned story page payload over the answer/change/evidence view
 - `/reader` for the published-doc frontstage: merged reader docs, singleton polish docs, navigation brief, yellow warning, and source contribution drawer
-- `/feed` for the digest reading flow, with source identity cards and affiliation cues next to the current reading lane
+- `/feed` for the digest reading flow, with source identity cards, affiliation cues, and a direct bridge into the current reader edition whenever that digest already materialized into a published reader document
 - `/jobs?job_id=<job-id>` for pipeline trace and artifacts
 - `/watchlists` for long-lived tracking objects
 - `/trends` for merged stories plus recent evidence runs

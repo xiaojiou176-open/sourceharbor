@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import uuid
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
@@ -308,30 +309,74 @@ class ManualSourceIntakeService:
                     result["applied_action"] = "add_to_today"
                     result["status"] = "reused" if bool(payload.get("reused")) else "queued"
                     result["job_id"] = str(payload.get("job_id") or "") or None
-                    identity = build_identity_payload(
-                        platform=plan.platform or "youtube",
-                        display_name=plan.display_name,
-                        creator_handle=plan.creator_handle,
-                        source_homepage_url=plan.source_url,
-                        source_url=plan.source_url,
-                        source_universe_label=plan.source_universe_label or plan.display_name,
-                    )
-                    result["relation_kind"] = "manual_one_off"
-                    result["matched_subscription_id"] = None
-                    result["matched_subscription_name"] = None
-                    result["matched_by"] = None
-                    result["match_confidence"] = None
+                    video_db_id = payload.get("video_db_id")
+                    match = None
+                    if isinstance(video_db_id, str) and video_db_id.strip():
+                        match = self.videos_service.get_subscription_match_for_video(
+                            video_db_id=uuid.UUID(video_db_id)
+                        )
+                    elif isinstance(video_db_id, uuid.UUID):
+                        match = self.videos_service.get_subscription_match_for_video(
+                            video_db_id=video_db_id
+                        )
+                    if match is not None:
+                        relation_kind = "matched_subscription"
+                        matched_subscription_id = str(match.get("subscription_id") or "").strip()
+                        matched_subscription_name = (
+                            str(match.get("display_name") or "").strip() or plan.display_name
+                        )
+                        matched_by = self._match_basis(
+                            source_type=str(match.get("source_type") or ""),
+                            source_url=str(match.get("source_url") or "") or None,
+                            rsshub_route=str(match.get("rsshub_route") or "") or None,
+                        )
+                        match_confidence = "inferred_from_existing_ingest_event"
+                        identity = build_identity_payload(
+                            platform=str(match.get("platform") or plan.platform or "youtube"),
+                            display_name=matched_subscription_name,
+                            creator_handle=str(match.get("creator_handle") or "").strip()
+                            or plan.creator_handle,
+                            source_homepage_url=str(match.get("source_url") or "").strip()
+                            or plan.source_url,
+                            source_url=plan.source_url,
+                            source_universe_label=matched_subscription_name,
+                            identity_status="matched_subscription_identity",
+                        )
+                        result["message"] = (
+                            "Added to today and matched back to an existing tracked universe."
+                            if not payload.get("reused")
+                            else "Already present in today and matched to an existing tracked universe."
+                        )
+                    else:
+                        relation_kind = "manual_one_off"
+                        matched_subscription_id = None
+                        matched_subscription_name = None
+                        matched_by = None
+                        match_confidence = None
+                        identity = build_identity_payload(
+                            platform=plan.platform or "youtube",
+                            display_name=plan.display_name,
+                            creator_handle=plan.creator_handle,
+                            source_homepage_url=plan.source_url,
+                            source_url=plan.source_url,
+                            source_universe_label=plan.source_universe_label or plan.display_name,
+                        )
+                        result["message"] = (
+                            "Added to today through the existing one-off video lane."
+                            if not payload.get("reused")
+                            else "Already present in the current one-off video lane."
+                        )
+                    result["relation_kind"] = relation_kind
+                    result["matched_subscription_id"] = matched_subscription_id
+                    result["matched_subscription_name"] = matched_subscription_name
+                    result["matched_by"] = matched_by
+                    result["match_confidence"] = match_confidence
                     result["source_universe_label"] = identity.source_universe_label
                     result["creator_display_name"] = identity.creator_display_name
                     result["creator_handle"] = identity.creator_handle
                     result["thumbnail_url"] = identity.thumbnail_url
                     result["avatar_url"] = identity.avatar_url
                     result["avatar_label"] = identity.avatar_label
-                    result["message"] = (
-                        "Added to today through the existing one-off video lane."
-                        if not payload.get("reused")
-                        else "Already present in the current one-off video lane."
-                    )
                     if payload.get("reused"):
                         reused_manual_items += 1
                     else:

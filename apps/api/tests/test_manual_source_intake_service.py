@@ -29,13 +29,20 @@ class _SubscriptionsStub:
 class _VideosStub:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
+        self.matches: dict[str, dict[str, str]] = {}
 
     async def process_video(self, **kwargs):
+        job_suffix = kwargs["url"].replace("https://", "").replace("/", "-")
+        video_db_id = str(uuid.uuid5(uuid.NAMESPACE_URL, kwargs["url"]))
         self.calls.append(dict(kwargs))
         return {
-            "job_id": str(uuid.uuid4()),
+            "job_id": job_suffix,
+            "video_db_id": video_db_id,
             "reused": kwargs["url"].endswith("reused"),
         }
+
+    def get_subscription_match_for_video(self, *, video_db_id: uuid.UUID):
+        return self.matches.get(str(video_db_id))
 
 
 def _build_service() -> ManualSourceIntakeService:
@@ -148,3 +155,35 @@ def test_manual_source_submit_tracks_updates_and_reused_items() -> None:
     assert result["results"][0]["relation_kind"] == "matched_subscription"
     assert result["results"][0]["matched_subscription_id"]
     assert result["results"][0]["matched_subscription_name"] == "@existing-channel"
+
+
+def test_manual_source_submit_matches_manual_video_back_to_existing_subscription() -> None:
+    service = _build_service()
+    match_video_url = "https://www.youtube.com/watch?v=matchme"
+    video_db_id = str(uuid.uuid5(uuid.NAMESPACE_URL, match_video_url))
+    service.videos_service.matches[video_db_id] = {
+        "subscription_id": "sub-existing-1",
+        "platform": "youtube",
+        "source_type": "youtube_user",
+        "source_value": "@existing-channel",
+        "source_url": "https://www.youtube.com/@existing-channel",
+        "rsshub_route": "/youtube/user/@existing-channel",
+        "display_name": "@existing-channel",
+        "creator_handle": "@existing-channel",
+    }
+
+    result = asyncio.run(
+        service.submit(
+            raw_input=match_video_url,
+            category="creator",
+            tags=[],
+            priority=10,
+            enabled=True,
+        )
+    )
+
+    item = result["results"][0]
+    assert item["relation_kind"] == "matched_subscription"
+    assert item["matched_subscription_id"] == "sub-existing-1"
+    assert item["matched_subscription_name"] == "@existing-channel"
+    assert item["match_confidence"] == "inferred_from_existing_ingest_event"

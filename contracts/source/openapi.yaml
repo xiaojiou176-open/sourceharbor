@@ -530,7 +530,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublishedReaderDocumentListResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublishedReaderDocument'
 
   /api/v1/reader/documents/slug/{slug}:
     get:
@@ -3289,6 +3291,9 @@ components:
         subscription_id:
           type: string
           nullable: true
+        source_item_id:
+          type: string
+          nullable: true
         affiliation_label:
           type: string
           nullable: true
@@ -3305,6 +3310,24 @@ components:
           type: string
           nullable: true
         identity_status:
+          type: string
+          nullable: true
+        published_document_id:
+          type: string
+          nullable: true
+        published_document_slug:
+          type: string
+          nullable: true
+        published_document_title:
+          type: string
+          nullable: true
+        published_document_publish_status:
+          type: string
+          nullable: true
+        published_with_gap:
+          type: boolean
+          nullable: true
+        reader_route:
           type: string
           nullable: true
         category:
