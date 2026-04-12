@@ -89,7 +89,12 @@ def _resolve_strict_receipt(
     if strict_completed_manifest or strict_latest_manifest:
         strict_manifest = strict_completed_manifest or strict_latest_manifest
         strict_log = ROOT / str((strict_manifest or {}).get("log_path") or "")
-        return strict_completed_manifest, strict_latest_manifest, strict_manifest, [strict_log, *strict_entry_logs]
+        return (
+            strict_completed_manifest,
+            strict_latest_manifest,
+            strict_manifest,
+            [strict_log, *strict_entry_logs],
+        )
 
     repo_side_logs = [
         ROOT / ".runtime-cache" / "logs" / "governance" / "governance-gate.jsonl",
