@@ -75,6 +75,45 @@ def _latest_completed_manifest(
     return None
 
 
+def _resolve_strict_receipt(
+    commit: str,
+) -> tuple[
+    dict[str, Any] | None,
+    dict[str, Any] | None,
+    dict[str, Any] | None,
+    list[Path],
+]:
+    strict_entry_logs = [ROOT / ".runtime-cache" / "logs" / "governance" / "strict-ci-entry.jsonl"]
+    strict_completed_manifest = _latest_completed_manifest("strict-ci", commit, strict_entry_logs)
+    strict_latest_manifest = _latest_manifest("strict-ci", commit)
+    if strict_completed_manifest or strict_latest_manifest:
+        strict_manifest = strict_completed_manifest or strict_latest_manifest
+        strict_log = ROOT / str((strict_manifest or {}).get("log_path") or "")
+        return (
+            strict_completed_manifest,
+            strict_latest_manifest,
+            strict_manifest,
+            [strict_log, *strict_entry_logs],
+        )
+
+    repo_side_logs = [
+        ROOT / ".runtime-cache" / "logs" / "governance" / "governance-gate.jsonl",
+        ROOT / ".runtime-cache" / "logs" / "governance" / "quality-gate.jsonl",
+    ]
+    repo_side_completed_manifest = _latest_completed_manifest(
+        "repo-side-strict-ci", commit, repo_side_logs
+    )
+    repo_side_latest_manifest = _latest_manifest("repo-side-strict-ci", commit)
+    repo_side_manifest = repo_side_completed_manifest or repo_side_latest_manifest
+    repo_side_log = ROOT / str((repo_side_manifest or {}).get("log_path") or "")
+    return (
+        repo_side_completed_manifest,
+        repo_side_latest_manifest,
+        repo_side_manifest,
+        [repo_side_log, *repo_side_logs],
+    )
+
+
 def _log_has_complete(log_paths: list[Path], run_id: str) -> bool:
     for log_path in log_paths:
         if not log_path.is_file():
@@ -223,13 +262,12 @@ def _workspace_verdict(
 def main() -> int:
     commit = current_git_commit()
     validate_manifest = _latest_manifest("validate-profile", commit)
-    strict_completed_manifest = _latest_completed_manifest(
-        "strict-ci",
-        commit,
-        [ROOT / ".runtime-cache" / "logs" / "governance" / "strict-ci-entry.jsonl"],
-    )
-    strict_latest_manifest = _latest_manifest("strict-ci", commit)
-    strict_manifest = strict_completed_manifest or strict_latest_manifest
+    (
+        strict_completed_manifest,
+        strict_latest_manifest,
+        strict_manifest,
+        strict_log_candidates,
+    ) = _resolve_strict_receipt(commit)
     governance_manifest = _latest_completed_manifest(
         "governance-audit",
         commit,
@@ -238,10 +276,6 @@ def main() -> int:
 
     validate_log = ROOT / str((validate_manifest or {}).get("log_path") or "")
     strict_log = ROOT / str((strict_manifest or {}).get("log_path") or "")
-    strict_log_candidates = [
-        strict_log,
-        ROOT / ".runtime-cache" / "logs" / "governance" / "strict-ci-entry.jsonl",
-    ]
     governance_log = ROOT / str((governance_manifest or {}).get("log_path") or "")
     governance_log_candidates = [
         governance_log,
