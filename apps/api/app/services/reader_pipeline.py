@@ -734,7 +734,8 @@ class ReaderPipelineService:
             "relation_kind": relation_kind,
             "affiliation_label": affiliation_label,
             "canonical_source_name": source_name if subscription_row is not None else None,
-            "canonical_author_name": metadata_uploader or (source_name if subscription_row is not None else None),
+            "canonical_author_name": metadata_uploader
+            or (source_name if subscription_row is not None else None),
             "creator_display_name": metadata_uploader or identity.creator_display_name,
             "creator_handle": identity.creator_handle,
             "thumbnail_url": identity.thumbnail_url,
@@ -1523,8 +1524,7 @@ class ReaderPipelineService:
                     "raw_artifacts": {
                         "digest": str(routes.get("artifact_markdown") or "").strip() or None,
                         "meta": str(routes.get("artifact_meta") or "").strip() or None,
-                        "transcript": str(routes.get("artifact_transcript") or "").strip()
-                        or None,
+                        "transcript": str(routes.get("artifact_transcript") or "").strip() or None,
                         "comments": str(routes.get("artifact_comments") or "").strip() or None,
                         "outline": str(routes.get("artifact_outline") or "").strip() or None,
                         "knowledge_cards": str(routes.get("job_knowledge_cards") or "").strip()
@@ -1799,9 +1799,7 @@ class ReaderPipelineService:
         if not job_id or not isinstance(artifact_manifest, dict):
             return []
         frame_keys = sorted(
-            key
-            for key in artifact_manifest
-            if isinstance(key, str) and key.startswith("frame_")
+            key for key in artifact_manifest if isinstance(key, str) and key.startswith("frame_")
         )
         return [f"/api/v1/artifacts/assets?job_id={job_id}&path={key}" for key in frame_keys]
 

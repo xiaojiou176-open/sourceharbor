@@ -327,7 +327,11 @@ class ManualSourceIntakeService:
                             video_db_id=video_db_id
                         )
                     matched_by_source_identity = False
-                    if match is None and str(plan.platform or "").strip() and str(plan.source_url or "").strip():
+                    if (
+                        match is None
+                        and str(plan.platform or "").strip()
+                        and str(plan.source_url or "").strip()
+                    ):
                         match = self.videos_service.infer_subscription_match_for_source(
                             platform=str(plan.platform),
                             source_url=str(plan.source_url),
