@@ -198,6 +198,24 @@ for artifact in sorted(reports_dir.glob(".coverage*")):
         freshness_window_hours=24,
         extra={"report_kind": "python-coverage-shard"},
     )
+
+for artifact_name, report_kind in (
+    ("coverage.json", "python-coverage-summary"),
+    ("python-coverage.xml", "python-coverage-xml"),
+    ("python-tests-junit.xml", "python-tests-junit"),
+):
+    artifact = reports_dir / artifact_name
+    if not artifact.is_file():
+        continue
+    write_runtime_metadata(
+        artifact,
+        source_entrypoint="scripts/ci/python_tests.sh",
+        verification_scope=report_kind,
+        source_run_id=gate_run_id,
+        source_commit=repo_commit,
+        freshness_window_hours=24,
+        extra={"report_kind": report_kind},
+    )
 PY
 
 python3 scripts/runtime/clean_source_runtime_residue.py --apply

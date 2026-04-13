@@ -992,6 +992,9 @@ def test_ci_python_tests_script_preserves_backend_coverage_and_junit_contract() 
     assert ".runtime-cache/logs/tests/python-tests.log" in script
     assert ".runtime-cache/logs/tests/python-coverage-worker-core.log" in script
     assert ".runtime-cache/logs/tests/python-coverage-api-core.log" in script
+    assert '("coverage.json", "python-coverage-summary")' in script
+    assert '("python-coverage.xml", "python-coverage-xml")' in script
+    assert '("python-tests-junit.xml", "python-tests-junit")' in script
     assert "python skip guard passed" in script
     assert script.count("python3 scripts/runtime/clean_source_runtime_residue.py --apply") >= 3
 

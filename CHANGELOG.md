@@ -7,6 +7,13 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.33] - 2026-04-13
+
+### Changed
+
+- recorded the v0.1.32 governance/proof closeout in the tracked changelog so the release ledger no longer stops one tag behind the live GitHub Release object
+- kept release-history wording aligned with the public release ledger update that landed on the `v0.1.33` tag
+
 ## [0.1.32] - 2026-04-13
 
 ### Changed
