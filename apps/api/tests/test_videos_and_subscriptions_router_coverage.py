@@ -215,6 +215,50 @@ def test_process_video_maps_temporal_start_timeout_and_marks_dispatch_failed(
     assert repo.mark_failed_calls[0]["reason"] == "dispatch_timeout"
 
 
+def test_videos_router_list_endpoint_serializes_service_rows(
+    api_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    video_id = uuid.uuid4()
+    job_id = uuid.uuid4()
+    now = datetime.now(UTC)
+
+    monkeypatch.setattr(
+        "apps.api.app.services.videos.VideosService.list_videos",
+        lambda self, *, platform, status, limit: [
+            {
+                "id": video_id,
+                "platform": platform or "youtube",
+                "video_uid": "abc123",
+                "source_url": "https://www.youtube.com/watch?v=abc123",
+                "title": "Demo video",
+                "published_at": now,
+                "first_seen_at": now,
+                "last_seen_at": now,
+                "latest_job_status": status or "queued",
+                "latest_job_id": job_id,
+            }
+        ],
+    )
+
+    response = api_client.get("/api/v1/videos?platform=youtube&status=queued&limit=3")
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "id": str(video_id),
+            "platform": "youtube",
+            "video_uid": "abc123",
+            "source_url": "https://www.youtube.com/watch?v=abc123",
+            "title": "Demo video",
+            "published_at": now.isoformat().replace("+00:00", "Z"),
+            "first_seen_at": now.isoformat().replace("+00:00", "Z"),
+            "last_seen_at": now.isoformat().replace("+00:00", "Z"),
+            "status": "queued",
+            "last_job_id": str(job_id),
+        }
+    ]
+
+
 def test_subscriptions_router_maps_service_value_errors_to_400(
     api_client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
