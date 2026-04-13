@@ -102,7 +102,9 @@ class VideosRepository:
         return self.db.scalar(stmt)
 
     def get_by_source_url(self, *, source_url: str) -> Video | None:
-        stmt = select(Video).where(Video.source_url == source_url).order_by(Video.last_seen_at.desc())
+        stmt = (
+            select(Video).where(Video.source_url == source_url).order_by(Video.last_seen_at.desc())
+        )
         return self.db.scalar(stmt)
 
     def upsert_for_processing(
