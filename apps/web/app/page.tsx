@@ -121,85 +121,93 @@ export default function DashboardPage() {
 			</div>
 
 			<section
-				className="grid gap-4 xl:grid-cols-3"
-				aria-label="Why this front door works"
-			>
-				<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground xl:col-span-3">
-					{copy.sectionHeadings.whyNow}
-				</h2>
-				{whyNowCards.map((card) => (
-					<Card key={card.title} className="folo-surface border-border/70">
-						<CardHeader>
-							<CardTitle>{card.title}</CardTitle>
-							<CardDescription>{card.description}</CardDescription>
-						</CardHeader>
-					</Card>
-				))}
-			</section>
-
-			<section
-				className="grid gap-4 xl:grid-cols-3"
+				className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]"
 				aria-label="Choose your first route"
 			>
-				<h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground xl:col-span-3">
-					{copy.sectionHeadings.firstHop}
-				</h2>
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<CardTitle>{copy.firstHop.evaluateTitle}</CardTitle>
-						<CardDescription>
-							{copy.firstHop.evaluateDescription}
+				<h2 className="sr-only">Why this front door works</h2>
+				<Card className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
+					<CardHeader className="gap-3">
+						<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+							Start here first
+						</p>
+						<CardTitle className="text-3xl leading-tight">
+							Read the finished surface first
+						</CardTitle>
+						<CardDescription className="max-w-3xl text-base leading-7">
+							SourceHarbor is strongest when you start with one finished reading
+							unit, then step sideways into intake, feed curation, or builder
+							surfaces only after you know what the product feels like.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
-							<Link href="/reader">{copy.firstHop.evaluatePrimaryCta}</Link>
-						</Button>
-						<Button asChild variant="outline">
-							<Link href="/reader/demo">
-								{copy.firstHop.evaluateSecondaryCta}
-							</Link>
-						</Button>
+					<CardContent className="space-y-4 pt-0">
+						<div className="flex flex-wrap items-center gap-3">
+							<Button asChild>
+								<Link href="/reader">{copy.firstHop.evaluatePrimaryCta}</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/reader/demo">
+									{copy.firstHop.evaluateSecondaryCta}
+								</Link>
+							</Button>
+						</div>
+						<div className="grid gap-3 md:grid-cols-3">
+							{whyNowCards.map((card) => (
+								<div
+									key={card.title}
+									className="rounded-xl border border-border/60 bg-background/80 p-4"
+								>
+									<h3 className="font-medium text-foreground">{card.title}</h3>
+									<p className="mt-2 text-sm leading-6 text-muted-foreground">
+										{card.description}
+									</p>
+								</div>
+							))}
+						</div>
 					</CardContent>
 				</Card>
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<CardTitle>{copy.firstHop.operateTitle}</CardTitle>
-						<CardDescription>
-							{copy.firstHop.operateDescription}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
-							<Link href="/subscriptions">
-								{copy.firstHop.operatePrimaryCta}
-							</Link>
-						</Button>
-						<Button asChild variant="outline">
-							<Link href="/feed">{copy.firstHop.operateSecondaryCta}</Link>
-						</Button>
-						<Button asChild variant="outline">
-							<Link href="/trends">{copy.firstHop.operateTertiaryCta}</Link>
-						</Button>
-					</CardContent>
-				</Card>
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<CardTitle>{copy.firstHop.buildTitle}</CardTitle>
-						<CardDescription>{copy.firstHop.buildDescription}</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
-							<Link href="/mcp">{copy.firstHop.buildPrimaryCta}</Link>
-						</Button>
-						<Button asChild variant="outline">
-							<Link href="/builders">{copy.firstHop.buildSecondaryCta}</Link>
-						</Button>
-						<Button asChild variant="outline">
-							<Link href="/ops">{copy.firstHop.buildTertiaryCta}</Link>
-						</Button>
-					</CardContent>
-				</Card>
+
+				<div className="grid gap-4">
+					<Card className="folo-surface border-border/70">
+						<CardHeader>
+							<CardTitle>{copy.firstHop.operateTitle}</CardTitle>
+							<CardDescription>
+								{copy.firstHop.operateDescription}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+							<Button asChild variant="outline">
+								<Link href="/subscriptions">
+									{copy.firstHop.operatePrimaryCta}
+								</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/feed">{copy.firstHop.operateSecondaryCta}</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/trends">{copy.firstHop.operateTertiaryCta}</Link>
+							</Button>
+						</CardContent>
+					</Card>
+					<Card className="folo-surface border-border/70 bg-muted/15">
+						<CardHeader>
+							<CardTitle>{copy.firstHop.buildTitle}</CardTitle>
+							<CardDescription>
+								{copy.firstHop.buildDescription}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+							<Button asChild variant="outline">
+								<Link href="/mcp">{copy.firstHop.buildPrimaryCta}</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/builders">{copy.firstHop.buildSecondaryCta}</Link>
+							</Button>
+							<Button asChild variant="outline">
+								<Link href="/ops">{copy.firstHop.buildTertiaryCta}</Link>
+							</Button>
+						</CardContent>
+					</Card>
+				</div>
 			</section>
 
 			<section
@@ -220,7 +228,7 @@ export default function DashboardPage() {
 					</CardHeader>
 					<CardContent className="space-y-3 pt-0">
 						<div className="flex flex-wrap items-center gap-3">
-							<Button asChild>
+							<Button asChild variant="outline">
 								<Link href="/reader">Open Reader</Link>
 							</Button>
 							<Button asChild variant="outline">
@@ -242,7 +250,7 @@ export default function DashboardPage() {
 					</CardHeader>
 					<CardContent className="space-y-3 pt-0">
 						<div className="flex flex-wrap items-center gap-3">
-							<Button asChild>
+							<Button asChild variant="outline">
 								<Link href="/subscriptions">
 									{copy.frontDoors.subscriptionsCta}
 								</Link>
@@ -264,7 +272,7 @@ export default function DashboardPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/search">{copy.frontDoors.searchCta}</Link>
 						</Button>
 						<Button asChild variant="outline">
@@ -278,7 +286,7 @@ export default function DashboardPage() {
 						<CardDescription>{copy.frontDoors.askDescription}</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/ask">{copy.frontDoors.askCta}</Link>
 						</Button>
 						<Button asChild variant="outline">
@@ -295,7 +303,7 @@ export default function DashboardPage() {
 						<CardDescription>{copy.frontDoors.mcpDescription}</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/mcp">{copy.frontDoors.mcpCta}</Link>
 						</Button>
 						<Button asChild variant="outline">
@@ -328,7 +336,7 @@ export default function DashboardPage() {
 								))}
 							</div>
 							<div className="flex flex-wrap items-center gap-3">
-								<Button asChild variant="hero">
+								<Button asChild variant="outline">
 									<Link href="/mcp">{builderCopy.mcpCta}</Link>
 								</Button>
 								<Button asChild variant="outline">
@@ -447,7 +455,7 @@ export default function DashboardPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/watchlists">{copy.compounders.watchlistsCta}</Link>
 						</Button>
 						<Button asChild variant="outline">
@@ -463,7 +471,7 @@ export default function DashboardPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/trends">{copy.compounders.trendsCta}</Link>
 						</Button>
 						<Button asChild variant="outline">
@@ -479,7 +487,7 @@ export default function DashboardPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/briefings">{copy.compounders.briefingsCta}</Link>
 						</Button>
 						<Button asChild variant="outline">
@@ -495,7 +503,7 @@ export default function DashboardPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild>
+						<Button asChild variant="outline">
 							<Link href="/playground">{copy.compounders.playgroundCta}</Link>
 						</Button>
 						<Button asChild variant="outline">

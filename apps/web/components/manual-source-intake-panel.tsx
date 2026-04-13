@@ -132,6 +132,28 @@ function statusLabel(copy: Copy, status: string): string {
 	return copy.statusLabels.rejected;
 }
 
+function buildResultsSummary(result: ManualSourceIntakeResponse): string {
+	const parts = [
+		result.created_subscriptions
+			? `${result.created_subscriptions} saved to your desk`
+			: null,
+		result.updated_subscriptions
+			? `${result.updated_subscriptions} refreshed`
+			: null,
+		result.queued_manual_items
+			? `${result.queued_manual_items} queued for today's reading`
+			: null,
+		result.reused_manual_items ? `${result.reused_manual_items} reused` : null,
+		result.rejected_count ? `${result.rejected_count} rejected` : null,
+	].filter(Boolean);
+
+	if (parts.length === 0) {
+		return `This pass touched ${result.processed_count} sources.`;
+	}
+
+	return `This pass processed ${result.processed_count} sources: ${parts.join(", ")}.`;
+}
+
 function buildFeedUniverseHref(
 	subscriptionId: string | null | undefined,
 ): string | null {
@@ -270,10 +292,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 						<div className="space-y-1">
 							<p className="font-medium">{copy.resultsTitle}</p>
 							<p className="text-sm text-muted-foreground">
-								{copy.summaryPrefix} {result.processed_count} · subscriptions +
-								{result.created_subscriptions}/~{result.updated_subscriptions} ·
-								today +{result.queued_manual_items}/=
-								{result.reused_manual_items} · rejected {result.rejected_count}
+								{buildResultsSummary(result)}
 							</p>
 							<p className="text-sm text-muted-foreground">
 								{copy.resultsDescription}
@@ -337,7 +356,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 															href={readerHref}
 															className="underline underline-offset-4"
 														>
-															Open reader edition
+															Read this edition
 														</Link>
 													) : null}
 													{feedUniverseHref ? (
@@ -345,7 +364,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 															href={feedUniverseHref}
 															className="underline underline-offset-4"
 														>
-															Open tracked universe
+															Open source desk
 														</Link>
 													) : null}
 													{jobHref ? (
@@ -353,7 +372,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 															href={jobHref}
 															className="underline underline-offset-4"
 														>
-															Open job trace
+															Inspect job trace
 														</Link>
 													) : null}
 												</div>
@@ -365,7 +384,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 											</p>
 											{item.published_document_title ? (
 												<p className="mt-2">
-													Published unit · {item.published_document_title}
+													Reader edition ready · {item.published_document_title}
 													{item.published_document_publish_status
 														? ` · ${item.published_document_publish_status}`
 														: ""}

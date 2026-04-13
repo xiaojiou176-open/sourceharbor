@@ -9,6 +9,7 @@ import { FormSelectField } from "@/components/form-field";
 import { ReadingPane } from "@/components/reading-pane";
 import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SyncNowButton } from "@/components/sync-now-button";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api/client";
 import { getLocaleMessages } from "@/lib/i18n/messages";
@@ -301,11 +302,93 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 				</div>
 			</div>
 
-			<section
+			<section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+				<div className="folo-panel folo-surface space-y-4">
+					<p className="folo-page-kicker">
+						Preview before you commit to the full article
+					</p>
+					<h2 className="text-2xl font-semibold text-foreground">
+						Start with the desk, not the controls
+					</h2>
+					<p className="text-sm leading-7 text-muted-foreground">
+						This page is the curation desk. Pick one digest, preview the body,
+						then open the reader edition when you want the finished article with
+						warning, evidence, and coverage all in one place.
+					</p>
+					<div className="flex flex-wrap gap-3">
+						<Button asChild variant="hero">
+							<Link
+								href={
+									selectedJobId
+										? buildItemUrl({ item: selectedJobId })
+										: "/feed"
+								}
+							>
+								Keep reading here
+							</Link>
+						</Button>
+						<Button asChild variant="outline">
+							<Link href="/reader">Open reader shelf</Link>
+						</Button>
+					</div>
+				</div>
+				<section
+					className="folo-panel folo-surface space-y-4"
+					aria-label={copy.activeTrackedUniverseLabel}
+				>
+					<div className="space-y-1">
+						<p className="folo-page-kicker">
+							{copy.activeTrackedUniverseEyebrow}
+						</p>
+						<h2 className="text-lg font-semibold text-foreground">
+							{safeSubscriptionId
+								? copy.activeTrackedUniverseTitle
+								: "No source desk is pinned yet"}
+						</h2>
+						<p className="text-sm text-muted-foreground">
+							{safeSubscriptionId
+								? activeSubscription
+									? copy.activeTrackedUniverseDescription
+									: copy.activeTrackedUniverseFallback
+								: "Open filters only when you need them. Otherwise, let the list and preview guide the next reading choice."}
+						</p>
+					</div>
+					{activeSubscription ? (
+						<SourceIdentityCard
+							identity={resolveSubscriptionIdentity(activeSubscription)}
+							compact
+						/>
+					) : null}
+				</section>
+			</section>
+
+			<details
 				className="folo-panel folo-surface feed-filter-panel"
-				aria-label={copy.filterRegionLabel}
+				open={isFiltered || Boolean(safeSubscriptionId)}
 			>
-				<form method="GET" className="feed-filter-form">
+				<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/20">
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<div className="space-y-1">
+							<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+								Desk controls
+							</p>
+							<p className="text-sm text-muted-foreground">
+								Use filters only when you need to narrow the desk. They should
+								stay secondary to the preview flow.
+							</p>
+						</div>
+						{isFiltered ? (
+							<Badge variant="outline">Filtered view</Badge>
+						) : (
+							<Badge variant="outline">Optional</Badge>
+						)}
+					</div>
+				</summary>
+				<form
+					method="GET"
+					className="feed-filter-form mt-4"
+					aria-label={copy.filterRegionLabel}
+				>
 					<input type="hidden" name="item" value={selectedJobId ?? ""} />
 					<div className="feed-filter-selects">
 						<FormSelectField
@@ -395,34 +478,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						) : null}
 					</div>
 				</form>
-			</section>
-
-			{safeSubscriptionId ? (
-				<section
-					className="folo-panel folo-surface space-y-4"
-					aria-label={copy.activeTrackedUniverseLabel}
-				>
-					<div className="space-y-1">
-						<p className="folo-page-kicker">
-							{copy.activeTrackedUniverseEyebrow}
-						</p>
-						<h2 className="text-lg font-semibold text-foreground">
-							{copy.activeTrackedUniverseTitle}
-						</h2>
-						<p className="text-sm text-muted-foreground">
-							{activeSubscription
-								? copy.activeTrackedUniverseDescription
-								: copy.activeTrackedUniverseFallback}
-						</p>
-					</div>
-					{activeSubscription ? (
-						<SourceIdentityCard
-							identity={resolveSubscriptionIdentity(activeSubscription)}
-							compact
-						/>
-					) : null}
-				</section>
-			) : null}
+			</details>
 
 			{errorCode ? (
 				<>

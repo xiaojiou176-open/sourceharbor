@@ -35,6 +35,20 @@ vi.mock("@/components/source-contribution-drawer", () => ({
 	),
 }));
 
+vi.mock("@/components/reader-repair-panel", () => ({
+	ReaderRepairPanel: ({
+		documentId,
+		repairHistoryCount,
+	}: {
+		documentId: string;
+		repairHistoryCount: number;
+	}) => (
+		<div data-testid="reader-repair-panel">
+			{documentId}:{repairHistoryCount}
+		</div>
+	),
+}));
+
 vi.mock("@/lib/api/client", () => ({
 	apiClient: {
 		listPublishedReaderDocuments: (...args: unknown[]) =>
@@ -152,7 +166,16 @@ describe("reader pages", () => {
 				ledger_kind: "sourceharbor_coverage_ledger_v1",
 				covered_source_count: 1,
 				gap_source_count: 1,
+				status: "gap_detected",
 			},
+			traceability_pack: {
+				status: "gap_detected",
+				section_contributions: [{ section_id: "summary" }],
+				source_items: [{ source_item_id: "src-1" }],
+				affected_source_item_ids: ["src-1"],
+				evidence_routes: { job_bundle: ["/api/v1/jobs/job-1/bundle"] },
+			},
+			repair_history: [{ repair_mode: "patch" }],
 			warning: { reasons: ["1 source missing digest"] },
 			consumption_batch_id: "batch-1",
 		});
@@ -195,6 +218,10 @@ describe("reader pages", () => {
 		expect(
 			screen.getByRole("link", { name: "Check coverage last" }),
 		).toHaveAttribute("href", "#reader-coverage");
+		expect(screen.getByText("Traceability snapshot")).toBeInTheDocument();
+		expect(screen.getByTestId("reader-repair-panel")).toHaveTextContent(
+			"doc-1:1",
+		);
 	});
 
 	it("renders preview detail when the demo route is requested", async () => {

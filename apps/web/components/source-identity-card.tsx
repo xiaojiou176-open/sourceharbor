@@ -31,6 +31,7 @@ export function SourceIdentityCard({
 	compact = false,
 	action,
 }: SourceIdentityCardProps) {
+	const visibleMeta = compact ? identity.meta.slice(0, 3) : identity.meta;
 	return (
 		<article
 			className={cn(
@@ -54,7 +55,11 @@ export function SourceIdentityCard({
 							alt={`${identity.title} thumbnail`}
 							width={640}
 							height={compact ? 640 : 480}
-							unoptimized={identity.thumbnailUrl.startsWith("data:image/")}
+							unoptimized={
+								identity.thumbnailUrl.startsWith("data:image/")
+									? true
+									: undefined
+							}
 							className={cn(
 								"h-full w-full object-cover",
 								compact ? "aspect-[1/1]" : "aspect-[4/3]",
@@ -78,7 +83,11 @@ export function SourceIdentityCard({
 								alt={`${identity.title} avatar`}
 								width={compact ? 36 : 44}
 								height={compact ? 36 : 44}
-								unoptimized={identity.avatarUrl.startsWith("data:image/")}
+								unoptimized={
+									identity.avatarUrl.startsWith("data:image/")
+										? true
+										: undefined
+								}
 								className={cn(
 									"rounded-full border border-white/70 object-cover shadow-sm",
 									compact ? "h-9 w-9" : "h-11 w-11",
@@ -107,16 +116,13 @@ export function SourceIdentityCard({
 						>
 							{identity.relationLabel}
 						</Badge>
-						{identity.eyebrow ? (
-							<Badge
-								variant="outline"
-								className="border-border/60 bg-muted/20 text-muted-foreground"
-							>
-								{identity.eyebrow}
-							</Badge>
-						) : null}
 					</div>
 					<div className="space-y-1">
+						{identity.eyebrow ? (
+							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								{identity.eyebrow}
+							</p>
+						) : null}
 						<p
 							className={cn(
 								"line-clamp-2 font-semibold text-foreground",
@@ -145,7 +151,7 @@ export function SourceIdentityCard({
 						</p>
 					) : null}
 					<div className="flex flex-wrap gap-2">
-						{identity.meta.map((item) => (
+						{visibleMeta.map((item) => (
 							<Badge
 								key={item}
 								variant="outline"
