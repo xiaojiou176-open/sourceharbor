@@ -51,6 +51,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo has a live GitHub Release object
+- the latest live release now reads `v0.1.34`, and it currently matches the remote `main` head
 - the latest-release ledger must still be checked live against the current remote `main` head before any release-aligned claim is repeated
 - current-head workflow-dispatch evidence is still its own ledger; successful
   reruns prove the lane can close on a given head, but they do not make later
@@ -60,7 +61,7 @@ Practical implication:
 
 - release-current proof now exists for the current canonical public repo, but it
   should still be treated as a separate ledger from the latest remote `main`
-  head until a fresh live read-back says otherwise
+  head even when a fresh live read-back currently shows them aligned
 - release-current wording must stay honest when current `main` moves ahead again
   after the tag cut or after a docs/metadata sync merge
 - older tag-era wording should stay historical, not be reused as if it were the
@@ -75,6 +76,10 @@ and official-surface distribution truth are still separate ledgers.
 
 - current `main` is active and externally verifiable through GitHub checks and
   workflow-dispatch lanes when those current-head runs have been freshly reread
+- fresh current-head workflow-dispatch success receipts now exist for:
+  - `build-public-api-image`
+  - `build-ci-standard-image`
+  - `release-evidence-attest`
 - the Wave 2 reader-frontstage tail now lives on current `main`, so the front
   door, subscriptions atlas, feed desk, and reader detail surfaces should be
   read as current-main truth rather than repo-local archive-only work
