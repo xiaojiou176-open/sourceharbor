@@ -7,6 +7,13 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.32] - 2026-04-13
+
+### Changed
+
+- fail-closed external workflow proof semantics so current-head workflow gaps no longer masquerade as green current proof
+- added focused governance coverage for the `missing current-head workflow run => overall BLOCKED` branch
+
 ## [0.1.31] - 2026-04-12
 
 ### Changed
