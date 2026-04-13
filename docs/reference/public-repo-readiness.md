@@ -37,6 +37,9 @@ Two current reading rules are worth keeping explicit:
 - a current-commit mutation receipt under `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` can support repo-side strict CI, but it still belongs to the local/manual proof ledger until a fresh strict receipt or remote check says otherwise
 - `./bin/repo-side-strict-ci --mode pre-push` is still a repo-side closeout command, not a remote proof shortcut; on maintainer workstations it can now fall back from the standard-env container path to a host-bootstrapped pre-push quality gate when Docker itself is the only missing layer
 - repo-owned local core-services fallback under `.runtime-cache/` strengthens local first-run resilience, but it remains local runtime proof rather than a hosted or release-current claim
+- the repo-managed local first-run path now has two extra maintainer-local hardening behaviors:
+  - `./bin/full-stack up` can self-heal Temporal by calling the repo-owned `core_services.sh up` path before failing worker startup
+  - the current local video-first lane can use Gemini upload waiting plus a lightweight proxy-video path so oversized raw downloads do not get mistaken for a stable hosted/runtime guarantee
 
 That separation matters because SourceHarbor can honestly advance one layer without pretending all the other layers moved with it.
 

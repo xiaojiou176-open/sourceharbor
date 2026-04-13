@@ -179,6 +179,11 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 			className={`folo-surface border-border/70 ${editorialSans.className}`}
 		>
 			<CardHeader className="gap-2">
+				<p
+					className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+				>
+					Manual front door
+				</p>
 				<CardTitle className="text-xl font-semibold">{copy.title}</CardTitle>
 				<CardDescription>{copy.description}</CardDescription>
 			</CardHeader>
@@ -197,8 +202,8 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 						/>
 						<p className="text-sm text-muted-foreground">{copy.hint}</p>
 					</div>
-					<div className="space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
-						<div className="space-y-2">
+					<div className="rounded-[1.15rem] border border-border/60 bg-muted/18 p-4">
+						<div className="space-y-2 border-b border-border/60 pb-4">
 							<Label htmlFor="manual-source-intake-category">
 								{copy.categoryLabel}
 							</Label>
@@ -223,7 +228,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="space-y-2">
+						<div className="space-y-2 border-b border-border/60 py-4">
 							<Label htmlFor="manual-source-intake-tags">
 								{copy.tagsLabel}
 							</Label>
@@ -235,7 +240,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 								className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
 							/>
 						</div>
-						<div className="flex items-center gap-3">
+						<div className="flex items-center gap-3 pt-4">
 							<Checkbox
 								id="manual-source-intake-enabled"
 								checked={enabled}
@@ -247,6 +252,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 						</div>
 						<Button
 							type="button"
+							variant="hero"
 							disabled={isPending || rawInput.trim().length === 0}
 							onClick={() => {
 								setErrorMessage(null);
@@ -290,6 +296,11 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 				{result ? (
 					<div className="space-y-4 rounded-[1.4rem] border border-border/60 bg-muted/15 p-4">
 						<div className="space-y-1">
+							<p
+								className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+							>
+								Outcome receipt
+							</p>
 							<p className="font-medium">{copy.resultsTitle}</p>
 							<p className="text-sm text-muted-foreground">
 								{buildResultsSummary(result)}

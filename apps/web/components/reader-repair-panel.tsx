@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
 import { resolveWriteSessionToken } from "@/lib/api/url";
+import { editorialMono } from "@/lib/editorial-fonts";
 
 type ReaderRepairPanelProps = {
 	documentId: string;
@@ -103,12 +104,19 @@ export function ReaderRepairPanel({
 				</p>
 			</CardHeader>
 			<CardContent className="space-y-3">
-				{REPAIR_OPTIONS.map((option) => (
-					<div
-						key={option.mode}
-						className="rounded-2xl border border-border/60 bg-muted/15 p-3"
-					>
-						<div className="flex items-start justify-between gap-3">
+				<div className="rounded-[1.35rem] border border-border/60 bg-muted/12">
+					{REPAIR_OPTIONS.map((option, index) => (
+						<div
+							key={option.mode}
+							className={`grid gap-3 px-4 py-4 md:grid-cols-[92px_minmax(0,1fr)_auto] md:items-start ${
+								index > 0 ? "border-t border-border/60" : ""
+							}`}
+						>
+							<p
+								className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+							>
+								{String(index + 1).padStart(2, "0")} {option.mode}
+							</p>
 							<div className="space-y-1">
 								<p className="font-medium text-foreground">{option.title}</p>
 								<p className="text-sm leading-6 text-muted-foreground">
@@ -118,15 +126,15 @@ export function ReaderRepairPanel({
 							<Button
 								type="button"
 								size="sm"
-								variant={option.mode === "patch" ? "hero" : "outline"}
+								variant={option.mode === "patch" ? "hero" : "surface"}
 								disabled={isPending}
 								onClick={() => runRepair(option.mode)}
 							>
 								{isPending ? "Working..." : "Run"}
 							</Button>
 						</div>
-					</div>
-				))}
+					))}
+				</div>
 				{statusMessage ? (
 					<p className="text-sm text-emerald-700">{statusMessage}</p>
 				) : null}

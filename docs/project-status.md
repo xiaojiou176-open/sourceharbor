@@ -51,7 +51,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo has a live GitHub Release object
-- the latest live release now reads `v0.1.34`, and it currently matches the remote `main` head
+- the latest live release now reads `v0.1.36`, and it currently matches the remote `main` head
 - the latest-release ledger must still be checked live against the current remote `main` head before any release-aligned claim is repeated
 - current-head workflow-dispatch evidence is still its own ledger; successful
   reruns prove the lane can close on a given head, but they do not make later
@@ -97,11 +97,13 @@ Use:
 These are the strongest current claims:
 
 - **First-run base path:** `./bin/bootstrap-full-stack`, `./bin/full-stack up`, `./bin/doctor`, and the runtime route snapshot under `.runtime-cache/run/full-stack/resolved.env`
+- **Core-stack self-heal:** `./bin/full-stack up` can now attempt the repo-owned `core_services.sh up` path when Temporal is down before it gives up on worker readiness
 - **CLI surfaces:** existing `bin/*` entrypoints remain the repo-local command truth, while `packages/sourceharbor-cli` adds a thin installable bridge for public discovery and starter flows
 - **Public TypeScript SDK:** `packages/sourceharbor-sdk` now exposes a thin contract-first SDK over the same HTTP contract and shared route semantics
 - **Public starter surface:** `starter-packs/` is the public entry directory, while `docs/public-skills.md`, `docs/compat/*`, `templates/public-skills/*`, and `examples/*` act as companion first-cut starter assets without exposing internal `.agents/skills`
 - **Local write-route contract:** direct write APIs can be exercised with the local dev token path instead of pretending auth is an unresolved product gap
 - **Source intake contract:** strong-supported YouTube/Bilibili templates plus generalized RSSHub/RSS substrate without overclaiming full-universe proof, with the `/subscriptions` front door now consuming the same template catalog exposed through API and MCP while also accepting one-off video/article URLs into the today lane
+- **Video-first local full path:** a fresh maintainer-local real YouTube `mode=full` run can complete again after the Gemini fast-model rename, upload-wait hardening, and lightweight proxy-video path landed in the worker/runtime layer
 - **Reader pipeline:** `ClusterVerdictManifest`, `PublishedReaderDocument`, `CoverageLedger`, `TraceabilityPack`, `repair` modes, and `NavigationBrief` now exist as repo-side runtime surfaces over `ConsumptionBatch`
 - **Feed-to-reader bridge:** `/feed` remains the digest/job reading lane, but digest items can now surface the current published reader document route when a current reader edition already exists for that source item
 - **Front doors:** `/reader`, `/search`, `/ask` (story-aware, briefing-backed answer/change/evidence flow with truthful raw-retrieval fallback, selected-story drill-down, and a server-owned story page payload that now reuses one canonical selected-story object from Briefings), `/briefings` (server-owned briefing page payload for selected story, compare route, and Ask handoff), `/mcp`, `/ops`, `/subscriptions`

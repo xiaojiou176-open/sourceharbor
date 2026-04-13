@@ -37,6 +37,7 @@ They should not assume:
 - a repo-managed web runtime copy or a local mutation receipt automatically upgrades into public proof of hosted, packaged, or registry-listed distribution
 - a repo-managed web runtime `.env.local` file or local write-session fallback token carries any public redistribution rights; it remains maintainer-local runtime state only
 - a host-bootstrapped strict-CI fallback or repo-owned local core-services fallback changes the rights boundary of the public repo; both are maintainer-local verification behavior, not new public distribution rights
+- a maintainer-local proxy-video artifact used only to make Gemini video ingestion behave honestly under current API constraints changes the public rights boundary; it is still just local verification substrate
 
 When rights or provenance are unclear, the safer reading is:
 

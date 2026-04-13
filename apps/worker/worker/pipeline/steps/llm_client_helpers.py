@@ -88,20 +88,31 @@ def _part_from_bytes(
     if part_cls is None:
         return {"mime_type": mime_type, "data": data, "media_resolution": media_resolution}
 
+    normalized_resolution = _normalize_media_resolution(media_resolution)
+    enum_value = None
+    enum_cls = getattr(genai_types, "PartMediaResolutionLevel", None)
+    if enum_cls is not None:
+        enum_name = f"MEDIA_RESOLUTION_{normalized_resolution.upper()}"
+        enum_value = getattr(enum_cls, enum_name, None)
+
     for kwargs in (
-        {"data": data, "mime_type": mime_type, "media_resolution": media_resolution},
         {
             "data": data,
             "mime_type": mime_type,
-            "config": {"media_resolution": media_resolution.upper()},
-        },
+            "media_resolution": enum_value,
+        }
+        if enum_value is not None
+        else None,
+        {"data": data, "mime_type": mime_type, "media_resolution": normalized_resolution},
         {"data": data, "mime_type": mime_type},
     ):
+        if kwargs is None:
+            continue
         try:
             return part_cls.from_bytes(**kwargs)
         except Exception:
             continue
-    return {"mime_type": mime_type, "data": data, "media_resolution": media_resolution}
+    return {"mime_type": mime_type, "data": data, "media_resolution": normalized_resolution}
 
 
 def _build_frame_parts(

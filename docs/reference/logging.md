@@ -38,6 +38,8 @@ SourceHarbor keeps runtime and governance logs under `.runtime-cache/logs/`.
   log files under `.runtime-cache/logs/local-core/` so background-service
   failures stay attributable to repo-owned runtime state instead of vanishing
   into the shell that launched them.
+- If `full_stack` needs to self-heal Temporal, that decision must still appear
+  in the full-stack component log instead of becoming a silent retry path.
 - If a worker/web/api rollback runs after a failed start or readiness gate, the rollback must remove the corresponding `*.pid` receipt instead of leaving stale process markers behind.
 
 `repo-side-strict-ci` now has two honest log-bearing entry modes:

@@ -85,6 +85,54 @@ port_listening() {
   return 1
 }
 
+cleanup_stale_pid_file() {
+  local pid_file="$1"
+  if [[ ! -f "$pid_file" ]]; then
+    return 0
+  fi
+  local pid
+  pid="$(cat "$pid_file" 2>/dev/null || true)"
+  if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
+    rm -f "$pid_file"
+  fi
+}
+
+spawn_temporal_local_fallback() {
+  TEMPORAL_LOG_PATH="$TEMPORAL_LOG_PATH" \
+  TEMPORAL_IP="127.0.0.1" \
+  TEMPORAL_PORT="$TEMPORAL_PORT" \
+    python3 - <<'PY'
+import os
+import subprocess
+import sys
+
+log_path = os.environ["TEMPORAL_LOG_PATH"]
+host = os.environ["TEMPORAL_IP"]
+port = os.environ["TEMPORAL_PORT"]
+
+with open(log_path, "ab", buffering=0) as log_file:
+    process = subprocess.Popen(
+        [
+            "temporal",
+            "server",
+            "start-dev",
+            "--headless",
+            "--ip",
+            host,
+            "--port",
+            port,
+        ],
+        stdin=subprocess.DEVNULL,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+        close_fds=True,
+    )
+
+print(process.pid)
+PY
+}
+
 wait_for_port() {
   local port="$1"
   local timeout_seconds="${2:-20}"
@@ -99,6 +147,9 @@ wait_for_port() {
 }
 
 local_core_status() {
+  cleanup_stale_pid_file "$POSTGRES_PID_FILE"
+  cleanup_stale_pid_file "$TEMPORAL_PID_FILE"
+
   if [[ -f "$POSTGRES_PID_FILE" ]] && kill -0 "$(cat "$POSTGRES_PID_FILE")" 2>/dev/null; then
     echo "postgres: running (owned) pid=$(cat "$POSTGRES_PID_FILE") port=$CORE_POSTGRES_PORT"
   elif port_listening "$CORE_POSTGRES_PORT"; then
@@ -146,12 +197,11 @@ PY
     exit 1
   }
 
+  cleanup_stale_pid_file "$TEMPORAL_PID_FILE"
   if ! port_listening "$TEMPORAL_PORT"; then
-    # Wrap Temporal in a login-less shell so the detached process survives
-    # background launch on macOS instead of exiting before the port is usable.
-    nohup bash -lc "exec temporal server start-dev --headless --ip 127.0.0.1 --port \"$TEMPORAL_PORT\"" \
-      >"$TEMPORAL_LOG_PATH" 2>&1 < /dev/null &
-    echo "$!" > "$TEMPORAL_PID_FILE"
+    # Launch Temporal in its own session so the local fallback survives
+    # bootstrap/full-stack parent shell exit instead of becoming a stale pid file.
+    spawn_temporal_local_fallback > "$TEMPORAL_PID_FILE"
   fi
   wait_for_port "$TEMPORAL_PORT" 20 || {
     echo "[core-services] temporal failed to become reachable on port $TEMPORAL_PORT" >&2
@@ -163,12 +213,19 @@ PY
 }
 
 local_core_down() {
+  cleanup_stale_pid_file "$TEMPORAL_PID_FILE"
+  cleanup_stale_pid_file "$POSTGRES_PID_FILE"
+
   if [[ -f "$TEMPORAL_PID_FILE" ]] && kill -0 "$(cat "$TEMPORAL_PID_FILE")" 2>/dev/null; then
     kill "$(cat "$TEMPORAL_PID_FILE")" 2>/dev/null || true
+    rm -f "$TEMPORAL_PID_FILE"
+  else
     rm -f "$TEMPORAL_PID_FILE"
   fi
   if [[ -f "$POSTGRES_PID_FILE" ]] && kill -0 "$(cat "$POSTGRES_PID_FILE")" 2>/dev/null; then
     pg_ctl -D "$POSTGRES_DATA_DIR" stop -m fast >/dev/null 2>&1 || kill "$(cat "$POSTGRES_PID_FILE")" 2>/dev/null || true
+    rm -f "$POSTGRES_PID_FILE"
+  else
     rm -f "$POSTGRES_PID_FILE"
   fi
 }

@@ -70,7 +70,7 @@ def test_part_from_bytes_and_frame_parts(monkeypatch: Any, tmp_path: Path) -> No
         @classmethod
         def from_bytes(cls, **kwargs: Any) -> dict[str, Any]:
             cls.attempts.append(dict(kwargs))
-            if len(cls.attempts) < 3:
+            if len(cls.attempts) < 2:
                 raise RuntimeError("fallback")
             return {"ok": True, **kwargs}
 
@@ -81,7 +81,7 @@ def test_part_from_bytes_and_frame_parts(monkeypatch: Any, tmp_path: Path) -> No
         media_resolution="low",
     )
     assert resolved["ok"] is True
-    assert len(RetryPart.attempts) == 3
+    assert len(RetryPart.attempts) == 2
 
     class AlwaysFailPart:
         @classmethod
@@ -95,6 +95,26 @@ def test_part_from_bytes_and_frame_parts(monkeypatch: Any, tmp_path: Path) -> No
         media_resolution="medium",
     )
     assert fallback["mime_type"] == "image/png"
+
+    class EnumPart:
+        calls: list[dict[str, Any]] = []
+
+        @classmethod
+        def from_bytes(cls, **kwargs: Any) -> dict[str, Any]:
+            cls.calls.append(dict(kwargs))
+            return {"ok": True, **kwargs}
+
+    class FakeResolutionEnum:
+        MEDIA_RESOLUTION_MEDIUM = "MEDIA_RESOLUTION_MEDIUM"
+
+    resolved_enum = helpers._part_from_bytes(
+        SimpleNamespace(Part=EnumPart, PartMediaResolutionLevel=FakeResolutionEnum),
+        data=b"enum",
+        mime_type="image/png",
+        media_resolution="medium",
+    )
+    assert resolved_enum["media_resolution"] == "MEDIA_RESOLUTION_MEDIUM"
+    assert EnumPart.calls[0]["media_resolution"] == "MEDIA_RESOLUTION_MEDIUM"
 
     good = tmp_path / "good.jpg"
     empty = tmp_path / "empty.jpg"

@@ -88,6 +88,7 @@ describe("feed/jobs/artifacts pages", () => {
 						published_at: "2026-02-01T00:00:00Z",
 						summary_md: "## summary",
 						artifact_type: "digest",
+						published_document_title: "AI Weekly edition",
 						saved: true,
 						feedback_label: "useful",
 					},
@@ -109,8 +110,13 @@ describe("feed/jobs/artifacts pages", () => {
 				cursor: undefined,
 			});
 
-			expect(screen.getByText("AI Weekly")).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", { name: "AI Weekly" }),
+			).toBeInTheDocument();
 			expect(screen.getByText("YouTube · Tech Channel")).toBeInTheDocument();
+			expect(
+				screen.getByText("Reader edition ready · AI Weekly edition"),
+			).toBeInTheDocument();
 			expect(screen.getAllByText("Saved").length).toBeGreaterThan(0);
 			expect(screen.getByText("useful")).toBeInTheDocument();
 			expect(screen.getAllByText("Tech").length).toBeGreaterThan(0);

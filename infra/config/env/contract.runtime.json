@@ -400,7 +400,7 @@
       "scope": "worker",
       "required": false,
       "secret": false,
-      "default": "gemini-3.0-flash",
+      "default": "gemini-3-flash-preview",
       "consumer": [
         "apps/worker/worker/config.py"
       ],
