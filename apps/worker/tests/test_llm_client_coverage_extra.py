@@ -361,7 +361,7 @@ def test_wait_for_uploaded_file_ready_polls_until_active() -> None:
         timeout_seconds=2,
         poll_interval_seconds=0.01,
     )
-    assert llm_client._uploaded_file_state_name(ready) == "ACTIVE"
+    assert llm_video_inputs.uploaded_file_state_name(ready) == "ACTIVE"
 
 
 def test_uploaded_file_state_name_handles_none_value_and_string_fallbacks() -> None:
