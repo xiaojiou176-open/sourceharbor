@@ -81,7 +81,9 @@ describe("ReadingPane coverage", () => {
 			"Loading preview layout...",
 		);
 		expect(document.querySelector(".skeleton-title")).not.toBeNull();
-		expect(document.querySelectorAll(".skeleton-line").length).toBeGreaterThan(6);
+		expect(document.querySelectorAll(".skeleton-line").length).toBeGreaterThan(
+			6,
+		);
 		expect(mockGetArtifactMarkdown).toHaveBeenCalledWith({
 			job_id: "job-loading-1",
 			include_meta: true,

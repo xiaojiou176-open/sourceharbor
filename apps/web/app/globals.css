@@ -2617,9 +2617,9 @@ tr[data-state="deleting"] td {
 	color: var(--color-error);
 }
 
-	.feed-reading-article {
-		margin: 0 auto;
-		max-width: 70ch;
+.feed-reading-article {
+	margin: 0 auto;
+	max-width: 70ch;
 	padding: var(--space-32);
 }
 

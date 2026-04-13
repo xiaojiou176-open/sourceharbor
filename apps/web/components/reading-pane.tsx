@@ -160,11 +160,16 @@ export function ReadingPane({
 			<section
 				className={`feed-reading-pane-shell ${editorialSans.className}`}
 				data-reading-state="loading"
-				role="status"
-				aria-live="polite"
-				aria-atomic="true"
 				aria-busy="true"
 			>
+				<output
+					aria-live="polite"
+					aria-atomic="true"
+					aria-busy="true"
+					className="sr-only"
+				>
+					Loading preview layout...
+				</output>
 				<ScrollArea className="flex-1">
 					<article
 						className="prose prose-sm dark:prose-invert reading-pane-prose feed-reading-article"
@@ -207,7 +212,6 @@ export function ReadingPane({
 						</div>
 					</article>
 				</ScrollArea>
-				<span className="sr-only">Loading preview layout...</span>
 			</section>
 		);
 	}
