@@ -353,7 +353,7 @@ def test_process_video_logs_default_trace_and_user_on_reuse(
 
     assert result["reused"] is True
     reused_log = next(
-        record for record in caplog.records if record.msg == "video_process_reused_existing_job"
+        record for record in caplog.records if record.message == "video_process_reused_existing_job"
     )
     assert reused_log.trace_id == "missing_trace"
     assert reused_log.user == "system"
@@ -377,7 +377,9 @@ def test_process_video_logs_start_failure_with_context(
         asyncio.run(_run_process(service))
 
     start_failed_log = next(
-        record for record in caplog.records if record.msg == "video_process_temporal_start_failed"
+        record
+        for record in caplog.records
+        if record.message == "video_process_temporal_start_failed"
     )
     assert start_failed_log.trace_id == "missing_trace"
     assert start_failed_log.user == "system"
@@ -415,7 +417,7 @@ def test_process_video_maps_temporal_import_failure_with_context(
     import_failed_log = next(
         record
         for record in caplog.records
-        if record.msg == "video_process_temporal_client_import_failed"
+        if record.message == "video_process_temporal_client_import_failed"
     )
     assert import_failed_log.trace_id == "missing_trace"
     assert import_failed_log.user == "system"
@@ -463,7 +465,7 @@ def test_process_video_maps_connect_timeout_to_api_timeout(
     timeout_log = next(
         record
         for record in caplog.records
-        if record.msg == "video_process_temporal_connect_timeout"
+        if record.message == "video_process_temporal_connect_timeout"
     )
     assert timeout_log.trace_id == "missing_trace"
     assert timeout_log.user == "system"
@@ -498,7 +500,9 @@ def test_process_video_maps_start_timeout_and_marks_dispatch_timeout_reason(
     assert repo.mark_failed_calls[0]["reason"] == "dispatch_timeout"
     assert "timed out after" in repo.mark_failed_calls[0]["error_message"]
     timeout_log = next(
-        record for record in caplog.records if record.msg == "video_process_temporal_start_timeout"
+        record
+        for record in caplog.records
+        if record.message == "video_process_temporal_start_timeout"
     )
     assert timeout_log.trace_id == "missing_trace"
     assert timeout_log.user == "system"
@@ -533,7 +537,7 @@ def test_process_video_logs_dispatch_started_with_trace_and_actor(
 
     assert result["reused"] is False
     dispatch_log = next(
-        record for record in caplog.records if record.msg == "video_process_dispatch_started"
+        record for record in caplog.records if record.message == "video_process_dispatch_started"
     )
     assert dispatch_log.trace_id == "trace-123"
     assert dispatch_log.user == "bob"

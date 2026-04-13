@@ -13,11 +13,12 @@ from uuid import UUID, uuid4
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from integrations.binaries.media_commands import yt_dlp_metadata_command
+
 from ..config import settings
 from ..errors import ApiTimeoutError
 from ..repositories import JobsRepository, PublishedReaderDocumentsRepository, VideosRepository
 from .source_names import build_source_name_fallback, resolve_source_name
-from integrations.binaries.media_commands import yt_dlp_metadata_command
 
 YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
 BILIBILI_HOSTS = {"bilibili.com", "www.bilibili.com", "m.bilibili.com", "b23.tv"}
@@ -236,7 +237,7 @@ class VideosService:
             f"{base_idempotency_key}:force:{uuid4().hex}" if force else base_idempotency_key
         )
         job_row, needs_dispatch = self.jobs_repo.create_or_reuse(
-            video_id=getattr(video_row, "id"),
+            video_id=video_row.id,
             kind="video_digest_v1",
             mode=normalized_mode,
             overrides_json=normalized_overrides,
@@ -247,7 +248,8 @@ class VideosService:
         workflow_id: str | None = None
         if needs_dispatch:
             logger.info(
-                f"{log_event_prefix}_dispatch_started",
+                "%s_dispatch_started",
+                log_event_prefix,
                 extra={
                     "trace_id": trace,
                     "user": actor,
@@ -262,7 +264,8 @@ class VideosService:
                 from temporalio.common import WorkflowIDConflictPolicy, WorkflowIDReusePolicy
             except Exception as exc:  # pragma: no cover
                 logger.exception(
-                    f"{log_event_prefix}_temporal_client_import_failed",
+                    "%s_temporal_client_import_failed",
+                    log_event_prefix,
                     extra={"trace_id": trace, "user": actor, "error": str(exc)},
                 )
                 raise RuntimeError(f"temporal client not available: {exc}") from exc
@@ -277,7 +280,8 @@ class VideosService:
                 )
             except TimeoutError as exc:
                 logger.error(
-                    f"{log_event_prefix}_temporal_connect_timeout",
+                    "%s_temporal_connect_timeout",
+                    log_event_prefix,
                     extra={
                         "trace_id": trace,
                         "user": actor,
@@ -313,7 +317,8 @@ class VideosService:
                     f"after {settings.api_temporal_start_timeout_seconds:.1f}s"
                 )
                 logger.error(
-                    f"{log_event_prefix}_temporal_start_timeout",
+                    "%s_temporal_start_timeout",
+                    log_event_prefix,
                     extra={
                         "trace_id": trace,
                         "user": actor,
@@ -335,7 +340,8 @@ class VideosService:
             except Exception as exc:
                 dispatch_error = str(exc)
                 logger.exception(
-                    f"{log_event_prefix}_temporal_start_failed",
+                    "%s_temporal_start_failed",
+                    log_event_prefix,
                     extra={
                         "trace_id": trace,
                         "user": actor,
@@ -348,7 +354,8 @@ class VideosService:
                 raise RuntimeError(f"failed to start ProcessJobWorkflow: {dispatch_error}") from exc
         else:
             logger.info(
-                f"{log_event_prefix}_reused_existing_job",
+                "%s_reused_existing_job",
+                log_event_prefix,
                 extra={
                     "trace_id": trace,
                     "user": actor,
@@ -361,7 +368,7 @@ class VideosService:
 
         return {
             "job_id": job_row.id,
-            "video_db_id": getattr(video_row, "id"),
+            "video_db_id": video_row.id,
             "video_uid": source_uid,
             "status": job_row.status,
             "idempotency_key": job_row.idempotency_key,
