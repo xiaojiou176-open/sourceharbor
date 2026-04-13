@@ -125,6 +125,47 @@ def test_probe_external_lane_workflows_filters_current_commit_runs_by_workflow_n
     assert [row["databaseId"] for row in release] == [303]
 
 
+def test_probe_external_lane_workflows_blocks_when_current_head_has_no_remote_run(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _load_governance_module(
+        "probe_external_lane_workflows_missing_current_test",
+        "scripts/governance/probe_external_lane_workflows.py",
+    )
+    head = "1111111111111111111111111111111111111111"
+
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "_repo_slug", lambda: "xiaojiou176-open/sourceharbor")
+    monkeypatch.setattr(module, "current_git_commit", lambda: head)
+    monkeypatch.setattr(module, "_json_or_none", lambda _command: ({"login": "tester"}, None))
+    monkeypatch.setattr(module, "_list_commit_runs", lambda _repo, _head: ([], None))
+    monkeypatch.setattr(sys, "argv", ["probe_external_lane_workflows.py"])
+
+    captured_artifact: dict[str, object] = {}
+
+    def _capture_artifact(path: Path, payload: dict[str, object], **kwargs) -> None:
+        captured_artifact["path"] = path
+        captured_artifact["payload"] = payload
+
+    monkeypatch.setattr(module, "write_json_artifact", _capture_artifact)
+
+    stdout = io.StringIO()
+    with redirect_stdout(stdout):
+        exit_code = module.main()
+
+    output = stdout.getvalue()
+    assert exit_code == 0, output
+    assert "[external-lane-workflows] BLOCKED" in output
+    assert "public-api-image: missing" in output
+
+    payload = captured_artifact["payload"]
+    assert isinstance(payload, dict)
+    assert payload["status"] == "blocked"
+    lanes = payload["lanes"]
+    assert isinstance(lanes, list)
+    assert all(isinstance(lane, dict) and lane["state"] == "missing" for lane in lanes)
+
+
 def test_required_checks_parsers_ignore_workflow_event_rows(tmp_path: Path, monkeypatch) -> None:
     probe_module = _load_governance_module(
         "probe_remote_platform_truth_test",
