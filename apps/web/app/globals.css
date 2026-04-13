@@ -2617,16 +2617,6 @@ tr[data-state="deleting"] td {
 	color: var(--color-error);
 }
 
-.feed-reading-spinner {
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-	border-radius: 999px;
-	border: 2px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
-	border-top-color: var(--color-primary);
-	animation: motion-spinner-rotate var(--motion-duration-route) linear infinite;
-}
-
 .feed-reading-article {
 	margin: 0 auto;
 	max-width: 70ch;
@@ -3397,8 +3387,7 @@ tr[data-state="deleting"] td {
 	.api-health-dot-timeout_or_unknown,
 	.api-health-dot-unknown,
 	.feed-entry-item,
-	.feed-reading-pane-shell,
-	.feed-reading-spinner {
+	.feed-reading-pane-shell {
 		animation: none;
 		opacity: 1;
 		box-shadow: none;

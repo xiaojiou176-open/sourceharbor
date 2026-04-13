@@ -157,16 +157,62 @@ export function ReadingPane({
 
 	if (loading) {
 		return (
-			<output
-				className="feed-reading-pane-shell feed-reading-state"
+			<section
+				className={`feed-reading-pane-shell ${editorialSans.className}`}
 				data-reading-state="loading"
-				aria-live="polite"
-				aria-atomic="true"
 				aria-busy="true"
 			>
-				<span className="feed-reading-spinner" aria-hidden="true" />
-				<span className="feed-reading-state-meta block">Loading...</span>
-			</output>
+				<output
+					aria-live="polite"
+					aria-atomic="true"
+					aria-busy="true"
+					className="sr-only"
+				>
+					Loading preview layout...
+				</output>
+				<ScrollArea className="flex-1">
+					<article
+						className="prose prose-sm dark:prose-invert reading-pane-prose feed-reading-article"
+						aria-hidden="true"
+					>
+						<div className="space-y-6">
+							<div className="space-y-3">
+								<div className="skeleton-line skeleton-line--short h-3" />
+								<div className="skeleton-title h-10 max-w-[32rem]" />
+								<div className="flex flex-wrap gap-2">
+									<div className="skeleton-line h-3 w-32" />
+									<div className="skeleton-line h-3 w-24" />
+								</div>
+							</div>
+							<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+								<div className="grid gap-3 md:grid-cols-[84px_minmax(0,1fr)]">
+									<div className="skeleton-block aspect-square rounded-[1.1rem]" />
+									<div className="space-y-3">
+										<div className="skeleton-line skeleton-line--medium h-3" />
+										<div className="skeleton-line skeleton-line--long h-3" />
+										<div className="skeleton-line skeleton-line--short h-3" />
+									</div>
+								</div>
+							</div>
+							<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+								<div className="space-y-2">
+									<div className="skeleton-line skeleton-line--medium h-3" />
+									<div className="skeleton-line skeleton-line--long h-3" />
+									<div className="skeleton-line skeleton-line--short h-3" />
+								</div>
+							</div>
+							<div className="space-y-3">
+								<div className="skeleton-line skeleton-line--long h-3" />
+								<div className="skeleton-line skeleton-line--medium h-3" />
+								<div className="skeleton-line skeleton-line--long h-3" />
+								<div className="skeleton-line skeleton-line--medium h-3" />
+								<div className="skeleton-line skeleton-line--long h-3" />
+								<div className="skeleton-line skeleton-line--short h-3" />
+							</div>
+						</div>
+					</article>
+				</ScrollArea>
+			</section>
 		);
 	}
 

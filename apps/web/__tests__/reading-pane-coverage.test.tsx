@@ -77,7 +77,13 @@ describe("ReadingPane coverage", () => {
 			"aria-busy",
 			"true",
 		);
-		expect(screen.getByText("Loading...")).toBeInTheDocument();
+		expect(screen.getByRole("status")).toHaveTextContent(
+			"Loading preview layout...",
+		);
+		expect(document.querySelector(".skeleton-title")).not.toBeNull();
+		expect(document.querySelectorAll(".skeleton-line").length).toBeGreaterThan(
+			6,
+		);
 		expect(mockGetArtifactMarkdown).toHaveBeenCalledWith({
 			job_id: "job-loading-1",
 			include_meta: true,
