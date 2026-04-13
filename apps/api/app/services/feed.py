@@ -166,6 +166,16 @@ class FeedService:
                             ),
                             ''
                         ) AS source_item_id,
+                        COALESCE(
+                            (
+                                SELECT cbi.source_origin
+                                FROM consumption_batch_items cbi
+                                WHERE cbi.job_id = j.id
+                                ORDER BY cbi.created_at DESC
+                                LIMIT 1
+                            ),
+                            'subscription_tracked'
+                        ) AS source_origin,
                         COALESCE(ff.saved, FALSE) AS feedback_saved,
                         ff.feedback_label,
                         CASE
@@ -240,6 +250,7 @@ class FeedService:
                 source_value=source_value,
                 fallback=source_platform,
             )
+            source_origin = str(row.get("source_origin") or "").strip() or "subscription_tracked"
             subscription_id = str(row.get("subscription_id") or "").strip() or None
             source_item_id = str(row.get("source_item_id") or "").strip() or None
             reader_bridge = reader_bridge_by_source_item.get(
@@ -267,10 +278,18 @@ class FeedService:
                     "canonical_author_name": source_name,
                     "subscription_id": subscription_id,
                     "source_item_id": source_item_id,
-                    "affiliation_label": source_name if subscription_id else "Unmatched source",
+                    "affiliation_label": source_name
+                    if subscription_id
+                    else (
+                        "Today lane" if source_origin == "manual_injected" else "Unmatched source"
+                    ),
                     "relation_kind": "matched_subscription"
                     if subscription_id
-                    else "unmatched_source",
+                    else (
+                        "manual_one_off"
+                        if source_origin == "manual_injected"
+                        else "unmatched_source"
+                    ),
                     "thumbnail_url": identity.thumbnail_url,
                     "avatar_url": identity.avatar_url,
                     "avatar_label": identity.avatar_label,

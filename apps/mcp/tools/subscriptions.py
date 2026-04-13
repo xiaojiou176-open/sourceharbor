@@ -16,7 +16,7 @@ def register_subscription_tools(mcp: FastMCP, api_call: ApiCall) -> None:
         description=(
             "Manage subscriptions and inspect the shared template catalog for "
             "strong-supported YouTube/Bilibili lanes plus generalized RSSHub and RSS intake. "
-            "action=list|list_templates|upsert|remove|batch_update_category."
+            "action=list|list_templates|upsert|manual_intake|remove|batch_update_category."
         ),
     )
     def manage_subscriptions(
@@ -65,6 +65,27 @@ def register_subscription_tools(mcp: FastMCP, api_call: ApiCall) -> None:
                     "enabled": enabled,
                 },
             )
+        if normalized_action == "manual_intake":
+            raw_input = str(source_value or "").strip()
+            if not raw_input:
+                return invalid_argument(
+                    "source_value is required when action=manual_intake",
+                    method="POST",
+                    path="/api/v1/subscriptions/manual-intake",
+                    field="source_value",
+                    value=source_value,
+                )
+            return api_call(
+                "POST",
+                "/api/v1/subscriptions/manual-intake",
+                json_body={
+                    "raw_input": raw_input,
+                    "category": category or "misc",
+                    "tags": tags or [],
+                    "priority": priority if priority is not None else 50,
+                    "enabled": enabled,
+                },
+            )
         if normalized_action == "batch_update_category":
             normalized_ids: list[str] = []
             for item in ids or []:
@@ -105,7 +126,7 @@ def register_subscription_tools(mcp: FastMCP, api_call: ApiCall) -> None:
                 )
             return api_call("DELETE", f"/api/v1/subscriptions/{url_path_segment(normalized_id)}")
         return invalid_argument(
-            "action must be one of: list, list_templates, upsert, remove, batch_update_category",
+            "action must be one of: list, list_templates, upsert, manual_intake, remove, batch_update_category",
             method="POST",
             path="sourceharbor.subscriptions.manage",
             field="action",

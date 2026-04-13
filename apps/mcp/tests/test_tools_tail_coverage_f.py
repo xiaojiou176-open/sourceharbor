@@ -351,6 +351,9 @@ def test_subscriptions_tail_branches() -> None:
     mcp = _FakeMCP()
     register_subscription_tools(mcp, lambda *_args, **_kwargs: {"ok": True})
 
+    missing_manual_input = mcp.tools["sourceharbor.subscriptions.manage"](action="manual_intake")
+    assert missing_manual_input["details"]["field"] == "source_value"
+
     bad_batch = mcp.tools["sourceharbor.subscriptions.manage"](
         action="batch_update_category", ids=["bad"]
     )

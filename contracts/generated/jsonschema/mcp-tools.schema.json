@@ -2524,6 +2524,7 @@
               "list",
               "list_templates",
               "upsert",
+              "manual_intake",
               "remove",
               "batch_update_category"
             ]

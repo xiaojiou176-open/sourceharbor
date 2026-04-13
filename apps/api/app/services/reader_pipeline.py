@@ -643,7 +643,7 @@ class ReaderPipelineService:
         source_name = title
         creator_handle: str | None = None
         identity_status = "derived_identity"
-        relation_kind = source_origin
+        relation_kind = "manual_one_off" if source_origin == "manual_injected" else source_origin
         affiliation_label: str | None = "Today lane" if source_origin == "manual_injected" else None
         if subscription_row is not None:
             source_name = resolve_source_name(
@@ -858,6 +858,18 @@ class ReaderPipelineService:
             "previous_document": self._previous_document_summary(previous_document),
         }
 
+    @staticmethod
+    def _normalize_relation_kind(relation_kind: Any, *, source_origin: Any) -> str | None:
+        normalized_relation = str(relation_kind or "").strip()
+        normalized_origin = str(source_origin or "").strip()
+        if normalized_relation == "manual_injected":
+            return "manual_one_off"
+        if normalized_relation:
+            return normalized_relation
+        if normalized_origin == "manual_injected":
+            return "manual_one_off"
+        return normalized_origin or None
+
     def _to_member_payload(self, item: dict[str, Any]) -> dict[str, Any]:
         return {
             "source_item_id": str(item["source_item_id"]),
@@ -871,7 +883,9 @@ class ReaderPipelineService:
             "digest_preview": item.get("digest_preview"),
             "subscription_id": item.get("subscription_id"),
             "matched_subscription_name": item.get("matched_subscription_name"),
-            "relation_kind": item.get("relation_kind"),
+            "relation_kind": self._normalize_relation_kind(
+                item.get("relation_kind"), source_origin=item.get("source_origin")
+            ),
             "affiliation_label": item.get("affiliation_label"),
             "canonical_source_name": item.get("canonical_source_name"),
             "canonical_author_name": item.get("canonical_author_name"),
@@ -936,7 +950,16 @@ class ReaderPipelineService:
             "warning": dict(instance.warning_json or {}),
             "coverage_ledger": dict(instance.coverage_ledger_json or {}),
             "traceability_pack": dict(instance.traceability_pack_json or {}),
-            "source_refs": list(instance.source_refs_json or []),
+            "source_refs": [
+                {
+                    **item,
+                    "relation_kind": self._normalize_relation_kind(
+                        item.get("relation_kind"), source_origin=item.get("source_origin")
+                    ),
+                }
+                for item in (instance.source_refs_json or [])
+                if isinstance(item, dict)
+            ],
             "sections": [
                 {
                     "section_id": str(item.get("section_id") or item.get("section_key") or ""),

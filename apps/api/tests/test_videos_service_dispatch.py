@@ -703,6 +703,41 @@ def test_process_video_normalizes_analysis_mode_aliases_into_llm_overrides(
     assert repo.created_calls[0]["overrides_json"] == result["overrides"]
 
 
+def test_process_video_strips_fail_close_escape_hatches_from_raw_stage_overrides(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = _RepoStub(should_dispatch=False)
+    service = VideosService(db=object())
+    service.video_repo = _VideoRepoStub()  # type: ignore[assignment]
+    service.jobs_repo = repo  # type: ignore[assignment]
+
+    _install_temporal_modules(monkeypatch, client=_FakeClient())
+
+    result = asyncio.run(
+        service.process_video(
+            platform="youtube",
+            url="https://youtu.be/strict-video",
+            video_id=None,
+            mode="full",
+            overrides={
+                "raw_stage": {
+                    "mode": "advanced",
+                    "video_input_required": False,
+                    "review_required": False,
+                    "preprocess_enabled": False,
+                }
+            },
+            force=False,
+        )
+    )
+
+    assert result["overrides"] == {
+        "llm": {"analysis_mode": "advanced"},
+        "raw_stage": {"mode": "advanced"},
+    }
+    assert repo.created_calls[0]["overrides_json"] == result["overrides"]
+
+
 def test_build_process_idempotency_key_is_stable_with_unicode_and_key_order() -> None:
     overrides = {"b": "中文", "a": 1}
     expected_overrides_json = json.dumps({"a": 1, "b": "中文"}, ensure_ascii=False, sort_keys=True)

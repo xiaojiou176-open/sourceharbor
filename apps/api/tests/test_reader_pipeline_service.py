@@ -472,6 +472,7 @@ def test_materialize_batch_marks_document_with_gap_when_digest_is_missing() -> N
     assert document["warning"]["warning_kind"] == "coverage_gap"
     assert document["warning"]["published_with_gap"] is True
     assert document["warning"]["missing_digest_count"] == 1
+    assert document["source_refs"][0]["relation_kind"] == "manual_one_off"
     assert document["coverage_ledger"]["status"] == "gap_detected"
 
 

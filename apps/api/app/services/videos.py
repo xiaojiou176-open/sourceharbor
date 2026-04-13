@@ -128,25 +128,48 @@ def _normalize_mode(raw_mode: str) -> str:
     return normalized
 
 
+def _normalize_analysis_mode(value: object | None) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip().lower().replace("-", "_")
+    if text in {"advanced", "economy"}:
+        return text
+    return None
+
+
+def _normalize_raw_stage_overrides(raw_stage: object | None) -> dict[str, object]:
+    if not isinstance(raw_stage, dict):
+        return {}
+
+    # The public API may choose the top-level analysis mode, but worker-owned
+    # fail-close booleans must not be caller-controlled.
+    analysis_mode = _normalize_analysis_mode(
+        raw_stage.get("mode") or raw_stage.get("analysis_mode")
+    )
+    if analysis_mode is None:
+        return {}
+    return {"mode": analysis_mode}
+
+
 def _normalize_overrides(overrides: dict[str, object] | None) -> dict[str, object]:
     normalized = dict(overrides or {})
     llm = normalized.get("llm")
     canonical_llm = dict(llm) if isinstance(llm, dict) else {}
-    raw_stage = normalized.get("raw_stage")
-    raw_stage_payload = dict(raw_stage) if isinstance(raw_stage, dict) else {}
-    analysis_mode = (
+    raw_stage_payload = _normalize_raw_stage_overrides(normalized.get("raw_stage"))
+    analysis_mode = _normalize_analysis_mode(
         raw_stage_payload.get("mode")
-        or raw_stage_payload.get("analysis_mode")
         or canonical_llm.get("analysis_mode")
         or normalized.get("analysis_mode")
         or normalized.get("raw_stage_mode")
     )
     if analysis_mode is not None:
-        text = str(analysis_mode).strip().lower().replace("-", "_")
-        if text in {"advanced", "economy"}:
-            canonical_llm["analysis_mode"] = text
+        canonical_llm["analysis_mode"] = analysis_mode
     if canonical_llm:
         normalized["llm"] = canonical_llm
+    if raw_stage_payload:
+        normalized["raw_stage"] = raw_stage_payload
+    else:
+        normalized.pop("raw_stage", None)
     normalized.pop("analysis_mode", None)
     normalized.pop("raw_stage_mode", None)
     return normalized
