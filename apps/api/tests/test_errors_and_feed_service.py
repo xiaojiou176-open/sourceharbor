@@ -425,6 +425,44 @@ def test_feed_service_list_digest_feed_supports_curated_sort_cursor(tmp_path: Pa
     assert result["items"][0]["feedback_label"] == "useful"
 
 
+def test_feed_service_marks_manual_injected_rows_as_manual_one_off(tmp_path: Path) -> None:
+    ts = datetime(2026, 2, 25, 10, 0, tzinfo=UTC)
+    digest = tmp_path / "digest-manual.md"
+    digest.write_text("# manual", encoding="utf-8")
+
+    fake_db = _FakeDB(
+        [
+            {
+                "job_id": "11111111-1111-1111-1111-111111111111",
+                "source_url": "https://www.youtube.com/watch?v=demo",
+                "source": "youtube",
+                "content_type": "video",
+                "title": "Manual source",
+                "video_uid": "demo",
+                "published_at": ts,
+                "created_at": ts,
+                "sort_ts": ts,
+                "category": "creator",
+                "subscription_source_type": "",
+                "subscription_source_value": "",
+                "subscription_id": "",
+                "source_item_id": "source-item-1",
+                "source_origin": "manual_injected",
+                "feedback_saved": False,
+                "feedback_label": None,
+                "artifact_digest_md": str(digest),
+                "artifact_root": None,
+            }
+        ]
+    )
+    service = FeedService(db=fake_db)  # type: ignore[arg-type]
+
+    result = service.list_digest_feed()
+
+    assert result["items"][0]["relation_kind"] == "manual_one_off"
+    assert result["items"][0]["affiliation_label"] == "Today lane"
+
+
 def test_feed_service_parse_cursor_and_title_resolution() -> None:
     service = FeedService(db=None)  # type: ignore[arg-type]
 
