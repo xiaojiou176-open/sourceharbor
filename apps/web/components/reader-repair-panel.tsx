@@ -2,12 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-
-import { apiClient } from "@/lib/api/client";
-import { resolveWriteSessionToken } from "@/lib/api/url";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiClient } from "@/lib/api/client";
+import { resolveWriteSessionToken } from "@/lib/api/url";
 
 type ReaderRepairPanelProps = {
 	documentId: string;
@@ -27,17 +26,20 @@ const REPAIR_OPTIONS: Array<{
 	{
 		mode: "patch",
 		title: "Patch repair",
-		description: "Try the smallest safe repair first and keep the reading unit intact.",
+		description:
+			"Try the smallest safe repair first and keep the reading unit intact.",
 	},
 	{
 		mode: "section",
 		title: "Section refresh",
-		description: "Rebuild the current section set when the gap is local, not structural.",
+		description:
+			"Rebuild the current section set when the gap is local, not structural.",
 	},
 	{
 		mode: "cluster",
 		title: "Cluster rebuild",
-		description: "Use the full rebuild only when the document-level evidence pack needs a larger reset.",
+		description:
+			"Use the full rebuild only when the document-level evidence pack needs a larger reset.",
 	},
 ];
 

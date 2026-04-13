@@ -45,12 +45,11 @@ export default async function ReaderDetailPage({
 }: ReaderDetailPageProps) {
 	const resolved = await params;
 	const isPreviewRoute = resolved.documentId === DEMO_READER_DOCUMENT_ID;
-	const document =
-		isPreviewRoute
-			? buildDemoReaderDocument()
-			: await apiClient
-					.getPublishedReaderDocument(resolved.documentId)
-					.catch(() => null);
+	const document = isPreviewRoute
+		? buildDemoReaderDocument()
+		: await apiClient
+				.getPublishedReaderDocument(resolved.documentId)
+				.catch(() => null);
 
 	if (!document) {
 		notFound();
@@ -86,21 +85,23 @@ export default async function ReaderDetailPage({
 			.section_contributions,
 	)
 		? (
-				traceabilityPack as { section_contributions: Array<Record<string, unknown>> }
+				traceabilityPack as {
+					section_contributions: Array<Record<string, unknown>>;
+				}
 			).section_contributions
 		: [];
 	const traceabilitySources = Array.isArray(
 		(traceabilityPack as { source_items?: unknown[] }).source_items,
 	)
-		? (traceabilityPack as { source_items: Array<Record<string, unknown>> }).source_items
+		? (traceabilityPack as { source_items: Array<Record<string, unknown>> })
+				.source_items
 		: [];
 	const traceabilityAffectedSources = Array.isArray(
 		(traceabilityPack as { affected_source_item_ids?: unknown[] })
 			.affected_source_item_ids,
 	)
-		? (
-				traceabilityPack as { affected_source_item_ids: Array<string | number> }
-			).affected_source_item_ids
+		? (traceabilityPack as { affected_source_item_ids: Array<string | number> })
+				.affected_source_item_ids
 		: [];
 	const evidenceRouteCount = Object.values(
 		(traceabilityPack as { evidence_routes?: Record<string, unknown> })

@@ -407,7 +407,8 @@ export default async function SubscriptionsPage({
 									Advanced object workbench
 								</p>
 								<h2 className="text-xl font-semibold text-foreground">
-									Open the template, proof, and current source controls only when you need them
+									Open the template, proof, and current source controls only
+									when you need them
 								</h2>
 								<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
 									Start with the atlas and manual intake above. Open this layer
@@ -427,7 +428,9 @@ export default async function SubscriptionsPage({
 									<h2 className="text-xl font-semibold">
 										{copy.supportMatrixTitle}
 									</h2>
-									<CardDescription>{copy.supportMatrixDescription}</CardDescription>
+									<CardDescription>
+										{copy.supportMatrixDescription}
+									</CardDescription>
 								</CardHeader>
 								<CardContent className="grid gap-3 md:grid-cols-2">
 									{templateCatalog.support_tiers.map((tier) => (
@@ -488,14 +491,18 @@ export default async function SubscriptionsPage({
 									<h2 className="text-xl font-semibold">
 										{copy.intakeGuideTitle}
 									</h2>
-									<CardDescription>{copy.intakeGuideDescription}</CardDescription>
+									<CardDescription>
+										{copy.intakeGuideDescription}
+									</CardDescription>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									{selectedTemplate && selectedSupportTier ? (
 										<>
 											<div className="space-y-2">
 												<div className="flex flex-wrap items-center gap-2">
-													<p className="font-medium">{selectedTemplate.label}</p>
+													<p className="font-medium">
+														{selectedTemplate.label}
+													</p>
 													<Badge
 														variant="outline"
 														className={supportBadgeClass(
@@ -541,8 +548,9 @@ export default async function SubscriptionsPage({
 														{copy.guideLabels.sourceType}
 													</dt>
 													<dd className="text-muted-foreground">
-														{sourceTypeLabelMap.get(selectedTemplate.source_type) ??
-															humanizeToken(selectedTemplate.source_type)}
+														{sourceTypeLabelMap.get(
+															selectedTemplate.source_type,
+														) ?? humanizeToken(selectedTemplate.source_type)}
 													</dd>
 												</div>
 												<div>
@@ -550,8 +558,9 @@ export default async function SubscriptionsPage({
 														{copy.guideLabels.adapterType}
 													</dt>
 													<dd className="text-muted-foreground">
-														{adapterLabelMap.get(selectedTemplate.adapter_type) ??
-															selectedTemplate.adapter_type}
+														{adapterLabelMap.get(
+															selectedTemplate.adapter_type,
+														) ?? selectedTemplate.adapter_type}
 													</dd>
 												</div>
 												<div>
@@ -594,7 +603,9 @@ export default async function SubscriptionsPage({
 									<h2 className="text-xl font-semibold">
 										{copy.templateSectionTitle}
 									</h2>
-									<CardDescription>{copy.templateSectionDescription}</CardDescription>
+									<CardDescription>
+										{copy.templateSectionDescription}
+									</CardDescription>
 								</CardHeader>
 								<CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 									{templates.map((templateOption) => {
@@ -602,7 +613,8 @@ export default async function SubscriptionsPage({
 											templateCatalog.support_tiers.find(
 												(tier) => tier.id === templateOption.support_tier,
 											) ?? null;
-										const isSelected = templateOption.id === selectedTemplate?.id;
+										const isSelected =
+											templateOption.id === selectedTemplate?.id;
 										return (
 											<article
 												key={templateOption.id}
@@ -623,7 +635,8 @@ export default async function SubscriptionsPage({
 																templateOption.support_tier,
 															)}
 														>
-															{supportTier?.label ?? templateOption.support_tier}
+															{supportTier?.label ??
+																templateOption.support_tier}
 														</Badge>
 														{templateOption.support_tier ===
 														"generic_supported" ? (
@@ -683,7 +696,9 @@ export default async function SubscriptionsPage({
 											className="grid gap-5 md:grid-cols-2"
 											data-auto-disable-required="true"
 										>
-											<WebActionSessionHiddenInput sessionToken={sessionToken} />
+											<WebActionSessionHiddenInput
+												sessionToken={sessionToken}
+											/>
 											<FormSelectField
 												id="platform"
 												name="platform"

@@ -174,11 +174,11 @@ export default function DashboardPage() {
 								{copy.firstHop.operateDescription}
 							</CardDescription>
 						</CardHeader>
-					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild variant="outline">
-							<Link href="/subscriptions">
-								{copy.firstHop.operatePrimaryCta}
-							</Link>
+						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+							<Button asChild variant="outline">
+								<Link href="/subscriptions">
+									{copy.firstHop.operatePrimaryCta}
+								</Link>
 							</Button>
 							<Button asChild variant="outline">
 								<Link href="/feed">{copy.firstHop.operateSecondaryCta}</Link>
@@ -191,11 +191,13 @@ export default function DashboardPage() {
 					<Card className="folo-surface border-border/70 bg-muted/15">
 						<CardHeader>
 							<CardTitle>{copy.firstHop.buildTitle}</CardTitle>
-							<CardDescription>{copy.firstHop.buildDescription}</CardDescription>
+							<CardDescription>
+								{copy.firstHop.buildDescription}
+							</CardDescription>
 						</CardHeader>
-					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-						<Button asChild variant="outline">
-							<Link href="/mcp">{copy.firstHop.buildPrimaryCta}</Link>
+						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+							<Button asChild variant="outline">
+								<Link href="/mcp">{copy.firstHop.buildPrimaryCta}</Link>
 							</Button>
 							<Button asChild variant="outline">
 								<Link href="/builders">{copy.firstHop.buildSecondaryCta}</Link>
@@ -224,11 +226,11 @@ export default function DashboardPage() {
 							on one surface.
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="space-y-3 pt-0">
-							<div className="flex flex-wrap items-center gap-3">
-								<Button asChild variant="outline">
-									<Link href="/reader">Open Reader</Link>
-								</Button>
+					<CardContent className="space-y-3 pt-0">
+						<div className="flex flex-wrap items-center gap-3">
+							<Button asChild variant="outline">
+								<Link href="/reader">Open Reader</Link>
+							</Button>
 							<Button asChild variant="outline">
 								<Link href="/briefings">Open Briefings</Link>
 							</Button>
@@ -246,12 +248,12 @@ export default function DashboardPage() {
 							{copy.frontDoors.subscriptionsDescription}
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="space-y-3 pt-0">
-							<div className="flex flex-wrap items-center gap-3">
-								<Button asChild variant="outline">
-									<Link href="/subscriptions">
-										{copy.frontDoors.subscriptionsCta}
-									</Link>
+					<CardContent className="space-y-3 pt-0">
+						<div className="flex flex-wrap items-center gap-3">
+							<Button asChild variant="outline">
+								<Link href="/subscriptions">
+									{copy.frontDoors.subscriptionsCta}
+								</Link>
 							</Button>
 							<Button asChild variant="outline">
 								<Link href="/trends">{copy.compounders.trendsCta}</Link>
@@ -269,10 +271,10 @@ export default function DashboardPage() {
 							{copy.frontDoors.searchDescription}
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/search">{copy.frontDoors.searchCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/search">{copy.frontDoors.searchCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/knowledge">{copy.frontDoors.knowledgeCta}</Link>
 						</Button>
@@ -283,10 +285,10 @@ export default function DashboardPage() {
 						<CardTitle>{copy.frontDoors.askTitle}</CardTitle>
 						<CardDescription>{copy.frontDoors.askDescription}</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/ask">{copy.frontDoors.askCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/ask">{copy.frontDoors.askCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/briefings">{copy.frontDoors.briefingsCta}</Link>
 						</Button>
@@ -300,10 +302,10 @@ export default function DashboardPage() {
 						<CardTitle>{copy.frontDoors.mcpTitle}</CardTitle>
 						<CardDescription>{copy.frontDoors.mcpDescription}</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/mcp">{copy.frontDoors.mcpCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/mcp">{copy.frontDoors.mcpCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/jobs">{copy.frontDoors.jobCta}</Link>
 						</Button>
@@ -333,10 +335,10 @@ export default function DashboardPage() {
 									</Badge>
 								))}
 							</div>
-								<div className="flex flex-wrap items-center gap-3">
-									<Button asChild variant="outline">
-										<Link href="/mcp">{builderCopy.mcpCta}</Link>
-									</Button>
+							<div className="flex flex-wrap items-center gap-3">
+								<Button asChild variant="outline">
+									<Link href="/mcp">{builderCopy.mcpCta}</Link>
+								</Button>
 								<Button asChild variant="outline">
 									<Link href="/use-cases/codex">{builderCopy.codexCta}</Link>
 								</Button>
@@ -452,10 +454,10 @@ export default function DashboardPage() {
 							{copy.compounders.watchlistsDescription}
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/watchlists">{copy.compounders.watchlistsCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/watchlists">{copy.compounders.watchlistsCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/trends">{copy.compounders.trendsCta}</Link>
 						</Button>
@@ -468,10 +470,10 @@ export default function DashboardPage() {
 							{copy.compounders.trendsDescription}
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/trends">{copy.compounders.trendsCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/trends">{copy.compounders.trendsCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/briefings">{copy.compounders.briefingsCta}</Link>
 						</Button>
@@ -484,10 +486,10 @@ export default function DashboardPage() {
 							{copy.compounders.briefingsDescription}
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/briefings">{copy.compounders.briefingsCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/briefings">{copy.compounders.briefingsCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/ask">{copy.frontDoors.askCta}</Link>
 						</Button>
@@ -500,10 +502,10 @@ export default function DashboardPage() {
 							{copy.compounders.playgroundDescription}
 						</CardDescription>
 					</CardHeader>
-						<CardContent className="flex flex-wrap items-center gap-3 pt-0">
-							<Button asChild variant="outline">
-								<Link href="/playground">{copy.compounders.playgroundCta}</Link>
-							</Button>
+					<CardContent className="flex flex-wrap items-center gap-3 pt-0">
+						<Button asChild variant="outline">
+							<Link href="/playground">{copy.compounders.playgroundCta}</Link>
+						</Button>
 						<Button asChild variant="outline">
 							<Link href="/proof">{copy.compounders.proofCta}</Link>
 						</Button>

@@ -143,9 +143,7 @@ function buildResultsSummary(result: ManualSourceIntakeResponse): string {
 		result.queued_manual_items
 			? `${result.queued_manual_items} queued for today's reading`
 			: null,
-		result.reused_manual_items
-			? `${result.reused_manual_items} reused`
-			: null,
+		result.reused_manual_items ? `${result.reused_manual_items} reused` : null,
 		result.rejected_count ? `${result.rejected_count} rejected` : null,
 	].filter(Boolean);
 
@@ -353,30 +351,30 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 											compact
 											action={
 												<div className="flex flex-wrap gap-3 text-sm">
-												{readerHref ? (
-													<Link
-														href={readerHref}
-														className="underline underline-offset-4"
-													>
-														Read this edition
-													</Link>
-												) : null}
-												{feedUniverseHref ? (
-													<Link
-														href={feedUniverseHref}
-														className="underline underline-offset-4"
-													>
-														Open source desk
-													</Link>
-												) : null}
-												{jobHref ? (
-													<Link
-														href={jobHref}
-														className="underline underline-offset-4"
-													>
-														Inspect job trace
-													</Link>
-												) : null}
+													{readerHref ? (
+														<Link
+															href={readerHref}
+															className="underline underline-offset-4"
+														>
+															Read this edition
+														</Link>
+													) : null}
+													{feedUniverseHref ? (
+														<Link
+															href={feedUniverseHref}
+															className="underline underline-offset-4"
+														>
+															Open source desk
+														</Link>
+													) : null}
+													{jobHref ? (
+														<Link
+															href={jobHref}
+															className="underline underline-offset-4"
+														>
+															Inspect job trace
+														</Link>
+													) : null}
 												</div>
 											}
 										/>
@@ -384,12 +382,12 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 											<p className={`break-all ${editorialMono.className}`}>
 												{item.raw_input}
 											</p>
-												{item.published_document_title ? (
-													<p className="mt-2">
-														Reader edition ready · {item.published_document_title}
-														{item.published_document_publish_status
-															? ` · ${item.published_document_publish_status}`
-															: ""}
+											{item.published_document_title ? (
+												<p className="mt-2">
+													Reader edition ready · {item.published_document_title}
+													{item.published_document_publish_status
+														? ` · ${item.published_document_publish_status}`
+														: ""}
 												</p>
 											) : null}
 											<p className="mt-2">{item.message}</p>

@@ -50,16 +50,16 @@ export function SourceIdentityCard({
 			>
 				<div className="relative overflow-hidden rounded-[1.1rem] border border-border/60 bg-muted/15">
 					{identity.thumbnailUrl ? (
-							<Image
-								src={identity.thumbnailUrl}
-								alt={`${identity.title} thumbnail`}
-								width={640}
-								height={compact ? 640 : 480}
-								unoptimized={
-									identity.thumbnailUrl.startsWith("data:image/")
-										? true
-										: undefined
-								}
+						<Image
+							src={identity.thumbnailUrl}
+							alt={`${identity.title} thumbnail`}
+							width={640}
+							height={compact ? 640 : 480}
+							unoptimized={
+								identity.thumbnailUrl.startsWith("data:image/")
+									? true
+									: undefined
+							}
 							className={cn(
 								"h-full w-full object-cover",
 								compact ? "aspect-[1/1]" : "aspect-[4/3]",
@@ -78,16 +78,16 @@ export function SourceIdentityCard({
 					<div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
 					<div className="absolute bottom-2 left-2 flex items-center gap-2">
 						{identity.avatarUrl ? (
-								<Image
-									src={identity.avatarUrl}
-									alt={`${identity.title} avatar`}
-									width={compact ? 36 : 44}
-									height={compact ? 36 : 44}
-									unoptimized={
-										identity.avatarUrl.startsWith("data:image/")
-											? true
-											: undefined
-									}
+							<Image
+								src={identity.avatarUrl}
+								alt={`${identity.title} avatar`}
+								width={compact ? 36 : 44}
+								height={compact ? 36 : 44}
+								unoptimized={
+									identity.avatarUrl.startsWith("data:image/")
+										? true
+										: undefined
+								}
 								className={cn(
 									"rounded-full border border-white/70 object-cover shadow-sm",
 									compact ? "h-9 w-9" : "h-11 w-11",

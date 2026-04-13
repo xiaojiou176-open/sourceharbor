@@ -144,11 +144,12 @@ export function ReadingPane({
 				aria-live="polite"
 				aria-atomic="true"
 			>
-					<span className="feed-reading-state-title block">
-						Pick a digest to preview today&apos;s reading desk
-					</span>
+				<span className="feed-reading-state-title block">
+					Pick a digest to preview today&apos;s reading desk
+				</span>
 				<span className="feed-reading-state-meta block">
-					This preview helps you decide what to open in the finished reader edition
+					This preview helps you decide what to open in the finished reader
+					edition
 				</span>
 			</output>
 		);
@@ -250,7 +251,8 @@ export function ReadingPane({
 									<Link href={safeReaderRoute}>Open reader edition</Link>
 								</Button>
 								<p className="text-sm text-muted-foreground">
-									Use the reader edition when you want the finished article with warning, evidence, and coverage in one place.
+									Use the reader edition when you want the finished article with
+									warning, evidence, and coverage in one place.
 								</p>
 							</div>
 						) : null}
@@ -294,7 +296,8 @@ export function ReadingPane({
 							</p>
 						) : safeUniverseRoute ? (
 							<p className={`feed-reading-link ${editorialMono.className}`}>
-								This preview is attached to one source desk. Open the reader edition when you want the finished article.
+								This preview is attached to one source desk. Open the reader
+								edition when you want the finished article.
 							</p>
 						) : null}
 						{identityModel ? (

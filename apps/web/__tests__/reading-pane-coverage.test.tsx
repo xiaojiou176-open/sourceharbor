@@ -139,10 +139,9 @@ describe("ReadingPane coverage", () => {
 		);
 		expect(screen.getByText("YouTube · Tech Channel")).toBeInTheDocument();
 		expect(screen.getByText("昨天")).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "Inspect job trace" })).toHaveAttribute(
-				"href",
-				"/jobs?job_id=job-heading-001",
-			);
+		expect(
+			screen.getByRole("link", { name: "Inspect job trace" }),
+		).toHaveAttribute("href", "/jobs?job_id=job-heading-001");
 		expect(screen.getByRole("link", { name: "Open original" })).toHaveAttribute(
 			"href",
 			"https://example.com/watch?v=1",

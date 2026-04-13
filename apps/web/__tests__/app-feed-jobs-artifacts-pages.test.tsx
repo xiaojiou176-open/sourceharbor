@@ -389,10 +389,9 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(
 				screen.getByText("Marked as saved and useful."),
 			).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "Inspect job trace" })).toHaveAttribute(
-				"href",
-				"/jobs?job_id=job-reading-1",
-			);
+			expect(
+				screen.getByRole("link", { name: "Inspect job trace" }),
+			).toHaveAttribute("href", "/jobs?job_id=job-reading-1");
 			expect(
 				screen.getByRole("link", { name: /Open original/ }),
 			).toHaveAttribute("href", "https://www.youtube.com/watch?v=reading1");
@@ -403,7 +402,9 @@ describe("feed/jobs/artifacts pages", () => {
 				screen.getByRole("link", { name: "Open source desk" }),
 			).toHaveAttribute("href", "/feed?sub=sub-reader-1");
 			expect(
-				screen.getByText("Reader edition ready · Reader edition one · published"),
+				screen.getByText(
+					"Reader edition ready · Reader edition one · published",
+				),
 			).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,

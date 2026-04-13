@@ -304,7 +304,9 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 
 			<section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
 				<div className="folo-panel folo-surface space-y-4">
-					<p className="folo-page-kicker">Preview before you commit to the full article</p>
+					<p className="folo-page-kicker">
+						Preview before you commit to the full article
+					</p>
 					<h2 className="text-2xl font-semibold text-foreground">
 						Start with the desk, not the controls
 					</h2>
@@ -315,7 +317,13 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 					</p>
 					<div className="flex flex-wrap gap-3">
 						<Button asChild variant="hero">
-							<Link href={selectedJobId ? buildItemUrl({ item: selectedJobId }) : "/feed"}>
+							<Link
+								href={
+									selectedJobId
+										? buildItemUrl({ item: selectedJobId })
+										: "/feed"
+								}
+							>
 								Keep reading here
 							</Link>
 						</Button>
@@ -365,7 +373,8 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 								Desk controls
 							</p>
 							<p className="text-sm text-muted-foreground">
-								Use filters only when you need to narrow the desk. They should stay secondary to the preview flow.
+								Use filters only when you need to narrow the desk. They should
+								stay secondary to the preview flow.
 							</p>
 						</div>
 						{isFiltered ? (
@@ -375,7 +384,11 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						)}
 					</div>
 				</summary>
-				<form method="GET" className="feed-filter-form mt-4" aria-label={copy.filterRegionLabel}>
+				<form
+					method="GET"
+					className="feed-filter-form mt-4"
+					aria-label={copy.filterRegionLabel}
+				>
 					<input type="hidden" name="item" value={selectedJobId ?? ""} />
 					<div className="feed-filter-selects">
 						<FormSelectField

@@ -152,7 +152,9 @@ function relationLabel(
 }
 
 function supportTierLabel(value: string | null | undefined): string | null {
-	const normalized = String(value || "").trim().toLowerCase();
+	const normalized = String(value || "")
+		.trim()
+		.toLowerCase();
 	if (!normalized) return null;
 	if (normalized === "strong_supported") return "Strong path";
 	if (normalized === "generic_supported") return "General path";
@@ -289,7 +291,7 @@ export function resolveFeedIdentity(item: DigestFeedItem): SourceIdentityModel {
 		title,
 		subtitle: item.affiliation_label?.trim() || platformMeta(platform).label,
 		description: item.title,
-			eyebrow: item.content_type === "video" ? "Preview lane" : "Article preview",
+		eyebrow: item.content_type === "video" ? "Preview lane" : "Article preview",
 		thumbnailUrl:
 			item.thumbnail_url ||
 			buildThumbnailUrl({

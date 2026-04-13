@@ -180,24 +180,24 @@ describe("source surfaces", () => {
 			expect(mockSubmitManualSourceIntake).toHaveBeenCalledTimes(1);
 		});
 
-			expect(screen.getByText("Intake results")).toBeInTheDocument();
-			expect(
-				screen.getByText(
-					/This pass processed 2 sources: 1 saved to your desk, 1 queued for today's reading, 1 rejected\./i,
-				),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("link", { name: "Read this edition" }),
-			).toHaveAttribute("href", "/reader/doc-1");
-			expect(
-				screen.getByRole("link", { name: "Open source desk" }),
-			).toHaveAttribute("href", "/feed?sub=sub-manual-1");
-			expect(
-				screen.getByRole("link", { name: "Inspect job trace" }),
-			).toHaveAttribute("href", "/jobs?job_id=job-manual-1");
-			expect(
-				screen.getByText(/Reader edition ready · Reader edition one · published/),
-			).toBeInTheDocument();
+		expect(screen.getByText("Intake results")).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/This pass processed 2 sources: 1 saved to your desk, 1 queued for today's reading, 1 rejected\./i,
+			),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Read this edition" }),
+		).toHaveAttribute("href", "/reader/doc-1");
+		expect(
+			screen.getByRole("link", { name: "Open source desk" }),
+		).toHaveAttribute("href", "/feed?sub=sub-manual-1");
+		expect(
+			screen.getByRole("link", { name: "Inspect job trace" }),
+		).toHaveAttribute("href", "/jobs?job_id=job-manual-1");
+		expect(
+			screen.getByText(/Reader edition ready · Reader edition one · published/),
+		).toBeInTheDocument();
 		expect(screen.getByText("No description yet")).toBeInTheDocument();
 	});
 
@@ -411,8 +411,8 @@ describe("source surfaces", () => {
 			subscription_id: null,
 			job_id: null,
 		});
-			expect(manualIdentity.eyebrow).toBe("Saved to your desk");
-			expect(manualIdentity.relationLabel).toBe("Deep Source Universe");
+		expect(manualIdentity.eyebrow).toBe("Saved to your desk");
+		expect(manualIdentity.relationLabel).toBe("Deep Source Universe");
 
 		const feedIdentity = resolveFeedIdentity({
 			feed_id: "feed-1",
@@ -442,10 +442,10 @@ describe("source surfaces", () => {
 			feedback_label: "useful",
 			identity_status: "derived_identity",
 		});
-			expect(feedIdentity.eyebrow).toBe("Article preview");
-			expect(feedIdentity.meta).toEqual(
-				expect.arrayContaining(["Linked identity", "Saved", "useful"]),
-			);
+		expect(feedIdentity.eyebrow).toBe("Article preview");
+		expect(feedIdentity.meta).toEqual(
+			expect.arrayContaining(["Linked identity", "Saved", "useful"]),
+		);
 
 		const readerIdentity = resolveReaderSourceIdentity({
 			source_item_id: "source-1",
@@ -469,7 +469,7 @@ describe("source surfaces", () => {
 			identity_status: "derived_identity",
 			claim_kinds: ["summary", "quote"],
 		});
-			expect(readerIdentity.eyebrow).toBe("Today's source");
+		expect(readerIdentity.eyebrow).toBe("Today's source");
 		expect(readerIdentity.meta).toEqual(
 			expect.arrayContaining(["Video contract gap", "2 claim kinds"]),
 		);
