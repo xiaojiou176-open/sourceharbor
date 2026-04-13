@@ -108,7 +108,18 @@ def main() -> int:
         for item in manifest_root.glob("*.json")
         if item.is_file() and not item.name.endswith(".meta.json")
     ):
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        try:
+            manifest_raw = manifest_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            errors.append(
+                f"{rel_path(manifest_path)}: manifest file missing or unreadable during audit ({exc})"
+            )
+            continue
+        try:
+            payload = json.loads(manifest_raw)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{rel_path(manifest_path)}: invalid manifest JSON ({exc.msg})")
+            continue
         run_id = str(payload.get("run_id") or "").strip()
         if not run_id:
             errors.append(f"{rel_path(manifest_path)}: missing run_id")
