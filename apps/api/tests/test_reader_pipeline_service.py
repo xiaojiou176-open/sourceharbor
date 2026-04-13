@@ -160,6 +160,15 @@ class _JobsServiceStub:
             "job": {"pipeline_final_status": "succeeded"},
             "trace_summary": {"degradations": []},
             "bundle_route": f"/api/v1/jobs/{job_id}/bundle",
+            "digest_meta": {
+                "raw_stage_contract": {
+                    "analysis_mode": "advanced",
+                    "review_required": True,
+                    "primary_media_input": "video_text",
+                    "review_media_input": "video_text",
+                    "video_contract_satisfied": True,
+                }
+            },
         }
 
 

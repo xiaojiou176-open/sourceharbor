@@ -7,6 +7,33 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.31] - 2026-04-12
+
+### Changed
+
+- manual intake now accepts one-off article URLs in addition to supported video URLs, so ad-hoc reads can enter the today lane without first becoming recurring subscriptions
+- tightened the reader traceability payload so source maps now point back to transcript, comments, outline, meta, and frame asset routes instead of only boolean availability hints
+- hardened reader-side video proof semantics so missing raw-stage verification now fails closed into the yellow-warning gap path instead of silently reading as satisfied
+- clarified source-identity badges so the most visible label now stays semantic (`Tracked universe`, `Reading today`, `Needs review`) while universe affiliation stays in the supporting copy
+
+## [0.1.30] - 2026-04-13
+
+### Changed
+
+- refreshed the generated third-party notices and license inventory after the final Dependabot dependency landing
+
+## [0.1.29] - 2026-04-13
+
+### Changed
+
+- refreshed third-party notices and the generated license inventory after merging the remaining Dependabot tail
+
+## [0.1.28] - 2026-04-13
+
+### Changed
+
+- merged the remaining Next.js Dependabot tail and advanced the release line ahead of the earlier `v0.1.27` docs/distribution closeout snapshot
+
 ## [0.1.27] - 2026-04-12
 
 ### Changed

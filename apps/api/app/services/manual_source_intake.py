@@ -169,22 +169,9 @@ class ManualSourceIntakeService:
                 adapter_type="rss_generic",
                 message="Feed URL accepted as a recurring subscription source.",
             )
-        return ManualSourcePlan(
-            target_kind="unsupported",
-            recommended_action="unsupported",
-            platform=None,
-            source_type=None,
-            source_value=None,
+        return self._manual_article_plan(
             source_url=value,
-            rsshub_route=None,
-            adapter_type=None,
-            content_profile=None,
-            support_tier=None,
-            display_name=None,
-            message=(
-                "Direct article URLs are not wired into manual intake yet. "
-                "Bring a feed URL, an RSSHub route, or a supported video URL."
-            ),
+            message="Article URL accepted as a manual item for today.",
         )
 
     async def submit(
@@ -306,14 +293,22 @@ class ManualSourceIntakeService:
                     else:
                         updated_subscriptions += 1
                 elif plan.recommended_action == "add_to_today":
-                    payload = await self.videos_service.process_video(
-                        platform=plan.platform or "youtube",
-                        url=plan.source_url or value,
-                        video_id=None,
-                        mode="full",
-                        overrides={},
-                        force=False,
-                    )
+                    if plan.content_profile == "article":
+                        payload = await self.videos_service.process_article(
+                            url=plan.source_url or value,
+                            mode="text_only",
+                            overrides={},
+                            force=False,
+                        )
+                    else:
+                        payload = await self.videos_service.process_video(
+                            platform=plan.platform or "youtube",
+                            url=plan.source_url or value,
+                            video_id=None,
+                            mode="full",
+                            overrides={},
+                            force=False,
+                        )
                     result["applied_action"] = "add_to_today"
                     result["status"] = "reused" if bool(payload.get("reused")) else "queued"
                     result["job_id"] = str(payload.get("job_id") or "") or None
@@ -327,6 +322,13 @@ class ManualSourceIntakeService:
                         match = self.videos_service.get_subscription_match_for_video(
                             video_db_id=video_db_id
                         )
+                    matched_by_source_identity = False
+                    if match is None and str(plan.platform or "").strip() and str(plan.source_url or "").strip():
+                        match = self.videos_service.infer_subscription_match_for_source(
+                            platform=str(plan.platform),
+                            source_url=str(plan.source_url),
+                        )
+                        matched_by_source_identity = match is not None
                     if match is not None:
                         relation_kind = "matched_subscription"
                         matched_subscription_id = str(match.get("subscription_id") or "").strip()
@@ -338,7 +340,11 @@ class ManualSourceIntakeService:
                             source_url=str(match.get("source_url") or "") or None,
                             rsshub_route=str(match.get("rsshub_route") or "") or None,
                         )
-                        match_confidence = "inferred_from_existing_ingest_event"
+                        match_confidence = (
+                            "inferred_from_source_identity"
+                            if matched_by_source_identity
+                            else "inferred_from_existing_ingest_event"
+                        )
                         identity = build_identity_payload(
                             platform=str(match.get("platform") or plan.platform or "youtube"),
                             display_name=matched_subscription_name,
@@ -369,11 +375,18 @@ class ManualSourceIntakeService:
                             source_url=plan.source_url,
                             source_universe_label=plan.source_universe_label or plan.display_name,
                         )
-                        result["message"] = (
-                            "Added to today through the existing one-off video lane."
-                            if not payload.get("reused")
-                            else "Already present in the current one-off video lane."
-                        )
+                        if plan.content_profile == "article":
+                            result["message"] = (
+                                "Already present in the current one-off article lane."
+                                if payload.get("reused")
+                                else "Added to today through the existing one-off article lane."
+                            )
+                        else:
+                            result["message"] = (
+                                "Already present in the current one-off video lane."
+                                if payload.get("reused")
+                                else "Added to today through the existing one-off video lane."
+                            )
                     reader_bridge = self.videos_service.get_reader_bridge_for_job(
                         job_id=str(payload.get("job_id") or "")
                     )
@@ -506,6 +519,30 @@ class ManualSourceIntakeService:
             adapter_type=None,
             content_profile="video",
             support_tier="strong_supported",
+            display_name=source_url,
+            relation_kind="manual_one_off",
+            matched_subscription_id=None,
+            matched_subscription_name=None,
+            matched_by=None,
+            match_confidence=None,
+            source_universe_label="Today lane",
+            creator_display_name=source_url,
+            creator_handle=None,
+            message=message,
+        )
+
+    def _manual_article_plan(self, *, source_url: str, message: str) -> ManualSourcePlan:
+        return ManualSourcePlan(
+            target_kind="manual_source_item",
+            recommended_action="add_to_today",
+            platform="generic",
+            source_type=None,
+            source_value=None,
+            source_url=source_url,
+            rsshub_route=None,
+            adapter_type=None,
+            content_profile="article",
+            support_tier="generic_supported",
             display_name=source_url,
             relation_kind="manual_one_off",
             matched_subscription_id=None,

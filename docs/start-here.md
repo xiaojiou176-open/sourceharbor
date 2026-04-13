@@ -197,7 +197,7 @@ Open these UI views:
 
 - `/` for the command center
 - `/ops` for operator diagnostics and live-hardening gates
-- `/subscriptions` for strong-supported video templates plus generalized RSSHub/RSS intake, now staged as a tracked-universe atlas and manual-intake workbench backed by the same template catalog contract that the API and MCP surfaces expose
+- `/subscriptions` for strong-supported video templates plus generalized RSSHub/RSS intake, now staged as a tracked-universe atlas and manual-intake workbench backed by the same template catalog contract that the API and MCP surfaces expose, including one-off video/article URLs that can enter today without first becoming recurring subscriptions
 - `/search` for grounded search across SourceHarbor artifacts
 - `/ask` for the story-aware, briefing-backed Ask front door, with a server-owned story page payload over the answer/change/evidence view
 - `/reader` for the published-doc frontstage: merged reader docs, singleton polish docs, navigation brief, yellow warning, and source contribution drawer

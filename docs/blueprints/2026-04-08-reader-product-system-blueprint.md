@@ -461,7 +461,7 @@ reader-first 不是 cosmetic cleanup，而是产品主语变化。
 
 - 已有强支持视频模板 + 泛化 RSSHub/RSS intake substrate
 - 已有 formal `manual source intake` 前门：creator-level 输入默认落 `SubscriptionSource`，direct video URL 默认走 current one-off lane
-- 但 generic article detail URL one-off，以及 `manual_injected SourceItem -> ConsumptionBatch -> PublishedReaderDocument` 的统一主链仍留给 `W3+`
+- generic article detail URL one-off 已能进入 today lane；但“更强的 tracked-universe 主动回认”和更硬的 article identity truth 仍留给后续 hardening
 
 ## 12. i18n / `reader_output_locale` / `ui_locale` / `reader_style_profile`
 
@@ -514,7 +514,7 @@ reader-first 不是 cosmetic cleanup，而是产品主语变化。
 - reader surfaces 已存在，但 canonical framing 仍偏 operator
 - `Cluster Judge` 当前已能基于 knowledge-card topic 做 first-cut theme-first grouping，但还没有接入旧 published-doc 摘要 / old coverage ledger / affected-cluster rebuild
 - merged story 仍主要是 view-level aggregation，不是 `PublishedReaderDocument`
-- direct video one-off input 已有 current nearest-runtime bridge，但 `manual_injected SourceItem -> ConsumptionBatch -> PublishedReaderDocument` 主链仍未完成
+- direct video one-off 与 direct article one-off 都已有 current runtime bridge，并能进入 `manual_injected SourceItem -> ConsumptionBatch -> PublishedReaderDocument` 主链
 - notifications / reports / live-smoke / computer-use / Gemini review 的 strongest proof 仍受外部门槛影响
 
 ### 未做到
