@@ -599,7 +599,11 @@ class PostgresBusinessStore:
                         "window_id": computed_window_id,
                         "source_effective_at": source_effective_at,
                         "discovered_at": discovered_at,
-                        "source_origin": "subscription_tracked",
+                        "source_origin": (
+                            "manual_injected"
+                            if str(row.get("entry_hash") or "").startswith("manual:")
+                            else "subscription_tracked"
+                        ),
                     }
                 )
                 if len(selected_items) >= safe_max_items:

@@ -86,35 +86,38 @@ def build_identity_payload(
     source_url: str | None = None,
     source_universe_label: str | None = None,
     identity_status: str = "derived_identity",
+    avatar_url: str | None = None,
+    thumbnail_url: str | None = None,
 ) -> SourceIdentityPayload:
     resolved_platform = str(platform or "").strip().lower() or "generic"
     resolved_name = str(display_name or "").strip() or None
     resolved_universe = str(source_universe_label or "").strip() or resolved_name
     initials = _build_initials(resolved_name or resolved_universe)
-    avatar_url = _build_svg_data_url(
+    resolved_avatar_url = str(avatar_url or "").strip() or _build_svg_data_url(
         primary_text=resolved_name or "SourceHarbor",
         secondary_text=initials,
         platform=resolved_platform,
         square=False,
     )
-    thumbnail_url: str | None = None
-    youtube_video_id = _extract_youtube_video_id(source_url)
-    if youtube_video_id:
-        thumbnail_url = f"https://i.ytimg.com/vi/{youtube_video_id}/hqdefault.jpg"
-    else:
-        thumbnail_url = _build_svg_data_url(
-            primary_text=resolved_name or "SourceHarbor",
-            secondary_text=(resolved_platform or "source").upper()[:6],
-            platform=resolved_platform,
-            square=True,
-        )
+    resolved_thumbnail_url = str(thumbnail_url or "").strip() or None
+    if resolved_thumbnail_url is None:
+        youtube_video_id = _extract_youtube_video_id(source_url)
+        if youtube_video_id:
+            resolved_thumbnail_url = f"https://i.ytimg.com/vi/{youtube_video_id}/hqdefault.jpg"
+        else:
+            resolved_thumbnail_url = _build_svg_data_url(
+                primary_text=resolved_name or "SourceHarbor",
+                secondary_text=(resolved_platform or "source").upper()[:6],
+                platform=resolved_platform,
+                square=True,
+            )
     return SourceIdentityPayload(
         creator_display_name=resolved_name,
         creator_handle=str(creator_handle or "").strip() or None,
         source_homepage_url=str(source_homepage_url or source_url or "").strip() or None,
-        avatar_url=avatar_url,
+        avatar_url=resolved_avatar_url,
         avatar_label=initials,
-        thumbnail_url=thumbnail_url,
+        thumbnail_url=resolved_thumbnail_url,
         source_universe_label=resolved_universe,
         identity_status=identity_status,
     )

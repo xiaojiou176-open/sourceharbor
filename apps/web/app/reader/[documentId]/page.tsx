@@ -138,8 +138,11 @@ export default async function ReaderDetailPage({
 								<Badge variant="outline">Preview sample</Badge>
 							) : null}
 							<Badge
-								variant={
-									document.published_with_gap ? "destructive" : "outline"
+								variant="outline"
+								className={
+									document.published_with_gap
+										? "border-amber-500/45 bg-amber-500/12 text-amber-800"
+										: undefined
 								}
 							>
 								{document.published_with_gap ? "Yellow warning" : "Clear"}

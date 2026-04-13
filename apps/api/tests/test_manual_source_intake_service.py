@@ -30,12 +30,23 @@ class _VideosStub:
     def __init__(self) -> None:
         self.calls: list[dict[str, object]] = []
         self.matches: dict[str, dict[str, str]] = {}
+        self.source_matches: dict[str, dict[str, str]] = {}
         self.reader_bridges: dict[str, dict[str, str | bool]] = {}
+
+    async def process_article(self, **kwargs):
+        job_suffix = kwargs["url"].replace("https://", "").replace("/", "-")
+        video_db_id = str(uuid.uuid5(uuid.NAMESPACE_URL, kwargs["url"]))
+        self.calls.append({"kind": "article", **dict(kwargs)})
+        return {
+            "job_id": job_suffix,
+            "video_db_id": video_db_id,
+            "reused": kwargs["url"].endswith("reused"),
+        }
 
     async def process_video(self, **kwargs):
         job_suffix = kwargs["url"].replace("https://", "").replace("/", "-")
         video_db_id = str(uuid.uuid5(uuid.NAMESPACE_URL, kwargs["url"]))
-        self.calls.append(dict(kwargs))
+        self.calls.append({"kind": "video", **dict(kwargs)})
         return {
             "job_id": job_suffix,
             "video_db_id": video_db_id,
@@ -44,6 +55,10 @@ class _VideosStub:
 
     def get_subscription_match_for_video(self, *, video_db_id: uuid.UUID):
         return self.matches.get(str(video_db_id))
+
+    def infer_subscription_match_for_source(self, *, platform: str, source_url: str):
+        del platform
+        return self.source_matches.get(str(source_url))
 
     def get_reader_bridge_for_job(self, *, job_id: str):
         return self.reader_bridges.get(str(job_id))
@@ -54,6 +69,27 @@ def _build_service() -> ManualSourceIntakeService:
         subscriptions_service=_SubscriptionsStub(),
         videos_service=_VideosStub(),
     )
+
+
+class _DbStub:
+    def __init__(self) -> None:
+        self.added: list[object] = []
+        self.flushed = 0
+        self.commits = 0
+
+    def add(self, obj: object) -> None:
+        if getattr(obj, "id", None) is None:
+            obj.id = uuid.uuid4()
+        self.added.append(obj)
+
+    def flush(self) -> None:
+        self.flushed += 1
+        for obj in self.added:
+            if getattr(obj, "id", None) is None:
+                obj.id = uuid.uuid4()
+
+    def commit(self) -> None:
+        self.commits += 1
 
 
 def test_manual_source_plan_covers_creator_pages_video_urls_and_feeds() -> None:
@@ -82,8 +118,9 @@ def test_manual_source_plan_covers_creator_pages_video_urls_and_feeds() -> None:
     assert feed_url.adapter_type == "rss_generic"
 
     article_url = service.plan("https://example.com/posts/sourceharbor")
-    assert article_url.recommended_action == "unsupported"
-    assert article_url.target_kind == "unsupported"
+    assert article_url.recommended_action == "add_to_today"
+    assert article_url.target_kind == "manual_source_item"
+    assert article_url.content_profile == "article"
 
 
 def test_manual_source_submit_supports_partial_success_and_counts() -> None:
@@ -107,13 +144,14 @@ def test_manual_source_submit_supports_partial_success_and_counts() -> None:
     assert result["processed_count"] == 4
     assert result["created_subscriptions"] == 2
     assert result["updated_subscriptions"] == 0
-    assert result["queued_manual_items"] == 1
+    assert result["queued_manual_items"] == 2
     assert result["reused_manual_items"] == 0
-    assert result["rejected_count"] == 1
+    assert result["rejected_count"] == 0
     statuses = [item["status"] for item in result["results"]]
-    assert statuses == ["created", "queued", "created", "rejected"]
+    assert statuses == ["created", "queued", "created", "queued"]
     assert result["results"][0]["relation_kind"] == "new_source_universe"
     assert result["results"][1]["relation_kind"] == "manual_one_off"
+    assert result["results"][3]["relation_kind"] == "manual_one_off"
     assert result["results"][1]["thumbnail_url"]
     assert result["results"][0]["avatar_label"]
 
@@ -247,6 +285,62 @@ def test_manual_source_submit_matches_manual_video_back_to_existing_subscription
     assert item["published_document_title"] == "Reader edition one"
     assert item["published_document_publish_status"] == "published"
     assert item["reader_route"] == "/reader/reader-doc-1"
+
+
+def test_manual_source_submit_can_match_manual_video_back_by_source_identity() -> None:
+    service = _build_service()
+    source_url = "https://www.youtube.com/watch?v=freshmatch"
+    service.videos_service.source_matches[source_url] = {
+        "subscription_id": "sub-youtube-1",
+        "platform": "youtube",
+        "source_type": "youtube_channel_id",
+        "source_value": "UCfresh123",
+        "source_url": "https://www.youtube.com/channel/UCfresh123",
+        "rsshub_route": "/youtube/channel/UCfresh123",
+        "display_name": "Fresh Channel",
+        "creator_handle": "",
+    }
+
+    result = asyncio.run(
+        service.submit(
+            raw_input=source_url,
+            category="creator",
+            tags=[],
+            priority=10,
+            enabled=True,
+        )
+    )
+
+    item = result["results"][0]
+    assert item["relation_kind"] == "matched_subscription"
+    assert item["matched_subscription_id"] == "sub-youtube-1"
+    assert item["matched_subscription_name"] == "Fresh Channel"
+    assert item["match_confidence"] == "inferred_from_source_identity"
+
+
+def test_persist_manual_source_item_writes_formal_object_world() -> None:
+    service = _build_service()
+    db = _DbStub()
+    service.videos_service.db = db  # type: ignore[attr-defined]
+
+    run = service._persist_manual_source_item(
+        manual_run=None,
+        payload={
+            "job_id": str(uuid.uuid4()),
+            "video_db_id": str(uuid.uuid4()),
+            "video_uid": "manual-uid",
+            "mode": "text_only",
+        },
+        platform="generic",
+        source_url="https://example.com/article",
+        title="Article",
+        content_profile="article",
+        matched_subscription_id=None,
+    )
+
+    assert run is not None
+    assert db.flushed >= 1
+    assert any(getattr(obj, "content_type", None) == "article" for obj in db.added)
 
 
 def test_manual_source_submit_accepts_uuid_video_db_id_matches() -> None:

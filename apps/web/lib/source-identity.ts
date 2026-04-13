@@ -137,11 +137,7 @@ function fallbackAvatarUrl(label: string, platform: string | null | undefined) {
 	});
 }
 
-function relationLabel(
-	kind: SourceRelationKind,
-	fallback: string | null | undefined,
-): string {
-	if (fallback) return fallback;
+function relationLabel(kind: SourceRelationKind): string {
 	if (kind === "matched_subscription") return "Tracked universe";
 	if (kind === "new_source_universe") return "New universe";
 	if (kind === "manual_one_off") return "Reading today";
@@ -262,13 +258,11 @@ export function resolveManualIntakeIdentity(
 		avatarUrl: result.avatar_url || fallbackAvatarUrl(title, platform),
 		avatarLabel: result.avatar_label || initials(title),
 		relationKind,
-		relationLabel: relationLabel(
-			relationKind,
-			result.matched_subscription_name || result.source_universe_label,
-		),
+		relationLabel: relationLabel(relationKind),
 		meta: safeList([
 			platformMeta(platform).label,
 			result.content_profile,
+			result.source_universe_label,
 			supportTierLabel(result.support_tier),
 			matchDetailLabel(result.matched_by),
 			confidenceLabel(result.match_confidence),
@@ -302,9 +296,10 @@ export function resolveFeedIdentity(item: DigestFeedItem): SourceIdentityModel {
 		avatarUrl: item.avatar_url || fallbackAvatarUrl(title, platform),
 		avatarLabel: item.avatar_label || initials(title),
 		relationKind,
-		relationLabel: relationLabel(relationKind, item.affiliation_label),
+		relationLabel: relationLabel(relationKind),
 		meta: safeList([
 			platformMeta(platform).label,
+			item.affiliation_label,
 			item.category,
 			item.identity_status === "derived_identity" ? "Linked identity" : null,
 			item.saved ? "Saved" : null,
@@ -351,9 +346,10 @@ export function resolveReaderSourceIdentity(
 		avatarUrl: source.avatar_url || fallbackAvatarUrl(title, platform),
 		avatarLabel: source.avatar_label || initials(title),
 		relationKind,
-		relationLabel: relationLabel(relationKind, source.affiliation_label),
+		relationLabel: relationLabel(relationKind),
 		meta: safeList([
 			platformMeta(platform).label,
+			source.affiliation_label,
 			source.source_origin === "manual_injected"
 				? "Reading today"
 				: "Tracked source",

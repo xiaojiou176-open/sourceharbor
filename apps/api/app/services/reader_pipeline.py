@@ -604,10 +604,6 @@ class ReaderPipelineService:
         )
         title = str(getattr(item, "title", None) or "").strip() or "Untitled source item"
         digest_preview = self._digest_preview(digest_markdown, fallback=title)
-        evidence_routes = self._build_source_evidence_routes(
-            job_id=str(job_id_uuid) if job_id_uuid else None,
-            source_url=str(getattr(item, "source_url", "") or "").strip() or None,
-        )
         digest_meta = evidence_bundle.get("digest_meta")
         if not isinstance(digest_meta, dict):
             digest_meta = {}
@@ -618,6 +614,15 @@ class ReaderPipelineService:
         artifact_manifest = evidence_bundle.get("artifact_manifest")
         if not isinstance(artifact_manifest, dict):
             artifact_manifest = {}
+        evidence_routes = self._build_source_evidence_routes(
+            job_id=str(job_id_uuid) if job_id_uuid else None,
+            source_url=str(getattr(item, "source_url", "") or "").strip() or None,
+            artifact_manifest=artifact_manifest,
+        )
+        frame_routes = self._frame_asset_routes(
+            job_id=str(job_id_uuid) if job_id_uuid else None,
+            artifact_manifest=artifact_manifest,
+        )
         pipeline_final_status = None
         job_payload = evidence_bundle.get("job")
         if isinstance(job_payload, dict):
@@ -642,6 +647,8 @@ class ReaderPipelineService:
         resolved_source_url = str(getattr(item, "source_url", "") or "").strip() or None
         source_name = title
         creator_handle: str | None = None
+        metadata_uploader = str(digest_meta.get("uploader") or "").strip() or None
+        metadata_thumbnail = str(digest_meta.get("thumbnail") or "").strip() or None
         identity_status = "derived_identity"
         relation_kind = "manual_one_off" if source_origin == "manual_injected" else source_origin
         affiliation_label: str | None = "Today lane" if source_origin == "manual_injected" else None
@@ -676,6 +683,7 @@ class ReaderPipelineService:
             if subscription_row is not None
             else affiliation_label or title,
             identity_status=identity_status,
+            thumbnail_url=metadata_thumbnail,
         )
         judge_gap_flags = []
         if not dominant_topic_key:
@@ -688,8 +696,7 @@ class ReaderPipelineService:
             judge_gap_flags.append("missing_evidence_bundle")
         if (
             str(getattr(item, "content_type", "") or "").strip().lower() == "video"
-            and raw_stage_contract
-            and raw_stage_contract.get("video_contract_satisfied") is False
+            and raw_stage_contract.get("video_contract_satisfied") is not True
         ):
             judge_gap_flags.append("video_contract_gap")
         return {
@@ -727,14 +734,16 @@ class ReaderPipelineService:
             "relation_kind": relation_kind,
             "affiliation_label": affiliation_label,
             "canonical_source_name": source_name if subscription_row is not None else None,
-            "canonical_author_name": source_name if subscription_row is not None else None,
-            "creator_display_name": identity.creator_display_name,
+            "canonical_author_name": metadata_uploader
+            or (source_name if subscription_row is not None else None),
+            "creator_display_name": metadata_uploader or identity.creator_display_name,
             "creator_handle": identity.creator_handle,
             "thumbnail_url": identity.thumbnail_url,
             "avatar_url": identity.avatar_url,
             "avatar_label": identity.avatar_label,
             "identity_status": identity.identity_status,
             "job_bundle_route": str(evidence_routes.get("job_bundle") or "").strip() or None,
+            "frame_routes": frame_routes,
             "judge_gap_flags": sorted(set(judge_gap_flags)),
             "cluster_key": (
                 f"topic:{dominant_topic_key}" if dominant_topic_key else f"singleton:{item.id}"
@@ -1336,8 +1345,7 @@ class ReaderPipelineService:
                 raw_stage_contract = {}
             if (
                 str(source_ref.get("content_type") or "").strip().lower() == "video"
-                and raw_stage_contract
-                and raw_stage_contract.get("video_contract_satisfied") is False
+                and raw_stage_contract.get("video_contract_satisfied") is not True
             ):
                 gap_flags.append("video_contract_gap")
             entry_status = "pass"
@@ -1476,6 +1484,10 @@ class ReaderPipelineService:
             "artifact_markdown": [],
             "job_bundle": [],
             "job_knowledge_cards": [],
+            "artifact_meta": [],
+            "artifact_transcript": [],
+            "artifact_comments": [],
+            "artifact_outline": [],
             "source_url": [],
         }
         affected_source_item_ids: list[str] = []
@@ -1496,8 +1508,7 @@ class ReaderPipelineService:
                 or bool(source_ref.get("degraded_extraction"))
                 or (
                     str(source_ref.get("content_type") or "").strip().lower() == "video"
-                    and raw_stage_contract
-                    and raw_stage_contract.get("video_contract_satisfied") is False
+                    and raw_stage_contract.get("video_contract_satisfied") is not True
                 )
             ):
                 evidence_status = "gap_detected"
@@ -1511,11 +1522,14 @@ class ReaderPipelineService:
                     "source_url": str(source_ref.get("source_url") or "").strip() or None,
                     "published_at": source_ref.get("published_at"),
                     "raw_artifacts": {
-                        "digest": str(source_ref.get("digest_markdown") or "").strip() or None,
-                        "transcript": self._artifact_manifest_has(artifact_manifest, "transcript"),
-                        "comments": self._artifact_manifest_has(artifact_manifest, "comment"),
-                        "outline": self._artifact_manifest_has(artifact_manifest, "outline"),
-                        "frames": self._artifact_manifest_has(artifact_manifest, "frame"),
+                        "digest": str(routes.get("artifact_markdown") or "").strip() or None,
+                        "meta": str(routes.get("artifact_meta") or "").strip() or None,
+                        "transcript": str(routes.get("artifact_transcript") or "").strip() or None,
+                        "comments": str(routes.get("artifact_comments") or "").strip() or None,
+                        "outline": str(routes.get("artifact_outline") or "").strip() or None,
+                        "knowledge_cards": str(routes.get("job_knowledge_cards") or "").strip()
+                        or None,
+                        "frames": list(source_ref.get("frame_routes") or []),
                     },
                     "routes": routes,
                     "artifact_manifest": artifact_manifest,
@@ -1739,7 +1753,7 @@ class ReaderPipelineService:
 
     @staticmethod
     def _build_source_evidence_routes(
-        *, job_id: str | None, source_url: str | None
+        *, job_id: str | None, source_url: str | None, artifact_manifest: dict[str, Any]
     ) -> dict[str, str | None]:
         return {
             "artifact_markdown": f"/api/v1/artifacts/markdown?job_id={job_id}&include_meta=true"
@@ -1747,12 +1761,47 @@ class ReaderPipelineService:
             else None,
             "job_bundle": f"/api/v1/jobs/{job_id}/bundle" if job_id else None,
             "job_knowledge_cards": f"/knowledge?job_id={job_id}" if job_id else None,
+            "artifact_meta": (
+                ReaderPipelineService._artifact_asset_route(job_id, "meta")
+                if ReaderPipelineService._artifact_manifest_has(artifact_manifest, "meta")
+                else None
+            ),
+            "artifact_transcript": (
+                ReaderPipelineService._artifact_asset_route(job_id, "transcript")
+                if ReaderPipelineService._artifact_manifest_has(artifact_manifest, "transcript")
+                else None
+            ),
+            "artifact_comments": (
+                ReaderPipelineService._artifact_asset_route(job_id, "comments")
+                if ReaderPipelineService._artifact_manifest_has(artifact_manifest, "comment")
+                else None
+            ),
+            "artifact_outline": (
+                ReaderPipelineService._artifact_asset_route(job_id, "outline")
+                if ReaderPipelineService._artifact_manifest_has(artifact_manifest, "outline")
+                else None
+            ),
             "source_url": source_url or None,
         }
 
     @staticmethod
     def _artifact_manifest_has(artifact_manifest: dict[str, Any], keyword: str) -> bool:
         return keyword.lower() in str(artifact_manifest).lower()
+
+    @staticmethod
+    def _artifact_asset_route(job_id: str | None, alias: str) -> str | None:
+        if not job_id:
+            return None
+        return f"/api/v1/artifacts/assets?job_id={job_id}&path={alias}"
+
+    @staticmethod
+    def _frame_asset_routes(job_id: str | None, artifact_manifest: dict[str, Any]) -> list[str]:
+        if not job_id or not isinstance(artifact_manifest, dict):
+            return []
+        frame_keys = sorted(
+            key for key in artifact_manifest if isinstance(key, str) and key.startswith("frame_")
+        )
+        return [f"/api/v1/artifacts/assets?job_id={job_id}&path={key}" for key in frame_keys]
 
     @staticmethod
     def _source_title(source_ref: dict[str, Any]) -> str:

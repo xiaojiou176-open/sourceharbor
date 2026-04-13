@@ -160,6 +160,15 @@ class _JobsServiceStub:
             "job": {"pipeline_final_status": "succeeded"},
             "trace_summary": {"degradations": []},
             "bundle_route": f"/api/v1/jobs/{job_id}/bundle",
+            "digest_meta": {
+                "raw_stage_contract": {
+                    "analysis_mode": "advanced",
+                    "review_required": True,
+                    "primary_media_input": "video_text",
+                    "review_media_input": "video_text",
+                    "video_contract_satisfied": True,
+                }
+            },
         }
 
 
@@ -611,6 +620,25 @@ def test_traceability_pack_and_warning_capture_gap_scope() -> None:
         warning["reasons"]
     )
     assert warning["affected_scope"]["source_item_count"] == 1
+
+
+def test_source_evidence_routes_only_expose_manifest_backed_assets() -> None:
+    routes = ReaderPipelineService._build_source_evidence_routes(
+        job_id="job-1",
+        source_url="https://example.com/source",
+        artifact_manifest={"transcript": "/tmp/transcript.txt", "frame_0001.jpg": "/tmp/frame.jpg"},
+    )
+    frame_routes = ReaderPipelineService._frame_asset_routes(
+        "job-1",
+        {"frame_0001.jpg": "/tmp/frame.jpg", "frame_0002.png": "/tmp/frame2.png"},
+    )
+
+    assert routes["artifact_transcript"] == "/api/v1/artifacts/assets?job_id=job-1&path=transcript"
+    assert routes["artifact_comments"] is None
+    assert frame_routes == [
+        "/api/v1/artifacts/assets?job_id=job-1&path=frame_0001.jpg",
+        "/api/v1/artifacts/assets?job_id=job-1&path=frame_0002.png",
+    ]
 
 
 def test_judge_batch_raises_for_missing_batch() -> None:

@@ -3,8 +3,10 @@ from __future__ import annotations
 import re
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from urllib.parse import urlparse
 
+from ..models import IngestRun, IngestRunItem
 from .source_identity import build_identity_payload
 from .source_names import build_source_name_fallback
 from .subscriptions import (
@@ -169,22 +171,9 @@ class ManualSourceIntakeService:
                 adapter_type="rss_generic",
                 message="Feed URL accepted as a recurring subscription source.",
             )
-        return ManualSourcePlan(
-            target_kind="unsupported",
-            recommended_action="unsupported",
-            platform=None,
-            source_type=None,
-            source_value=None,
+        return self._manual_article_plan(
             source_url=value,
-            rsshub_route=None,
-            adapter_type=None,
-            content_profile=None,
-            support_tier=None,
-            display_name=None,
-            message=(
-                "Direct article URLs are not wired into manual intake yet. "
-                "Bring a feed URL, an RSSHub route, or a supported video URL."
-            ),
+            message="Article URL accepted as a manual item for today.",
         )
 
     async def submit(
@@ -202,6 +191,8 @@ class ManualSourceIntakeService:
         queued_manual_items = 0
         reused_manual_items = 0
         rejected_count = 0
+        manual_item_count = 0
+        manual_run: IngestRun | None = None
 
         for line_number, value in self.iter_non_empty_lines(raw_input):
             plan = self.plan(value)
@@ -306,14 +297,22 @@ class ManualSourceIntakeService:
                     else:
                         updated_subscriptions += 1
                 elif plan.recommended_action == "add_to_today":
-                    payload = await self.videos_service.process_video(
-                        platform=plan.platform or "youtube",
-                        url=plan.source_url or value,
-                        video_id=None,
-                        mode="full",
-                        overrides={},
-                        force=False,
-                    )
+                    if plan.content_profile == "article":
+                        payload = await self.videos_service.process_article(
+                            url=plan.source_url or value,
+                            mode="text_only",
+                            overrides={},
+                            force=False,
+                        )
+                    else:
+                        payload = await self.videos_service.process_video(
+                            platform=plan.platform or "youtube",
+                            url=plan.source_url or value,
+                            video_id=None,
+                            mode="full",
+                            overrides={},
+                            force=False,
+                        )
                     result["applied_action"] = "add_to_today"
                     result["status"] = "reused" if bool(payload.get("reused")) else "queued"
                     result["job_id"] = str(payload.get("job_id") or "") or None
@@ -327,6 +326,17 @@ class ManualSourceIntakeService:
                         match = self.videos_service.get_subscription_match_for_video(
                             video_db_id=video_db_id
                         )
+                    matched_by_source_identity = False
+                    if (
+                        match is None
+                        and str(plan.platform or "").strip()
+                        and str(plan.source_url or "").strip()
+                    ):
+                        match = self.videos_service.infer_subscription_match_for_source(
+                            platform=str(plan.platform),
+                            source_url=str(plan.source_url),
+                        )
+                        matched_by_source_identity = match is not None
                     if match is not None:
                         relation_kind = "matched_subscription"
                         matched_subscription_id = str(match.get("subscription_id") or "").strip()
@@ -338,7 +348,11 @@ class ManualSourceIntakeService:
                             source_url=str(match.get("source_url") or "") or None,
                             rsshub_route=str(match.get("rsshub_route") or "") or None,
                         )
-                        match_confidence = "inferred_from_existing_ingest_event"
+                        match_confidence = (
+                            "inferred_from_source_identity"
+                            if matched_by_source_identity
+                            else "inferred_from_existing_ingest_event"
+                        )
                         identity = build_identity_payload(
                             platform=str(match.get("platform") or plan.platform or "youtube"),
                             display_name=matched_subscription_name,
@@ -369,11 +383,18 @@ class ManualSourceIntakeService:
                             source_url=plan.source_url,
                             source_universe_label=plan.source_universe_label or plan.display_name,
                         )
-                        result["message"] = (
-                            "Added to today through the existing one-off video lane."
-                            if not payload.get("reused")
-                            else "Already present in the current one-off video lane."
-                        )
+                        if plan.content_profile == "article":
+                            result["message"] = (
+                                "Already present in the current one-off article lane."
+                                if payload.get("reused")
+                                else "Added to today through the existing one-off article lane."
+                            )
+                        else:
+                            result["message"] = (
+                                "Already present in the current one-off video lane."
+                                if payload.get("reused")
+                                else "Added to today through the existing one-off video lane."
+                            )
                     reader_bridge = self.videos_service.get_reader_bridge_for_job(
                         job_id=str(payload.get("job_id") or "")
                     )
@@ -401,6 +422,16 @@ class ManualSourceIntakeService:
                     result["thumbnail_url"] = identity.thumbnail_url
                     result["avatar_url"] = identity.avatar_url
                     result["avatar_label"] = identity.avatar_label
+                    manual_item_count += 1
+                    manual_run = self._persist_manual_source_item(
+                        manual_run=manual_run,
+                        payload=payload,
+                        platform=plan.platform or "generic",
+                        source_url=plan.source_url or value,
+                        title=plan.display_name or value,
+                        content_profile=plan.content_profile or "video",
+                        matched_subscription_id=matched_subscription_id,
+                    )
                     if payload.get("reused"):
                         reused_manual_items += 1
                     else:
@@ -414,6 +445,18 @@ class ManualSourceIntakeService:
                 result["message"] = str(exc)
                 rejected_count += 1
             results.append(result)
+
+        if manual_run is not None:
+            manual_run.status = "succeeded"
+            manual_run.candidates_count = manual_item_count
+            manual_run.jobs_created = queued_manual_items
+            manual_run.entries_fetched = manual_item_count
+            manual_run.entries_normalized = manual_item_count
+            manual_run.completed_at = datetime.now(UTC)
+            manual_db = getattr(self.videos_service, "db", None)
+            if manual_db is not None:
+                manual_db.add(manual_run)
+                manual_db.commit()
 
         processed_count = len(results)
         return {
@@ -506,6 +549,30 @@ class ManualSourceIntakeService:
             adapter_type=None,
             content_profile="video",
             support_tier="strong_supported",
+            display_name=source_url,
+            relation_kind="manual_one_off",
+            matched_subscription_id=None,
+            matched_subscription_name=None,
+            matched_by=None,
+            match_confidence=None,
+            source_universe_label="Today lane",
+            creator_display_name=source_url,
+            creator_handle=None,
+            message=message,
+        )
+
+    def _manual_article_plan(self, *, source_url: str, message: str) -> ManualSourcePlan:
+        return ManualSourcePlan(
+            target_kind="manual_source_item",
+            recommended_action="add_to_today",
+            platform="generic",
+            source_type=None,
+            source_value=None,
+            source_url=source_url,
+            rsshub_route=None,
+            adapter_type=None,
+            content_profile="article",
+            support_tier="generic_supported",
             display_name=source_url,
             relation_kind="manual_one_off",
             matched_subscription_id=None,
@@ -672,3 +739,70 @@ class ManualSourceIntakeService:
         if str(source_url or "").strip():
             return "source_url"
         return "source_value"
+
+    def _persist_manual_source_item(
+        self,
+        *,
+        manual_run: IngestRun | None,
+        payload: dict[str, object],
+        platform: str,
+        source_url: str,
+        title: str,
+        content_profile: str,
+        matched_subscription_id: str | None,
+    ) -> IngestRun | None:
+        db = getattr(self.videos_service, "db", None)
+        if db is None or not hasattr(db, "add"):
+            return manual_run
+        job_uuid = self._coerce_uuid(payload.get("job_id"))
+        video_uuid = self._coerce_uuid(payload.get("video_db_id"))
+        if job_uuid is None or video_uuid is None:
+            return manual_run
+        run = manual_run
+        if run is None:
+            run = IngestRun(
+                subscription_id=None,
+                platform=None,
+                max_new_videos=0,
+                status="running",
+                requested_by="manual_intake",
+                requested_trace_id="manual_intake",
+                filters_json={"manual_intake": True},
+            )
+            db.add(run)
+            db.flush()
+        item = IngestRunItem(
+            ingest_run_id=run.id,
+            subscription_id=self._coerce_uuid(matched_subscription_id),
+            video_id=video_uuid,
+            job_id=job_uuid,
+            ingest_event_id=None,
+            platform=platform,
+            video_uid=str(payload.get("video_uid") or "").strip() or str(video_uuid),
+            source_url=source_url,
+            title=title,
+            published_at=None,
+            entry_hash=f"manual:{self._manual_entry_hash(source_url)}",
+            pipeline_mode=str(payload.get("mode") or "").strip() or None,
+            content_type=content_profile,
+            item_status="pending_consume",
+        )
+        db.add(item)
+        db.flush()
+        return run
+
+    @staticmethod
+    def _coerce_uuid(value: object | None) -> uuid.UUID | None:
+        if isinstance(value, uuid.UUID):
+            return value
+        text = str(value or "").strip()
+        if not text:
+            return None
+        try:
+            return uuid.UUID(text)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _manual_entry_hash(source_url: str) -> str:
+        return uuid.uuid5(uuid.NAMESPACE_URL, source_url).hex

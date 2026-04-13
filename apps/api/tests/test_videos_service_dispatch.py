@@ -73,10 +73,15 @@ class _VideoRepoStub:
     def __init__(self) -> None:
         self.video = _VideoRow(id=uuid.uuid4())
         self.upsert_calls: list[dict[str, Any]] = []
+        self.source_row: _VideoRow | None = None
 
     def upsert_for_processing(self, **kwargs: Any) -> _VideoRow:
         self.upsert_calls.append(dict(kwargs))
         return self.video
+
+    def get_by_source_url(self, *, source_url: str) -> _VideoRow | None:
+        del source_url
+        return self.source_row
 
 
 class _FakeClient:
@@ -180,6 +185,17 @@ class _MappingRowResult:
         return self._row
 
 
+class _MappingRowsResult:
+    def __init__(self, rows: list[dict[str, Any]]) -> None:
+        self._rows = rows
+
+    def mappings(self) -> _MappingRowsResult:
+        return self
+
+    def all(self) -> list[dict[str, Any]]:
+        return self._rows
+
+
 class _ExecuteDB:
     def __init__(self, row: dict[str, Any] | None) -> None:
         self.row = row
@@ -188,6 +204,16 @@ class _ExecuteDB:
     def execute(self, stmt: Any, params: dict[str, Any]) -> _MappingRowResult:
         self.calls.append({"stmt": str(stmt), "params": dict(params)})
         return _MappingRowResult(self.row)
+
+
+class _ExecuteRowsDB:
+    def __init__(self, rows: list[dict[str, Any]]) -> None:
+        self.rows = rows
+        self.calls: list[dict[str, Any]] = []
+
+    def execute(self, stmt: Any, params: dict[str, Any]) -> _MappingRowsResult:
+        self.calls.append({"stmt": str(stmt), "params": dict(params)})
+        return _MappingRowsResult(self.rows)
 
 
 def test_list_videos_delegates_default_filters_to_repo() -> None:
@@ -242,6 +268,65 @@ def test_get_subscription_match_for_video_returns_none_when_missing() -> None:
     service = VideosService(db=_ExecuteDB(None))  # type: ignore[arg-type]
 
     assert service.get_subscription_match_for_video(video_db_id=uuid.uuid4()) is None
+
+
+def test_infer_subscription_match_for_source_uses_channel_identity_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    db = _ExecuteRowsDB(
+        [
+            {
+                "subscription_id": str(uuid.uuid4()),
+                "platform": "youtube",
+                "source_type": "youtube_channel_id",
+                "source_value": "UC1234567890",
+                "source_url": "https://www.youtube.com/channel/UC1234567890",
+                "rsshub_route": "/youtube/channel/UC1234567890",
+            }
+        ]
+    )
+    service = VideosService(db=db)  # type: ignore[arg-type]
+
+    class _Completed:
+        returncode = 0
+        stdout = json.dumps(
+            {
+                "channel_id": "UC1234567890",
+                "channel_url": "https://www.youtube.com/channel/UC1234567890",
+            }
+        )
+
+    monkeypatch.setattr(videos_module.subprocess, "run", lambda *args, **kwargs: _Completed())
+
+    match = service.infer_subscription_match_for_source(
+        platform="youtube",
+        source_url="https://www.youtube.com/watch?v=abc123",
+    )
+
+    assert match is not None
+    assert match["source_value"] == "UC1234567890"
+    assert match["display_name"] == "UC1234567890"
+
+
+def test_process_article_reuses_existing_row_and_dispatches_text_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = _RepoStub(should_dispatch=False)
+    video_repo = _VideoRepoStub()
+    video_repo.source_row = _VideoRow(id=uuid.uuid4())
+    video_repo.source_row.platform = "generic"
+    video_repo.source_row.video_uid = "article-source-1"
+    service = VideosService(db=object())
+    service.video_repo = video_repo  # type: ignore[assignment]
+    service.jobs_repo = repo  # type: ignore[assignment]
+    _install_temporal_modules(monkeypatch, client=_FakeClient())
+
+    result = asyncio.run(service.process_article(url="https://example.com/posts/sourceharbor"))
+
+    assert result["reused"] is True
+    assert result["mode"] == "text_only"
+    assert video_repo.upsert_calls == []
+    assert repo.created_calls[0]["mode"] == "text_only"
 
 
 def test_process_video_marks_dispatch_failed_when_temporal_start_fails(
@@ -353,7 +438,7 @@ def test_process_video_logs_default_trace_and_user_on_reuse(
 
     assert result["reused"] is True
     reused_log = next(
-        record for record in caplog.records if record.msg == "video_process_reused_existing_job"
+        record for record in caplog.records if record.message == "video_process_reused_existing_job"
     )
     assert reused_log.trace_id == "missing_trace"
     assert reused_log.user == "system"
@@ -377,7 +462,9 @@ def test_process_video_logs_start_failure_with_context(
         asyncio.run(_run_process(service))
 
     start_failed_log = next(
-        record for record in caplog.records if record.msg == "video_process_temporal_start_failed"
+        record
+        for record in caplog.records
+        if record.message == "video_process_temporal_start_failed"
     )
     assert start_failed_log.trace_id == "missing_trace"
     assert start_failed_log.user == "system"
@@ -415,7 +502,7 @@ def test_process_video_maps_temporal_import_failure_with_context(
     import_failed_log = next(
         record
         for record in caplog.records
-        if record.msg == "video_process_temporal_client_import_failed"
+        if record.message == "video_process_temporal_client_import_failed"
     )
     assert import_failed_log.trace_id == "missing_trace"
     assert import_failed_log.user == "system"
@@ -463,7 +550,7 @@ def test_process_video_maps_connect_timeout_to_api_timeout(
     timeout_log = next(
         record
         for record in caplog.records
-        if record.msg == "video_process_temporal_connect_timeout"
+        if record.message == "video_process_temporal_connect_timeout"
     )
     assert timeout_log.trace_id == "missing_trace"
     assert timeout_log.user == "system"
@@ -498,7 +585,9 @@ def test_process_video_maps_start_timeout_and_marks_dispatch_timeout_reason(
     assert repo.mark_failed_calls[0]["reason"] == "dispatch_timeout"
     assert "timed out after" in repo.mark_failed_calls[0]["error_message"]
     timeout_log = next(
-        record for record in caplog.records if record.msg == "video_process_temporal_start_timeout"
+        record
+        for record in caplog.records
+        if record.message == "video_process_temporal_start_timeout"
     )
     assert timeout_log.trace_id == "missing_trace"
     assert timeout_log.user == "system"
@@ -533,7 +622,7 @@ def test_process_video_logs_dispatch_started_with_trace_and_actor(
 
     assert result["reused"] is False
     dispatch_log = next(
-        record for record in caplog.records if record.msg == "video_process_dispatch_started"
+        record for record in caplog.records if record.message == "video_process_dispatch_started"
     )
     assert dispatch_log.trace_id == "trace-123"
     assert dispatch_log.user == "bob"

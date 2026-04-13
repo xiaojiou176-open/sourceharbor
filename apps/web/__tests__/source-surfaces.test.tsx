@@ -90,11 +90,11 @@ describe("source surfaces", () => {
 	it("renders manual intake results with reader, universe, and job deep links", async () => {
 		mockSubmitManualSourceIntake.mockResolvedValueOnce({
 			processed_count: 2,
-			created_subscriptions: 1,
+			created_subscriptions: 0,
 			updated_subscriptions: 0,
-			queued_manual_items: 1,
+			queued_manual_items: 2,
 			reused_manual_items: 0,
-			rejected_count: 1,
+			rejected_count: 0,
 			results: [
 				{
 					line_number: 1,
@@ -132,24 +132,24 @@ describe("source surfaces", () => {
 				{
 					line_number: 2,
 					raw_input: "https://example.com/article",
-					status: "rejected",
-					applied_action: null,
-					recommended_action: "unsupported",
-					platform: null,
+					status: "queued",
+					applied_action: "add_to_today",
+					recommended_action: "add_to_today",
+					platform: "generic",
 					source_type: null,
 					source_value: null,
 					source_url: "https://example.com/article",
 					rsshub_route: null,
-					content_profile: null,
-					support_tier: null,
-					display_name: null,
-					relation_kind: "unmatched_source",
+					content_profile: "article",
+					support_tier: "generic_supported",
+					display_name: "https://example.com/article",
+					relation_kind: "manual_one_off",
 					matched_subscription_id: null,
 					matched_subscription_name: null,
 					matched_by: null,
 					match_confidence: null,
-					source_universe_label: null,
-					creator_display_name: null,
+					source_universe_label: "Today lane",
+					creator_display_name: "https://example.com/article",
 					creator_handle: null,
 					thumbnail_url: null,
 					avatar_url: null,
@@ -157,9 +157,9 @@ describe("source surfaces", () => {
 					published_document_title: null,
 					published_document_publish_status: null,
 					reader_route: null,
-					message: "",
+					message: "Added to today through the existing one-off article lane.",
 					subscription_id: null,
-					job_id: null,
+					job_id: "example.com-article",
 				},
 			],
 		});
@@ -183,7 +183,7 @@ describe("source surfaces", () => {
 		expect(screen.getByText("Intake results")).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				/This pass processed 2 sources: 1 saved to your desk, 1 queued for today's reading, 1 rejected\./i,
+				/This pass processed 2 sources: 2 queued for today's reading\./i,
 			),
 		).toBeInTheDocument();
 		expect(
@@ -193,12 +193,23 @@ describe("source surfaces", () => {
 			screen.getByRole("link", { name: "Open source desk" }),
 		).toHaveAttribute("href", "/feed?sub=sub-manual-1");
 		expect(
-			screen.getByRole("link", { name: "Inspect job trace" }),
-		).toHaveAttribute("href", "/jobs?job_id=job-manual-1");
+			screen
+				.getAllByRole("link", { name: "Inspect job trace" })
+				.map((node) => node.getAttribute("href")),
+		).toEqual(
+			expect.arrayContaining([
+				"/jobs?job_id=job-manual-1",
+				"/jobs?job_id=example.com-article",
+			]),
+		);
 		expect(
 			screen.getByText(/Reader edition ready · Reader edition one · published/),
 		).toBeInTheDocument();
-		expect(screen.getByText("No description yet")).toBeInTheDocument();
+		expect(
+			screen.getAllByText(
+				/Added to today through the existing one-off article lane\./,
+			).length,
+		).toBeGreaterThanOrEqual(1);
 	});
 
 	it("renders the source contribution drawer with source, job bundle, and universe links", () => {
@@ -412,7 +423,7 @@ describe("source surfaces", () => {
 			job_id: null,
 		});
 		expect(manualIdentity.eyebrow).toBe("Saved to your desk");
-		expect(manualIdentity.relationLabel).toBe("Deep Source Universe");
+		expect(manualIdentity.relationLabel).toBe("Needs review");
 
 		const feedIdentity = resolveFeedIdentity({
 			feed_id: "feed-1",

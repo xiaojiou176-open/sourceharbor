@@ -682,10 +682,10 @@ const MESSAGES = {
 			manualIntake: {
 				title: "Manual source intake",
 				description:
-					"Paste URLs, handles, creator pages, or RSSHub routes. Creator-level inputs become subscriptions; direct YouTube/Bilibili video URLs enter today and, when historical ingest evidence already exists, can match back to a tracked universe instead of staying one-off.",
+					"Paste URLs, handles, creator pages, or RSSHub routes. Creator-level inputs become subscriptions; direct YouTube/Bilibili video URLs and article URLs enter today and, when historical ingest evidence already exists, can match back to a tracked universe instead of staying one-off.",
 				placeholder:
 					"https://space.bilibili.com/13416784\nhttps://www.youtube.com/@MindAmend\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ\n/36kr/newsflashes\nhttps://example.com/feed.xml",
-				hint: "One line per input. Bilibili creator pages and YouTube handles save subscriptions; direct video URLs add to today and may reconnect to an existing tracked universe after queueing; direct article URLs still return an honest unsupported result.",
+				hint: "One line per input. Bilibili creator pages and YouTube handles save subscriptions; direct video URLs and article URLs add to today and may reconnect to an existing tracked universe after queueing.",
 				categoryLabel: "Default category",
 				tagsLabel: "Tags for new subscriptions (comma-separated, optional)",
 				enabledLabel: "Enable created subscriptions immediately",
@@ -1937,7 +1937,7 @@ const MESSAGES = {
 					"把 URL、handle、创作者空间页或 RSSHub route 直接贴进来。创作者级输入会落成订阅；YouTube/Bilibili 的直链视频会先进入 today，如果历史 intake 证据已经存在，还会尽量认回已追踪的 source universe，而不是永远停在 one-off。",
 				placeholder:
 					"https://space.bilibili.com/13416784\nhttps://www.youtube.com/@MindAmend\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ\n/36kr/newsflashes\nhttps://example.com/feed.xml",
-				hint: "一行一个输入。Bilibili 空间页和 YouTube handle 会保存成订阅；直链视频会先进入今天，排队后也可能重新认回现有 tracked universe；直链文章 URL 目前会诚实返回 unsupported。",
+				hint: "一行一个输入。Bilibili 空间页和 YouTube handle 会保存成订阅；直链视频和直链文章会先进入今天，排队后也可能重新认回现有 tracked universe。",
 				categoryLabel: "新订阅默认分类",
 				tagsLabel: "新订阅标签（逗号分隔，可选）",
 				enabledLabel: "新建订阅后立即启用",
