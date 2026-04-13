@@ -183,20 +183,20 @@ describe("source surfaces", () => {
 		expect(screen.getByText("Intake results")).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				/Processed 2 · subscriptions \+1\/~0 · today \+1\/=0 · rejected 1/i,
+				/This pass processed 2 sources: 1 saved to your desk, 1 queued for today's reading, 1 rejected\./i,
 			),
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole("link", { name: "Open reader edition" }),
+			screen.getByRole("link", { name: "Read this edition" }),
 		).toHaveAttribute("href", "/reader/doc-1");
 		expect(
-			screen.getByRole("link", { name: "Open tracked universe" }),
+			screen.getByRole("link", { name: "Open source desk" }),
 		).toHaveAttribute("href", "/feed?sub=sub-manual-1");
 		expect(
-			screen.getByRole("link", { name: "Open job trace" }),
+			screen.getByRole("link", { name: "Inspect job trace" }),
 		).toHaveAttribute("href", "/jobs?job_id=job-manual-1");
 		expect(
-			screen.getByText(/Published unit · Reader edition one · published/),
+			screen.getByText(/Reader edition ready · Reader edition one · published/),
 		).toBeInTheDocument();
 		expect(screen.getByText("No description yet")).toBeInTheDocument();
 	});
@@ -411,7 +411,7 @@ describe("source surfaces", () => {
 			subscription_id: null,
 			job_id: null,
 		});
-		expect(manualIdentity.eyebrow).toBe("Universe intake");
+		expect(manualIdentity.eyebrow).toBe("Saved to your desk");
 		expect(manualIdentity.relationLabel).toBe("Deep Source Universe");
 
 		const feedIdentity = resolveFeedIdentity({
@@ -442,9 +442,9 @@ describe("source surfaces", () => {
 			feedback_label: "useful",
 			identity_status: "derived_identity",
 		});
-		expect(feedIdentity.eyebrow).toBe("Article lane");
+		expect(feedIdentity.eyebrow).toBe("Article preview");
 		expect(feedIdentity.meta).toEqual(
-			expect.arrayContaining(["Derived identity", "Saved", "useful"]),
+			expect.arrayContaining(["Linked identity", "Saved", "useful"]),
 		);
 
 		const readerIdentity = resolveReaderSourceIdentity({
@@ -469,7 +469,7 @@ describe("source surfaces", () => {
 			identity_status: "derived_identity",
 			claim_kinds: ["summary", "quote"],
 		});
-		expect(readerIdentity.eyebrow).toBe("Manual evidence");
+		expect(readerIdentity.eyebrow).toBe("Today's source");
 		expect(readerIdentity.meta).toEqual(
 			expect.arrayContaining(["Video contract gap", "2 claim kinds"]),
 		);

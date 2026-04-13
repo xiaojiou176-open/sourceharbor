@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { getActionSessionTokenForForm } from "@/app/action-security";
 import { MarkdownPreview } from "@/components/markdown-preview";
+import { ReaderRepairPanel } from "@/components/reader-repair-panel";
 import { SourceContributionDrawer } from "@/components/source-contribution-drawer";
 import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Badge } from "@/components/ui/badge";
@@ -42,12 +44,12 @@ export default async function ReaderDetailPage({
 	params,
 }: ReaderDetailPageProps) {
 	const resolved = await params;
-	const document =
-		resolved.documentId === DEMO_READER_DOCUMENT_ID
-			? buildDemoReaderDocument()
-			: await apiClient
-					.getPublishedReaderDocument(resolved.documentId)
-					.catch(() => null);
+	const isPreviewRoute = resolved.documentId === DEMO_READER_DOCUMENT_ID;
+	const document = isPreviewRoute
+		? buildDemoReaderDocument()
+		: await apiClient
+				.getPublishedReaderDocument(resolved.documentId)
+				.catch(() => null);
 
 	if (!document) {
 		notFound();
@@ -57,6 +59,10 @@ export default async function ReaderDetailPage({
 		document.coverage_ledger && typeof document.coverage_ledger === "object"
 			? document.coverage_ledger
 			: {};
+	const traceabilityPack =
+		document.traceability_pack && typeof document.traceability_pack === "object"
+			? document.traceability_pack
+			: {};
 	const sections = Array.isArray(document.sections) ? document.sections : [];
 	const topSources = Array.isArray(document.source_refs)
 		? document.source_refs.slice(0, 2)
@@ -64,6 +70,48 @@ export default async function ReaderDetailPage({
 	const warningReasons = Array.isArray(document.warning?.reasons)
 		? document.warning.reasons
 		: [];
+	const repairHistory = Array.isArray(document.repair_history)
+		? document.repair_history
+		: [];
+	const sessionToken = getActionSessionTokenForForm();
+	const coverageStatus = String(
+		(coverageLedger as { status?: string }).status ?? "unknown",
+	);
+	const traceabilityStatus = String(
+		(traceabilityPack as { status?: string }).status ?? "unknown",
+	);
+	const traceabilitySections = Array.isArray(
+		(traceabilityPack as { section_contributions?: unknown[] })
+			.section_contributions,
+	)
+		? (
+				traceabilityPack as {
+					section_contributions: Array<Record<string, unknown>>;
+				}
+			).section_contributions
+		: [];
+	const traceabilitySources = Array.isArray(
+		(traceabilityPack as { source_items?: unknown[] }).source_items,
+	)
+		? (traceabilityPack as { source_items: Array<Record<string, unknown>> })
+				.source_items
+		: [];
+	const traceabilityAffectedSources = Array.isArray(
+		(traceabilityPack as { affected_source_item_ids?: unknown[] })
+			.affected_source_item_ids,
+	)
+		? (traceabilityPack as { affected_source_item_ids: Array<string | number> })
+				.affected_source_item_ids
+		: [];
+	const evidenceRouteCount = Object.values(
+		(traceabilityPack as { evidence_routes?: Record<string, unknown> })
+			.evidence_routes ?? {},
+	).reduce((count, value) => {
+		if (Array.isArray(value)) {
+			return count + value.length;
+		}
+		return count;
+	}, 0);
 
 	return (
 		<div
@@ -289,55 +337,142 @@ export default async function ReaderDetailPage({
 				<SourceContributionDrawer document={document} />
 			</section>
 
-			<details
+			<section
 				id="reader-coverage"
-				className="rounded-3xl border border-border/70 bg-muted/20 p-5 shadow-sm"
+				className="grid gap-4 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)]"
 			>
-				<summary className="cursor-pointer list-none">
-					<span className="flex items-center gap-2 text-sm font-medium text-foreground">
-						<FileStack className="h-4 w-4 text-rose-600" />
-						Coverage snapshot
-					</span>
-					<p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-						Check coverage last, after the body, warning, and footnote drawer.
-					</p>
-				</summary>
-				<div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
-					<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-							Covered sources
-						</p>
-						<p className="mt-2 text-lg font-semibold text-foreground">
-							{String(
-								(coverageLedger as { covered_source_count?: number })
-									.covered_source_count ?? "n/a",
-							)}
-						</p>
-					</div>
-					<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-							Gap sources
-						</p>
-						<p className="mt-2 text-lg font-semibold text-foreground">
-							{String(
-								(coverageLedger as { gap_source_count?: number })
-									.gap_source_count ?? "n/a",
-							)}
-						</p>
-					</div>
-					<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-							Ledger kind
-						</p>
-						<p className="mt-2 break-all text-sm text-foreground">
-							{String(
-								(coverageLedger as { ledger_kind?: string }).ledger_kind ??
-									"unknown",
-							)}
-						</p>
-					</div>
-				</div>
-			</details>
+				<Card className="border-border/70 bg-muted/20 shadow-sm">
+					<CardHeader className="space-y-3 pb-4">
+						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+							<FileStack className="h-4 w-4 text-rose-600" />
+							Coverage snapshot
+						</div>
+						<CardDescription className="leading-6">
+							Check coverage last, after the body, warning, and footnote drawer.
+						</CardDescription>
+					</CardHeader>
+					<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+						{coverageStatus}
+					</CardDescription>
+					<CardHeader className="grid gap-3 pb-6 md:grid-cols-3">
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Covered sources
+							</p>
+							<p className="mt-2 text-lg font-semibold text-foreground">
+								{String(
+									(coverageLedger as { covered_source_count?: number })
+										.covered_source_count ?? "n/a",
+								)}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Gap sources
+							</p>
+							<p className="mt-2 text-lg font-semibold text-foreground">
+								{String(
+									(coverageLedger as { gap_source_count?: number })
+										.gap_source_count ?? "n/a",
+								)}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Ledger kind
+							</p>
+							<p className="mt-2 break-all text-sm text-foreground">
+								{String(
+									(coverageLedger as { ledger_kind?: string }).ledger_kind ??
+										"unknown",
+								)}
+							</p>
+						</div>
+					</CardHeader>
+				</Card>
+
+				<Card className="border-border/70 bg-muted/20 shadow-sm">
+					<CardHeader className="space-y-3 pb-4">
+						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+							<ListTree className="h-4 w-4 text-rose-600" />
+							Traceability snapshot
+						</div>
+						<CardDescription className="leading-6">
+							This is the proof rail behind the article: which sections are
+							traced, how many source items are mapped, and how much evidence is
+							ready to open on demand.
+						</CardDescription>
+					</CardHeader>
+					<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+						{traceabilityStatus}
+					</CardDescription>
+					<CardHeader className="grid gap-3 pb-6 md:grid-cols-2">
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Sections traced
+							</p>
+							<p className="mt-2 text-lg font-semibold text-foreground">
+								{traceabilitySections.length}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Sources mapped
+							</p>
+							<p className="mt-2 text-lg font-semibold text-foreground">
+								{traceabilitySources.length}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Affected sources
+							</p>
+							<p className="mt-2 text-lg font-semibold text-foreground">
+								{traceabilityAffectedSources.length}
+							</p>
+						</div>
+						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+								Evidence routes
+							</p>
+							<p className="mt-2 text-lg font-semibold text-foreground">
+								{evidenceRouteCount}
+							</p>
+						</div>
+					</CardHeader>
+				</Card>
+
+				{isPreviewRoute ? (
+					<Card className="border-border/70 bg-background/95 shadow-sm">
+						<CardHeader className="space-y-3 pb-4">
+							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+								<FileStack className="h-4 w-4 text-rose-600" />
+								Repair preview
+							</div>
+							<CardDescription className="leading-6">
+								This specimen shows where repair lives in the reading flow, but
+								the buttons stay disabled until you open a real published reader
+								document with a server-owned identifier.
+							</CardDescription>
+						</CardHeader>
+						<CardHeader className="grid gap-3 pb-6">
+							<div className="rounded-2xl border border-border/60 bg-muted/15 p-4 text-sm leading-6 text-muted-foreground">
+								Use this panel as a map, not as a live control surface. Open a
+								real reader edition when you want patch, section, or cluster
+								repair to run.
+							</div>
+						</CardHeader>
+					</Card>
+				) : (
+					<ReaderRepairPanel
+						documentId={document.id}
+						publishedWithGap={document.published_with_gap}
+						repairHistoryCount={repairHistory.length}
+						sectionIds={sections.map((section) => section.section_id)}
+						sessionToken={sessionToken}
+					/>
+				)}
+			</section>
 		</div>
 	);
 }

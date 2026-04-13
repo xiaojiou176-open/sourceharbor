@@ -391,158 +391,6 @@ export default async function SubscriptionsPage({
 				</Card>
 			</section>
 
-			<section className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
-				<Card className="folo-surface border-border/70">
-					<CardHeader className="gap-2">
-						<h2 className="text-xl font-semibold">{copy.supportMatrixTitle}</h2>
-						<CardDescription>{copy.supportMatrixDescription}</CardDescription>
-					</CardHeader>
-					<CardContent className="grid gap-3 md:grid-cols-2">
-						{templateCatalog.support_tiers.map((tier) => (
-							<div
-								key={tier.id}
-								className="rounded-xl border border-border/60 bg-muted/20 p-4"
-							>
-								<Badge variant="outline" className={supportBadgeClass(tier.id)}>
-									{tier.label}
-								</Badge>
-								<p className="mt-3 font-medium">{tier.label}</p>
-								<p className="mt-2 text-sm text-muted-foreground">
-									{tier.description}
-								</p>
-								<div className="mt-3 flex flex-wrap gap-2">
-									{templatesForSupportTier(templates, tier.id).map(
-										(templateOption) => (
-											<Badge
-												key={`${tier.id}-${templateOption.id}`}
-												variant="outline"
-											>
-												{templateOption.label}
-											</Badge>
-										),
-									)}
-								</div>
-							</div>
-						))}
-						<div className="rounded-xl border border-border/60 bg-muted/20 p-4">
-							<Badge variant="outline" className={provingBadgeClass()}>
-								{copy.supportLevels.proving.title}
-							</Badge>
-							<p className="mt-3 font-medium">
-								{copy.supportLevels.proving.title}
-							</p>
-							<p className="mt-2 text-sm text-muted-foreground">
-								{copy.supportLevels.proving.description}
-							</p>
-							<div className="mt-3 flex flex-wrap gap-2">
-								{provingTemplates.map((templateOption) => (
-									<Badge key={`proving-${templateOption.id}`} variant="outline">
-										{templateOption.label}
-									</Badge>
-								))}
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="folo-surface border-border/70">
-					<CardHeader className="gap-2">
-						<h2 className="text-xl font-semibold">{copy.intakeGuideTitle}</h2>
-						<CardDescription>{copy.intakeGuideDescription}</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{selectedTemplate && selectedSupportTier ? (
-							<>
-								<div className="space-y-2">
-									<div className="flex flex-wrap items-center gap-2">
-										<p className="font-medium">{selectedTemplate.label}</p>
-										<Badge
-											variant="outline"
-											className={supportBadgeClass(
-												selectedTemplate.support_tier,
-											)}
-										>
-											{selectedSupportTier.label}
-										</Badge>
-									</div>
-									<p className="text-sm text-muted-foreground">
-										{selectedTemplate.description}
-									</p>
-								</div>
-								<dl className="grid gap-3 text-sm">
-									<div>
-										<dt className="font-medium">
-											{copy.guideLabels.supportLevel}
-										</dt>
-										<dd className="flex flex-wrap items-center gap-2 text-muted-foreground">
-											<span>{selectedSupportTier.label}</span>
-											{selectedTemplate.support_tier === "generic_supported" ? (
-												<Badge
-													variant="outline"
-													className={provingBadgeClass()}
-												>
-													{copy.supportLevels.proving.title}
-												</Badge>
-											) : null}
-										</dd>
-									</div>
-									<div>
-										<dt className="font-medium">{copy.guideLabels.platform}</dt>
-										<dd className="text-muted-foreground">
-											{platformLabelMap.get(selectedTemplate.platform) ??
-												humanizeToken(selectedTemplate.platform)}
-										</dd>
-									</div>
-									<div>
-										<dt className="font-medium">
-											{copy.guideLabels.sourceType}
-										</dt>
-										<dd className="text-muted-foreground">
-											{sourceTypeLabelMap.get(selectedTemplate.source_type) ??
-												humanizeToken(selectedTemplate.source_type)}
-										</dd>
-									</div>
-									<div>
-										<dt className="font-medium">
-											{copy.guideLabels.adapterType}
-										</dt>
-										<dd className="text-muted-foreground">
-											{adapterLabelMap.get(selectedTemplate.adapter_type) ??
-												selectedTemplate.adapter_type}
-										</dd>
-									</div>
-									<div>
-										<dt className="font-medium">{copy.guideLabels.fillNow}</dt>
-										<dd className="text-muted-foreground">
-											{selectedTemplate.fill_now ||
-												selectedTemplate.source_value_placeholder ||
-												copy.placeholders.sourceValue}
-										</dd>
-									</div>
-									<div>
-										<dt className="font-medium">
-											{copy.guideLabels.proofBoundary}
-										</dt>
-										<dd className="text-muted-foreground">
-											{selectedTemplate.proof_boundary ||
-												selectedTemplate.evidence_note ||
-												selectedSupportTier.description}
-										</dd>
-									</div>
-								</dl>
-							</>
-						) : (
-							<p className="text-sm text-muted-foreground">
-								{getFlashMessage("ERR_REQUEST_FAILED")}
-							</p>
-						)}
-						<Button asChild variant="outline" size="sm">
-							<Link href="/trends">{copy.openMergedStoriesButton}</Link>
-						</Button>
-					</CardContent>
-				</Card>
-			</section>
-
 			<section>
 				<ManualSourceIntakePanel
 					copy={copy.manualIntake}
@@ -550,247 +398,457 @@ export default async function SubscriptionsPage({
 				/>
 			</section>
 
-			<section>
-				<Card className="folo-surface border-border/70">
-					<CardHeader className="gap-2">
-						<h2 className="text-xl font-semibold">
-							{copy.templateSectionTitle}
-						</h2>
-						<CardDescription>{copy.templateSectionDescription}</CardDescription>
-					</CardHeader>
-					<CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-						{templates.map((templateOption) => {
-							const supportTier =
-								templateCatalog.support_tiers.find(
-									(tier) => tier.id === templateOption.support_tier,
-								) ?? null;
-							const isSelected = templateOption.id === selectedTemplate?.id;
-							return (
-								<article
-									key={templateOption.id}
-									className={`rounded-xl border p-4 ${
-										isSelected
-											? "border-primary/40 bg-primary/5"
-											: "border-border/60 bg-muted/20"
-									}`}
-								>
-									<div className="flex items-start justify-between gap-3">
-										<h3 className="text-base font-semibold">
-											{templateOption.label}
-										</h3>
-										<div className="flex flex-wrap justify-end gap-2">
+			<section className="space-y-4">
+				<details className="folo-surface rounded-[1.6rem] border border-border/70 bg-background/95 p-5 shadow-sm">
+					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-[1.2rem] p-2 transition-colors hover:bg-muted/20">
+						<div className="flex flex-wrap items-start justify-between gap-3">
+							<div className="space-y-2">
+								<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+									Advanced object workbench
+								</p>
+								<h2 className="text-xl font-semibold text-foreground">
+									Open the template, proof, and current source controls only
+									when you need them
+								</h2>
+								<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+									Start with the atlas and manual intake above. Open this layer
+									after you know which source world you want to attach and which
+									fields still need operator-grade control.
+								</p>
+							</div>
+							<Badge variant="outline" className="border-border/60 bg-muted/20">
+								Secondary layer
+							</Badge>
+						</div>
+					</summary>
+					<div className="mt-5 space-y-5">
+						<section className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
+							<Card className="folo-surface border-border/70">
+								<CardHeader className="gap-2">
+									<h2 className="text-xl font-semibold">
+										{copy.supportMatrixTitle}
+									</h2>
+									<CardDescription>
+										{copy.supportMatrixDescription}
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="grid gap-3 md:grid-cols-2">
+									{templateCatalog.support_tiers.map((tier) => (
+										<div
+											key={tier.id}
+											className="rounded-xl border border-border/60 bg-muted/20 p-4"
+										>
 											<Badge
 												variant="outline"
-												className={supportBadgeClass(
-													templateOption.support_tier,
-												)}
+												className={supportBadgeClass(tier.id)}
 											>
-												{supportTier?.label ?? templateOption.support_tier}
+												{tier.label}
 											</Badge>
-											{templateOption.support_tier === "generic_supported" ? (
+											<p className="mt-3 font-medium">{tier.label}</p>
+											<p className="mt-2 text-sm text-muted-foreground">
+												{tier.description}
+											</p>
+											<div className="mt-3 flex flex-wrap gap-2">
+												{templatesForSupportTier(templates, tier.id).map(
+													(templateOption) => (
+														<Badge
+															key={`${tier.id}-${templateOption.id}`}
+															variant="outline"
+														>
+															{templateOption.label}
+														</Badge>
+													),
+												)}
+											</div>
+										</div>
+									))}
+									<div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+										<Badge variant="outline" className={provingBadgeClass()}>
+											{copy.supportLevels.proving.title}
+										</Badge>
+										<p className="mt-3 font-medium">
+											{copy.supportLevels.proving.title}
+										</p>
+										<p className="mt-2 text-sm text-muted-foreground">
+											{copy.supportLevels.proving.description}
+										</p>
+										<div className="mt-3 flex flex-wrap gap-2">
+											{provingTemplates.map((templateOption) => (
 												<Badge
+													key={`proving-${templateOption.id}`}
 													variant="outline"
-													className={provingBadgeClass()}
 												>
-													{copy.supportLevels.proving.title}
+													{templateOption.label}
 												</Badge>
-											) : null}
+											))}
 										</div>
 									</div>
-									<p className="mt-3 text-sm text-muted-foreground">
-										{templateOption.description}
-									</p>
-									<p className="mt-3 text-sm text-muted-foreground">
-										{templateOption.fill_now ||
-											templateOption.source_value_placeholder ||
-											copy.placeholders.sourceValue}
-									</p>
-									<p className="mt-3 text-sm text-muted-foreground">
-										{templateOption.proof_boundary ||
-											templateOption.evidence_note ||
-											supportTier?.description ||
-											copy.supportMatrixDescription}
-									</p>
-									<div className="mt-4">
-										<Button
-											asChild
-											variant={isSelected ? "hero" : "outline"}
-											size="sm"
+								</CardContent>
+							</Card>
+
+							<Card className="folo-surface border-border/70">
+								<CardHeader className="gap-2">
+									<h2 className="text-xl font-semibold">
+										{copy.intakeGuideTitle}
+									</h2>
+									<CardDescription>
+										{copy.intakeGuideDescription}
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="space-y-4">
+									{selectedTemplate && selectedSupportTier ? (
+										<>
+											<div className="space-y-2">
+												<div className="flex flex-wrap items-center gap-2">
+													<p className="font-medium">
+														{selectedTemplate.label}
+													</p>
+													<Badge
+														variant="outline"
+														className={supportBadgeClass(
+															selectedTemplate.support_tier,
+														)}
+													>
+														{selectedSupportTier.label}
+													</Badge>
+												</div>
+												<p className="text-sm text-muted-foreground">
+													{selectedTemplate.description}
+												</p>
+											</div>
+											<dl className="grid gap-3 text-sm">
+												<div>
+													<dt className="font-medium">
+														{copy.guideLabels.supportLevel}
+													</dt>
+													<dd className="flex flex-wrap items-center gap-2 text-muted-foreground">
+														<span>{selectedSupportTier.label}</span>
+														{selectedTemplate.support_tier ===
+														"generic_supported" ? (
+															<Badge
+																variant="outline"
+																className={provingBadgeClass()}
+															>
+																{copy.supportLevels.proving.title}
+															</Badge>
+														) : null}
+													</dd>
+												</div>
+												<div>
+													<dt className="font-medium">
+														{copy.guideLabels.platform}
+													</dt>
+													<dd className="text-muted-foreground">
+														{platformLabelMap.get(selectedTemplate.platform) ??
+															humanizeToken(selectedTemplate.platform)}
+													</dd>
+												</div>
+												<div>
+													<dt className="font-medium">
+														{copy.guideLabels.sourceType}
+													</dt>
+													<dd className="text-muted-foreground">
+														{sourceTypeLabelMap.get(
+															selectedTemplate.source_type,
+														) ?? humanizeToken(selectedTemplate.source_type)}
+													</dd>
+												</div>
+												<div>
+													<dt className="font-medium">
+														{copy.guideLabels.adapterType}
+													</dt>
+													<dd className="text-muted-foreground">
+														{adapterLabelMap.get(
+															selectedTemplate.adapter_type,
+														) ?? selectedTemplate.adapter_type}
+													</dd>
+												</div>
+												<div>
+													<dt className="font-medium">
+														{copy.guideLabels.fillNow}
+													</dt>
+													<dd className="text-muted-foreground">
+														{selectedTemplate.fill_now ||
+															selectedTemplate.source_value_placeholder ||
+															copy.placeholders.sourceValue}
+													</dd>
+												</div>
+												<div>
+													<dt className="font-medium">
+														{copy.guideLabels.proofBoundary}
+													</dt>
+													<dd className="text-muted-foreground">
+														{selectedTemplate.proof_boundary ||
+															selectedTemplate.evidence_note ||
+															selectedSupportTier.description}
+													</dd>
+												</div>
+											</dl>
+										</>
+									) : (
+										<p className="text-sm text-muted-foreground">
+											{getFlashMessage("ERR_REQUEST_FAILED")}
+										</p>
+									)}
+									<Button asChild variant="outline" size="sm">
+										<Link href="/trends">{copy.openMergedStoriesButton}</Link>
+									</Button>
+								</CardContent>
+							</Card>
+						</section>
+
+						<section>
+							<Card className="folo-surface border-border/70">
+								<CardHeader className="gap-2">
+									<h2 className="text-xl font-semibold">
+										{copy.templateSectionTitle}
+									</h2>
+									<CardDescription>
+										{copy.templateSectionDescription}
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+									{templates.map((templateOption) => {
+										const supportTier =
+											templateCatalog.support_tiers.find(
+												(tier) => tier.id === templateOption.support_tier,
+											) ?? null;
+										const isSelected =
+											templateOption.id === selectedTemplate?.id;
+										return (
+											<article
+												key={templateOption.id}
+												className={`rounded-xl border p-4 ${
+													isSelected
+														? "border-primary/40 bg-primary/5"
+														: "border-border/60 bg-muted/20"
+												}`}
+											>
+												<div className="flex items-start justify-between gap-3">
+													<h3 className="text-base font-semibold">
+														{templateOption.label}
+													</h3>
+													<div className="flex flex-wrap justify-end gap-2">
+														<Badge
+															variant="outline"
+															className={supportBadgeClass(
+																templateOption.support_tier,
+															)}
+														>
+															{supportTier?.label ??
+																templateOption.support_tier}
+														</Badge>
+														{templateOption.support_tier ===
+														"generic_supported" ? (
+															<Badge
+																variant="outline"
+																className={provingBadgeClass()}
+															>
+																{copy.supportLevels.proving.title}
+															</Badge>
+														) : null}
+													</div>
+												</div>
+												<p className="mt-3 text-sm text-muted-foreground">
+													{templateOption.description}
+												</p>
+												<p className="mt-3 text-sm text-muted-foreground">
+													{templateOption.fill_now ||
+														templateOption.source_value_placeholder ||
+														copy.placeholders.sourceValue}
+												</p>
+												<p className="mt-3 text-sm text-muted-foreground">
+													{templateOption.proof_boundary ||
+														templateOption.evidence_note ||
+														supportTier?.description ||
+														copy.supportMatrixDescription}
+												</p>
+												<div className="mt-4">
+													<Button
+														asChild
+														variant={isSelected ? "hero" : "outline"}
+														size="sm"
+													>
+														<Link href={getTemplateHref(templateOption.id)}>
+															{isSelected
+																? copy.templateSelectedButton
+																: copy.templateButton}
+														</Link>
+													</Button>
+												</div>
+											</article>
+										);
+									})}
+								</CardContent>
+							</Card>
+						</section>
+
+						<section className="grid gap-4 xl:grid-cols-[1.35fr_0.95fr]">
+							<Card className="folo-surface border-border/70">
+								<CardHeader className="gap-2">
+									<h2 className="text-xl font-semibold">{copy.editorTitle}</h2>
+									<CardDescription>{copy.editorDescription}</CardDescription>
+								</CardHeader>
+								<CardContent>
+									{selectedTemplate ? (
+										<form
+											action={upsertSubscriptionAction}
+											className="grid gap-5 md:grid-cols-2"
+											data-auto-disable-required="true"
 										>
-											<Link href={getTemplateHref(templateOption.id)}>
-												{isSelected
-													? copy.templateSelectedButton
-													: copy.templateButton}
-											</Link>
-										</Button>
-									</div>
-								</article>
-							);
-						})}
-					</CardContent>
-				</Card>
-			</section>
+											<WebActionSessionHiddenInput
+												sessionToken={sessionToken}
+											/>
+											<FormSelectField
+												id="platform"
+												name="platform"
+												label={copy.formLabels.platform}
+												defaultValue={selectedTemplate.platform}
+												options={platformOptions}
+											/>
+											<FormSelectField
+												id="source_type"
+												name="source_type"
+												label={copy.formLabels.sourceType}
+												defaultValue={selectedTemplate.source_type}
+												options={sourceTypeOptions}
+											/>
+											<FormInputField
+												id="source_value"
+												name="source_value"
+												label={copy.formLabels.sourceValue}
+												required
+												placeholder={
+													selectedTemplate.source_value_placeholder ??
+													copy.placeholders.sourceValue
+												}
+											/>
+											<FormSelectField
+												id="adapter_type"
+												name="adapter_type"
+												label={copy.formLabels.adapterType}
+												defaultValue={selectedTemplate.adapter_type}
+												options={adapterTypeOptions}
+											/>
+											<FormInputField
+												id="source_url"
+												name="source_url"
+												label={copy.formLabels.sourceUrl}
+												type="url"
+												required={selectedTemplate.source_url_required}
+												placeholder={
+													selectedTemplate.source_url_placeholder ??
+													copy.placeholders.sourceUrl
+												}
+											/>
+											<FormInputField
+												id="rsshub_route"
+												name="rsshub_route"
+												label={copy.formLabels.rsshubRoute}
+												placeholder={
+													selectedTemplate.rsshub_route_hint ??
+													copy.placeholders.rsshubRoute
+												}
+											/>
+											<FormSelectField
+												id="category"
+												name="category"
+												label={copy.formLabels.category}
+												defaultValue={selectedTemplate.category ?? "misc"}
+												options={categoryOptions}
+											/>
+											<FormInputField
+												id="tags"
+												name="tags"
+												label={copy.formLabels.tags}
+												placeholder={copy.placeholders.tags}
+											/>
+											<FormInputField
+												id="priority"
+												name="priority"
+												label={copy.formLabels.priority}
+												type="number"
+												min={0}
+												max={100}
+												defaultValue={50}
+											/>
+											<FormCheckboxField
+												name="enabled"
+												label={copy.formLabels.enabled}
+												defaultChecked
+												fieldClassName="md:col-span-2"
+											/>
+											<div className="md:col-span-2">
+												<SubmitButton
+													pendingLabel={copy.savePending}
+													statusText={copy.saveStatus}
+												>
+													{copy.saveButton}
+												</SubmitButton>
+											</div>
+										</form>
+									) : (
+										<p className="text-sm text-muted-foreground">
+											{getFlashMessage("ERR_REQUEST_FAILED")}
+										</p>
+									)}
+								</CardContent>
+							</Card>
 
-			<section className="grid gap-4 xl:grid-cols-[1.35fr_0.95fr]">
-				<Card className="folo-surface border-border/70">
-					<CardHeader className="gap-2">
-						<h2 className="text-xl font-semibold">{copy.editorTitle}</h2>
-						<CardDescription>{copy.editorDescription}</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{selectedTemplate ? (
-							<form
-								action={upsertSubscriptionAction}
-								className="grid gap-5 md:grid-cols-2"
-								data-auto-disable-required="true"
-							>
-								<WebActionSessionHiddenInput sessionToken={sessionToken} />
-								<FormSelectField
-									id="platform"
-									name="platform"
-									label={copy.formLabels.platform}
-									defaultValue={selectedTemplate.platform}
-									options={platformOptions}
-								/>
-								<FormSelectField
-									id="source_type"
-									name="source_type"
-									label={copy.formLabels.sourceType}
-									defaultValue={selectedTemplate.source_type}
-									options={sourceTypeOptions}
-								/>
-								<FormInputField
-									id="source_value"
-									name="source_value"
-									label={copy.formLabels.sourceValue}
-									required
-									placeholder={
-										selectedTemplate.source_value_placeholder ??
-										copy.placeholders.sourceValue
-									}
-								/>
-								<FormSelectField
-									id="adapter_type"
-									name="adapter_type"
-									label={copy.formLabels.adapterType}
-									defaultValue={selectedTemplate.adapter_type}
-									options={adapterTypeOptions}
-								/>
-								<FormInputField
-									id="source_url"
-									name="source_url"
-									label={copy.formLabels.sourceUrl}
-									type="url"
-									required={selectedTemplate.source_url_required}
-									placeholder={
-										selectedTemplate.source_url_placeholder ??
-										copy.placeholders.sourceUrl
-									}
-								/>
-								<FormInputField
-									id="rsshub_route"
-									name="rsshub_route"
-									label={copy.formLabels.rsshubRoute}
-									placeholder={
-										selectedTemplate.rsshub_route_hint ??
-										copy.placeholders.rsshubRoute
-									}
-								/>
-								<FormSelectField
-									id="category"
-									name="category"
-									label={copy.formLabels.category}
-									defaultValue={selectedTemplate.category ?? "misc"}
-									options={categoryOptions}
-								/>
-								<FormInputField
-									id="tags"
-									name="tags"
-									label={copy.formLabels.tags}
-									placeholder={copy.placeholders.tags}
-								/>
-								<FormInputField
-									id="priority"
-									name="priority"
-									label={copy.formLabels.priority}
-									type="number"
-									min={0}
-									max={100}
-									defaultValue={50}
-								/>
-								<FormCheckboxField
-									name="enabled"
-									label={copy.formLabels.enabled}
-									defaultChecked
-									fieldClassName="md:col-span-2"
-								/>
-								<div className="md:col-span-2">
-									<SubmitButton
-										pendingLabel={copy.savePending}
-										statusText={copy.saveStatus}
-									>
-										{copy.saveButton}
-									</SubmitButton>
-								</div>
-							</form>
-						) : (
-							<p className="text-sm text-muted-foreground">
-								{getFlashMessage("ERR_REQUEST_FAILED")}
-							</p>
-						)}
-					</CardContent>
-				</Card>
+							<Card className="folo-surface border-border/70">
+								<CardHeader className="gap-2">
+									<h2 className="text-xl font-semibold">
+										{selectedSupportTier?.label ?? copy.loadErrorTitle}
+									</h2>
+									<CardDescription>
+										{selectedSupportTier?.description ??
+											getFlashMessage("ERR_REQUEST_FAILED")}
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="space-y-4 text-sm text-muted-foreground">
+									<p>
+										{selectedTemplate?.fill_now ??
+											selectedTemplate?.source_value_placeholder ??
+											getFlashMessage("ERR_REQUEST_FAILED")}
+									</p>
+									<p>
+										{selectedTemplate?.proof_boundary ??
+											selectedTemplate?.evidence_note ??
+											selectedSupportTier?.description ??
+											getFlashMessage("ERR_REQUEST_FAILED")}
+									</p>
+								</CardContent>
+							</Card>
+						</section>
 
-				<Card className="folo-surface border-border/70">
-					<CardHeader className="gap-2">
-						<h2 className="text-xl font-semibold">
-							{selectedSupportTier?.label ?? copy.loadErrorTitle}
-						</h2>
-						<CardDescription>
-							{selectedSupportTier?.description ??
-								getFlashMessage("ERR_REQUEST_FAILED")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4 text-sm text-muted-foreground">
-						<p>
-							{selectedTemplate?.fill_now ??
-								selectedTemplate?.source_value_placeholder ??
-								getFlashMessage("ERR_REQUEST_FAILED")}
-						</p>
-						<p>
-							{selectedTemplate?.proof_boundary ??
-								selectedTemplate?.evidence_note ??
-								selectedSupportTier?.description ??
-								getFlashMessage("ERR_REQUEST_FAILED")}
-						</p>
-					</CardContent>
-				</Card>
-			</section>
-
-			<section>
-				<Card className="folo-surface border-border/70">
-					<CardHeader className="gap-2">
-						<h2 className="text-xl font-semibold">{copy.currentTitle}</h2>
-						<CardDescription>
-							<output
-								className="text-sm text-muted-foreground"
-								aria-live="polite"
-								aria-atomic="true"
-							>
-								{copy.loadedPrefix} {subscriptions.length} {copy.loadedSuffix}
-							</output>
-							<p className="text-sm text-muted-foreground">
-								{copy.currentDescription}
-							</p>
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<SubscriptionBatchPanel
-							subscriptions={subscriptions}
-							sessionToken={sessionToken}
-						/>
-					</CardContent>
-				</Card>
+						<section>
+							<Card className="folo-surface border-border/70">
+								<CardHeader className="gap-2">
+									<h2 className="text-xl font-semibold">{copy.currentTitle}</h2>
+									<CardDescription>
+										<output
+											className="text-sm text-muted-foreground"
+											aria-live="polite"
+											aria-atomic="true"
+										>
+											{copy.loadedPrefix} {subscriptions.length}{" "}
+											{copy.loadedSuffix}
+										</output>
+										<p className="text-sm text-muted-foreground">
+											{copy.currentDescription}
+										</p>
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<SubscriptionBatchPanel
+										subscriptions={subscriptions}
+										sessionToken={sessionToken}
+									/>
+								</CardContent>
+							</Card>
+						</section>
+					</div>
+				</details>
 			</section>
 		</div>
 	);

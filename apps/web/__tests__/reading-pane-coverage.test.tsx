@@ -54,11 +54,11 @@ describe("ReadingPane coverage", () => {
 		render(<ReadingPane jobId={null} />);
 		expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
 		expect(
-			screen.getByText("Select an entry to read the digest and body"),
+			screen.getByText("Pick a digest to preview today's reading desk"),
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				"Video and article items both support AI digest and outline views",
+				"This preview helps you decide what to open in the finished reader edition",
 			),
 		).toBeInTheDocument();
 		expect(mockGetArtifactMarkdown).not.toHaveBeenCalled();
@@ -139,10 +139,9 @@ describe("ReadingPane coverage", () => {
 		);
 		expect(screen.getByText("YouTube · Tech Channel")).toBeInTheDocument();
 		expect(screen.getByText("昨天")).toBeInTheDocument();
-		expect(screen.getByRole("link", { name: /job-head/ })).toHaveAttribute(
-			"href",
-			"/jobs?job_id=job-heading-001",
-		);
+		expect(
+			screen.getByRole("link", { name: "Inspect job trace" }),
+		).toHaveAttribute("href", "/jobs?job_id=job-heading-001");
 		expect(screen.getByRole("link", { name: "Open original" })).toHaveAttribute(
 			"href",
 			"https://example.com/watch?v=1",

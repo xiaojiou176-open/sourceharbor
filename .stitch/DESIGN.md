@@ -1,5 +1,43 @@
 # Design System: SourceHarbor
 
+## 0. Wave 2 Governance
+
+Wave 2 is not a cosmetic refresh. It is the rulebook for turning the current
+repo truth into one reader-first product family.
+
+- Primary system: **Notion**
+  - Use it for structure, information calmness, soft borders, and paper-like
+    reading comfort.
+- Secondary influence: **WIRED**
+  - Use it only for homepage and feed editorial ordering, kicker rhythm, and
+    section hierarchy.
+- Temperature layer: **Claude**
+  - Use it only for warmth, margin-note tone, and quiet reader-facing
+    atmosphere.
+
+SourceHarbor should feel like:
+
+- Notion for the bones
+- WIRED for the story order
+- Claude for the warmth
+
+Route hierarchy is fixed:
+
+- `/` must have one dominant first action.
+- `/subscriptions` must split atlas/frontstage from advanced object workbench.
+- `/feed` must behave like a curation desk with a preview, not a second reader.
+- `/reader/[documentId]` is the canonical finished reading surface.
+
+Wave 2 banned primary systems:
+
+- Linear
+- Vercel
+- Raycast
+- Stripe
+- WIRED
+- The Verge
+- Mintlify
+
 ## 1. Product Lens
 
 SourceHarbor is a reader-first editorial product, not a generic dashboard and not an operator console wearing a nicer coat. Every page should help a person move from source intake to finished reading with as little cognitive drag as possible.
@@ -174,14 +212,18 @@ If a component exists in the shadcn-style layer, compose from that layer before 
 ### `/`
 
 - The homepage may summarize multiple lanes, but it should still feel like a clean entry map.
-- It is allowed to use small orientation cards and resource clusters.
+- It must present one dominant first action before any supporting routes.
+- It is allowed to use small orientation cards and resource clusters only after the primary path is obvious.
+- Builder and distribution routes are secondary surfaces and must not compete with the reading path on the first screen.
 - It must not feel denser or louder than the product routes it points to.
 - Preview/specimen or sample-proof language is allowed here only when it is explicitly labeled as preview/specimen and never confused with live proof.
 
 ### `/subscriptions`
 
 - Start with the atlas: show who is already tracked.
+- The first screen must show atlas + intake posture + manual intake.
 - The intake workbench is secondary but still visible on the first screen.
+- Template catalog, support matrix, editor, and current subscription ledger belong to an advanced object-workbench layer, not the primary frontstage.
 - Manual intake results must clearly show whether an item matched, created, reused, queued, or was rejected.
 - Deep links to tracked universe, reader, and job trace belong in the result card utility rail.
 
@@ -190,6 +232,8 @@ If a component exists in the shadcn-style layer, compose from that layer before 
 - The filter bar should stay compact and mechanically trustworthy.
 - The selected tracked universe card is a context rail, not the main headline.
 - The left list and right reading pane must feel like a single editorial workflow.
+- The reading pane is a preview bridge, not the canonical finished article.
+- `Open reader edition` is the primary bridge out of the preview; job and object links must stay secondary.
 - Empty-feed states should route users back to subscriptions, not leave them in a dead end.
 
 ### `/reader`
@@ -197,6 +241,7 @@ If a component exists in the shadcn-style layer, compose from that layer before 
 - The document body is the frontstage.
 - Margin notes, section outline, warnings, and evidence are supporting rails.
 - Warning and coverage surfaces must feel honest, calm, and readable.
+- Traceability and repair belong beside coverage as supportive proof rails, not as a control-panel takeover.
 - Do not let operator verbs or debug language overpower the reading experience.
 
 ## 11. Banned Patterns
@@ -213,6 +258,8 @@ If a component exists in the shadcn-style layer, compose from that layer before 
 - No burying tracked-universe affiliation behind vague success copy
 - No reader pages that look like operator tooling
 - No equal-width feature-grid clichés as the main content surface
+- No homepage where builder, operator, and reader routes all look equally primary
+- No feed preview that visually competes with reader detail
 - No preview/specimen route that visually impersonates live proof
 
 ## 12. Definition Of Done For Future UI Work

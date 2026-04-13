@@ -142,13 +142,40 @@ function relationLabel(
 	fallback: string | null | undefined,
 ): string {
 	if (fallback) return fallback;
-	if (kind === "matched_subscription") return "Matched tracked universe";
-	if (kind === "new_source_universe") return "New tracked universe";
-	if (kind === "manual_one_off") return "Manual one-off";
+	if (kind === "matched_subscription") return "Tracked universe";
+	if (kind === "new_source_universe") return "New universe";
+	if (kind === "manual_one_off") return "Reading today";
 	if (kind === "subscription_tracked") return "Tracked source";
-	if (kind === "manual_injected") return "Manual injected";
-	if (kind === "subscription_candidate") return "Subscription candidate";
+	if (kind === "manual_injected") return "Reading today";
+	if (kind === "subscription_candidate") return "Needs review";
 	return "Unmatched source";
+}
+
+function supportTierLabel(value: string | null | undefined): string | null {
+	const normalized = String(value || "")
+		.trim()
+		.toLowerCase();
+	if (!normalized) return null;
+	if (normalized === "strong_supported") return "Strong path";
+	if (normalized === "generic_supported") return "General path";
+	if (normalized === "needs_proof") return "Needs proof";
+	return normalized
+		.split(/[_-]+/)
+		.filter(Boolean)
+		.map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+		.join(" ");
+}
+
+function matchDetailLabel(value: string | null | undefined): string | null {
+	const normalized = String(value || "").trim();
+	if (!normalized) return null;
+	return `Matched by ${normalized.replace(/[_-]+/g, " ")}`;
+}
+
+function confidenceLabel(value: string | null | undefined): string | null {
+	const normalized = String(value || "").trim();
+	if (!normalized) return null;
+	return `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)} confidence`;
 }
 
 function safeList(items: Array<string | null | undefined>) {
@@ -174,8 +201,8 @@ export function resolveSubscriptionIdentity(
 			subscription.rsshub_route,
 		eyebrow:
 			subscription.support_tier === "strong_supported"
-				? "Strong lane"
-				: "General lane",
+				? "Strong path"
+				: "General path",
 		thumbnailUrl:
 			subscription.thumbnail_url ||
 			buildThumbnailUrl({
@@ -194,6 +221,7 @@ export function resolveSubscriptionIdentity(
 			platformMeta(platform).label,
 			subscription.content_profile,
 			subscription.category,
+			supportTierLabel(subscription.support_tier),
 			subscription.priority ? `Priority ${subscription.priority}` : null,
 		]),
 	};
@@ -220,10 +248,10 @@ export function resolveManualIntakeIdentity(
 		description: result.message,
 		eyebrow:
 			result.applied_action === "save_subscription"
-				? "Universe intake"
+				? "Saved to your desk"
 				: result.applied_action === "add_to_today"
-					? "Today lane"
-					: "Intake review",
+					? "Reading today"
+					: "Needs review",
 		thumbnailUrl:
 			result.thumbnail_url ||
 			buildThumbnailUrl({
@@ -241,9 +269,9 @@ export function resolveManualIntakeIdentity(
 		meta: safeList([
 			platformMeta(platform).label,
 			result.content_profile,
-			result.support_tier,
-			result.matched_by ? `Matched by ${result.matched_by}` : null,
-			result.match_confidence,
+			supportTierLabel(result.support_tier),
+			matchDetailLabel(result.matched_by),
+			confidenceLabel(result.match_confidence),
 		]),
 	};
 }
@@ -263,7 +291,7 @@ export function resolveFeedIdentity(item: DigestFeedItem): SourceIdentityModel {
 		title,
 		subtitle: item.affiliation_label?.trim() || platformMeta(platform).label,
 		description: item.title,
-		eyebrow: item.content_type === "video" ? "Digest lane" : "Article lane",
+		eyebrow: item.content_type === "video" ? "Preview lane" : "Article preview",
 		thumbnailUrl:
 			item.thumbnail_url ||
 			buildThumbnailUrl({
@@ -278,7 +306,7 @@ export function resolveFeedIdentity(item: DigestFeedItem): SourceIdentityModel {
 		meta: safeList([
 			platformMeta(platform).label,
 			item.category,
-			item.identity_status === "derived_identity" ? "Derived identity" : null,
+			item.identity_status === "derived_identity" ? "Linked identity" : null,
 			item.saved ? "Saved" : null,
 			item.feedback_label || null,
 		]),
@@ -311,7 +339,7 @@ export function resolveReaderSourceIdentity(
 		description: source.digest_preview,
 		eyebrow:
 			source.source_origin === "manual_injected"
-				? "Manual evidence"
+				? "Today's source"
 				: "Tracked evidence",
 		thumbnailUrl:
 			source.thumbnail_url ||
@@ -326,7 +354,9 @@ export function resolveReaderSourceIdentity(
 		relationLabel: relationLabel(relationKind, source.affiliation_label),
 		meta: safeList([
 			platformMeta(platform).label,
-			source.source_origin,
+			source.source_origin === "manual_injected"
+				? "Reading today"
+				: "Tracked source",
 			source.raw_stage_contract?.analysis_mode
 				? `Mode ${source.raw_stage_contract.analysis_mode}`
 				: null,
@@ -335,7 +365,7 @@ export function resolveReaderSourceIdentity(
 				: source.raw_stage_contract?.video_contract_satisfied === false
 					? "Video contract gap"
 					: null,
-			source.identity_status === "derived_identity" ? "Derived identity" : null,
+			source.identity_status === "derived_identity" ? "Linked identity" : null,
 			source.claim_kinds?.length
 				? `${source.claim_kinds.length} claim kinds`
 				: null,

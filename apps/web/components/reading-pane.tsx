@@ -145,10 +145,11 @@ export function ReadingPane({
 				aria-atomic="true"
 			>
 				<span className="feed-reading-state-title block">
-					Select an entry to read the digest and body
+					Pick a digest to preview today&apos;s reading desk
 				</span>
 				<span className="feed-reading-state-meta block">
-					Video and article items both support AI digest and outline views
+					This preview helps you decide what to open in the finished reader
+					edition
 				</span>
 			</output>
 		);
@@ -229,6 +230,9 @@ export function ReadingPane({
 						<h2 className={`feed-reading-title ${editorialSerif.className}`}>
 							{title || "Untitled"}
 						</h2>
+						<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+							Preview lane
+						</p>
 						<div className="feed-reading-meta">
 							{sourceLabel ? (
 								<span>
@@ -241,14 +245,18 @@ export function ReadingPane({
 								</time>
 							) : null}
 						</div>
+						{safeReaderRoute ? (
+							<div className="mt-2 flex flex-wrap items-center gap-3">
+								<Button asChild size="sm">
+									<Link href={safeReaderRoute}>Open reader edition</Link>
+								</Button>
+								<p className="text-sm text-muted-foreground">
+									Use the reader edition when you want the finished article with
+									warning, evidence, and coverage in one place.
+								</p>
+							</div>
+						) : null}
 						<div className="feed-reading-links">
-							<Link
-								href={`/jobs?job_id=${encodeURIComponent(jobId)}`}
-								className={`feed-reading-link ${editorialMono.className}`}
-								data-interaction="link-muted"
-							>
-								{jobId.slice(0, 8)}…
-							</Link>
 							{safeVideoUrl ? (
 								<a
 									href={safeVideoUrl}
@@ -261,32 +269,35 @@ export function ReadingPane({
 									<ExternalLinkIcon className="size-3" />
 								</a>
 							) : null}
-							{safeReaderRoute ? (
-								<Link
-									href={safeReaderRoute}
-									className={`feed-reading-link ${editorialMono.className}`}
-									data-interaction="link-primary"
-								>
-									Open reader edition
-								</Link>
-							) : null}
 							{safeUniverseRoute ? (
 								<Link
 									href={safeUniverseRoute}
 									className={`feed-reading-link ${editorialMono.className}`}
 									data-interaction="link-muted"
 								>
-									Open tracked universe
+									Open source desk
 								</Link>
 							) : null}
+							<Link
+								href={`/jobs?job_id=${encodeURIComponent(jobId)}`}
+								className={`feed-reading-link ${editorialMono.className}`}
+								data-interaction="link-muted"
+							>
+								Inspect job trace
+							</Link>
 						</div>
 						{identity?.published_document_title ? (
 							<p className={`feed-reading-link ${editorialMono.className}`}>
-								Published unit · {identity.published_document_title}
+								Reader edition ready · {identity.published_document_title}
 								{identity.published_document_publish_status
 									? ` · ${identity.published_document_publish_status}`
 									: ""}
 								{identity.published_with_gap ? " · with gap" : ""}
+							</p>
+						) : safeUniverseRoute ? (
+							<p className={`feed-reading-link ${editorialMono.className}`}>
+								This preview is attached to one source desk. Open the reader
+								edition when you want the finished article.
 							</p>
 						) : null}
 						{identityModel ? (
