@@ -545,23 +545,27 @@ class VideosService:
             candidate_values.add(uploader_id)
             candidate_routes.add(f"/bilibili/user/video/{uploader_id}")
 
-        rows = self.db.execute(
-            text(
-                """
-                SELECT
-                    CAST(id AS TEXT) AS subscription_id,
-                    platform,
-                    source_type,
-                    source_value,
-                    source_url,
-                    rsshub_route
-                FROM subscriptions
-                WHERE platform = :platform
-                ORDER BY updated_at DESC, created_at DESC
-                """
-            ),
-            {"platform": platform},
-        ).mappings()
+        rows = (
+            self.db.execute(
+                text(
+                    """
+                    SELECT
+                        CAST(id AS TEXT) AS subscription_id,
+                        platform,
+                        source_type,
+                        source_value,
+                        source_url,
+                        rsshub_route
+                    FROM subscriptions
+                    WHERE platform = :platform
+                    ORDER BY updated_at DESC, created_at DESC
+                    """
+                ),
+                {"platform": platform},
+            )
+            .mappings()
+            .all()
+        )
 
         for row in rows:
             source_value = str(row.get("source_value") or "").strip()

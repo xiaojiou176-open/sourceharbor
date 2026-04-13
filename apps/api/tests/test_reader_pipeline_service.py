@@ -622,6 +622,25 @@ def test_traceability_pack_and_warning_capture_gap_scope() -> None:
     assert warning["affected_scope"]["source_item_count"] == 1
 
 
+def test_source_evidence_routes_only_expose_manifest_backed_assets() -> None:
+    routes = ReaderPipelineService._build_source_evidence_routes(
+        job_id="job-1",
+        source_url="https://example.com/source",
+        artifact_manifest={"transcript": "/tmp/transcript.txt", "frame_0001.jpg": "/tmp/frame.jpg"},
+    )
+    frame_routes = ReaderPipelineService._frame_asset_routes(
+        "job-1",
+        {"frame_0001.jpg": "/tmp/frame.jpg", "frame_0002.png": "/tmp/frame2.png"},
+    )
+
+    assert routes["artifact_transcript"] == "/api/v1/artifacts/assets?job_id=job-1&path=transcript"
+    assert routes["artifact_comments"] is None
+    assert frame_routes == [
+        "/api/v1/artifacts/assets?job_id=job-1&path=frame_0001.jpg",
+        "/api/v1/artifacts/assets?job_id=job-1&path=frame_0002.png",
+    ]
+
+
 def test_judge_batch_raises_for_missing_batch() -> None:
     batch, digest_map, cards_map = _sample_batch()
     service = _build_service(batch=batch, digest_map=digest_map, cards_map=cards_map)

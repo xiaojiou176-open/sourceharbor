@@ -71,6 +71,27 @@ def _build_service() -> ManualSourceIntakeService:
     )
 
 
+class _DbStub:
+    def __init__(self) -> None:
+        self.added: list[object] = []
+        self.flushed = 0
+        self.commits = 0
+
+    def add(self, obj: object) -> None:
+        if getattr(obj, "id", None) is None:
+            obj.id = uuid.uuid4()
+        self.added.append(obj)
+
+    def flush(self) -> None:
+        self.flushed += 1
+        for obj in self.added:
+            if getattr(obj, "id", None) is None:
+                obj.id = uuid.uuid4()
+
+    def commit(self) -> None:
+        self.commits += 1
+
+
 def test_manual_source_plan_covers_creator_pages_video_urls_and_feeds() -> None:
     service = _build_service()
 
@@ -295,6 +316,31 @@ def test_manual_source_submit_can_match_manual_video_back_by_source_identity() -
     assert item["matched_subscription_id"] == "sub-youtube-1"
     assert item["matched_subscription_name"] == "Fresh Channel"
     assert item["match_confidence"] == "inferred_from_source_identity"
+
+
+def test_persist_manual_source_item_writes_formal_object_world() -> None:
+    service = _build_service()
+    db = _DbStub()
+    service.videos_service.db = db  # type: ignore[attr-defined]
+
+    run = service._persist_manual_source_item(
+        manual_run=None,
+        payload={
+            "job_id": str(uuid.uuid4()),
+            "video_db_id": str(uuid.uuid4()),
+            "video_uid": "manual-uid",
+            "mode": "text_only",
+        },
+        platform="generic",
+        source_url="https://example.com/article",
+        title="Article",
+        content_profile="article",
+        matched_subscription_id=None,
+    )
+
+    assert run is not None
+    assert db.flushed >= 1
+    assert any(getattr(obj, "content_type", None) == "article" for obj in db.added)
 
 
 def test_manual_source_submit_accepts_uuid_video_db_id_matches() -> None:
