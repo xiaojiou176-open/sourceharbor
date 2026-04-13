@@ -9,8 +9,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from worker.config import Settings
-from worker.pipeline.steps import llm_client
-from worker.pipeline.steps import llm_video_inputs
+from worker.pipeline.steps import llm_client, llm_video_inputs
 
 
 class _FakeGenerateContentConfig:
@@ -384,10 +383,7 @@ def test_wait_for_uploaded_file_ready_handles_short_circuit_failed_and_timeout(
 ) -> None:
     uploaded = SimpleNamespace(name="", state=SimpleNamespace(name="PROCESSING"))
     client_without_get = SimpleNamespace(files=SimpleNamespace())
-    assert (
-        llm_video_inputs.wait_for_uploaded_file_ready(client_without_get, uploaded)
-        is uploaded
-    )
+    assert llm_video_inputs.wait_for_uploaded_file_ready(client_without_get, uploaded) is uploaded
 
     failed_file = SimpleNamespace(name="files/demo", state=SimpleNamespace(name="FAILED"))
     try:
@@ -429,10 +425,7 @@ def test_prepare_video_proxy_for_gemini_covers_proxy_reuse_and_fallback_paths(
 
     proxy_source = tmp_path / "clip.gemini-proxy.mp4"
     proxy_source.write_bytes(b"proxy")
-    assert (
-        llm_video_inputs.prepare_video_proxy_for_gemini(str(proxy_source))
-        == str(proxy_source)
-    )
+    assert llm_video_inputs.prepare_video_proxy_for_gemini(str(proxy_source)) == str(proxy_source)
 
     source = tmp_path / "source.webm"
     source.write_bytes(b"video-data")

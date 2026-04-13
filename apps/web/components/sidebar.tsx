@@ -11,6 +11,7 @@ import {
 	LineChart,
 	List,
 	ListTodo,
+	type LucideIcon,
 	Menu,
 	MessageSquare,
 	PanelLeftClose,
@@ -18,7 +19,6 @@ import {
 	Search,
 	Settings,
 	Sparkles,
-	type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -233,10 +233,7 @@ function SidebarNavContent({
 
 	return (
 		<>
-			<nav
-				aria-label="Primary navigation"
-				className="flex flex-col gap-3 p-3"
-			>
+			<nav aria-label="Primary navigation" className="flex flex-col gap-3 p-3">
 				{!collapsed ? (
 					<div className="rounded-xl border border-border/50 bg-background/55 px-3 py-3">
 						<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">

@@ -28,7 +28,8 @@ from worker.pipeline.steps.llm_client_helpers import (
 from worker.pipeline.steps.llm_prompts import build_evidence_citations, select_supporting_frames
 from worker.pipeline.steps.llm_video_inputs import (
     prepare_video_proxy_for_gemini as _prepare_video_proxy_for_gemini,
-    uploaded_file_state_name as _uploaded_file_state_name,
+)
+from worker.pipeline.steps.llm_video_inputs import (
     wait_for_uploaded_file_ready as _wait_for_uploaded_file_ready,
 )
 from worker.pipeline.types import LLMInputMode

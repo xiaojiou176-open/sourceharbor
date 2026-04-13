@@ -137,7 +137,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 					<CardHeader>
 						<div className="flex flex-wrap gap-2">
 							{emphasisBadges.map((label) => (
-								<Badge key={label} variant="outline" className="bg-background/70">
+								<Badge
+									key={label}
+									variant="outline"
+									className="bg-background/70"
+								>
 									{label}
 								</Badge>
 							))}
@@ -154,7 +158,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 							method="GET"
 							className="grid gap-4 xl:grid-cols-[1.5fr_0.72fr_0.72fr_0.26fr]"
 						>
-							<input type="hidden" name="intent" value={askIntent ? "ask" : ""} />
+							<input
+								type="hidden"
+								name="intent"
+								value={askIntent ? "ask" : ""}
+							/>
 							<FormInputField
 								name="q"
 								label={askIntent ? copy.questionLabel : copy.queryLabel}

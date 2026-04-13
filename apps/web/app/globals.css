@@ -438,7 +438,8 @@ body {
 [data-route-heading]:focus,
 [data-route-heading]:focus-visible {
 	outline: none;
-	box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-fg) 74%, transparent);
+	box-shadow: inset 0 -1px 0
+		color-mix(in srgb, var(--color-fg) 74%, transparent);
 	border-radius: 0;
 }
 
@@ -2553,7 +2554,11 @@ tr[data-state="deleting"] td {
 		color-mix(in srgb, var(--color-primary-light) 48%, var(--color-surface) 52%)
 			100%
 	);
-	border-color: color-mix(in srgb, var(--color-primary) 36%, var(--color-border) 64%);
+	border-color: color-mix(
+		in srgb,
+		var(--color-primary) 36%,
+		var(--color-border) 64%
+	);
 	box-shadow:
 		inset 0 1px 0 rgb(255 255 255 / 72%),
 		0 18px 42px -34px var(--color-shadow-elevated-28),

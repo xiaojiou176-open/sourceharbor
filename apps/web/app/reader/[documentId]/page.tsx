@@ -390,12 +390,13 @@ export default async function ReaderDetailPage({
 						<CardHeader className="space-y-3 pb-4">
 							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 								<FileStack className="h-4 w-4 text-rose-600" />
-							Coverage snapshot
-						</div>
-						<CardDescription className="leading-6">
-							Check coverage last, after the body, warning, and footnote drawer.
-						</CardDescription>
-					</CardHeader>
+								Coverage snapshot
+							</div>
+							<CardDescription className="leading-6">
+								Check coverage last, after the body, warning, and footnote
+								drawer.
+							</CardDescription>
+						</CardHeader>
 						<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
 							{coverageStatus}
 						</CardDescription>
@@ -429,8 +430,8 @@ export default async function ReaderDetailPage({
 									</dt>
 									<dd className="mt-2 break-all text-sm text-foreground">
 										{String(
-											(coverageLedger as { ledger_kind?: string }).ledger_kind ??
-												"unknown",
+											(coverageLedger as { ledger_kind?: string })
+												.ledger_kind ?? "unknown",
 										)}
 									</dd>
 								</div>

@@ -10,7 +10,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { editorialMono, editorialSans, editorialSerif } from "@/lib/editorial-fonts";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import { buildProductMetadata } from "@/lib/seo";
 

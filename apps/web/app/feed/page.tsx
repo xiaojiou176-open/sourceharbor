@@ -315,9 +315,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 
 			<section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
 				<div className="folo-panel folo-surface space-y-4">
-					<p
-						className={`folo-page-kicker ${editorialMono.className}`}
-					>
+					<p className={`folo-page-kicker ${editorialMono.className}`}>
 						Preview before you commit to the full article
 					</p>
 					<h2

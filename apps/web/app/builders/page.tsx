@@ -112,11 +112,7 @@ export const metadata: Metadata = buildProductMetadata({
 
 export default function BuildersPage() {
 	const cards = builderCopy.cards;
-	const atlasRows = [
-		cards.reuse,
-		cards.proof,
-		cards.compounders,
-	] as const;
+	const atlasRows = [cards.reuse, cards.proof, cards.compounders] as const;
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">
@@ -133,7 +129,11 @@ export default function BuildersPage() {
 					<CardHeader>
 						<div className="flex flex-wrap gap-2">
 							{builderCopy.highlightPills.map((pill) => (
-								<Badge key={pill} variant="outline" className="bg-background/70">
+								<Badge
+									key={pill}
+									variant="outline"
+									className="bg-background/70"
+								>
 									{pill}
 								</Badge>
 							))}
@@ -142,9 +142,9 @@ export default function BuildersPage() {
 							Start from one honest door
 						</h2>
 						<CardDescription>
-							Pick the narrowest entry that matches what you actually need first.
-							You do not have to learn every surface before you take the first
-							step.
+							Pick the narrowest entry that matches what you actually need
+							first. You do not have to learn every surface before you take the
+							first step.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-6">
@@ -235,7 +235,11 @@ export default function BuildersPage() {
 								</div>
 								<div className="flex flex-wrap gap-2">
 									{section.bullets.map((item) => (
-										<Badge key={item} variant="outline" className="bg-background/70">
+										<Badge
+											key={item}
+											variant="outline"
+											className="bg-background/70"
+										>
 											{item}
 										</Badge>
 									))}
@@ -259,7 +263,11 @@ export default function BuildersPage() {
 							</p>
 							<div className="flex flex-wrap gap-3">
 								<Button asChild variant="outline" size="sm">
-									<a href={RESOURCE_LINKS.builders} target="_blank" rel="noreferrer">
+									<a
+										href={RESOURCE_LINKS.builders}
+										target="_blank"
+										rel="noreferrer"
+									>
 										{builderCopy.buildersGuideCta}
 									</a>
 								</Button>
@@ -317,7 +325,11 @@ export default function BuildersPage() {
 									</a>
 								</Button>
 								<Button asChild variant="outline" size="sm">
-									<a href={RESOURCE_LINKS.mediaKit} target="_blank" rel="noreferrer">
+									<a
+										href={RESOURCE_LINKS.mediaKit}
+										target="_blank"
+										rel="noreferrer"
+									>
 										Open media kit
 									</a>
 								</Button>
@@ -375,36 +387,62 @@ export default function BuildersPage() {
 				<CardContent className="grid gap-4 text-sm text-muted-foreground md:grid-cols-2 xl:grid-cols-4">
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">Codex bundle</p>
-						<p>Open the plugin-grade package when you need the real install surface.</p>
+						<p>
+							Open the plugin-grade package when you need the real install
+							surface.
+						</p>
 						<Button asChild variant="outline" size="sm">
-							<a href={RESOURCE_LINKS.codexBundle} target="_blank" rel="noreferrer">
+							<a
+								href={RESOURCE_LINKS.codexBundle}
+								target="_blank"
+								rel="noreferrer"
+							>
 								Inspect Codex bundle
 							</a>
 						</Button>
 					</div>
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">Claude bundle</p>
-						<p>Open the starter pack that is ready for official path submission.</p>
+						<p>
+							Open the starter pack that is ready for official path submission.
+						</p>
 						<Button asChild variant="outline" size="sm">
-							<a href={RESOURCE_LINKS.claudeBundle} target="_blank" rel="noreferrer">
+							<a
+								href={RESOURCE_LINKS.claudeBundle}
+								target="_blank"
+								rel="noreferrer"
+							>
 								Inspect Claude bundle
 							</a>
 						</Button>
 					</div>
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">OpenClaw pack</p>
-						<p>Inspect the publish-ready pack and template layer for OpenClaw.</p>
+						<p>
+							Inspect the publish-ready pack and template layer for OpenClaw.
+						</p>
 						<Button asChild variant="outline" size="sm">
-							<a href={RESOURCE_LINKS.openclawBundle} target="_blank" rel="noreferrer">
+							<a
+								href={RESOURCE_LINKS.openclawBundle}
+								target="_blank"
+								rel="noreferrer"
+							>
 								Inspect OpenClaw pack
 							</a>
 						</Button>
 					</div>
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">Registry template</p>
-						<p>Use the official-registry-shaped template when you need metadata receipts.</p>
+						<p>
+							Use the official-registry-shaped template when you need metadata
+							receipts.
+						</p>
 						<Button asChild variant="outline" size="sm">
-							<a href={RESOURCE_LINKS.mcpRegistry} target="_blank" rel="noreferrer">
+							<a
+								href={RESOURCE_LINKS.mcpRegistry}
+								target="_blank"
+								rel="noreferrer"
+							>
 								Inspect MCP registry template
 							</a>
 						</Button>

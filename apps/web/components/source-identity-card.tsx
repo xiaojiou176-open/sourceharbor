@@ -144,7 +144,9 @@ export function SourceIdentityCard({
 						<p
 							className={cn(
 								"line-clamp-2 text-foreground",
-								compact ? "text-[0.98rem] leading-6" : "text-[1.08rem] leading-7",
+								compact
+									? "text-[0.98rem] leading-6"
+									: "text-[1.08rem] leading-7",
 								editorialSerif.className,
 							)}
 						>
@@ -184,7 +186,9 @@ export function SourceIdentityCard({
 						))}
 					</div>
 					{action ? (
-						<div className="border-t border-border/50 pt-2 text-sm">{action}</div>
+						<div className="border-t border-border/50 pt-2 text-sm">
+							{action}
+						</div>
 					) : null}
 				</div>
 			</div>
