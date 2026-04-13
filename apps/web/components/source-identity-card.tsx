@@ -2,6 +2,11 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import type { SourceIdentityModel } from "@/lib/source-identity";
 import { cn } from "@/lib/utils";
 
@@ -31,12 +36,13 @@ export function SourceIdentityCard({
 	compact = false,
 	action,
 }: SourceIdentityCardProps) {
-	const visibleMeta = compact ? identity.meta.slice(0, 3) : identity.meta;
+	const visibleMeta = compact ? identity.meta.slice(0, 2) : identity.meta;
 	return (
 		<article
 			className={cn(
-				"rounded-[1.4rem] border border-border/70 bg-background/95 shadow-sm",
-				compact ? "p-3" : "p-4",
+				"rounded-[1.35rem] border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,249,255,0.9)_100%)] shadow-[0_18px_48px_-44px_rgba(15,23,42,0.36)]",
+				compact ? "p-3.5" : "p-4",
+				editorialSans.className,
 				className,
 			)}
 		>
@@ -44,71 +50,78 @@ export function SourceIdentityCard({
 				className={cn(
 					"grid gap-3",
 					compact
-						? "grid-cols-[84px_minmax(0,1fr)]"
-						: "grid-cols-[120px_minmax(0,1fr)]",
+						? "grid-cols-[76px_minmax(0,1fr)]"
+						: "grid-cols-[112px_minmax(0,1fr)]",
 				)}
 			>
-				<div className="relative overflow-hidden rounded-[1.1rem] border border-border/60 bg-muted/15">
-					{identity.thumbnailUrl ? (
-						<Image
-							src={identity.thumbnailUrl}
-							alt={`${identity.title} thumbnail`}
-							width={640}
-							height={compact ? 640 : 480}
-							unoptimized={
-								identity.thumbnailUrl.startsWith("data:image/")
-									? true
-									: undefined
-							}
-							className={cn(
-								"h-full w-full object-cover",
-								compact ? "aspect-[1/1]" : "aspect-[4/3]",
-							)}
-						/>
-					) : (
-						<div
-							className={cn(
-								"flex h-full w-full items-center justify-center bg-muted text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground",
-								compact ? "aspect-[1/1]" : "aspect-[4/3]",
-							)}
-						>
-							{identity.avatarLabel}
-						</div>
-					)}
-					<div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-					<div className="absolute bottom-2 left-2 flex items-center gap-2">
-						{identity.avatarUrl ? (
+				<div className="space-y-2">
+					<div className="relative overflow-hidden rounded-[1rem] border border-border/70 bg-muted/10">
+						{identity.thumbnailUrl ? (
 							<Image
-								src={identity.avatarUrl}
-								alt={`${identity.title} avatar`}
-								width={compact ? 36 : 44}
-								height={compact ? 36 : 44}
+								src={identity.thumbnailUrl}
+								alt={`${identity.title} thumbnail`}
+								width={640}
+								height={compact ? 640 : 480}
 								unoptimized={
-									identity.avatarUrl.startsWith("data:image/")
+									identity.thumbnailUrl.startsWith("data:image/")
 										? true
 										: undefined
 								}
 								className={cn(
-									"rounded-full border border-white/70 object-cover shadow-sm",
-									compact ? "h-9 w-9" : "h-11 w-11",
+									"h-full w-full object-cover",
+									compact ? "aspect-square" : "aspect-[4/3]",
 								)}
 							/>
 						) : (
 							<div
 								className={cn(
-									"flex items-center justify-center rounded-full border border-white/70 bg-white/90 text-[11px] font-semibold text-slate-900 shadow-sm",
-									compact ? "h-9 w-9" : "h-11 w-11",
+									"flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,rgba(79,70,229,0.06)_0%,rgba(244,114,182,0.06)_100%)] text-[10px] font-semibold uppercase tracking-[0.28em] text-muted-foreground",
+									compact ? "aspect-square" : "aspect-[4/3]",
 								)}
 							>
 								{identity.avatarLabel}
 							</div>
 						)}
-						<div className="rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/85">
-							{identity.avatarLabel}
+						<div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/28 via-black/6 to-transparent" />
+						<div className="absolute bottom-2 left-2">
+							{identity.avatarUrl ? (
+								<Image
+									src={identity.avatarUrl}
+									alt={`${identity.title} avatar`}
+									width={compact ? 30 : 36}
+									height={compact ? 30 : 36}
+									unoptimized={
+										identity.avatarUrl.startsWith("data:image/")
+											? true
+											: undefined
+									}
+									className={cn(
+										"rounded-full border border-white/80 bg-white/90 object-cover shadow-[0_8px_22px_-18px_rgba(15,23,42,0.4)]",
+										compact ? "h-[1.875rem] w-[1.875rem]" : "h-9 w-9",
+									)}
+								/>
+							) : (
+								<div
+									className={cn(
+										"flex items-center justify-center rounded-full border border-white/80 bg-white/92 text-[10px] font-semibold text-slate-900 shadow-[0_8px_22px_-18px_rgba(15,23,42,0.4)]",
+										compact ? "h-[1.875rem] w-[1.875rem]" : "h-9 w-9",
+									)}
+								>
+									{identity.avatarLabel}
+								</div>
+							)}
 						</div>
 					</div>
+					<p
+						className={cn(
+							"truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
+							editorialMono.className,
+						)}
+					>
+						{identity.avatarLabel}
+					</p>
 				</div>
-				<div className="min-w-0 space-y-2">
+				<div className="min-w-0 space-y-3">
 					<div className="flex flex-wrap items-center gap-2">
 						<Badge
 							variant="outline"
@@ -117,24 +130,32 @@ export function SourceIdentityCard({
 							{identity.relationLabel}
 						</Badge>
 					</div>
-					<div className="space-y-1">
+					<div className="space-y-1.5">
 						{identity.eyebrow ? (
-							<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+							<p
+								className={cn(
+									"text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
+									editorialMono.className,
+								)}
+							>
 								{identity.eyebrow}
 							</p>
 						) : null}
 						<p
 							className={cn(
-								"line-clamp-2 font-semibold text-foreground",
-								compact ? "text-sm" : "text-base",
+								"line-clamp-2 text-foreground",
+								compact
+									? "text-[0.98rem] leading-6"
+									: "text-[1.08rem] leading-7",
+								editorialSerif.className,
 							)}
 						>
 							{identity.title}
 						</p>
 						<p
 							className={cn(
-								"text-muted-foreground",
-								compact ? "text-xs" : "text-sm",
+								"line-clamp-2 text-muted-foreground",
+								compact ? "text-[11px] leading-5" : "text-sm leading-6",
 							)}
 						>
 							{identity.subtitle}
@@ -144,24 +165,31 @@ export function SourceIdentityCard({
 						<p
 							className={cn(
 								"line-clamp-2 text-muted-foreground",
-								compact ? "text-xs" : "text-sm leading-6",
+								compact ? "text-[11px] leading-5" : "text-sm leading-6",
 							)}
 						>
 							{identity.description}
 						</p>
 					) : null}
-					<div className="flex flex-wrap gap-2">
+					<div className="flex flex-wrap gap-1.5">
 						{visibleMeta.map((item) => (
 							<Badge
 								key={item}
 								variant="outline"
-								className="border-border/50 bg-background/60 text-[11px] text-muted-foreground"
+								className={cn(
+									"border-border/55 bg-background/75 px-2 py-0.5 text-[10px] text-muted-foreground",
+									editorialMono.className,
+								)}
 							>
 								{item}
 							</Badge>
 						))}
 					</div>
-					{action ? <div className="pt-1">{action}</div> : null}
+					{action ? (
+						<div className="border-t border-border/50 pt-2 text-sm">
+							{action}
+						</div>
+					) : null}
 				</div>
 			</div>
 		</article>

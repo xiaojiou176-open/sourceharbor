@@ -26,6 +26,12 @@ from worker.pipeline.steps.llm_client_helpers import (
     classify_gemini_exception,
 )
 from worker.pipeline.steps.llm_prompts import build_evidence_citations, select_supporting_frames
+from worker.pipeline.steps.llm_video_inputs import (
+    prepare_video_proxy_for_gemini as _prepare_video_proxy_for_gemini,
+)
+from worker.pipeline.steps.llm_video_inputs import (
+    wait_for_uploaded_file_ready as _wait_for_uploaded_file_ready,
+)
 from worker.pipeline.types import LLMInputMode
 
 _CACHE_NAME_BY_KEY: dict[str, dict[str, Any]] = {}
@@ -480,7 +486,9 @@ def gemini_generate(
     should_try_video = normalized_mode in {"auto", "video_text"} and bool(normalized_media_path)
     if should_try_video:
         try:
-            uploaded = client.files.upload(file=normalized_media_path)
+            video_upload_path = _prepare_video_proxy_for_gemini(normalized_media_path)
+            uploaded = client.files.upload(file=video_upload_path)
+            uploaded = _wait_for_uploaded_file_ready(client, uploaded)
             text, metadata = _generate_with_function_loop([uploaded, prompt])
             if text:
                 metadata.update(_cache_meta_default(bypass_reason="non_text_mode"))

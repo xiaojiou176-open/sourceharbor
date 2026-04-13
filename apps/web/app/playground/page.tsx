@@ -1,7 +1,3 @@
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -14,6 +10,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { getLocaleMessages } from "@/lib/i18n/messages";
+import { PLAYGROUND_SAMPLE_CORPUS } from "@/lib/playground-sample-corpus";
 import { buildProductMetadata } from "@/lib/seo";
 
 const playgroundCopy = getLocaleMessages().playgroundPage;
@@ -24,70 +21,9 @@ export const metadata: Metadata = buildProductMetadata({
 	route: "playground",
 });
 
-async function loadSampleCorpus() {
-	const configuredRoot = process.env.SOURCE_HARBOR_REPO_ROOT?.trim();
-	const candidates = new Set<string>();
-	if (configuredRoot) {
-		candidates.add(configuredRoot);
-	}
-	let current = path.resolve(process.cwd());
-	for (let index = 0; index < 8; index += 1) {
-		candidates.add(current);
-		current = path.dirname(current);
-	}
-	const candidateList = [...candidates];
-
-	const filePath =
-		candidateList
-			.map((root) =>
-				path.join(root, "docs/samples/sourceharbor-demo-corpus.json"),
-			)
-			.find((candidate) => existsSync(candidate)) ??
-		path.join(candidateList[0], "docs/samples/sourceharbor-demo-corpus.json");
-	return JSON.parse(await readFile(filePath, "utf-8")) as {
-		label: string;
-		description: string;
-		sources: Array<{ platform: string; title: string; url: string }>;
-		example_jobs: Array<{
-			job_id: string;
-			platform: string;
-			title: string;
-			pipeline_final_status: string;
-			digest_excerpt: string;
-		}>;
-		example_retrieval_results: Array<{
-			query: string;
-			source: string;
-			snippet: string;
-			job_id: string;
-		}>;
-		example_watchlists: Array<{
-			name: string;
-			matcher_type: string;
-			matcher_value: string;
-		}>;
-		example_trend: {
-			watchlist_name: string;
-			recent_runs: Array<{
-				job_id: string;
-				added_topics: string[];
-				removed_topics: string[];
-				added_claim_kinds: string[];
-				removed_claim_kinds: string[];
-			}>;
-		};
-		example_bundle: {
-			bundle_kind: string;
-			sharing_scope: string;
-			proof_boundary: string;
-			contains: string[];
-		};
-	};
-}
-
 export default async function PlaygroundPage() {
 	const copy = getLocaleMessages().playgroundPage;
-	const sample = await loadSampleCorpus();
+	const sample = PLAYGROUND_SAMPLE_CORPUS;
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">

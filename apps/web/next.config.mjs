@@ -21,7 +21,7 @@ const nextConfig = {
 	outputFileTracingRoot: monorepoRoot,
 	transpilePackages: ["@sourceharbor/sdk"],
 	turbopack: {
-		root: configDir,
+		root: monorepoRoot,
 	},
 	...(process.env.WEB_E2E_NEXT_DIST_DIR
 		? { distDir: process.env.WEB_E2E_NEXT_DIST_DIR }

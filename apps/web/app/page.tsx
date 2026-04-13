@@ -10,6 +10,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import { buildProductMetadata } from "@/lib/seo";
 
@@ -111,10 +116,16 @@ export default function DashboardPage() {
 	];
 
 	return (
-		<div className="folo-page-shell folo-unified-shell">
+		<div
+			className={`folo-page-shell folo-unified-shell ${editorialSans.className}`}
+		>
 			<div className="folo-page-header">
 				<p className="folo-page-kicker">{copy.kicker}</p>
-				<h1 className="folo-page-title" data-route-heading tabIndex={-1}>
+				<h1
+					className={`folo-page-title ${editorialSerif.className}`}
+					data-route-heading
+					tabIndex={-1}
+				>
 					{copy.heroTitle}
 				</h1>
 				<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
@@ -127,10 +138,14 @@ export default function DashboardPage() {
 				<h2 className="sr-only">Why this front door works</h2>
 				<Card className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
 					<CardHeader className="gap-3">
-						<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+						<p
+							className={`text-xs uppercase tracking-[0.24em] text-muted-foreground ${editorialMono.className}`}
+						>
 							Start here first
 						</p>
-						<CardTitle className="text-3xl leading-tight">
+						<CardTitle
+							className={`max-w-4xl text-3xl leading-tight md:text-[2.2rem] ${editorialSerif.className}`}
+						>
 							Read the finished surface first
 						</CardTitle>
 						<CardDescription className="max-w-3xl text-base leading-7">
@@ -139,29 +154,40 @@ export default function DashboardPage() {
 							surfaces only after you know what the product feels like.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4 pt-0">
+					<CardContent className="space-y-5 pt-0">
 						<div className="flex flex-wrap items-center gap-3">
-							<Button asChild>
+							<Button asChild variant="hero" size="lg">
 								<Link href="/reader">{copy.firstHop.evaluatePrimaryCta}</Link>
 							</Button>
-							<Button asChild variant="outline">
+							<Button asChild variant="surface">
 								<Link href="/reader/demo">
 									{copy.firstHop.evaluateSecondaryCta}
 								</Link>
 							</Button>
 						</div>
-						<div className="grid gap-3 md:grid-cols-3">
-							{whyNowCards.map((card) => (
-								<div
-									key={card.title}
-									className="rounded-xl border border-border/60 bg-background/80 p-4"
-								>
-									<h3 className="font-medium text-foreground">{card.title}</h3>
-									<p className="mt-2 text-sm leading-6 text-muted-foreground">
-										{card.description}
-									</p>
-								</div>
-							))}
+						<div className="rounded-[1.15rem] border border-border/60 bg-background/75">
+							<ol className="divide-y divide-border/60">
+								{whyNowCards.map((card, index) => (
+									<li
+										key={card.title}
+										className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1fr)]"
+									>
+										<p
+											className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+										>
+											{String(index + 1).padStart(2, "0")}
+										</p>
+										<div>
+											<h3 className="font-medium text-foreground">
+												{card.title}
+											</h3>
+											<p className="mt-2 text-sm leading-6 text-muted-foreground">
+												{card.description}
+											</p>
+										</div>
+									</li>
+								))}
+							</ol>
 						</div>
 					</CardContent>
 				</Card>

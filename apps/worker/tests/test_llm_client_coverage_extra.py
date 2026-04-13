@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -8,7 +9,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from worker.config import Settings
-from worker.pipeline.steps import llm_client
+from worker.pipeline.steps import llm_client, llm_video_inputs
 
 
 class _FakeGenerateContentConfig:
@@ -104,6 +105,33 @@ def test_cache_helpers_cover_dict_hit_trim_sweep_and_missing_name() -> None:
         llm_client._CACHE_NAME_BY_KEY.update(old_cache)
         llm_client._CACHE_SWEEP_STATE.clear()
         llm_client._CACHE_SWEEP_STATE.update(old_sweep)
+
+
+def test_prepare_video_proxy_for_gemini_reuses_small_mp4_and_builds_proxy(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    small_mp4 = tmp_path / "small.mp4"
+    small_mp4.write_bytes(b"mp4")
+    assert llm_client._prepare_video_proxy_for_gemini(str(small_mp4)) == str(small_mp4)
+
+    source = tmp_path / "source.webm"
+    source.write_bytes(b"video-data")
+    proxy = tmp_path / "source.gemini-proxy.mp4"
+
+    monkeypatch.setattr(llm_video_inputs.shutil, "which", lambda _name: "/usr/bin/ffmpeg")
+
+    calls: list[list[str]] = []
+
+    def _fake_run(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        calls.append(list(cmd))
+        proxy.write_bytes(b"proxy-data")
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(llm_video_inputs.subprocess, "run", _fake_run)
+    resolved = llm_client._prepare_video_proxy_for_gemini(str(source))
+    assert resolved == str(proxy)
+    assert calls
+    assert calls[0][-1] == str(proxy)
 
 
 def test_gemini_generate_import_and_client_init_failures(monkeypatch: Any, tmp_path: Path) -> None:
@@ -308,6 +336,135 @@ def test_gemini_generate_video_frames_and_cache_branches(monkeypatch: Any, tmp_p
     assert text == '{"ok":true}'
     assert media_input == "text"
     assert meta["cache_bypass_reason"] == "prompt_too_short"
+
+
+def test_wait_for_uploaded_file_ready_polls_until_active() -> None:
+    class _File:
+        def __init__(self, *, name: str, state: Any) -> None:
+            self.name = name
+            self.state = state
+
+    states = [
+        _File(name="files/demo", state=SimpleNamespace(name="PROCESSING")),
+        _File(name="files/demo", state=SimpleNamespace(name="ACTIVE")),
+    ]
+
+    class _Files:
+        def get(self, *, name: str) -> Any:
+            assert name == "files/demo"
+            return states.pop(0)
+
+    client = SimpleNamespace(files=_Files())
+    ready = llm_client._wait_for_uploaded_file_ready(
+        client,
+        _File(name="files/demo", state=SimpleNamespace(name="PROCESSING")),
+        timeout_seconds=2,
+        poll_interval_seconds=0.01,
+    )
+    assert llm_video_inputs.uploaded_file_state_name(ready) == "ACTIVE"
+
+
+def test_uploaded_file_state_name_handles_none_value_and_string_fallbacks() -> None:
+    assert llm_video_inputs.uploaded_file_state_name(SimpleNamespace(state=None)) == ""
+    assert (
+        llm_video_inputs.uploaded_file_state_name(
+            SimpleNamespace(state=SimpleNamespace(value=" processing "))
+        )
+        == "PROCESSING"
+    )
+    assert (
+        llm_video_inputs.uploaded_file_state_name(SimpleNamespace(state="FileState.active"))
+        == "ACTIVE"
+    )
+
+
+def test_wait_for_uploaded_file_ready_handles_short_circuit_failed_and_timeout(
+    monkeypatch: Any,
+) -> None:
+    uploaded = SimpleNamespace(name="", state=SimpleNamespace(name="PROCESSING"))
+    client_without_get = SimpleNamespace(files=SimpleNamespace())
+    assert llm_video_inputs.wait_for_uploaded_file_ready(client_without_get, uploaded) is uploaded
+
+    failed_file = SimpleNamespace(name="files/demo", state=SimpleNamespace(name="FAILED"))
+    try:
+        llm_video_inputs.wait_for_uploaded_file_ready(
+            SimpleNamespace(files=SimpleNamespace(get=lambda **_: failed_file)),
+            failed_file,
+            timeout_seconds=1,
+            poll_interval_seconds=0.01,
+        )
+    except RuntimeError as exc:
+        assert str(exc) == "uploaded_file_failed:files/demo"
+    else:
+        raise AssertionError("expected uploaded_file_failed runtime error")
+
+    processing_file = SimpleNamespace(
+        name="files/demo",
+        state=SimpleNamespace(name="PROCESSING"),
+    )
+    moments = iter((100.0, 102.0))
+    monkeypatch.setattr(llm_video_inputs.time, "time", lambda: next(moments))
+    try:
+        llm_video_inputs.wait_for_uploaded_file_ready(
+            SimpleNamespace(files=SimpleNamespace(get=lambda **_: processing_file)),
+            processing_file,
+            timeout_seconds=1.0,
+            poll_interval_seconds=0.01,
+        )
+    except RuntimeError as exc:
+        assert str(exc) == "uploaded_file_not_ready:files/demo:processing"
+    else:
+        raise AssertionError("expected uploaded_file_not_ready runtime error")
+
+
+def test_prepare_video_proxy_for_gemini_covers_proxy_reuse_and_fallback_paths(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    missing = tmp_path / "missing.webm"
+    assert llm_video_inputs.prepare_video_proxy_for_gemini(str(missing)) == str(missing)
+
+    proxy_source = tmp_path / "clip.gemini-proxy.mp4"
+    proxy_source.write_bytes(b"proxy")
+    assert llm_video_inputs.prepare_video_proxy_for_gemini(str(proxy_source)) == str(proxy_source)
+
+    source = tmp_path / "source.webm"
+    source.write_bytes(b"video-data")
+    monkeypatch.setattr(llm_video_inputs.shutil, "which", lambda _name: None)
+    assert llm_video_inputs.prepare_video_proxy_for_gemini(str(source)) == str(source)
+
+    proxy = tmp_path / "source.gemini-proxy.mp4"
+    proxy.write_bytes(b"proxy-data")
+    source.touch()
+    proxy.touch()
+    original_stat = llm_video_inputs.Path.stat
+    source_stat = source.stat()
+    proxy_stat = proxy.stat()
+
+    def _fake_stat(self: Path, *args: Any, **kwargs: Any) -> Any:
+        if self == proxy:
+            return proxy_stat
+        if self == source:
+            return source_stat
+        return original_stat(self, *args, **kwargs)
+
+    monkeypatch.setattr(llm_video_inputs.Path, "stat", _fake_stat)
+    monkeypatch.setattr(llm_video_inputs.shutil, "which", lambda _name: "/usr/bin/ffmpeg")
+    assert llm_video_inputs.prepare_video_proxy_for_gemini(str(source)) == str(proxy)
+
+    proxy.unlink()
+
+    def _source_only_stat(self: Path, *args: Any, **kwargs: Any) -> Any:
+        if self == source:
+            return source_stat
+        return original_stat(self, *args, **kwargs)
+
+    monkeypatch.setattr(llm_video_inputs.Path, "stat", _source_only_stat)
+
+    def _raise_called_process_error(*_args: Any, **_kwargs: Any) -> None:
+        raise subprocess.CalledProcessError(1, "ffmpeg")
+
+    monkeypatch.setattr(llm_video_inputs.subprocess, "run", _raise_called_process_error)
+    assert llm_video_inputs.prepare_video_proxy_for_gemini(str(source)) == str(source)
 
 
 def test_gemini_generate_cache_recreate_fallback(monkeypatch: Any, tmp_path: Path) -> None:

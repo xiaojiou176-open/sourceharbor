@@ -122,7 +122,7 @@ class Settings:
     gemini_model: str = "gemini-3.1-pro-preview"
     gemini_outline_model: str = "gemini-3.1-pro-preview"
     gemini_digest_model: str = "gemini-3.1-pro-preview"
-    gemini_fast_model: str = "gemini-3.0-flash"
+    gemini_fast_model: str = "gemini-3-flash-preview"
     gemini_computer_use_model: str = "gemini-3.1-pro-preview"
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_thinking_level: str = "high"
@@ -267,7 +267,7 @@ class Settings:
                 "GEMINI_DIGEST_MODEL",
                 "gemini-3.1-pro-preview",
             ),
-            gemini_fast_model=os.getenv("GEMINI_FAST_MODEL", "gemini-3.0-flash"),
+            gemini_fast_model=os.getenv("GEMINI_FAST_MODEL", "gemini-3-flash-preview"),
             gemini_computer_use_model=os.getenv(
                 "GEMINI_COMPUTER_USE_MODEL",
                 "gemini-3.1-pro-preview",

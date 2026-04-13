@@ -7,6 +7,20 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.36] - 2026-04-13
+
+### Changed
+
+- polished the secondary front doors so the sidebar now behaves like a route atlas, `/search` reads like a retrieval desk, and `/builders` uses builder-atlas hierarchy with progressive disclosure instead of a ledger-first layout
+- carried the latest one-wave closeout truth forward into the local ledgers so secondary-route UI polish, current proof gates, and the remaining Git-closeout boundary no longer contradict the final closeout materials
+
+## [0.1.35] - 2026-04-13
+
+### Changed
+
+- aligned the latest GitHub Release with `main@1dc51e5` after the strongest public-proof wording refresh landed
+- refreshed the public proof and release ledgers so current-head workflow-dispatch receipts for the public API image, CI standard image, and release evidence attestation now read as separate but current external-proof lanes
+
 ## [0.1.34] - 2026-04-13
 
 ### Changed

@@ -27,6 +27,9 @@ Keep the local boot topology honest:
   repo-owned local Postgres/Temporal fallback under `.runtime-cache/` when
   Docker is unavailable but local `postgres` / `initdb` / `pg_ctl` /
   `temporal` binaries exist.
+- `./bin/full-stack up` can now self-heal this same core layer: if worker
+  preflight sees Temporal down, it first attempts the repo-owned
+  `core_services.sh up` path before declaring the stack blocked.
 - The reader stack is still a Docker-only optional lane. If you want it, rerun
   bootstrap with `--with-reader-stack 1` instead of assuming it is part of the
   default first-run contract.
@@ -49,6 +52,14 @@ That temporary `.env.local` is intentional. It pins the local browser-facing
 API base URL and the local write-session fallback into the repo-managed web
 runtime so manual intake and other web writes keep working even when local env
 profiles contain non-truthy strings like `CI=false`.
+
+Current local video-first note:
+
+- a fresh real YouTube `mode=full` run can now succeed again on the local stack
+- the current repo-side path uses:
+  - Gemini fast-model `gemini-3-flash-preview`
+  - file-upload waiting until Gemini Files is `ACTIVE`
+  - a lightweight proxy-video path for oversized raw downloads
 
 - Canonical mutation stats receipt: `.runtime-cache/reports/mutation/mutmut-cicd-stats.json`
 - Disk-space audit: `./bin/disk-space-audit`

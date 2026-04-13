@@ -343,18 +343,18 @@ body {
 	background-color: var(--color-bg);
 	background-image:
 		radial-gradient(
-			ellipse 80% 60% at 10% -10%,
-			var(--color-glow-primary-8) 0%,
-			transparent 60%
+			ellipse 72% 52% at 8% -6%,
+			color-mix(in srgb, var(--color-primary-light) 66%, transparent) 0%,
+			transparent 62%
 		),
 		radial-gradient(
-			ellipse 60% 50% at 100% 10%,
-			var(--color-glow-creator-6) 0%,
-			transparent 50%
+			ellipse 56% 46% at 100% 12%,
+			rgb(244 114 182 / 5%) 0%,
+			transparent 54%
 		),
 		radial-gradient(
-			ellipse 50% 40% at 50% 100%,
-			var(--color-glow-tech-5) 0%,
+			ellipse 54% 38% at 50% 100%,
+			rgb(15 23 42 / 2.5%) 0%,
 			transparent 55%
 		);
 	font-family: var(--font-sans);
@@ -394,6 +394,7 @@ body {
 	display: grid;
 	gap: var(--space-8);
 	padding: var(--space-8) var(--space-8) 0;
+	max-width: 76ch;
 }
 
 .folo-page-title-row {
@@ -406,28 +407,40 @@ body {
 
 .folo-page-kicker {
 	margin: 0;
+	font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
 	font-size: 11px;
 	font-weight: 700;
-	letter-spacing: 0.11em;
+	letter-spacing: 0.18em;
 	text-transform: uppercase;
-	color: color-mix(in srgb, var(--color-primary) 86%, var(--color-fg) 14%);
+	color: color-mix(in srgb, var(--color-primary) 78%, var(--color-fg) 22%);
 }
 
 .folo-page-title {
 	margin: 0;
-	font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.15rem);
-	font-weight: 700;
-	line-height: 1.15;
-	letter-spacing: -0.022em;
+	font-family: Newsreader, Georgia, serif;
+	font-size: clamp(1.55rem, 1.18rem + 1.28vw, 2.3rem);
+	font-weight: 600;
+	line-height: 1.08;
+	letter-spacing: -0.03em;
+	text-wrap: balance;
 	color: color-mix(in srgb, var(--color-fg) 96%, transparent);
 }
 
 .folo-page-subtitle {
 	margin: var(--space-8) 0 0;
-	max-width: 68ch;
+	max-width: 64ch;
+	font-family: "Public Sans", ui-sans-serif, system-ui, sans-serif;
 	font-size: 14px;
-	line-height: 1.65;
+	line-height: 1.72;
 	color: color-mix(in srgb, var(--color-muted) 90%, var(--color-fg) 10%);
+}
+
+[data-route-heading]:focus,
+[data-route-heading]:focus-visible {
+	outline: none;
+	box-shadow: inset 0 -1px 0
+		color-mix(in srgb, var(--color-fg) 74%, transparent);
+	border-radius: 0;
 }
 
 .folo-page-toolbar {
@@ -440,9 +453,15 @@ body {
 	border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
 	border-radius: var(--radius-lg);
 	padding: var(--space-24);
-	background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-	box-shadow: 0 16px 42px -32px
-		color-mix(in srgb, var(--color-fg) 18%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface) 96%, transparent) 0%,
+		color-mix(in srgb, var(--color-surface-hover) 54%, var(--color-surface) 46%)
+			100%
+	);
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 72%),
+		0 24px 64px -56px color-mix(in srgb, var(--color-fg) 28%, transparent);
 }
 
 .folo-vstack {
@@ -534,11 +553,17 @@ body {
 }
 
 .folo-surface {
-	border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-	background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-	backdrop-filter: blur(16px);
-	box-shadow: 0 18px 60px -36px
-		color-mix(in srgb, var(--color-fg) 16%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface) 97%, transparent) 0%,
+		color-mix(in srgb, var(--color-surface-hover) 52%, var(--color-surface) 48%)
+			100%
+	);
+	backdrop-filter: blur(8px);
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 78%),
+		0 20px 56px -52px color-mix(in srgb, var(--color-fg) 30%, transparent);
 }
 
 .folo-section-title {
@@ -2459,20 +2484,32 @@ tr[data-state="deleting"] td {
 
 .feed-main-flow {
 	display: grid;
-	grid-template-columns: minmax(288px, 336px) minmax(0, 1fr);
-	border: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent);
+	grid-template-columns: minmax(300px, 356px) minmax(0, 1fr);
+	border: 1px solid color-mix(in srgb, var(--color-border) 74%, transparent);
 	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface) 97%, transparent) 0%,
+		color-mix(in srgb, var(--color-surface-hover) 44%, var(--color-surface) 56%)
+			100%
+	);
 	min-height: min(74vh, 860px);
 	overflow: hidden;
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 78%),
+		0 24px 72px -60px color-mix(in srgb, var(--color-fg) 28%, transparent);
 }
 
 .feed-entry-column {
 	display: flex;
 	flex-direction: column;
 	border-right: 1px solid
-		color-mix(in srgb, var(--color-border) 64%, transparent);
-	background: color-mix(in srgb, var(--color-surface-hover) 64%, transparent);
+		color-mix(in srgb, var(--color-border) 74%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface-hover) 86%, transparent) 0%,
+		color-mix(in srgb, var(--color-surface) 90%, transparent) 100%
+	);
 }
 
 .feed-entry-scroll {
@@ -2482,7 +2519,7 @@ tr[data-state="deleting"] td {
 .feed-entry-list {
 	display: grid;
 	gap: 1px;
-	padding: var(--space-8);
+	padding: var(--space-10);
 	margin: 0;
 	list-style: none;
 }
@@ -2493,9 +2530,9 @@ tr[data-state="deleting"] td {
 
 .feed-entry-link {
 	display: block;
-	border-radius: var(--radius-md);
-	padding: var(--space-12);
-	border: 1px solid transparent;
+	border-radius: 1rem;
+	padding: 14px;
+	border: 1px solid color-mix(in srgb, var(--color-border) 24%, transparent);
 	background: transparent;
 	transition:
 		border-color var(--transition-fast),
@@ -2505,16 +2542,27 @@ tr[data-state="deleting"] td {
 }
 
 .feed-entry-link:hover {
-	background: color-mix(in srgb, var(--color-surface-hover) 82%, transparent);
+	background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+	border-color: color-mix(in srgb, var(--color-border) 84%, transparent);
 	opacity: 1;
 }
 
 .feed-entry-link.is-selected {
-	background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-	border-color: color-mix(in srgb, var(--color-border) 80%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface) 96%, transparent) 0%,
+		color-mix(in srgb, var(--color-primary-light) 48%, var(--color-surface) 52%)
+			100%
+	);
+	border-color: color-mix(
+		in srgb,
+		var(--color-primary) 36%,
+		var(--color-border) 64%
+	);
 	box-shadow:
-		0 8px 20px -16px var(--color-shadow-elevated-28),
-		0 0 0 1px var(--color-ring-primary-12);
+		inset 0 1px 0 rgb(255 255 255 / 72%),
+		0 18px 42px -34px var(--color-shadow-elevated-28),
+		0 0 0 1px var(--color-ring-primary-10);
 }
 
 .feed-entry-row {
@@ -2564,6 +2612,42 @@ tr[data-state="deleting"] td {
 	overflow: hidden;
 }
 
+.feed-entry-kicker {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+	margin: 0;
+	font-size: 10px;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-muted) 84%, var(--color-fg) 16%);
+}
+
+.feed-entry-headline {
+	margin: 0;
+	font-size: 1.08rem;
+	line-height: 1.28;
+	letter-spacing: -0.018em;
+	color: color-mix(in srgb, var(--color-fg) 96%, transparent);
+}
+
+.feed-entry-support {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.6;
+	color: color-mix(in srgb, var(--color-muted) 88%, var(--color-fg) 12%);
+}
+
+.feed-entry-identity-card {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface) 92%, transparent) 0%,
+		color-mix(in srgb, var(--color-surface-hover) 36%, var(--color-surface) 64%)
+			100%
+	);
+}
+
 .feed-entry-meta {
 	display: flex;
 	flex-wrap: wrap;
@@ -2589,7 +2673,12 @@ tr[data-state="deleting"] td {
 	min-width: 0;
 	flex: 1 1 auto;
 	flex-direction: column;
-	background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-surface) 96%, transparent) 0%,
+		color-mix(in srgb, var(--color-surface-hover) 30%, var(--color-surface) 70%)
+			100%
+	);
 }
 
 .feed-reading-state {
@@ -2619,8 +2708,8 @@ tr[data-state="deleting"] td {
 
 .feed-reading-article {
 	margin: 0 auto;
-	max-width: 70ch;
-	padding: var(--space-32);
+	max-width: 64ch;
+	padding: 36px var(--space-32) 40px;
 }
 
 .feed-reading-header {
@@ -2629,9 +2718,9 @@ tr[data-state="deleting"] td {
 
 .feed-reading-title {
 	margin: 0;
-	font-size: 1.35rem;
-	line-height: 1.35;
-	letter-spacing: -0.015em;
+	font-size: clamp(1.55rem, 1.22rem + 0.65vw, 2rem);
+	line-height: 1.14;
+	letter-spacing: -0.03em;
 	color: color-mix(in srgb, var(--color-fg) 96%, transparent);
 }
 

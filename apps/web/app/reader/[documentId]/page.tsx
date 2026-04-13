@@ -1,4 +1,4 @@
-import { BookOpenText, FileStack, ListTree, NotebookText } from "lucide-react";
+import { FileStack, ListTree, NotebookText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,7 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { YellowWarningCard } from "@/components/yellow-warning-card";
 import { apiClient } from "@/lib/api/client";
-import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import {
 	buildDemoReaderDocument,
 	DEMO_READER_DOCUMENT_ID,
@@ -106,7 +110,7 @@ export default async function ReaderDetailPage({
 	const evidenceRouteCount = Object.values(
 		(traceabilityPack as { evidence_routes?: Record<string, unknown> })
 			.evidence_routes ?? {},
-	).reduce((count, value) => {
+	).reduce<number>((count, value) => {
 		if (Array.isArray(value)) {
 			return count + value.length;
 		}
@@ -223,52 +227,75 @@ export default async function ReaderDetailPage({
 							</a>
 						</div>
 					</div>
-					<aside className="rounded-3xl border border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 p-5 shadow-sm dark:to-rose-950/10">
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<BookOpenText className="h-4 w-4 text-rose-600" />
+					<div className="rounded-3xl border border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60 p-5 shadow-sm dark:to-rose-950/10">
+						<p
+							className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+						>
 							Margin note
-						</div>
-						<p className="mt-2 text-sm leading-6 text-muted-foreground">
+						</p>
+						<h2
+							className={`mt-2 text-2xl leading-tight text-foreground ${editorialSerif.className}`}
+						>
+							Keep the article in front. Keep proof in the margin.
+						</h2>
+						<p className="mt-3 text-sm leading-6 text-muted-foreground">
 							This rail is here to keep your place, not to compete with the main
 							narrative. Read the body like a finished article, then step into
 							warning, footnotes, and coverage in that order.
 						</p>
-						<ol className="mt-4 space-y-3 text-sm">
-							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
-								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+						<ol className="mt-5 divide-y divide-border/60 border-y border-border/60 text-sm">
+							<li className="grid gap-3 py-4 md:grid-cols-[88px_minmax(0,1fr)]">
+								<p
+									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+								>
 									01 Body pass
 								</p>
-								<p className="mt-2 leading-6 text-muted-foreground">
+								<p className="leading-6 text-muted-foreground">
 									Read the finished markdown as one deck before touching the
 									backstage tools.
 								</p>
 							</li>
-							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
-								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+							<li className="grid gap-3 py-4 md:grid-cols-[88px_minmax(0,1fr)]">
+								<p
+									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+								>
 									02 Warning pass
 								</p>
-								<p className="mt-2 leading-6 text-muted-foreground">
+								<p className="leading-6 text-muted-foreground">
 									Keep the caution in view, but do not let it replace the main
 									argument.
 								</p>
 							</li>
-							<li className="rounded-2xl border border-border/60 bg-background/85 p-4">
-								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-									03 Footnote pass
+							<li className="grid gap-3 py-4 md:grid-cols-[88px_minmax(0,1fr)]">
+								<p
+									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+								>
+									03 Footnotes
 								</p>
-								<p className="mt-2 leading-6 text-muted-foreground">
+								<p className="leading-6 text-muted-foreground">
 									Open evidence only when you need provenance, then check
-									coverage last.
+									coverage and repair last.
 								</p>
 							</li>
 						</ol>
 						{sections.length ? (
-							<div className="mt-4 rounded-2xl border border-border/60 bg-background/85 p-4">
-								<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-									<ListTree className="h-4 w-4 text-rose-600" />
-									Section outline
-								</div>
-								<ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+							<details className="mt-5 rounded-[1.35rem] border border-border/60 bg-background/82 p-4">
+								<summary className="cursor-pointer list-none">
+									<div className="flex items-center justify-between gap-3">
+										<div>
+											<p
+												className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+											>
+												Section outline
+											</p>
+											<p className="mt-1 text-sm text-foreground">
+												Open the map only when you need to re-anchor yourself.
+											</p>
+										</div>
+										<ListTree className="h-4 w-4 text-rose-600" />
+									</div>
+								</summary>
+								<ul className="mt-4 space-y-2 text-sm text-muted-foreground">
 									{sections.map((section) => (
 										<li
 											key={section.section_id}
@@ -283,9 +310,9 @@ export default async function ReaderDetailPage({
 										</li>
 									))}
 								</ul>
-							</div>
+							</details>
 						) : null}
-					</aside>
+					</div>
 				</div>
 			</section>
 
@@ -340,110 +367,131 @@ export default async function ReaderDetailPage({
 				<SourceContributionDrawer document={document} />
 			</section>
 
-			<section
-				id="reader-coverage"
-				className="grid gap-4 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)]"
-			>
-				<Card className="border-border/70 bg-muted/20 shadow-sm">
-					<CardHeader className="space-y-3 pb-4">
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<FileStack className="h-4 w-4 text-rose-600" />
-							Coverage snapshot
-						</div>
-						<CardDescription className="leading-6">
-							Check coverage last, after the body, warning, and footnote drawer.
-						</CardDescription>
-					</CardHeader>
-					<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-						{coverageStatus}
-					</CardDescription>
-					<CardHeader className="grid gap-3 pb-6 md:grid-cols-3">
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Covered sources
-							</p>
-							<p className="mt-2 text-lg font-semibold text-foreground">
-								{String(
-									(coverageLedger as { covered_source_count?: number })
-										.covered_source_count ?? "n/a",
-								)}
-							</p>
-						</div>
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Gap sources
-							</p>
-							<p className="mt-2 text-lg font-semibold text-foreground">
-								{String(
-									(coverageLedger as { gap_source_count?: number })
-										.gap_source_count ?? "n/a",
-								)}
-							</p>
-						</div>
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Ledger kind
-							</p>
-							<p className="mt-2 break-all text-sm text-foreground">
-								{String(
-									(coverageLedger as { ledger_kind?: string }).ledger_kind ??
-										"unknown",
-								)}
-							</p>
-						</div>
-					</CardHeader>
-				</Card>
+			<section id="reader-coverage" className="space-y-4">
+				<div className="space-y-2">
+					<p
+						className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+					>
+						Margin proof rail
+					</p>
+					<h2
+						className={`text-2xl leading-tight text-foreground ${editorialSerif.className}`}
+					>
+						Coverage, traceability, and repair stay beside the article.
+					</h2>
+					<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+						These panels are here to verify what you just read, not to replace
+						the reading flow with a second dashboard.
+					</p>
+				</div>
 
-				<Card className="border-border/70 bg-muted/20 shadow-sm">
-					<CardHeader className="space-y-3 pb-4">
-						<div className="flex items-center gap-2 text-sm font-medium text-foreground">
-							<ListTree className="h-4 w-4 text-rose-600" />
-							Traceability snapshot
-						</div>
-						<CardDescription className="leading-6">
-							This is the proof rail behind the article: which sections are
-							traced, how many source items are mapped, and how much evidence is
-							ready to open on demand.
+				<div className="grid gap-4 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+					<Card className="border-border/70 bg-muted/20 shadow-sm">
+						<CardHeader className="space-y-3 pb-4">
+							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+								<FileStack className="h-4 w-4 text-rose-600" />
+								Coverage snapshot
+							</div>
+							<CardDescription className="leading-6">
+								Check coverage last, after the body, warning, and footnote
+								drawer.
+							</CardDescription>
+						</CardHeader>
+						<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+							{coverageStatus}
 						</CardDescription>
-					</CardHeader>
-					<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-						{traceabilityStatus}
-					</CardDescription>
-					<CardHeader className="grid gap-3 pb-6 md:grid-cols-2">
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Sections traced
-							</p>
-							<p className="mt-2 text-lg font-semibold text-foreground">
-								{traceabilitySections.length}
-							</p>
+						<div className="px-6 pb-6">
+							<dl className="grid gap-3 sm:grid-cols-2">
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Covered sources
+									</dt>
+									<dd className="mt-2 text-lg font-semibold text-foreground">
+										{String(
+											(coverageLedger as { covered_source_count?: number })
+												.covered_source_count ?? "n/a",
+										)}
+									</dd>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Gap sources
+									</dt>
+									<dd className="mt-2 text-lg font-semibold text-foreground">
+										{String(
+											(coverageLedger as { gap_source_count?: number })
+												.gap_source_count ?? "n/a",
+										)}
+									</dd>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4 sm:col-span-2">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Ledger kind
+									</dt>
+									<dd className="mt-2 break-all text-sm text-foreground">
+										{String(
+											(coverageLedger as { ledger_kind?: string })
+												.ledger_kind ?? "unknown",
+										)}
+									</dd>
+								</div>
+							</dl>
 						</div>
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Sources mapped
-							</p>
-							<p className="mt-2 text-lg font-semibold text-foreground">
-								{traceabilitySources.length}
-							</p>
+					</Card>
+
+					<Card className="border-border/70 bg-muted/20 shadow-sm">
+						<CardHeader className="space-y-3 pb-4">
+							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
+								<ListTree className="h-4 w-4 text-rose-600" />
+								Traceability snapshot
+							</div>
+							<CardDescription className="leading-6">
+								This is the proof rail behind the article: which sections are
+								traced, how many source items are mapped, and how much evidence
+								is ready to open on demand.
+							</CardDescription>
+						</CardHeader>
+						<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+							{traceabilityStatus}
+						</CardDescription>
+						<div className="px-6 pb-6">
+							<dl className="grid gap-3 sm:grid-cols-2">
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Sections traced
+									</dt>
+									<dd className="mt-2 text-lg font-semibold text-foreground">
+										{traceabilitySections.length}
+									</dd>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Sources mapped
+									</dt>
+									<dd className="mt-2 text-lg font-semibold text-foreground">
+										{traceabilitySources.length}
+									</dd>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Affected sources
+									</dt>
+									<dd className="mt-2 text-lg font-semibold text-foreground">
+										{traceabilityAffectedSources.length}
+									</dd>
+								</div>
+								<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
+									<dt className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+										Evidence routes
+									</dt>
+									<dd className="mt-2 text-lg font-semibold text-foreground">
+										{evidenceRouteCount}
+									</dd>
+								</div>
+							</dl>
 						</div>
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Affected sources
-							</p>
-							<p className="mt-2 text-lg font-semibold text-foreground">
-								{traceabilityAffectedSources.length}
-							</p>
-						</div>
-						<div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-								Evidence routes
-							</p>
-							<p className="mt-2 text-lg font-semibold text-foreground">
-								{evidenceRouteCount}
-							</p>
-						</div>
-					</CardHeader>
-				</Card>
+					</Card>
+				</div>
 
 				{isPreviewRoute ? (
 					<Card className="border-border/70 bg-background/95 shadow-sm">
@@ -458,13 +506,13 @@ export default async function ReaderDetailPage({
 								document with a server-owned identifier.
 							</CardDescription>
 						</CardHeader>
-						<CardHeader className="grid gap-3 pb-6">
+						<div className="px-6 pb-6">
 							<div className="rounded-2xl border border-border/60 bg-muted/15 p-4 text-sm leading-6 text-muted-foreground">
 								Use this panel as a map, not as a live control surface. Open a
 								real reader edition when you want patch, section, or cluster
 								repair to run.
 							</div>
-						</CardHeader>
+						</div>
 					</Card>
 				) : (
 					<ReaderRepairPanel

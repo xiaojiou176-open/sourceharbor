@@ -27,7 +27,11 @@ import type {
 	SubscriptionTemplate,
 	SubscriptionTemplateCatalogResponse,
 } from "@/lib/api/types";
-import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import {
 	resolveSearchParams,
@@ -311,6 +315,11 @@ export default async function SubscriptionsPage({
 			<section className="grid gap-4 xl:grid-cols-[1.28fr_0.92fr]">
 				<Card className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
 					<CardHeader className="gap-2">
+						<p
+							className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+						>
+							Atlas first
+						</p>
 						<h2
 							className={`text-2xl font-semibold ${editorialSerif.className}`}
 						>
@@ -342,6 +351,11 @@ export default async function SubscriptionsPage({
 
 				<Card className="folo-surface border-border/70">
 					<CardHeader className="gap-2">
+						<p
+							className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+						>
+							Progressive disclosure
+						</p>
 						<h2
 							className={`text-2xl font-semibold ${editorialSerif.className}`}
 						>
@@ -354,39 +368,50 @@ export default async function SubscriptionsPage({
 							new one.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-3 text-sm text-muted-foreground">
-						<div className="rounded-[1.1rem] border border-border/60 bg-muted/20 p-4">
-							<p className="font-medium text-foreground">
-								1. Pick the universe
-							</p>
-							<p className="mt-2">
-								Choose a strong-supported lane when you know the creator, or a
-								general lane when the source is only proven as feed intake.
-							</p>
-						</div>
-						<div className="rounded-[1.1rem] border border-border/60 bg-muted/20 p-4">
-							<p className="font-medium text-foreground">
-								2. Run manual intake
-							</p>
-							<p className="mt-2">
-								The result cards below should tell you whether the input matched
-								a tracked universe, created a new one, or stayed a one-off lane.
-							</p>
-						</div>
-						<div className="rounded-[1.1rem] border border-border/60 bg-muted/20 p-4">
-							<p className="font-medium text-foreground">3. Read the product</p>
-							<p className="mt-2">
-								Use{" "}
-								<Link href="/feed" className="underline underline-offset-4">
-									Feed
-								</Link>{" "}
-								and{" "}
-								<Link href="/reader" className="underline underline-offset-4">
-									Reader
-								</Link>{" "}
-								as the frontstage once the source universe has materialized.
-							</p>
-						</div>
+					<CardContent className="pt-0 text-sm text-muted-foreground">
+						<ol className="divide-y divide-border/60 rounded-[1.15rem] border border-border/60 bg-muted/15">
+							<li className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1fr)]">
+								<p
+									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+								>
+									01 Pick the universe
+								</p>
+								<p className="leading-6">
+									Choose a strong-supported lane when you know the creator, or a
+									general lane when the source is only proven as feed intake.
+								</p>
+							</li>
+							<li className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1fr)]">
+								<p
+									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+								>
+									02 Run intake
+								</p>
+								<p className="leading-6">
+									The result cards below should tell you whether the input
+									matched a tracked universe, created a new one, or stayed a
+									one-off lane.
+								</p>
+							</li>
+							<li className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1fr)]">
+								<p
+									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+								>
+									03 Read next
+								</p>
+								<p className="leading-6">
+									Use{" "}
+									<Link href="/feed" className="underline underline-offset-4">
+										Feed
+									</Link>{" "}
+									and{" "}
+									<Link href="/reader" className="underline underline-offset-4">
+										Reader
+									</Link>{" "}
+									as the frontstage once the source universe has materialized.
+								</p>
+							</li>
+						</ol>
 					</CardContent>
 				</Card>
 			</section>

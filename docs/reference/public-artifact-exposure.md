@@ -37,5 +37,6 @@ Two special cases matter in the current repo:
 - the temporary `.env.local` written into `.runtime-cache/tmp/web-runtime/workspace/apps/web/` is runtime glue for local browser writes, not a distributable config artifact
 - mutation receipts under `.runtime-cache/reports/mutation/` are public-safe only as proof summaries; they must not be mistaken for a published package, release, or registry surface
 - repo-owned local core-services logs under `.runtime-cache/logs/local-core/` are runtime diagnostics only; they exist to explain local fallback behavior, not to become public-facing product artifacts
+- lightweight proxy-video files generated only to satisfy maintainer-local Gemini input constraints are runtime-only surrogate artifacts; they are part of local verification behavior, not a public distribution surface
 
 For public presentation files under `docs/assets/`, use the file-level ledger in [public-assets-provenance.md](./public-assets-provenance.md).

@@ -90,6 +90,14 @@ stack still stays an explicit Docker-only optional lane, so it should not be
 treated as a first-run blocker unless you intentionally enabled
 `--with-reader-stack 1`.
 
+`./bin/full-stack up` now also has one repo-owned self-heal step:
+
+- if worker preflight sees `TEMPORAL_TARGET_HOST` unreachable, it first tries
+  the repo-owned `core_services.sh up` path before declaring the stack blocked
+- this is still local operator truth, not hosted/SLO truth, but it removes one
+  of the old false negatives where Postgres/Temporal were simply not lifted
+  before worker startup
+
 What `./bin/doctor` is for:
 
 - env contract readiness
@@ -103,6 +111,17 @@ What `./bin/doctor` is **not** for:
 - proving external release health
 - replacing full smoke
 - pretending missing secrets are implementation bugs
+
+Current video-first local truth:
+
+- a fresh maintainer-local `mode=full` YouTube job can now complete again
+- that receipt currently depends on:
+  - current Gemini fast-model naming (`gemini-3-flash-preview`)
+  - upload-time waiting until Gemini Files leaves `PROCESSING`
+  - a lightweight proxy-video path so oversized raw `.webm` media does not
+    stall the primary video lane forever
+- this should still be described as **local runtime truth** rather than public
+  hosted proof
 
 What local browser login state is for:
 

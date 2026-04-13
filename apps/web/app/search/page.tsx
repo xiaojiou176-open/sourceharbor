@@ -96,6 +96,27 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 	}
 
 	const results = payload?.items ?? [];
+	const routeFacts = askIntent
+		? [copy.askTruthPrimary, copy.askTruthSecondary, copy.askTruthNote]
+		: [copy.searchTruthPrimary, copy.searchTruthSecondary];
+	const contractBullets = askIntent
+		? [
+				copy.askContractPrimary,
+				copy.askContractSecondary,
+				copy.askTruthContractLead,
+			]
+		: [
+				copy.searchContractPrimary,
+				copy.searchContractSecondary,
+				copy.searchHint,
+			];
+	const emphasisBadges = askIntent
+		? [
+				copy.groundingModeLabel,
+				copy.openJobTraceButton,
+				copy.openKnowledgeCardsButton,
+			]
+		: ["Keyword-first", "Cited jumps", "Operator-auditable"];
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">
@@ -111,102 +132,118 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 				</p>
 			</div>
 
-			<Card className="folo-surface border-border/70">
-				<CardHeader>
-					<h2 className="text-xl font-semibold">
-						{askIntent ? copy.askFormTitle : copy.searchFormTitle}
-					</h2>
-					<CardDescription>
-						{askIntent ? copy.askFormDescription : copy.searchFormDescription}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<form
-						method="GET"
-						className="grid gap-4 lg:grid-cols-[1.7fr_0.8fr_0.5fr_auto]"
-					>
-						<input type="hidden" name="intent" value={askIntent ? "ask" : ""} />
-						<FormInputField
-							name="q"
-							label={askIntent ? copy.questionLabel : copy.queryLabel}
-							placeholder={
-								askIntent ? copy.questionPlaceholder : copy.queryPlaceholder
-							}
-							defaultValue={queryValue}
-							hint={askIntent ? copy.askHint : copy.searchHint}
-						/>
-						<FormSelectField
-							name="mode"
-							label={askIntent ? copy.groundingModeLabel : copy.modeLabel}
-							defaultValue={normalizedMode}
-							options={modeOptions}
-						/>
-						<FormSelectField
-							name="platform"
-							label={copy.platformLabel}
-							defaultValue={safePlatform}
-							options={platformOptions}
-						/>
-						<FormInputField
-							name="top_k"
-							label={copy.topKLabel}
-							type="number"
-							min={1}
-							max={20}
-							defaultValue={safeTopK}
-						/>
-						<div className="flex items-end gap-3">
-							<Button type="submit" variant="hero" size="sm">
-								{askIntent ? copy.askButton : copy.searchButton}
-							</Button>
-							<Button asChild variant="ghost" size="sm">
-								<Link href={askIntent ? "/ask" : "/search"}>
-									{copy.clearButton}
-								</Link>
-							</Button>
+			<section className="grid gap-4 xl:grid-cols-[1.45fr_0.82fr]">
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<div className="flex flex-wrap gap-2">
+							{emphasisBadges.map((label) => (
+								<Badge
+									key={label}
+									variant="outline"
+									className="bg-background/70"
+								>
+									{label}
+								</Badge>
+							))}
 						</div>
-					</form>
-				</CardContent>
-			</Card>
+						<h2 className="text-xl font-semibold">
+							{askIntent ? copy.askFormTitle : copy.searchFormTitle}
+						</h2>
+						<CardDescription>
+							{askIntent ? copy.askFormDescription : copy.searchFormDescription}
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-6">
+						<form
+							method="GET"
+							className="grid gap-4 xl:grid-cols-[1.5fr_0.72fr_0.72fr_0.26fr]"
+						>
+							<input
+								type="hidden"
+								name="intent"
+								value={askIntent ? "ask" : ""}
+							/>
+							<FormInputField
+								name="q"
+								label={askIntent ? copy.questionLabel : copy.queryLabel}
+								placeholder={
+									askIntent ? copy.questionPlaceholder : copy.queryPlaceholder
+								}
+								defaultValue={queryValue}
+								hint={askIntent ? copy.askHint : copy.searchHint}
+							/>
+							<FormSelectField
+								name="mode"
+								label={askIntent ? copy.groundingModeLabel : copy.modeLabel}
+								defaultValue={normalizedMode}
+								options={modeOptions}
+							/>
+							<FormSelectField
+								name="platform"
+								label={copy.platformLabel}
+								defaultValue={safePlatform}
+								options={platformOptions}
+							/>
+							<FormInputField
+								name="top_k"
+								label={copy.topKLabel}
+								type="number"
+								min={1}
+								max={20}
+								defaultValue={safeTopK}
+							/>
+							<div className="flex flex-wrap items-end gap-3 xl:col-span-full">
+								<Button type="submit" variant="hero" size="sm">
+									{askIntent ? copy.askButton : copy.searchButton}
+								</Button>
+								<Button asChild variant="ghost" size="sm">
+									<Link href={askIntent ? "/ask" : "/search"}>
+										{copy.clearButton}
+									</Link>
+								</Button>
+							</div>
+						</form>
 
-			<section className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<h2 className="text-xl font-semibold">
-							{askIntent ? copy.askTruthTitle : copy.searchTruthTitle}
-						</h2>
-					</CardHeader>
-					<CardContent className="space-y-3 text-sm text-muted-foreground">
-						<p>{askIntent ? copy.askTruthPrimary : copy.searchTruthPrimary}</p>
-						<p>
-							{askIntent ? copy.askTruthSecondary : copy.searchTruthSecondary}
-						</p>
-						{askIntent ? <p>{copy.askTruthNote}</p> : null}
-						<Button asChild variant="outline" size="sm">
-							<Link href={askIntent ? "/ask" : "/ask"}>
-								{askIntent ? copy.askTruthCta : copy.searchTruthCta}
-							</Link>
-						</Button>
-						<Button asChild variant="outline" size="sm">
-							<Link href="/briefings">{briefingsCopy.openBriefingButton}</Link>
-						</Button>
-					</CardContent>
-				</Card>
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<h2 className="text-xl font-semibold">
-							{askIntent ? copy.askContractTitle : copy.searchContractTitle}
-						</h2>
-					</CardHeader>
-					<CardContent className="space-y-3 text-sm text-muted-foreground">
-						<p>
-							{askIntent ? copy.askContractPrimary : copy.searchContractPrimary}
-						</p>
-						<p>
-							{askIntent
-								? copy.askContractSecondary
-								: copy.searchContractSecondary}
-						</p>
+						<div className="grid gap-4 rounded-2xl border border-border/60 bg-background/55 p-4 lg:grid-cols-[1.15fr_0.9fr]">
+							<div className="space-y-3">
+								<p className="font-semibold text-foreground">
+									{askIntent ? copy.askTruthTitle : copy.searchTruthTitle}
+								</p>
+								<div className="space-y-3 text-sm leading-6 text-muted-foreground">
+									{routeFacts.map((fact) => (
+										<p key={fact}>{fact}</p>
+									))}
+								</div>
+							</div>
+							<div className="space-y-3 border-border/50 lg:border-l lg:pl-4">
+								<p className="font-semibold text-foreground">
+									{askIntent ? copy.askContractTitle : copy.searchContractTitle}
+								</p>
+								<ul className="space-y-2 text-sm leading-6 text-muted-foreground">
+									{contractBullets.map((bullet) => (
+										<li key={bullet} className="flex gap-3">
+											<span
+												className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/80"
+												aria-hidden
+											/>
+											<span>{bullet}</span>
+										</li>
+									))}
+								</ul>
+								<div className="flex flex-wrap gap-3 pt-1">
+									<Button asChild variant="outline" size="sm">
+										<Link href="/ask">
+											{askIntent ? copy.askTruthCta : copy.searchTruthCta}
+										</Link>
+									</Button>
+									<Button asChild variant="outline" size="sm">
+										<Link href="/briefings">
+											{briefingsCopy.openBriefingButton}
+										</Link>
+									</Button>
+								</div>
+							</div>
+						</div>
 					</CardContent>
 				</Card>
 			</section>

@@ -12,6 +12,11 @@ import { SyncNowButton } from "@/components/sync-now-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api/client";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import {
 	resolveSearchParams,
@@ -286,12 +291,18 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 	}
 
 	return (
-		<div className="folo-page-shell folo-unified-shell">
+		<div
+			className={`folo-page-shell folo-unified-shell ${editorialSans.className}`}
+		>
 			<div className="folo-page-header">
 				<div className="folo-page-title-row">
 					<div>
 						<p className="folo-page-kicker">{copy.kicker}</p>
-						<h1 className="folo-page-title" data-route-heading tabIndex={-1}>
+						<h1
+							className={`folo-page-title ${editorialSerif.className}`}
+							data-route-heading
+							tabIndex={-1}
+						>
 							{copy.heroTitle}
 						</h1>
 						<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
@@ -304,10 +315,12 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 
 			<section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
 				<div className="folo-panel folo-surface space-y-4">
-					<p className="folo-page-kicker">
+					<p className={`folo-page-kicker ${editorialMono.className}`}>
 						Preview before you commit to the full article
 					</p>
-					<h2 className="text-2xl font-semibold text-foreground">
+					<h2
+						className={`text-2xl leading-tight text-foreground ${editorialSerif.className}`}
+					>
 						Start with the desk, not the controls
 					</h2>
 					<p className="text-sm leading-7 text-muted-foreground">
@@ -337,10 +350,12 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 					aria-label={copy.activeTrackedUniverseLabel}
 				>
 					<div className="space-y-1">
-						<p className="folo-page-kicker">
+						<p className={`folo-page-kicker ${editorialMono.className}`}>
 							{copy.activeTrackedUniverseEyebrow}
 						</p>
-						<h2 className="text-lg font-semibold text-foreground">
+						<h2
+							className={`text-[1.4rem] leading-tight text-foreground ${editorialSerif.className}`}
+						>
 							{safeSubscriptionId
 								? copy.activeTrackedUniverseTitle
 								: "No source desk is pinned yet"}
@@ -369,7 +384,9 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 				<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/20">
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div className="space-y-1">
-							<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+							<p
+								className={`text-xs uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+							>
 								Desk controls
 							</p>
 							<p className="text-sm text-muted-foreground">

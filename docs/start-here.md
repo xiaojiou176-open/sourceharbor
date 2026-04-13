@@ -87,6 +87,12 @@ stack** as two different floors in the building:
 - Miniflux + Nextflux stay a Docker-only optional reader stack. They no longer
   block the base first-run path by default.
 
+One more current truth detail matters now:
+
+- `./bin/full-stack up` can self-heal the core stack when Temporal is down.
+  If worker preflight sees `127.0.0.1:7233` unreachable, it now attempts the
+  repo-owned `core_services.sh up` path before failing the whole local startup.
+
 If you explicitly want the reader stack too, opt in on purpose:
 
 ```bash
@@ -181,6 +187,15 @@ What this gives you:
 - a `job_id`
 - a pipeline run you can inspect
 - a future digest or artifact trail tied to that job
+
+Current maintainer-local truth for this lane:
+
+- a fresh local `mode=full` YouTube run can now complete end-to-end again
+- the repo had to harden three things to get there:
+  - `full-stack up` Temporal self-heal
+  - current Gemini fast-model default (`gemini-3-flash-preview`)
+  - Gemini file upload waiting plus a lightweight proxy-video path so giant raw
+    `.webm` inputs do not stall forever in `FileState.PROCESSING`
 
 ### 5. Inspect the result surfaces
 

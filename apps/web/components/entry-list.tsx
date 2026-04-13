@@ -6,7 +6,11 @@ import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { DigestFeedItem, SubscriptionCategory } from "@/lib/api/types";
-import { editorialMono, editorialSans } from "@/lib/editorial-fonts";
+import {
+	editorialMono,
+	editorialSans,
+	editorialSerif,
+} from "@/lib/editorial-fonts";
 import { resolveFeedIdentity } from "@/lib/source-identity";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +60,7 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 					{items.map((item, index) => {
 						const isVideo = (item.content_type ?? "video") === "video";
 						const isSelected = selectedJobId === item.job_id;
+						const identityModel = resolveFeedIdentity(item);
 						const staggerStyle = {
 							"--feed-stagger-index": index,
 						} as CSSProperties;
@@ -97,10 +102,29 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 												<Badge variant="outline">{item.feedback_label}</Badge>
 											) : null}
 										</div>
+										<div className="space-y-2">
+											<p
+												className={`feed-entry-kicker ${editorialMono.className}`}
+											>
+												{renderSourceName(item.source, item.source_name)}
+												<span aria-hidden="true"> · </span>
+												<RelativeTime dateTime={item.published_at} />
+											</p>
+											<h3
+												className={`feed-entry-headline ${editorialSerif.className}`}
+											>
+												{item.title}
+											</h3>
+											{item.published_document_title ? (
+												<p className="feed-entry-support">
+													Reader edition ready · {item.published_document_title}
+												</p>
+											) : null}
+										</div>
 										<SourceIdentityCard
 											identity={{
-												...resolveFeedIdentity(item),
-												description: item.title,
+												...identityModel,
+												description: identityModel.description,
 												meta: [
 													`Universe ${renderSourceName(item.source, item.source_name)}`,
 													`Published ${new Date(
@@ -117,19 +141,11 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 											}}
 											compact
 											className={cn(
-												"transition-colors",
-												isSelected && "border-primary/50 bg-primary/5",
+												"feed-entry-identity-card transition-colors",
+												isSelected &&
+													"border-primary/45 bg-[color:var(--color-primary-light)]/50",
 											)}
 										/>
-										<div
-											className={`feed-entry-meta ${editorialMono.className}`}
-										>
-											<span className="feed-entry-source">
-												{renderSourceName(item.source, item.source_name)}
-											</span>
-											<span>·</span>
-											<RelativeTime dateTime={item.published_at} />
-										</div>
 									</div>
 								</Link>
 							</li>

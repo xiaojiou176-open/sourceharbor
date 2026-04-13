@@ -11,6 +11,7 @@ import {
 	LineChart,
 	List,
 	ListTodo,
+	type LucideIcon,
 	Menu,
 	MessageSquare,
 	PanelLeftClose,
@@ -90,6 +91,19 @@ type NavContentProps = {
 	apiHealthLabel: string;
 };
 
+type NavItem = {
+	href: string;
+	label: string;
+	icon: LucideIcon;
+	active: boolean;
+};
+
+type NavSection = {
+	id: string;
+	label: string;
+	items: NavItem[];
+};
+
 function SidebarNavContent({
 	collapsed,
 	subscriptions,
@@ -105,218 +119,168 @@ function SidebarNavContent({
 	const isFeed = pathname === "/feed" || pathname.startsWith("/feed");
 	const grouped = groupByCategory(subscriptions);
 	const enabledSubs = subscriptions.filter((s) => s.enabled);
+	const navSections: NavSection[] = [
+		{
+			id: "read",
+			label: "Read first",
+			items: [
+				{ href: "/", label: "Home", icon: Home, active: pathname === "/" },
+				{
+					href: "/feed",
+					label: "Digest feed",
+					icon: Sparkles,
+					active: isFeed && !currentCategory && !currentSub,
+				},
+				{
+					href: "/subscriptions",
+					label: "Subscriptions",
+					icon: Plus,
+					active: pathname.startsWith("/subscriptions"),
+				},
+				{
+					href: "/search",
+					label: "Search",
+					icon: Search,
+					active: pathname.startsWith("/search"),
+				},
+				{
+					href: "/ask",
+					label: "Ask",
+					icon: MessageSquare,
+					active: pathname.startsWith("/ask"),
+				},
+				{
+					href: "/reader",
+					label: "Reader",
+					icon: FileText,
+					active: pathname.startsWith("/reader"),
+				},
+			],
+		},
+		{
+			id: "build",
+			label: "Build and prove",
+			items: [
+				{
+					href: "/builders",
+					label: "Builders",
+					icon: Blocks,
+					active: pathname.startsWith("/builders"),
+				},
+				{
+					href: "/mcp",
+					label: "MCP Quickstart",
+					icon: List,
+					active: pathname.startsWith("/mcp"),
+				},
+			],
+		},
+		{
+			id: "compounder",
+			label: "Track the story",
+			items: [
+				{
+					href: "/watchlists",
+					label: "Watchlists",
+					icon: BookmarkPlus,
+					active: pathname.startsWith("/watchlists"),
+				},
+				{
+					href: "/trends",
+					label: "Trends",
+					icon: LineChart,
+					active: pathname.startsWith("/trends"),
+				},
+				{
+					href: "/briefings",
+					label: "Briefings",
+					icon: FileText,
+					active: pathname.startsWith("/briefings"),
+				},
+				{
+					href: "/knowledge",
+					label: "Knowledge",
+					icon: Layers3,
+					active: pathname.startsWith("/knowledge"),
+				},
+			],
+		},
+		{
+			id: "operate",
+			label: "Operate",
+			items: [
+				{
+					href: "/ops",
+					label: "Ops inbox",
+					icon: Activity,
+					active: pathname.startsWith("/ops"),
+				},
+				{
+					href: "/jobs",
+					label: "Jobs",
+					icon: ListTodo,
+					active: pathname.startsWith("/jobs"),
+				},
+				{
+					href: "/ingest-runs",
+					label: "Ingest runs",
+					icon: Inbox,
+					active: pathname.startsWith("/ingest-runs"),
+				},
+			],
+		},
+	];
 
 	return (
 		<>
-			<nav
-				aria-label="Primary navigation"
-				className="flex flex-col gap-0.5 p-3"
-			>
-				<Link
-					href="/"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname === "/"
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname === "/" ? "page" : undefined}
-				>
-					<Home className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Home</span>
-				</Link>
-				<Link
-					href="/feed"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						isFeed && !currentCategory && !currentSub
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={
-						isFeed && !currentCategory && !currentSub ? "page" : undefined
-					}
-				>
-					<Sparkles className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Digest feed</span>
-				</Link>
-				<Link
-					href="/subscriptions"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/subscriptions")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={
-						pathname.startsWith("/subscriptions") ? "page" : undefined
-					}
-				>
-					<Plus className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>
-						Subscriptions
-					</span>
-				</Link>
-				<Link
-					href="/search"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/search")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/search") ? "page" : undefined}
-				>
-					<Search className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Search</span>
-				</Link>
-				<Link
-					href="/builders"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/builders")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/builders") ? "page" : undefined}
-				>
-					<Blocks className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Builders</span>
-				</Link>
-				<Link
-					href="/ask"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/ask")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/ask") ? "page" : undefined}
-				>
-					<MessageSquare className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Ask</span>
-				</Link>
-				<Link
-					href="/mcp"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/mcp")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/mcp") ? "page" : undefined}
-				>
-					<List className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>
-						MCP Quickstart
-					</span>
-				</Link>
-				<Link
-					href="/reader"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/reader")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/reader") ? "page" : undefined}
-				>
-					<FileText className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Reader</span>
-				</Link>
-				<Link
-					href="/ops"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/ops")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/ops") ? "page" : undefined}
-				>
-					<Activity className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Ops inbox</span>
-				</Link>
-				<Link
-					href="/watchlists"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/watchlists")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/watchlists") ? "page" : undefined}
-				>
-					<BookmarkPlus className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Watchlists</span>
-				</Link>
-				<Link
-					href="/trends"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/trends")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/trends") ? "page" : undefined}
-				>
-					<LineChart className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Trends</span>
-				</Link>
-				<Link
-					href="/briefings"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/briefings")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/briefings") ? "page" : undefined}
-				>
-					<FileText className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Briefings</span>
-				</Link>
-				<Link
-					href="/knowledge"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/knowledge")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/knowledge") ? "page" : undefined}
-				>
-					<Layers3 className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Knowledge</span>
-				</Link>
-				<Link
-					href="/jobs"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/jobs")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={pathname.startsWith("/jobs") ? "page" : undefined}
-				>
-					<ListTodo className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Jobs</span>
-				</Link>
-				<Link
-					href="/ingest-runs"
-					className={cn(
-						"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
-						pathname.startsWith("/ingest-runs")
-							? "bg-sidebar-accent text-sidebar-accent-foreground"
-							: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-					)}
-					aria-current={
-						pathname.startsWith("/ingest-runs") ? "page" : undefined
-					}
-				>
-					<Inbox className="size-4 shrink-0 opacity-80" aria-hidden />
-					<span className={collapsed ? "sr-only" : undefined}>Ingest runs</span>
-				</Link>
+			<nav aria-label="Primary navigation" className="flex flex-col gap-3 p-3">
+				{!collapsed ? (
+					<div className="rounded-xl border border-border/50 bg-background/55 px-3 py-3">
+						<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+							Route atlas
+						</p>
+						<p className="mt-2 text-xs leading-5 text-muted-foreground">
+							Read the product first, then branch into builder, compounder, and
+							ops lanes.
+						</p>
+					</div>
+				) : null}
+
+				{navSections.map((section, sectionIndex) => (
+					<div key={section.id} className="space-y-1.5">
+						{!collapsed ? (
+							<p
+								className={cn(
+									"px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground",
+									sectionIndex > 0 ? "pt-2" : "",
+								)}
+							>
+								{section.label}
+							</p>
+						) : null}
+						{section.items.map((item) => {
+							const Icon = item.icon;
+							return (
+								<Link
+									key={item.href}
+									href={item.href}
+									className={cn(
+										"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
+										item.active
+											? "bg-sidebar-accent text-sidebar-accent-foreground"
+											: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+									)}
+									aria-current={item.active ? "page" : undefined}
+								>
+									<Icon className="size-4 shrink-0 opacity-80" aria-hidden />
+									<span className={collapsed ? "sr-only" : undefined}>
+										{item.label}
+									</span>
+								</Link>
+							);
+						})}
+					</div>
+				))}
 
 				{subscriptionsLoadError && !collapsed ? (
 					<div
@@ -339,6 +303,14 @@ function SidebarNavContent({
 				{enabledSubs.length > 0 && !collapsed ? (
 					<>
 						<Separator className="my-2" />
+						<div className="space-y-1 px-3">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+								Tracked universes
+							</p>
+							<p className="text-xs leading-5 text-muted-foreground">
+								Jump from the route atlas into a narrowed feed lane.
+							</p>
+						</div>
 						{CATEGORY_ORDER.map((cat) => {
 							const list = grouped.get(cat)?.filter((s) => s.enabled) ?? [];
 							if (list.length === 0) return null;
@@ -506,9 +478,12 @@ export function Sidebar({
 						</SheetContent>
 					</Sheet>
 				) : (
-					<span className="text-sm font-semibold tracking-tight text-foreground">
-						Navigation
-					</span>
+					<div className="min-w-0">
+						<p className="text-sm font-semibold tracking-tight text-foreground">
+							SourceHarbor
+						</p>
+						<p className="text-xs text-muted-foreground">Navigation atlas</p>
+					</div>
 				)}
 				<Button
 					type="button"

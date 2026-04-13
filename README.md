@@ -432,6 +432,9 @@ Two local runtime layers now stay explicitly separated:
   repo-owned local Postgres/Temporal under `.runtime-cache/` when Docker is
   unavailable and local `postgres` / `initdb` / `pg_ctl` / `temporal` binaries
   exist.
+  `./bin/full-stack up` can now self-heal this layer once too: when worker
+  preflight finds Temporal down, it first attempts the repo-owned
+  `core_services.sh up` path before failing the local start.
 - **reader stack:** Miniflux + Nextflux. This stays a Docker-only optional lane
   and no longer blocks the base first-run path by default.
 
@@ -501,6 +504,15 @@ curl -sS "${SOURCE_HARBOR_API_BASE_URL}/api/v1/videos" | jq
 curl -sS "${SOURCE_HARBOR_API_BASE_URL}/api/v1/feed/digests" | jq
 curl -sS "${SOURCE_HARBOR_API_BASE_URL}/api/v1/jobs/<job-id>" | jq
 ```
+
+Current maintainer-local truth for the real YouTube `mode=full` lane:
+
+- a fresh local run can complete again
+- the repo-side fixes that made this true were:
+  - current Gemini fast-model naming (`gemini-3-flash-preview`)
+  - file-upload waiting until Gemini Files becomes `ACTIVE`
+  - a lightweight proxy-video path so giant raw `.webm` downloads do not stall
+    the primary video lane forever
 
 Open these front-door routes after the stack is up:
 
