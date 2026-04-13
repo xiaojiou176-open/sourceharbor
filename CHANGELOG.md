@@ -7,6 +7,14 @@ and this project follows semantic-ish release communication even when the reposi
 
 ## [Unreleased]
 
+## [0.1.34] - 2026-04-13
+
+### Changed
+
+- aligned the latest GitHub Release with `main@a4053d9` after the public-distribution truth refresh landed
+- refreshed the public distribution wording so anonymous read-back for `mcp.so`, `mcpservers.org`, and PulseMCP now matches the latest verifiable public evidence
+- hardened governance artifact receipts so manifest-audit failures now fail closed and final Python coverage artifacts always carry runtime metadata sidecars
+
 ## [0.1.33] - 2026-04-13
 
 ### Changed
