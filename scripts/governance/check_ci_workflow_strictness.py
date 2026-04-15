@@ -1000,7 +1000,9 @@ def _check_publish_pypi_specific_rules(text: str, failures: list[str]) -> None:
     if "uv build" not in text:
         failures.append("publish-pypi.yml: must build distributions through `uv build`")
     if "README.md must keep the MCP ownership marker" not in text:
-        failures.append("publish-pypi.yml: must fail-close when the MCP ownership marker is missing")
+        failures.append(
+            "publish-pypi.yml: must fail-close when the MCP ownership marker is missing"
+        )
     for token in LOCAL_REAL_CHROME_PROFILE_ENV_VARS:
         if token in text:
             failures.append(
