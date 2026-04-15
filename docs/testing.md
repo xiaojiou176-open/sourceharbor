@@ -212,7 +212,7 @@ These still stay outside the default pull-request gate:
 
 - `build-public-api-image.yml`, `build-ci-standard-image.yml`, `release-evidence-attest.yml`, `publish-pypi.yml`, and `publish-mcp-registry.yml` stay in the external-proof lane, not the default pull-request gate
 - those external lanes are `workflow_dispatch` only and run behind protected environments so ordinary pull requests never touch their secrets or publication paths
-- `publish-pypi.yml` is the repo-side Trusted Publisher lane for the `sourceharbor` package, and `publish-mcp-registry.yml` is the repo-side registry refresh lane for `io.github.xiaojiou176-open/sourceharbor-mcp`; both still need platform-side trust/auth setup before a manual run can succeed
+- `publish-pypi.yml` is the repo-side Trusted Publisher lane for the `sourceharbor` package and runs behind protected environment `external-pypi-publish`; `publish-mcp-registry.yml` is the repo-side registry refresh lane for `io.github.xiaojiou176-open/sourceharbor-mcp` and runs behind protected environment `external-mcp-registry-publish`; both still need platform-side trust/auth setup before a manual run can succeed
 - all active GitHub workflows run on `ubuntu-latest`; local `repo-side-strict-ci`
   remains a repo-side proof command, not a self-hosted CI runner
 
