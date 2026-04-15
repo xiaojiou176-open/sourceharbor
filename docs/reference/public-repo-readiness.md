@@ -36,6 +36,8 @@ Two current reading rules are worth keeping explicit:
 - the repo-managed web runtime's `.env.local` under `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` is also local operator proof only; it exists to align browser writes with the local stack and must never be treated as a public surface or release artifact
 - a current-commit mutation receipt under `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` can support repo-side strict CI, but it still belongs to the local/manual proof ledger until a fresh strict receipt or remote check says otherwise
 - `./bin/repo-side-strict-ci --mode pre-push` is still a repo-side closeout command, not a remote proof shortcut; on maintainer workstations it can now fall back from the standard-env container path to a host-bootstrapped pre-push quality gate when Docker itself is the only missing layer
+- GitHub Pages URLs are case-sensitive at the site layer even when GitHub repo URLs are not, so tracked public homepages must match the live deployed path exactly instead of assuming lowercase variants will redirect
+- an Official MCP Registry starter packet or older ledger claim is not enough to repeat a live-listing statement; fresh anonymous registry read-back must still return the current SourceHarbor entry before that claim is treated as public-ready truth
 - repo-owned local core-services fallback under `.runtime-cache/` strengthens local first-run resilience, but it remains local runtime proof rather than a hosted or release-current claim
 - the repo-managed local first-run path now has two extra maintainer-local hardening behaviors:
   - `./bin/full-stack up` can self-heal Temporal by calling the repo-owned `core_services.sh up` path before failing worker startup
