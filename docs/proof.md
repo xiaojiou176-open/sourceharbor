@@ -6,6 +6,10 @@ This page defines the public proof ladder.
 
 It is the evidence map for human readers. It is not a machine-rendered current verdict page, and it should not be read as a substitute for commit-sensitive runtime reports.
 
+## Public truth ledgers
+
+Public proof stays on three separate ledgers: release evidence, remote `main` receipts, and external distribution proofs. Each claim below points to the ledger it represents so readers can verify release vs main vs distribution truth without referencing internal planning blueprints.
+
 ## Proof Layer 1: Product Surface
 
 These prove that the public narrative maps to visible product surfaces:
@@ -137,13 +141,11 @@ This page should also protect readers from a different kind of drift:
 - a workflow that can run locally is not the same thing as hosted readiness
 - a sample playground is not the same thing as a live managed product
 
-Current spike-only directions:
+Current spike-only directions are summarized in
+[reference/project-positioning.md](./reference/project-positioning.md).
 
-- [Agent Autopilot spike](./blueprints/2026-03-31-agent-autopilot-spike.md)
-- [Hosted readiness spike](./blueprints/2026-03-31-hosted-readiness-spike.md)
-
-Those documents describe what might be worth exploring next. They do **not**
-upgrade the current public proof layer on their own.
+Those future-direction summaries describe what might be worth exploring next.
+They do **not** upgrade the current public proof layer on their own.
 
 Current blocker truth is also more specific than generic "missing secret"
 language:
@@ -190,7 +192,7 @@ Tracked manifests and public presentation assets are inputs to this layer, not p
 
 For the tracked render-only pointer into the external lane, see [docs/generated/external-lane-truth-entry.md](./generated/external-lane-truth-entry.md). That page is a signpost, not the verdict.
 
-Historical plans under `.agents/Plans/` are archived execution context only. They can explain how the repo arrived here, but they must not be treated as the current public truth for SourceHarbor.
+Historical planning ledgers are archived execution context only. They can explain how the repo arrived here, but they must not be treated as the current public truth for SourceHarbor.
 
 For the shortest current-state summary of what is shipped, what is still gated, and what remains future direction, read [project-status.md](./project-status.md).
 

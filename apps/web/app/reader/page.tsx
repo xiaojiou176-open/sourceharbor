@@ -21,7 +21,7 @@ import { resolveReaderSourceIdentity } from "@/lib/source-identity";
 export const metadata: Metadata = buildProductMetadata({
 	title: "Reader",
 	description:
-		"Published reader documents, navigation brief, and yellow-warning surfaced reading flow for SourceHarbor.",
+		"Finished SourceHarbor stories, reading shelf guidance, and source-aware reading flow.",
 	route: "reader",
 });
 
@@ -67,6 +67,29 @@ export default async function ReaderPage() {
 		(document) =>
 			document.id !== (leadDocument?.id ?? "") && !document.published_with_gap,
 	);
+	const shelfSnapshotItems = shelfUnavailable
+		? []
+		: [
+				{
+					label: "Published",
+					value: totalDocuments,
+					valueLabel: String(totalDocuments),
+				},
+				{
+					label: "Clear",
+					value: clearDocuments.length,
+					max: Math.max(totalDocuments, 1),
+					valueLabel: String(clearDocuments.length),
+					tone: "success" as const,
+				},
+				{
+					label: "Warnings",
+					value: warningCount,
+					max: Math.max(totalDocuments, 1),
+					valueLabel: String(warningCount),
+					tone: warningCount > 0 ? ("warning" as const) : ("muted" as const),
+				},
+			];
 
 	return (
 		<div
@@ -81,11 +104,11 @@ export default async function ReaderPage() {
 						>
 							{shelfUnavailable
 								? "Reader temporarily unavailable"
-								: "Reader frontstage"}
+								: "Reading shelf"}
 						</Badge>
 						<div className="space-y-4">
 							<p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-								{shelfUnavailable ? "Shelf status" : "Editorial reading desk"}
+								{shelfUnavailable ? "Shelf status" : "Start here"}
 							</p>
 							<h1
 								data-route-heading
@@ -94,38 +117,13 @@ export default async function ReaderPage() {
 							>
 								{shelfUnavailable
 									? "Reader shelf is temporarily unavailable"
-									: "Read the strongest finished unit before you touch the operator rails"}
+									: "Pick a finished story and start reading"}
 							</h1>
 							<CardDescription className="max-w-3xl text-base leading-8 text-foreground/75">
 								{shelfUnavailable
-									? "The published-document shelf could not be loaded just now. Use the specimen detail or the ops desk while the reader frontstage recovers."
-									: "Start where the story is already materialized. The lead deck gives you one clean reading unit, the brief keeps you oriented, and the rest of the library stays available without dragging you back into intake or dashboard mode."}
+									? "The reading shelf could not be loaded just now. You can still open the sample story or check the backstage status while it recovers."
+									: "Start with one finished story. Notes and source links are there when you need them, but the story should do the first job."}
 							</CardDescription>
-						</div>
-						<div className="grid gap-4 rounded-[1.75rem] border border-border/60 bg-background/75 p-5 md:grid-cols-[minmax(0,1.2fr)_auto] md:items-end">
-							<div className="space-y-2">
-								<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-									{shelfUnavailable ? "Recovery path" : "Reading order"}
-								</p>
-								<p className="max-w-2xl text-sm leading-7 text-foreground/75">
-									{shelfUnavailable
-										? "This page is in fail-close mode. Open the specimen detail for a truthful sample reading path, or use the ops desk to inspect the live runtime before you come back."
-										: "Think of this shelf like the front page of a magazine, not a control room. Pick one finished deck, read it straight through, then open warning or evidence only if the story stops answering you."}
-								</p>
-							</div>
-							<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground md:justify-end">
-								{shelfUnavailable ? (
-									<span>Live counts unavailable</span>
-								) : (
-									<>
-										<span>Published {totalDocuments}</span>
-										<span aria-hidden="true">/</span>
-										<span>Clear {clearDocuments.length}</span>
-										<span aria-hidden="true">/</span>
-										<span>Warnings {warningCount}</span>
-									</>
-								)}
-							</div>
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-8 pb-8">
@@ -157,11 +155,26 @@ export default async function ReaderPage() {
 								</Button>
 							)}
 						</div>
+						{shelfSnapshotItems.length ? (
+							<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+								{shelfSnapshotItems.map((item) => (
+									<Badge key={item.label} variant="outline">
+										{item.label}: {item.valueLabel}
+									</Badge>
+								))}
+							</div>
+						) : (
+							<div className="rounded-[1.5rem] border border-border/60 bg-background/75 p-5 text-sm leading-7 text-foreground/75">
+								This page is in fail-close mode. Open the sample story or the
+								backstage status page, then come back once the live shelf
+								recovers.
+							</div>
+						)}
 						{leadDocument ? (
 							<div className="grid gap-6 rounded-[1.75rem] border border-border/70 bg-background/80 p-6 xl:grid-cols-[minmax(0,1.22fr)_minmax(260px,0.72fr)]">
 								<div className="space-y-5">
 									<div className="flex flex-wrap items-center gap-2">
-										<Badge variant="secondary">Lead document</Badge>
+										<Badge variant="secondary">Featured story</Badge>
 										<Badge
 											variant={
 												leadDocument.published_with_gap
@@ -170,8 +183,8 @@ export default async function ReaderPage() {
 											}
 										>
 											{leadDocument.published_with_gap
-												? "Yellow warning"
-												: "Clear"}
+												? "Read with care"
+												: "Ready"}
 										</Badge>
 										{leadDocument.topic_label ? (
 											<Badge variant="outline">
@@ -181,20 +194,20 @@ export default async function ReaderPage() {
 									</div>
 									<div className="space-y-3">
 										<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-											Today&apos;s strongest deck
+											Start here
 										</p>
 										<CardTitle className="font-serif text-4xl leading-[1.02] tracking-tight md:text-5xl">
 											{leadDocument.title}
 										</CardTitle>
 										<p className="max-w-3xl text-base leading-8 text-foreground/75">
 											{leadDocument.summary ??
-												"Open the current lead document to inspect the merged markdown, warning state, and source contribution ledger in one place."}
+												"Open this story to read the finished piece first, then open source notes only if you want to look closer."}
 										</p>
 									</div>
 									<dl className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
 										<div className="rounded-2xl border border-border/60 bg-muted/15 p-3">
 											<dt className="text-xs font-semibold uppercase tracking-[0.18em]">
-												Window
+												Edition
 											</dt>
 											<dd className="mt-2 text-foreground/85">
 												{leadDocument.window_id}
@@ -202,7 +215,7 @@ export default async function ReaderPage() {
 										</div>
 										<div className="rounded-2xl border border-border/60 bg-muted/15 p-3">
 											<dt className="text-xs font-semibold uppercase tracking-[0.18em]">
-												Version
+												Revision
 											</dt>
 											<dd className="mt-2 text-foreground/85">
 												{leadDocument.version}
@@ -210,7 +223,7 @@ export default async function ReaderPage() {
 										</div>
 										<div className="rounded-2xl border border-border/60 bg-muted/15 p-3">
 											<dt className="text-xs font-semibold uppercase tracking-[0.18em]">
-												Sources
+												Sources used
 											</dt>
 											<dd className="mt-2 text-foreground/85">
 												{leadDocument.source_item_count}
@@ -221,17 +234,16 @@ export default async function ReaderPage() {
 								<aside className="space-y-4 rounded-3xl border border-border/60 bg-muted/20 p-5">
 									<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 										<LibraryBig className="h-4 w-4 text-rose-600" />
-										Margin note
+										Reading note
 									</div>
 									<p className="text-sm leading-6 text-muted-foreground">
-										Read the body first. Keep the warning in mind. Open evidence
-										only when the deck stops answering your question. Everything
-										in this column is a side note, not a second front page.
+										Read the story first. Notes and source links stay close, but
+										they should never be louder than the story itself.
 									</p>
 									{leadSources.length ? (
 										<div className="rounded-2xl border border-border/60 bg-background/90 p-4">
 											<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-												First three footnotes
+												Sources behind this story
 											</p>
 											<div className="mt-3 space-y-2 text-sm text-muted-foreground">
 												{leadSources.map((source, index) => (
@@ -248,30 +260,36 @@ export default async function ReaderPage() {
 										</div>
 									) : null}
 									<div className="space-y-2 text-sm text-muted-foreground">
-										<p>Need another rail later?</p>
-										<p>
-											<Link
-												className="underline underline-offset-4"
-												href="/briefings"
-											>
-												Briefings
-											</Link>{" "}
-											for the story-first sweep,{" "}
-											<Link
-												className="underline underline-offset-4"
-												href="/trends"
-											>
-												Trends
-											</Link>{" "}
-											for repeated themes, or{" "}
-											<Link
-												className="underline underline-offset-4"
-												href="/subscriptions"
-											>
-												Source intake
-											</Link>{" "}
-											when the shelf itself needs more material.
-										</p>
+										<p className="font-medium text-foreground">Keep going</p>
+										<ul className="space-y-2">
+											<li>
+												<Link
+													className="underline underline-offset-4"
+													href="/briefings"
+												>
+													Briefings
+												</Link>{" "}
+												for the story-first sweep.
+											</li>
+											<li>
+												<Link
+													className="underline underline-offset-4"
+													href="/trends"
+												>
+													Trends
+												</Link>{" "}
+												for repeated themes.
+											</li>
+											<li>
+												<Link
+													className="underline underline-offset-4"
+													href="/subscriptions"
+												>
+													Add sources
+												</Link>{" "}
+												when the shelf needs more material.
+											</li>
+										</ul>
 									</div>
 								</aside>
 							</div>
@@ -282,14 +300,13 @@ export default async function ReaderPage() {
 										Lead reading deck
 									</p>
 									<p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-										Run intake, freeze a batch, and materialize the reader
-										pipeline to turn raw source items into readable documents on
-										this frontstage.
+										Bring in one source, let the first story finish, then come
+										back here for the reading view.
 									</p>
 									<p className="mt-3 text-sm text-muted-foreground">
-										Until the first live deck lands, the specimen detail gives
-										you a truthful way to inspect the body, warning, and
-										evidence hierarchy.
+										Until the first live story lands, the sample story shows the
+										same reading rhythm without pretending there is already real
+										shelf content.
 									</p>
 								</div>
 								<div className="rounded-2xl border border-border/60 bg-background/90 p-5">
@@ -297,8 +314,8 @@ export default async function ReaderPage() {
 										Showroom specimen
 									</p>
 									<p className="mt-3 text-sm leading-6 text-muted-foreground">
-										Open one fully staged detail page first, then come back once
-										the live shelf has materialized.
+										Open one sample story first, then come back once the live
+										shelf has materialized.
 									</p>
 									<Button asChild variant="outline" className="mt-4 w-full">
 										<Link href={`/reader/${DEMO_READER_DOCUMENT_ID}`}>
@@ -314,19 +331,18 @@ export default async function ReaderPage() {
 				<Card className="border-border/70 bg-background/95 shadow-sm lg:sticky lg:top-6">
 					<CardHeader className="space-y-4">
 						<Badge variant="outline" className="w-fit">
-							Margin note
+							Reading note
 						</Badge>
-						<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-							Navigation brief
-						</p>
-						<h2 className="font-serif text-2xl font-semibold leading-none tracking-tight">
-							30-second brief
-						</h2>
-						<CardDescription>
-							A compact route map over the current published-doc layer. Treat it
-							like the note in the edge of a printed page, then go back to the
-							strongest deck.
-						</CardDescription>
+							<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+								Up next
+							</p>
+							<h2 className="font-serif text-2xl font-semibold leading-none tracking-tight">
+								Where to go next
+							</h2>
+							<CardDescription>
+								Use this only when you want your next reading path. The story
+								should still come first.
+							</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4 text-sm">
 						{navigationBrief ? (
@@ -336,10 +352,10 @@ export default async function ReaderPage() {
 								</p>
 								<div className="flex flex-wrap gap-2">
 									<Badge variant="secondary">
-										Docs {navigationBrief.document_count}
+										Stories {navigationBrief.document_count}
 									</Badge>
 									<Badge variant="outline">
-										Yellow warnings {navigationBrief.published_with_gap_count}
+										Needs note {navigationBrief.published_with_gap_count}
 									</Badge>
 								</div>
 								<div className="space-y-2">
@@ -375,22 +391,24 @@ export default async function ReaderPage() {
 							>
 								<p className="text-muted-foreground">
 									{briefUnavailable
-										? "Navigation brief is temporarily unavailable. Open the lead deck or specimen detail directly while the margin note reloads."
-										: "No navigation brief is available yet. Until the first live deck lands, use the specimen route as your sample reading path."}
+										? "The quick guide is temporarily unavailable. Open the featured story or the sample story directly while it reloads."
+										: "There is no guide yet. Until the first live story lands, use the sample story as your reading path."}
 								</p>
 								<div className="space-y-2">
 									<div className="rounded-2xl border border-border/60 p-4">
-										<p className="font-medium">01 Open the specimen</p>
+										<p className="font-medium">01 Open the sample story</p>
 										<p className="mt-1 text-muted-foreground">
-											Read one finished sample before you configure intake.
+											Read one finished sample before you worry about anything
+											else.
 										</p>
 									</div>
 									<div className="rounded-2xl border border-border/60 p-4">
 										<p className="font-medium">
-											02 Materialize the first live deck
+											02 Come back when the first live story lands
 										</p>
 										<p className="mt-1 text-muted-foreground">
-											Freeze a batch, publish it, then return to this shelf.
+											Once the first story is published, this guide turns into a
+											short reading map.
 										</p>
 									</div>
 								</div>
@@ -404,12 +422,11 @@ export default async function ReaderPage() {
 				<section className="space-y-4">
 					<div className="space-y-2">
 						<h2 className="font-serif text-3xl tracking-tight">
-							Needs attention
+							Stories with notes
 						</h2>
 						<p className="text-sm text-muted-foreground">
-							These documents stay readable, but they still carry yellow-warning
-							disclosure. Open them when you want the latest story with an
-							explicit caution label.
+							These stories are still readable. Open them when you want the
+							latest piece and its note in view.
 						</p>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -420,7 +437,7 @@ export default async function ReaderPage() {
 							>
 								<CardHeader className="space-y-3">
 									<div className="flex flex-wrap items-center gap-2">
-										<Badge variant="destructive">Yellow warning</Badge>
+										<Badge variant="destructive">Read with care</Badge>
 										{document.topic_label ? (
 											<Badge variant="outline">{document.topic_label}</Badge>
 										) : null}
@@ -434,19 +451,19 @@ export default async function ReaderPage() {
 										</CardTitle>
 										<CardDescription className="mt-2 leading-6">
 											{document.summary ??
-												"Readable now, but still carrying explicit warning disclosure."}
+												"Readable now, with one note to keep nearby while you read."}
 										</CardDescription>
 									</div>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-										<span>Window {document.window_id}</span>
-										<span>Version {document.version}</span>
-										<span>Sources {document.source_item_count}</span>
+										<span>Edition {document.window_id}</span>
+										<span>Revision {document.version}</span>
+										<span>Sources used {document.source_item_count}</span>
 									</div>
 									<Button asChild className="w-full">
 										<Link href={`/reader/${document.id}`}>
-											Open reader detail
+											Open story
 										</Link>
 									</Button>
 								</CardContent>
@@ -463,8 +480,8 @@ export default async function ReaderPage() {
 							Reader library
 						</h2>
 						<p className="text-sm text-muted-foreground">
-							Every card below is already a published reader document, whether
-							it came from a merge path or a singleton polish path.
+							Every card below is already a finished story you can read
+							end-to-end.
 						</p>
 					</div>
 					<p className="text-sm text-muted-foreground">
@@ -491,31 +508,31 @@ export default async function ReaderPage() {
 									</div>
 									<div className="space-y-2">
 										<p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-											Published unit
+											Finished story
 										</p>
 										<CardTitle className="font-serif text-2xl leading-7">
 											{document.title}
 										</CardTitle>
 										<CardDescription className="mt-2 leading-6">
 											{document.summary ??
-												"Open the document to inspect the merged reader markdown and source contributions."}
+												"Open the story to read it cleanly, then open notes only if you want more context."}
 										</CardDescription>
 									</div>
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-										<span>Window {document.window_id}</span>
-										<span>Version {document.version}</span>
-										<span>Sources {document.source_item_count}</span>
+										<span>Edition {document.window_id}</span>
+										<span>Revision {document.version}</span>
+										<span>Sources used {document.source_item_count}</span>
 									</div>
 									<p className="text-sm text-muted-foreground">
-										Backed by {document.source_item_count} source
+										Built from {document.source_item_count} source
 										{document.source_item_count === 1 ? "" : "s"} and ready to
-										open as one published reading unit.
+										read as one finished story.
 									</p>
 									<Button asChild className="w-full">
 										<Link href={`/reader/${document.id}`}>
-											Open reader detail
+											Open story
 										</Link>
 									</Button>
 								</CardContent>
@@ -560,11 +577,10 @@ export default async function ReaderPage() {
 				) : (
 					<Card className="border-border/70 shadow-sm">
 						<CardHeader>
-							<CardTitle>No published reader documents yet</CardTitle>
+							<CardTitle>No finished stories yet</CardTitle>
 							<CardDescription>
-								Run the intake path, freeze a consumption batch, then
-								materialize the reader pipeline so this surface has real output
-								to show.
+								Process one source, let the first story finish, then come back
+								here for the reading shelf.
 							</CardDescription>
 						</CardHeader>
 					</Card>

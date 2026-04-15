@@ -49,13 +49,13 @@ describe("search and MCP front doors", () => {
 		]);
 	});
 
-	it("renders grounded search results with widened source filtering", async () => {
-		mockSearchRetrieval.mockResolvedValue({
-			query: "agent workflows",
-			top_k: 8,
-			filters: { platform: "rss" },
-			items: [
-				{
+		it("renders grounded search results with widened source filtering", async () => {
+			mockSearchRetrieval.mockResolvedValue({
+				query: "agent workflows",
+				top_k: 8,
+				filters: { platform: "rss" },
+				items: [
+					{
 					job_id: "job-1",
 					video_id: "video-1",
 					platform: "rss",
@@ -65,11 +65,24 @@ describe("search and MCP front doors", () => {
 					kind: "video_digest_v1",
 					mode: "full",
 					source: "knowledge_cards",
-					snippet: "Agent workflows with retry and review loops.",
-					score: 2.4,
-				},
-			],
-		});
+						snippet: "Agent workflows with retry and review loops.",
+						score: 2.4,
+					},
+					{
+						job_id: "job-2",
+						video_id: "video-2",
+						platform: "rss",
+						video_uid: "vid-2",
+						source_url: "https://example.com/ops.xml",
+						title: "Ops Digest",
+						kind: "video_digest_v1",
+						mode: "full",
+						source: "knowledge_cards",
+						snippet: "Operational follow-ups after the first reading pass.",
+						score: 1.6,
+					},
+				],
+			});
 
 		render(
 			await SearchPage({
@@ -88,29 +101,34 @@ describe("search and MCP front doors", () => {
 			filters: { platform: "rss" },
 		});
 		expect(screen.getByRole("heading", { name: "Search" })).toBeInTheDocument();
-		expect(
-			screen.getByRole("combobox", { name: "Platform" }),
-		).toHaveTextContent("RSS / web source");
-		expect(screen.getByText("AI Weekly")).toBeInTheDocument();
-		expect(
-			screen.getByRole("link", { name: "Open job trace" }),
-		).toHaveAttribute("href", "/jobs?job_id=job-1");
-		expect(
-			screen.getByRole("link", { name: "Open knowledge cards" }),
-		).toHaveAttribute("href", "/knowledge?job_id=job-1");
-		expect(
-			screen.getByRole("link", { name: "Open feed entry" }),
-		).toHaveAttribute("href", "/feed?item=job-1");
-		expect(screen.getByRole("link", { name: "Open briefing" })).toHaveAttribute(
-			"href",
-			"/briefings",
-		);
-		expect(
-			screen.getByText(
-				/retrieval substrate already reaches beyond two video platforms/i,
-			),
-		).toBeInTheDocument();
-	});
+			expect(
+				screen.getByRole("combobox", { name: "Source" }),
+			).toHaveTextContent("RSS / web source");
+			expect(screen.getByRole("heading", { name: "Start with the best hit" })).toBeInTheDocument();
+			expect(screen.getAllByText("AI Weekly")).toHaveLength(1);
+			expect(screen.getByRole("heading", { name: "Keep reading" })).toBeInTheDocument();
+			expect(screen.getByText("Ops Digest")).toBeInTheDocument();
+			expect(
+				screen.getAllByRole("link", { name: "See source trail" })[0],
+			).toHaveAttribute("href", "/jobs?job_id=job-1");
+			expect(
+				screen
+					.getAllByRole("link", { name: "Open notes" })
+					.map((element) => element.getAttribute("href")),
+			).toEqual(["/knowledge?job_id=job-2"]);
+			expect(
+				screen
+					.getAllByRole("link", { name: "Open preview" })
+					.map((element) => element.getAttribute("href")),
+			).toEqual(
+				expect.arrayContaining(["/feed?item=job-1", "/feed?item=job-2"]),
+			);
+			expect(screen.getByRole("link", { name: "Open briefing" })).toHaveAttribute(
+				"href",
+				"/briefings",
+			);
+			expect(screen.queryByText(/Search results/i)).not.toBeInTheDocument();
+		});
 
 	it("renders Ask as a briefing-aware front door with answer, changes, and evidence", async () => {
 		mockGetAskAnswer.mockResolvedValue({
@@ -583,30 +601,26 @@ describe("search and MCP front doors", () => {
 			topic_key: "retry-policy",
 		});
 		expect(
-			screen.getByRole("heading", { name: "Ask your sources" }),
+			screen.getByRole("heading", { name: "Ask what you've saved" }),
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole("heading", { name: "Best current answer" }),
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole("heading", { name: "Story focus driving this answer" }),
+			screen.getByRole("heading", { name: "This answer is about" }),
 		).toBeInTheDocument();
 		expect(
-			screen.getAllByText(/Selected by: Question match/i).length,
+			screen.getAllByText(/Based on: Question match/i).length,
 		).toBeGreaterThan(0);
 		expect(
-			screen.getByRole("heading", { name: "Switch story focus" }),
+			screen.getByRole("heading", { name: "Try another angle" }),
 		).toBeInTheDocument();
 		expect(
 			screen.getAllByText(
 				"Retries moved from optional advice to default posture",
 			).length,
 		).toBeGreaterThan(0);
-		expect(
-			screen.getByText(
-				/Retry guidance moved from optional to default posture/i,
-			),
-		).toBeInTheDocument();
+		expect(screen.getByText("Receipts later")).toBeInTheDocument();
 		expect(
 			screen
 				.getAllByRole("link", { name: "Open selected briefing" })
@@ -614,15 +628,14 @@ describe("search and MCP front doors", () => {
 		).toContain(
 			"/briefings?watchlist_id=wl-1&story_id=story-1&via=briefing-story",
 		);
-		expect(
-			screen.getByRole("heading", { name: "Citations behind this answer" }),
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole("link", { name: "Open briefing story" }),
-		).toHaveAttribute(
-			"href",
-			"/briefings?watchlist_id=wl-1&story_id=story-1&via=briefing-story",
-		);
+			const answerHeading = screen.getByRole("heading", {
+				name: "Best current answer",
+			});
+			const refineLaterSummary = screen.getByText("Refine later");
+			expect(
+				answerHeading.compareDocumentPosition(refineLaterSummary) &
+					Node.DOCUMENT_POSITION_FOLLOWING,
+			).toBeTruthy();
 		expect(
 			screen.getByRole("link", {
 				name: "Failure budgets became the comparison lens",
@@ -631,10 +644,6 @@ describe("search and MCP front doors", () => {
 			"href",
 			"/ask?watchlist_id=wl-1&story_id=story-2&topic_key=failure-budget&via=secondary-story&question=retry+policy&mode=keyword&top_k=6",
 		);
-		expect(
-			screen.getByRole("heading", { name: "Evidence for this question" }),
-		).toBeInTheDocument();
-		expect(screen.getByText("AI Weekly")).toBeInTheDocument();
 	});
 
 	it("keeps Ask honest when no briefing context is attached", async () => {
@@ -682,12 +691,45 @@ describe("search and MCP front doors", () => {
 		);
 
 		expect(
-			screen.getAllByText(/Add briefing context first/i).length,
+			screen.getAllByText(/Pick a saved topic first/i).length,
 		).toBeGreaterThan(0);
 		expect(
-			screen.getAllByText(/cannot honestly frame an answer-and-change view/i)
+			screen.getAllByText(/Without a watchlist briefing/i)
 				.length,
 		).toBeGreaterThan(0);
+	});
+
+	it("keeps Ask available when the answer route rejects", async () => {
+		mockGetAskAnswer.mockRejectedValue(new Error("api down"));
+
+		render(
+			await AskPage({
+				searchParams: {
+					question: "retry policy",
+					mode: "keyword",
+					watchlist_id: "wl-1",
+				},
+			}),
+		);
+
+		expect(
+			screen.getByRole("heading", { name: "Ask what you've saved" }),
+		).toBeInTheDocument();
+		expect(screen.getByText("Briefing unavailable")).toBeInTheDocument();
+		expect(
+			screen
+				.getAllByRole("link", { name: "Open selected briefing" })
+				.map((element) => element.getAttribute("href")),
+		).toEqual(
+			expect.arrayContaining(["/briefings?watchlist_id=wl-1", "/briefings"]),
+		);
+		expect(
+			screen
+				.getAllByRole("link", { name: "Open Search" })
+				.map((element) => element.getAttribute("href")),
+		).toEqual(
+			expect.arrayContaining(["/search"]),
+		);
 	});
 
 	it("renders MCP quickstart with real startup commands and tool examples", () => {

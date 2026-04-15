@@ -172,22 +172,22 @@ describe("Sidebar + Sheet contract", () => {
 				"aria-current",
 				"page",
 			);
-			expect(screen.getByRole("link", { name: "Ops inbox" })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: "System status" })).toHaveAttribute(
 				"href",
 				"/ops",
 			);
-			expect(screen.getByRole("link", { name: "Watchlists" })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: "Saved topics" })).toHaveAttribute(
 				"href",
 				"/watchlists",
 			);
-			expect(screen.getByRole("link", { name: "Trends" })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: "What changed" })).toHaveAttribute(
 				"href",
 				"/trends",
 			);
 			expect(
-				screen.getByRole("link", { name: "Subscriptions" }),
+				screen.getByRole("link", { name: "Sources" }),
 			).toHaveAttribute("href", "/subscriptions");
-			expect(screen.getByRole("link", { name: "Briefings" })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: "Story briefs" })).toHaveAttribute(
 				"href",
 				"/briefings",
 			);
@@ -316,7 +316,7 @@ describe("Sidebar + Sheet contract", () => {
 			);
 			expect(screen.queryByRole("link", { name: "Tech" })).toBeNull();
 			expect(
-				screen.queryByRole("link", { name: "Digest feed" }),
+				screen.queryByRole("link", { name: "Reading desk" }),
 			).not.toHaveAttribute("aria-current");
 		},
 		SIDEBAR_TIMEOUT_MS,
@@ -337,11 +337,11 @@ describe("Sidebar + Sheet contract", () => {
 
 			expect(
 				screen.getByText(
-					"Subscriptions failed to load. Retry from Subscriptions.",
+					/Could not load your followed sources\. Retry from Following\./i,
 				),
 			).toBeInTheDocument();
 			expect(
-				screen.getByRole("link", { name: "Open Subscriptions" }),
+				screen.getByRole("link", { name: "Open Following" }),
 			).toHaveAttribute("href", "/subscriptions");
 		},
 		SIDEBAR_TIMEOUT_MS,
@@ -429,12 +429,12 @@ describe("Sidebar + Sheet contract", () => {
 				/>,
 			);
 
-			expect(screen.getByRole("link", { name: "Jobs" })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: "Processing history" })).toHaveAttribute(
 				"aria-current",
 				"page",
 			);
 			expect(
-				screen.getByRole("link", { name: "Digest feed" }),
+				screen.getByRole("link", { name: "Reading desk" }),
 			).not.toHaveAttribute("aria-current");
 
 			usePathnameMock.mockReturnValue("/settings/profile");
@@ -497,7 +497,7 @@ describe("Sidebar + Sheet contract", () => {
 				/>,
 			);
 
-			expect(screen.getByRole("link", { name: "Digest feed" })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: "Reading desk" })).toHaveAttribute(
 				"aria-current",
 				"page",
 			);

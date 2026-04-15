@@ -168,6 +168,7 @@ These are larger and need extra gates:
 
 - `.runtime-cache/tmp/web-runtime`
 - `.runtime-cache/tmp/sourceharbor-verify-venv`
+- `.runtime-cache/tmp/sourceharbor-pypi-verify-venv`
 - `.runtime-cache/tmp/ws6-test-venv`
 
 Before these can be deleted, the cleanup gate must prove:

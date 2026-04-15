@@ -178,6 +178,30 @@ def test_core_services_compose_uses_isolated_local_postgres_port_default() -> No
     assert "127.0.0.1:${CORE_POSTGRES_PORT:-15432}:5432" in compose
 
 
+def test_core_services_local_fallback_uses_repo_owned_temporal_db() -> None:
+    script = (_repo_root() / "scripts" / "deploy" / "core_services.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'TEMPORAL_STATE_DIR="$ROOT_DIR/.runtime-cache/tmp/local-temporal"' in script
+    assert 'TEMPORAL_DB_PATH="$TEMPORAL_STATE_DIR/dev.sqlite"' in script
+    assert '"--db-filename"' in script
+    assert 'db_path = os.environ["TEMPORAL_DB_PATH"]' in script
+
+
+def test_core_services_does_not_reuse_unhealthy_temporal_listener_by_port_only() -> None:
+    script = (_repo_root() / "scripts" / "deploy" / "core_services.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert "temporal_namespace_ready()" in script
+    assert '--address "127.0.0.1:${TEMPORAL_PORT}"' in script
+    assert 'temporal operator namespace describe' in script
+    assert 'temporal: unhealthy (reused)' in script
+    assert 'temporal port $TEMPORAL_PORT is occupied by an unhealthy non-repo-owned process' in script
+    assert 'temporal_listener_is_repo_scoped_start_dev' in script
+
+
 def test_full_stack_status_handles_stale_pid_metadata(tmp_path: Path) -> None:
     root = _repo_root()
     target_script_dir = tmp_path / "scripts"

@@ -71,7 +71,8 @@ def _make_store(*connections: _FakeConnection) -> tuple[PostgresBusinessStore, _
 
 
 def test_prepare_consumption_batch_returns_no_pending_items_and_defaults_window_id() -> None:
-    store, _engine = _make_store(_FakeConnection([_FakeResult(rows=[])]))
+    conn = _FakeConnection([_FakeResult(rows=[])])
+    store, _engine = _make_store(conn)
 
     payload = store.prepare_consumption_batch(
         trigger_mode="manual",
@@ -88,6 +89,11 @@ def test_prepare_consumption_batch_returns_no_pending_items_and_defaults_window_
     assert payload["source_item_count"] == 0
     assert payload["job_ids"] == []
     assert payload["pending_window_ids"] == []
+    statement, params = conn.executed[0]
+    assert "subscription_id IS NULL" not in statement
+    assert "platform IS NULL" not in statement
+    assert "j.status IN ('queued', 'succeeded')" in statement
+    assert params == {"scan_limit": 1000}
 
 
 def test_prepare_consumption_batch_freezes_selected_items_and_marks_assigned() -> None:
@@ -160,6 +166,12 @@ def test_prepare_consumption_batch_freezes_selected_items_and_marks_assigned() -
     assert payload["source_item_ids"] == ["item-1", "item-2"]
     assert payload["pending_window_ids"] == ["2026-04-09@America/Los_Angeles"]
     assert engine.used_connections[0].executed[0][1]["scan_limit"] == 50
+    statement, params = engine.used_connections[0].executed[0]
+    assert "j.status IN ('queued', 'succeeded')" in statement
+    assert "iri.subscription_id = CAST(:subscription_id AS UUID)" in statement
+    assert "iri.platform = :platform" in statement
+    assert params["subscription_id"] == "sub-1"
+    assert params["platform"] == "youtube"
 
 
 def test_consumption_batch_lifecycle_methods_cover_get_and_mark_operations() -> None:

@@ -133,6 +133,73 @@ def test_consume_batch_workflow_materializes_and_closes(monkeypatch: Any) -> Non
     assert closed_payloads[0]["consumption_batch_id"] == "batch-1"
 
 
+def test_consume_batch_workflow_skips_replaying_already_succeeded_jobs(
+    monkeypatch: Any,
+) -> None:
+    process_results: list[dict[str, Any]] = []
+
+    async def _fake_execute_activity(activity_fn: Any, payload: Any, **_: Any) -> dict[str, Any]:
+        if activity_fn is workflows.load_consumption_batch_activity:
+            return {
+                "id": "batch-2",
+                "window_id": "2026-04-14@America/Los_Angeles",
+                "cutoff_at": "2026-04-14T10:00:00Z",
+                "source_item_count": 2,
+                "items": [
+                    {"job_id": "job-succeeded", "job_status": "succeeded"},
+                    {"job_id": "job-queued", "job_status": "queued"},
+                ],
+            }
+        if activity_fn is workflows.materialize_reader_batch_activity:
+            return {
+                "consumption_batch_id": "batch-2",
+                "cluster_verdict_manifest_id": "manifest-2",
+                "window_id": "2026-04-14@America/Los_Angeles",
+                "published_document_count": 1,
+                "published_with_gap_count": 0,
+                "documents": [{"id": "doc-queued"}],
+                "navigation_brief": {"document_count": 1},
+            }
+        if activity_fn is workflows.mark_consumption_batch_materialized_activity:
+            return {"status": "materialized"}
+        if activity_fn is workflows.mark_consumption_batch_closed_activity:
+            return {"status": "closed"}
+        raise AssertionError(f"unexpected activity {activity_fn}")
+
+    async def _fake_execute_child_workflow(
+        _workflow_run: Any,
+        job_id: str,
+        *,
+        id: str,
+        task_queue: str,
+    ) -> dict[str, Any]:
+        process_results.append({"job_id": job_id, "id": id, "task_queue": task_queue})
+        return {"ok": True, "job_id": job_id}
+
+    monkeypatch.setattr(workflows.workflow, "execute_activity", _fake_execute_activity)
+    monkeypatch.setattr(workflows.workflow, "execute_child_workflow", _fake_execute_child_workflow)
+    monkeypatch.setattr(
+        workflows.workflow,
+        "info",
+        lambda: SimpleNamespace(run_id="run-456", task_queue="queue-main"),
+    )
+
+    result = asyncio.run(workflows.ConsumeBatchWorkflow().run({"consumption_batch_id": "batch-2"}))
+
+    assert result["status"] == "closed"
+    assert result["processed_job_count"] == 2
+    assert result["succeeded_job_count"] == 2
+    assert result["failed_job_count"] == 0
+    assert process_results == [
+        {
+            "job_id": "job-queued",
+            "id": "consume-batch-batch-2-process-job-job-queued",
+            "task_queue": "queue-main",
+        }
+    ]
+    assert result["process_results"][0]["reused_existing_success"] is True
+
+
 @pytest.mark.parametrize("job_input", [{"job_id": ""}, "   "])
 def test_process_job_workflow_requires_non_empty_job_id(job_input: Any) -> None:
     with pytest.raises(ValueError, match="requires job_id"):

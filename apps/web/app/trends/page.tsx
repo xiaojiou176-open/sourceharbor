@@ -10,6 +10,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { SignalStrip } from "@/components/signal-strip";
 import { apiClient } from "@/lib/api/client";
 import type {
 	WatchlistMergedStory,
@@ -353,7 +354,9 @@ function deriveSourceCoverage(
 }
 
 export default async function TrendsPage({ searchParams }: TrendsPageProps) {
-	const copy = getLocaleMessages().trendsPage;
+	const messages = getLocaleMessages();
+	const copy = messages.trendsPage;
+	const watchlistsCopy = messages.watchlistsPage;
 	const { watchlist_id: watchlistId } = await resolveSearchParams(
 		searchParams,
 		["watchlist_id"] as const,
@@ -398,6 +401,24 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 		leadBundle && typeof leadBundle.trace_summary.step_count === "number"
 			? leadBundle.trace_summary.step_count
 			: "unknown";
+	const maxTimelineCards = Math.max(
+		1,
+		...(trend?.timeline.map((run) => run.matched_card_count) ?? [1]),
+	);
+	const maxSourceCards = Math.max(
+		1,
+		...(sourceCoverage.map((item) => item.card_count) ?? [1]),
+	);
+	const movementSnapshotItems = (trend?.timeline ?? [])
+		.slice(0, 4)
+		.map((run) => ({
+			label: platformLabel(run.platform),
+			value: run.matched_card_count,
+			max: maxTimelineCards,
+			valueLabel: String(run.matched_card_count),
+			detail: formatDateTime(run.created_at),
+			tone: run.added_topics.length > 0 ? "success" : "primary",
+		}));
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">
@@ -409,42 +430,58 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 				<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
 			</div>
 
-			<Card className="folo-surface border-border/70">
-				<CardHeader>
-					<CardTitle>{copy.chooseTitle}</CardTitle>
-					<CardDescription>{copy.chooseDescription}</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-wrap gap-3">
-					{watchlists.length === 0 ? (
-						<p className="text-sm text-muted-foreground">{copy.empty}</p>
-					) : (
-						watchlists.map((item) => (
-							<Button
-								key={item.id}
-								asChild
-								variant={selectedWatchlist?.id === item.id ? "hero" : "outline"}
-								size="sm"
-							>
-								<Link
-									href={`/trends?watchlist_id=${encodeURIComponent(item.id)}`}
+			{watchlists.length === 0 || watchlists.length > 1 ? (
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<CardTitle>{copy.chooseTitle}</CardTitle>
+						<CardDescription>
+							{watchlists.length === 0
+								? copy.empty
+								: "Pick the topic you want to keep reading. Everything else stays secondary."}
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-wrap gap-3">
+						{watchlists.length === 0 ? (
+							<>
+								<Button asChild variant="hero" size="sm">
+									<Link href="/watchlists#create-watchlist">
+										{watchlistsCopy.emptyReadyButton}
+									</Link>
+								</Button>
+								<Button asChild variant="outline" size="sm">
+									<Link href="/playground">
+										{watchlistsCopy.emptyReadySecondaryButton}
+									</Link>
+								</Button>
+							</>
+						) : (
+							watchlists.map((item) => (
+								<Button
+									key={item.id}
+									asChild
+									variant={selectedWatchlist?.id === item.id ? "hero" : "outline"}
+									size="sm"
 								>
-									{item.name}
-								</Link>
-							</Button>
-						))
-					)}
-				</CardContent>
-			</Card>
+									<Link
+										href={`/trends?watchlist_id=${encodeURIComponent(item.id)}`}
+									>
+										{item.name}
+									</Link>
+								</Button>
+							))
+						)}
+					</CardContent>
+				</Card>
+			) : null}
 
 			{selectedWatchlist && trend ? (
 				<>
 					<section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
 						<Card className="folo-surface border-border/70">
 							<CardHeader>
-								<CardTitle>Compounder front door</CardTitle>
+								<CardTitle>Follow the story</CardTitle>
 								<CardDescription>
-									Start with the strongest repeated story, then branch into
-									differences, evidence, and clearly labeled sample proof.
+									Start with the strongest repeated story first. Details stay behind it.
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
@@ -476,33 +513,30 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 											</div>
 										</div>
 
-										<div className="grid gap-3 md:grid-cols-2">
-											<div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-												<p className="font-medium text-foreground">
-													Consensus now
-												</p>
-												<p className="mt-2">
-													{briefing?.summary.overview ??
-														"Use the selected watchlist to see where repeated themes converge."}
-												</p>
-											</div>
-											<div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-												<p className="font-medium text-foreground">
-													What moved recently
-												</p>
-												<p className="mt-2">
-													{briefing?.differences.compare?.diff_excerpt ??
-														"No compare excerpt yet. Use the trend timeline below to inspect recent movement."}
-												</p>
-											</div>
-										</div>
+										<p className="text-sm leading-7 text-muted-foreground">
+											{briefing?.summary.overview ??
+												"Use the selected watchlist to see where repeated themes converge."}
+										</p>
+										{briefing?.differences.compare?.diff_excerpt ? (
+											<p className="text-sm text-muted-foreground">
+												Latest shift: {briefing.differences.compare.diff_excerpt}
+											</p>
+										) : null}
+
+										{movementSnapshotItems.length > 0 ? (
+											<SignalStrip
+												title="What changed lately"
+												description="See the newest movement first, then open the full timeline if you want more detail."
+												items={movementSnapshotItems}
+											/>
+										) : null}
 
 										<div className="flex flex-wrap gap-3">
 											<Button asChild variant="hero" size="sm">
 												<Link
 													href={`/briefings?watchlist_id=${encodeURIComponent(selectedWatchlist.id)}&story_id=${encodeURIComponent(leadStory.story_id)}`}
 												>
-													Open unified briefing
+													Open brief
 												</Link>
 											</Button>
 											<Button asChild variant="outline" size="sm">
@@ -517,24 +551,6 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 													Ask about this story
 												</Link>
 											</Button>
-											{leadStory.latest_run_job_id ? (
-												<Button asChild variant="outline" size="sm">
-													<Link
-														href={`/api/v1/jobs/${encodeURIComponent(leadStory.latest_run_job_id)}/bundle`}
-													>
-														Open evidence bundle
-													</Link>
-												</Button>
-											) : null}
-											{leadStory.latest_run_job_id ? (
-												<Button asChild variant="outline" size="sm">
-													<Link
-														href={`/knowledge?job_id=${encodeURIComponent(leadStory.latest_run_job_id)}`}
-													>
-														Open knowledge cards
-													</Link>
-												</Button>
-											) : null}
 										</div>
 									</>
 								) : (
@@ -547,66 +563,48 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 							</CardContent>
 						</Card>
 
-						<Card className="folo-surface border-border/70">
-							<CardHeader>
-								<CardTitle>Evidence and sample boundary</CardTitle>
-								<CardDescription>
-									Keep live watchlist evidence and sample/demo proof in the same
-									map without mixing their truth layers.
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-3 text-sm text-muted-foreground">
+						<details className="folo-surface rounded-2xl border border-border/70 bg-background/95 p-5">
+							<summary className="cursor-pointer list-none font-semibold text-foreground">
+								Open receipts and examples later
+							</summary>
+							<div className="mt-4 space-y-4 text-sm text-muted-foreground">
+								<p>
+									Use this only when you want the raw bundle, notes, or sample explanation after the main story already makes sense.
+								</p>
 								{leadBundle ? (
-									<div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-										<p className="font-medium text-foreground">
-											Latest lead-story bundle
-										</p>
-										<p className="mt-2">
-											Sharing scope: <code>{leadBundle.sharing_scope}</code> ·
-											Sample: <code>{String(leadBundle.sample)}</code>
-										</p>
-										<p className="mt-2">{leadBundle.proof_boundary}</p>
-										<p className="mt-2">
-											Trace steps: {leadBundleStepCount} · Knowledge cards:{" "}
-											{leadBundle.knowledge_cards.length}
-										</p>
-									</div>
-								) : (
-									<div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-										<p className="font-medium text-foreground">
-											Live evidence stays here
-										</p>
-										<p className="mt-2">
-											Use watchlists, trends, briefings, and job bundles for
-											current local/runtime proof.
-										</p>
-									</div>
-								)}
-								<div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-									<p className="font-medium text-foreground">
-										Sample proof stays separate
+									<p>
+										Trace steps: {leadBundleStepCount} · Knowledge cards:{" "}
+										{leadBundle.knowledge_cards.length}
 									</p>
-									<p className="mt-2">
-										`/playground` is read-only sample/demo proof. It helps you
-										understand the product shape, but it is not live operator
-										state.
-									</p>
-								</div>
+								) : null}
+								{leadBundle ? (
+									<p>{leadBundle.proof_boundary}</p>
+								) : null}
 								<div className="flex flex-wrap gap-3">
+									{leadStory.latest_run_job_id ? (
+										<Button asChild variant="outline" size="sm">
+											<Link
+												href={`/api/v1/jobs/${encodeURIComponent(leadStory.latest_run_job_id)}/bundle`}
+											>
+												Open bundle
+											</Link>
+										</Button>
+									) : null}
+									{leadStory.latest_run_job_id ? (
+										<Button asChild variant="outline" size="sm">
+											<Link
+												href={`/knowledge?job_id=${encodeURIComponent(leadStory.latest_run_job_id)}`}
+											>
+												Open notes
+											</Link>
+										</Button>
+									) : null}
 									<Button asChild variant="outline" size="sm">
-										<Link href="/playground">Open sample playground</Link>
-									</Button>
-									<Button asChild variant="outline" size="sm">
-										<Link href="/watchlists">Open watchlists</Link>
-									</Button>
-									<Button asChild variant="outline" size="sm">
-										<Link href="/use-cases/research-pipeline">
-											Open research use case
-										</Link>
+										<Link href="/playground">Open sample flow</Link>
 									</Button>
 								</div>
-							</CardContent>
-						</Card>
+							</div>
+						</details>
 					</section>
 
 					<section className="grid gap-4 xl:grid-cols-[0.95fr_1.35fr]">
@@ -686,6 +684,20 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 										<p className="mt-3 text-sm text-muted-foreground">
 											{copy.sourceCoverageCardsLabel}: {item.card_count}
 										</p>
+										<div className="mt-3 h-2 overflow-hidden rounded-full bg-background/80">
+											<div
+												className="h-full rounded-full bg-primary/75"
+												style={{
+													width: `${Math.max(
+														10,
+														Math.min(
+															100,
+															(item.card_count / maxSourceCards) * 100,
+														),
+													)}%`,
+												}}
+											/>
+										</div>
 										{item.latest_created_at ? (
 											<p className="mt-1 text-sm text-muted-foreground">
 												{copy.latestSeenLabel}:{" "}
@@ -965,6 +977,20 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 											{copy.removedClaimKindsPrefix}:{" "}
 											{run.removed_claim_kinds.join(", ") || copy.noneValue}
 										</p>
+									</div>
+									<div className="mt-3 h-2 overflow-hidden rounded-full bg-background/80">
+										<div
+											className="h-full rounded-full bg-primary/80"
+											style={{
+												width: `${Math.max(
+													10,
+													Math.min(
+														100,
+														(run.matched_card_count / maxTimelineCards) * 100,
+													),
+												)}%`,
+											}}
+										/>
 									</div>
 								</div>
 							))}

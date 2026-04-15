@@ -140,6 +140,18 @@ class JobsRepository:
         )
         return self.db.scalar(stmt)
 
+    def get_latest_successful_for_video(self, *, video_id: uuid.UUID) -> Job | None:
+        stmt = (
+            select(Job)
+            .where(
+                Job.video_id == video_id,
+                Job.status == "succeeded",
+            )
+            .order_by(Job.created_at.desc())
+            .limit(1)
+        )
+        return self.db.scalar(stmt)
+
     def get_by_idempotency_key(self, idempotency_key: str) -> Job | None:
         stmt = select(Job).where(Job.idempotency_key == idempotency_key)
         return self.db.scalar(stmt)

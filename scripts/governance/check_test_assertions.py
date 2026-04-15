@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 EXCLUDED_DIRS = {
     ".git",
     ".next",
+    "参考Repo",
     ".runtime-cache",
     "node_modules",
     "build",

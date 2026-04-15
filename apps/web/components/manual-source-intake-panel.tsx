@@ -11,7 +11,6 @@ import {
 	CardContent,
 	CardDescription,
 	CardHeader,
-	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -74,6 +73,7 @@ type Copy = {
 type Props = {
 	copy: Copy;
 	sessionToken?: string;
+	headingLevel?: "h2" | "h3";
 };
 
 function statusTone(
@@ -164,7 +164,11 @@ function buildFeedUniverseHref(
 	return `/feed?sub=${encodeURIComponent(value)}`;
 }
 
-export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
+export function ManualSourceIntakePanel({
+	copy,
+	sessionToken,
+	headingLevel = "h3",
+}: Props) {
 	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
 	const [rawInput, setRawInput] = useState("");
 	const [category, setCategory] = useState<SubscriptionCategory>("misc");
@@ -173,6 +177,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 	const [result, setResult] = useState<ManualSourceIntakeResponse | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [isPending, startTransition] = useTransition();
+	const HeadingTag = headingLevel;
 
 	return (
 		<Card
@@ -184,7 +189,7 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 				>
 					Manual front door
 				</p>
-				<CardTitle className="text-xl font-semibold">{copy.title}</CardTitle>
+				<HeadingTag className="text-xl font-semibold">{copy.title}</HeadingTag>
 				<CardDescription>{copy.description}</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -198,58 +203,74 @@ export function ManualSourceIntakePanel({ copy, sessionToken }: Props) {
 							value={rawInput}
 							onChange={(event) => setRawInput(event.target.value)}
 							placeholder={copy.placeholder}
-							className={`min-h-48 text-sm ${editorialMono.className}`}
+							className={`min-h-40 text-sm ${editorialMono.className}`}
 						/>
 						<p className="text-sm text-muted-foreground">{copy.hint}</p>
 					</div>
 					<div className="rounded-[1.15rem] border border-border/60 bg-muted/18 p-4">
 						<div className="space-y-2 border-b border-border/60 pb-4">
-							<Label htmlFor="manual-source-intake-category">
-								{copy.categoryLabel}
-							</Label>
-							<Select
-								value={category}
-								onValueChange={(value) =>
-									setCategory(value as SubscriptionCategory)
-								}
-							>
-								<SelectTrigger
-									id="manual-source-intake-category"
-									aria-label={copy.categoryLabel}
-								>
-									<SelectValue placeholder={copy.categoryLabel} />
-								</SelectTrigger>
-								<SelectContent>
-									{CATEGORY_OPTIONS.map((option) => (
-										<SelectItem key={option.value} value={option.value}>
-											{option.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<p className="text-sm font-medium text-foreground">
+								Start with the source itself
+							</p>
+							<p className="text-sm text-muted-foreground">
+								Paste the source now. Category, tags, and subscription setup can
+								wait until the result tells you what this input became.
+							</p>
 						</div>
-						<div className="space-y-2 border-b border-border/60 py-4">
-							<Label htmlFor="manual-source-intake-tags">
-								{copy.tagsLabel}
-							</Label>
-							<input
-								id="manual-source-intake-tags"
-								value={tags}
-								onChange={(event) => setTags(event.target.value)}
-								placeholder="ai,weekly,deep-dive"
-								className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-							/>
-						</div>
-						<div className="flex items-center gap-3 pt-4">
-							<Checkbox
-								id="manual-source-intake-enabled"
-								checked={enabled}
-								onCheckedChange={(checked) => setEnabled(Boolean(checked))}
-							/>
-							<Label htmlFor="manual-source-intake-enabled">
-								{copy.enabledLabel}
-							</Label>
-						</div>
+						<details className="mt-4 rounded-xl border border-border/60 bg-background/55 p-4">
+							<summary className="cursor-pointer text-sm font-medium text-foreground">
+								Deeper setup can wait
+							</summary>
+							<div className="mt-4 space-y-4">
+								<div className="space-y-2">
+									<Label htmlFor="manual-source-intake-category">
+										{copy.categoryLabel}
+									</Label>
+									<Select
+										value={category}
+										onValueChange={(value) =>
+											setCategory(value as SubscriptionCategory)
+										}
+									>
+										<SelectTrigger
+											id="manual-source-intake-category"
+											aria-label={copy.categoryLabel}
+										>
+											<SelectValue placeholder={copy.categoryLabel} />
+										</SelectTrigger>
+										<SelectContent>
+											{CATEGORY_OPTIONS.map((option) => (
+												<SelectItem key={option.value} value={option.value}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="manual-source-intake-tags">
+										{copy.tagsLabel}
+									</Label>
+									<input
+										id="manual-source-intake-tags"
+										value={tags}
+										onChange={(event) => setTags(event.target.value)}
+										placeholder="ai,weekly,deep-dive"
+										className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+									/>
+								</div>
+								<div className="flex items-center gap-3">
+									<Checkbox
+										id="manual-source-intake-enabled"
+										checked={enabled}
+										onCheckedChange={(checked) => setEnabled(Boolean(checked))}
+									/>
+									<Label htmlFor="manual-source-intake-enabled">
+										{copy.enabledLabel}
+									</Label>
+								</div>
+							</div>
+						</details>
 						<Button
 							type="button"
 							variant="hero"

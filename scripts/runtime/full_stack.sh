@@ -645,6 +645,7 @@ worker_required_env_check() {
 
 worker_temporal_preflight_check() {
   local temporal_host="${TEMPORAL_TARGET_HOST:-localhost:7233}"
+  local temporal_namespace="${TEMPORAL_NAMESPACE:-default}"
   if [[ "$temporal_host" != *:* ]]; then
     printf '[full_stack] DIAGNOSE stage=worker_preflight_temporal conclusion=invalid_temporal_target_host value=%s\n' "$temporal_host" >&2
     log "DIAGNOSE stage=worker_preflight_temporal conclusion=invalid_temporal_target_host value=${temporal_host}"
@@ -667,6 +668,17 @@ worker_temporal_preflight_check() {
   if ! wait_for_tcp "$temporal_addr_host" "$temporal_addr_port" 60; then
     printf '[full_stack] DIAGNOSE stage=worker_preflight_temporal conclusion=temporal_unreachable target=%s\n' "$temporal_host" >&2
     log "DIAGNOSE stage=worker_preflight_temporal conclusion=temporal_unreachable target=${temporal_host}"
+    return 1
+  fi
+  if ! wait_for_temporal_namespace "$temporal_host" "$temporal_namespace" 5; then
+    if [[ -x "$core_services_script" ]]; then
+      log "DIAGNOSE stage=worker_preflight_temporal conclusion=temporal_namespace_unavailable attempting_core_services_self_heal target=${temporal_host} namespace=${temporal_namespace}"
+      (cd "$ROOT_DIR" && "$core_services_script" up --env-file "$ROOT_DIR/.env") >/dev/null 2>&1 || true
+    fi
+  fi
+  if ! wait_for_temporal_namespace "$temporal_host" "$temporal_namespace" 20; then
+    printf '[full_stack] DIAGNOSE stage=worker_preflight_temporal conclusion=temporal_namespace_unavailable target=%s namespace=%s\n' "$temporal_host" "$temporal_namespace" >&2
+    log "DIAGNOSE stage=worker_preflight_temporal conclusion=temporal_namespace_unavailable target=${temporal_host} namespace=${temporal_namespace}"
     return 1
   fi
   return 0

@@ -117,23 +117,38 @@ function SidebarNavContent({
 	const currentCategory = searchParams.get("category") ?? "";
 	const currentSub = searchParams.get("sub") ?? "";
 	const isFeed = pathname === "/feed" || pathname.startsWith("/feed");
+	const utilityOpen =
+		pathname.startsWith("/builders") ||
+		pathname.startsWith("/mcp") ||
+		pathname.startsWith("/ops") ||
+		pathname.startsWith("/jobs") ||
+		pathname.startsWith("/ingest-runs");
+	const followedSourcesOpen = Boolean(
+		isFeed || pathname.startsWith("/subscriptions") || currentCategory || currentSub,
+	);
 	const grouped = groupByCategory(subscriptions);
 	const enabledSubs = subscriptions.filter((s) => s.enabled);
 	const navSections: NavSection[] = [
 		{
 			id: "read",
-			label: "Read first",
+			label: "Read",
 			items: [
 				{ href: "/", label: "Home", icon: Home, active: pathname === "/" },
 				{
+					href: "/reader",
+					label: "Reader",
+					icon: FileText,
+					active: pathname.startsWith("/reader"),
+				},
+				{
 					href: "/feed",
-					label: "Digest feed",
+					label: "Reading desk",
 					icon: Sparkles,
 					active: isFeed && !currentCategory && !currentSub,
 				},
 				{
 					href: "/subscriptions",
-					label: "Subscriptions",
+					label: "Sources",
 					icon: Plus,
 					active: pathname.startsWith("/subscriptions"),
 				},
@@ -149,27 +164,21 @@ function SidebarNavContent({
 					icon: MessageSquare,
 					active: pathname.startsWith("/ask"),
 				},
-				{
-					href: "/reader",
-					label: "Reader",
-					icon: FileText,
-					active: pathname.startsWith("/reader"),
-				},
 			],
 		},
 		{
 			id: "build",
-			label: "Build and prove",
+			label: "Developers",
 			items: [
 				{
 					href: "/builders",
-					label: "Builders",
+					label: "Developer tools",
 					icon: Blocks,
 					active: pathname.startsWith("/builders"),
 				},
 				{
 					href: "/mcp",
-					label: "MCP Quickstart",
+					label: "Assistant tools",
 					icon: List,
 					active: pathname.startsWith("/mcp"),
 				},
@@ -177,29 +186,29 @@ function SidebarNavContent({
 		},
 		{
 			id: "compounder",
-			label: "Track the story",
+			label: "Follow",
 			items: [
 				{
 					href: "/watchlists",
-					label: "Watchlists",
+					label: "Saved topics",
 					icon: BookmarkPlus,
 					active: pathname.startsWith("/watchlists"),
 				},
 				{
 					href: "/trends",
-					label: "Trends",
+					label: "What changed",
 					icon: LineChart,
 					active: pathname.startsWith("/trends"),
 				},
 				{
 					href: "/briefings",
-					label: "Briefings",
+					label: "Story briefs",
 					icon: FileText,
 					active: pathname.startsWith("/briefings"),
 				},
 				{
 					href: "/knowledge",
-					label: "Knowledge",
+					label: "Source notes",
 					icon: Layers3,
 					active: pathname.startsWith("/knowledge"),
 				},
@@ -207,46 +216,40 @@ function SidebarNavContent({
 		},
 		{
 			id: "operate",
-			label: "Operate",
+			label: "System",
 			items: [
 				{
 					href: "/ops",
-					label: "Ops inbox",
+					label: "System status",
 					icon: Activity,
 					active: pathname.startsWith("/ops"),
 				},
 				{
 					href: "/jobs",
-					label: "Jobs",
+					label: "Processing history",
 					icon: ListTodo,
 					active: pathname.startsWith("/jobs"),
 				},
 				{
 					href: "/ingest-runs",
-					label: "Ingest runs",
+					label: "Import history",
 					icon: Inbox,
 					active: pathname.startsWith("/ingest-runs"),
 				},
 			],
 		},
 	];
+	const primarySections = navSections.filter(
+		(section) => section.id === "read" || section.id === "compounder",
+	);
+	const utilitySections = navSections.filter(
+		(section) => section.id === "build" || section.id === "operate",
+	);
 
 	return (
 		<>
 			<nav aria-label="Primary navigation" className="flex flex-col gap-3 p-3">
-				{!collapsed ? (
-					<div className="rounded-xl border border-border/50 bg-background/55 px-3 py-3">
-						<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-							Route atlas
-						</p>
-						<p className="mt-2 text-xs leading-5 text-muted-foreground">
-							Read the product first, then branch into builder, compounder, and
-							ops lanes.
-						</p>
-					</div>
-				) : null}
-
-				{navSections.map((section, sectionIndex) => (
+				{primarySections.map((section, sectionIndex) => (
 					<div key={section.id} className="space-y-1.5">
 						{!collapsed ? (
 							<p
@@ -282,78 +285,144 @@ function SidebarNavContent({
 					</div>
 				))}
 
+				{utilitySections.length > 0 ? (
+					<details
+						className="rounded-xl border border-border/60 bg-background/60"
+						open={collapsed || utilityOpen}
+					>
+						<summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 marker:content-none [&::-webkit-details-marker]:hidden">
+							<div className="space-y-1">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+									Tools and status
+								</p>
+								{!collapsed ? (
+									<p className="text-xs text-muted-foreground">
+										Open this only when you are setting up or checking the system.
+									</p>
+								) : null}
+							</div>
+							{!collapsed ? (
+								<span className="rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[11px] text-muted-foreground">
+									{utilityOpen ? "Open" : "Later"}
+								</span>
+							) : null}
+						</summary>
+						<div className="border-t border-border/50 px-2 pb-2 pt-2">
+							{utilitySections.map((section) => (
+								<div key={section.id} className="space-y-1.5">
+									{!collapsed ? (
+										<p className="px-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+											{section.label}
+										</p>
+									) : null}
+									{section.items.map((item) => {
+										const Icon = item.icon;
+										return (
+											<Link
+												key={item.href}
+												href={item.href}
+												className={cn(
+													"flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
+													item.active
+														? "bg-sidebar-accent text-sidebar-accent-foreground"
+														: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+												)}
+												aria-current={item.active ? "page" : undefined}
+											>
+												<Icon className="size-4 shrink-0 opacity-80" aria-hidden />
+												<span className={collapsed ? "sr-only" : undefined}>
+													{item.label}
+												</span>
+											</Link>
+										);
+									})}
+								</div>
+							))}
+						</div>
+					</details>
+				) : null}
+
 				{subscriptionsLoadError && !collapsed ? (
 					<div
 						className="mx-1 mt-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2"
 						aria-live="polite"
 						aria-atomic="true"
 					>
-						<p className="text-xs text-destructive">
-							Subscriptions failed to load. Retry from Subscriptions.
-						</p>
+							<p className="text-xs text-destructive">
+								Could not load your followed sources. Retry from Following.
+							</p>
 						<Link
 							href="/subscriptions"
 							className="mt-1 inline-flex text-xs font-medium text-destructive underline underline-offset-2"
 						>
-							Open Subscriptions
+							Open Following
 						</Link>
 					</div>
 				) : null}
 
 				{enabledSubs.length > 0 && !collapsed ? (
-					<>
-						<Separator className="my-2" />
-						<div className="space-y-1 px-3">
-							<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-								Tracked universes
-							</p>
-							<p className="text-xs leading-5 text-muted-foreground">
-								Jump from the route atlas into a narrowed feed lane.
-							</p>
+					<details
+						className="rounded-xl border border-border/60 bg-background/60"
+						open={followedSourcesOpen}
+					>
+						<summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 marker:content-none [&::-webkit-details-marker]:hidden">
+							<div className="space-y-1">
+								<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+									Your followed sources
+								</p>
+								<p className="text-xs leading-5 text-muted-foreground">
+									Open this only when you already know the source you want.
+								</p>
+							</div>
+							<span className="rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[11px] text-muted-foreground">
+								{followedSourcesOpen ? "Open" : "Later"}
+							</span>
+						</summary>
+						<div className="border-t border-border/50 px-2 pb-2 pt-2">
+							{CATEGORY_ORDER.map((cat) => {
+								const list = grouped.get(cat)?.filter((s) => s.enabled) ?? [];
+								if (list.length === 0) return null;
+								return (
+									<div key={cat} className="space-y-0.5">
+										<Link
+											href={`/feed?category=${cat}`}
+											className={cn(
+												"flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 motion-reduce:transition-none",
+												currentCategory === cat
+													? "bg-sidebar-accent text-sidebar-accent-foreground"
+													: "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+											)}
+											aria-current={currentCategory === cat ? "page" : undefined}
+										>
+											<List className="size-3 shrink-0 opacity-70" aria-hidden />
+											{CATEGORY_LABELS[cat]}
+										</Link>
+										<ul className="ml-4 space-y-0.5 border-l border-border/40 pl-2">
+											{list.map((sub) => (
+												<li key={sub.id}>
+													<Link
+														href={`/feed?sub=${encodeURIComponent(sub.id)}`}
+														className={cn(
+															"block truncate rounded px-2 py-1 text-sm",
+															currentSub === sub.id
+																? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+																: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+														)}
+														title={sub.source_name}
+														aria-current={
+															currentSub === sub.id ? "page" : undefined
+														}
+													>
+														{sub.source_name || sub.source_value || "Untitled"}
+													</Link>
+												</li>
+											))}
+										</ul>
+									</div>
+								);
+							})}
 						</div>
-						{CATEGORY_ORDER.map((cat) => {
-							const list = grouped.get(cat)?.filter((s) => s.enabled) ?? [];
-							if (list.length === 0) return null;
-							return (
-								<div key={cat} className="space-y-0.5">
-									<Link
-										href={`/feed?category=${cat}`}
-										className={cn(
-											"flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 motion-reduce:transition-none",
-											currentCategory === cat
-												? "bg-sidebar-accent text-sidebar-accent-foreground"
-												: "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-										)}
-										aria-current={currentCategory === cat ? "page" : undefined}
-									>
-										<List className="size-3 shrink-0 opacity-70" aria-hidden />
-										{CATEGORY_LABELS[cat]}
-									</Link>
-									<ul className="ml-4 space-y-0.5 border-l border-border/40 pl-2">
-										{list.map((sub) => (
-											<li key={sub.id}>
-												<Link
-													href={`/feed?sub=${encodeURIComponent(sub.id)}`}
-													className={cn(
-														"block truncate rounded px-2 py-1 text-sm",
-														currentSub === sub.id
-															? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-															: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-													)}
-													title={sub.source_name}
-													aria-current={
-														currentSub === sub.id ? "page" : undefined
-													}
-												>
-													{sub.source_name || sub.source_value || "Untitled"}
-												</Link>
-											</li>
-										))}
-									</ul>
-								</div>
-							);
-						})}
-					</>
+					</details>
 				) : null}
 			</nav>
 

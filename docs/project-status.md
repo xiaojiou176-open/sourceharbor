@@ -7,10 +7,15 @@ This page is the shortest truthful answer to:
 - what is sample or local-only proof
 - what is future direction rather than current capability
 
+## Public truth ledgers
+
+We keep three separate public ledgers: the release ledger (linked to the latest GitHub release), the remote `main` ledger (the current head and its workflow/read-back receipts), and the distribution ledger (external registry or marketplace proof). Each claim in this doc points to one of those ledgers so readers can verify release vs remote vs distribution truth without chasing internal blueprints or archive mess.
+
 Use it like a status board, not like a sales page.
 
-If you need the exhaustive ledger instead of the short board, read
-[2026-03-31-program-closeout-matrix.md](./blueprints/2026-03-31-program-closeout-matrix.md).
+If you need the volatile internal execution ledgers instead of the short public
+board, use the maintainer-only planning ledger. Public docs intentionally keep
+only the stable operator-facing summary here.
 
 Release-current truth is a separate ledger from current remote `main`.
 Always verify the latest live tag together with the current remote head before
@@ -180,11 +185,9 @@ Two directions remain explicitly in the bet bucket:
 | Agent Autopilot / advanced agent workflows | human-in-the-loop spike is worth considering; product claim is not |
 | Hosted / managed workspace | no-go for current positioning; only a small hosted-shaped evaluation slice is worth reconsidering later |
 
-Read the spike artifacts:
+Read the stable public boundaries:
 
-- [Program Closeout Matrix](./blueprints/2026-03-31-program-closeout-matrix.md)
-- [Agent Autopilot Spike](./blueprints/2026-03-31-agent-autopilot-spike.md)
-- [Hosted Readiness Spike](./blueprints/2026-03-31-hosted-readiness-spike.md)
+- [Project Positioning](./reference/project-positioning.md)
 - [Ecosystem And Big-Bet Decisions](./reference/ecosystem-and-big-bet-decisions.md)
 
 ## Ecosystem And Big-Bet Buckets
@@ -203,8 +206,8 @@ This is the short scoreboard for the directions most likely to get overstated.
 | VS Code agent plugin bundle | **ship-now** | `starter-packs/vscode-agent/sourceharbor-vscode-agent-plugin/` now gives VS Code agent workflows a real source-installable plugin bundle over the same MCP/API truth |
 | OpenClaw via local starter pack + MCP / HTTP substrate | **first-cut** | the repo ships a compatibility page plus a first-cut local OpenClaw starter pack, but it still is not a marketplace or primary front-door claim |
 | OpenClaw ClawHub package template | **first-cut** | the repo ships a publish-ready metadata template, but there is still no live ClawHub publish receipt and `CLAWHUB_TOKEN` is currently unset locally |
-| Official MCP Registry listing + metadata template | **ship-now** | a fresh registry API read-back still confirms an active `SourceHarbor MCP` entry at `0.1.14`; the remaining work is version refresh, not first publication |
-| PyPI package surface | **ship-now** | the public `sourceharbor` project is still live on PyPI at `0.1.14`; the remaining work is a package-version refresh to catch back up with the repo-controlled `0.1.19` line |
+| Official MCP Registry listing + metadata template | **ship-now** | a fresh registry API read-back still confirms an active `SourceHarbor MCP` entry at `0.1.14`; the package line is build-ready at `0.1.19`, but refresh is currently blocked by missing publish credentials |
+| PyPI package surface | **ship-now** | the public `sourceharbor` project is still live on PyPI at `0.1.14`; the package line is build-ready at `0.1.19`, but refresh is currently blocked by missing publish credentials |
 | Site-specific MCP directory packets | **first-cut** | `config/public/mcp-directory-profile.json` plus `docs/submission/*.md` give the repo a real per-directory packet layer, but same-day submit/read-back still varies per site |
 | Public Python SDK | **later** | no public package surface exists yet |
 | Public skills pack / templates | **first-cut** | `docs/public-skills.md`, `docs/compat/*`, `templates/public-skills/*`, and `examples/*` now provide a usable first public starter surface, but not a fully hardened ecosystem product yet |
@@ -223,7 +226,7 @@ current maintainer re-audit:
 - Resend live delivery still needs a real sender identity chain: `RESEND_FROM_EMAIL`, a verified sender/domain, and a destination mailbox
 - the strict YouTube live-smoke lane now has recent local proof, but the full lane still needs operator-managed YouTube API access when it is reopened
 - official-surface public distribution is now split more sharply:
-  - Official MCP Registry and PyPI are already live, but both still lag the repo-controlled `0.1.19` package line
+  - Official MCP Registry and PyPI are already live, but both still lag the repo-controlled `0.1.19` package line and cannot be refreshed yet because publish credentials are missing
   - `awesome-opencode` is submitted and waiting on maintainer review
   - `mcp.so` anonymous direct read-back currently returns `403 Forbidden`, so there is still no public listing proof on that route
   - `mcpservers.org` anonymous direct/search read-back still does not prove a live listing for `sourceharbor`
@@ -241,7 +244,7 @@ are more specific than generic "secret missing" language.
 | --- | --- | --- | --- |
 | Resend sender identity | provider canary still reports `config_error`; sender configuration remains incomplete because `RESEND_FROM_EMAIL` is still missing | repo code already exposes notifications and settings; GitHub/release truth is no longer the missing piece | set `RESEND_FROM_EMAIL`, verify the sender/domain in Resend, choose a real destination mailbox, then rerun the provider canary or strict live-smoke lane |
 | YouTube strict live-smoke | recent local proof now passes direct probe, provider canary, and strict live-smoke preflight; the remaining step is restoring operator-managed YouTube API access whenever the full live lane is reopened | repo-side implementation is no longer the blocker; the remaining action is making the intended YouTube API access available when the lane is rerun | restore the intended YouTube API access in the environment used for the live-smoke lane, then rerun the strict live-smoke lane when you want the full end-to-end receipt |
-| Official MCP Registry + PyPI version refresh | fresh API/JSON read-back still shows both the official registry entry and the PyPI package at `0.1.14`, while the repo-controlled package and directory packet remain at `0.1.19` | the repo already has the package, template, and live package surfaces; the missing step is a deliberate publish/refresh action with package credentials plus a fresh read-back on both endpoints | publish the intended current package version when the right credentials are available, then read the updated version back from both the official registry and PyPI |
+| Official MCP Registry + PyPI version refresh | fresh API/JSON read-back still shows both the official registry entry and the PyPI package at `0.1.14`, while the repo-controlled package and directory packet remain at `0.1.19` | the repo now has a successful `uv build` receipt for the current package line; the remaining blocker is missing publish credentials, not package construction | once the publish credentials exist, publish the intended current package version and read the updated version back from both the official registry and PyPI |
 | MCP.so direct listing | a fresh anonymous direct read-back at `https://mcp.so/server/sourceharbor-mcp` currently returns `403 Forbidden` | the repo-side packet exists, but this public route still does not prove a live listing | capture either a real submit/accept receipt or a later direct-page read-back that shows the listing has appeared |
 | mcpservers.org listing | a fresh anonymous direct/search read-back still does not prove a live listing for `sourceharbor`; direct requests currently return `403 Forbidden` | the repo-side packet exists, but the public surface still does not show a readable listing proof | capture either the approval/listing URL or a later public read-back that shows the server |
 | PulseMCP listing | a fresh anonymous page read-back still stops at `403 / Access Denied`; public search snippets may suggest a SourceHarbor MCP surface exists somewhere behind that gate | the public read-back is platform-controlled rather than repo-controlled | capture a direct readable listing URL, editor acknowledgment, or another public proof path that no longer stops at access control |

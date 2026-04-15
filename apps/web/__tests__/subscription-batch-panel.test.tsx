@@ -114,7 +114,7 @@ describe("SubscriptionBatchPanel", () => {
 		"renders all subscriptions rows",
 		() => {
 			render(<SubscriptionBatchPanel subscriptions={MOCK_SUBS} />);
-			expect(screen.getByText("Current subscriptions")).toBeInTheDocument();
+			expect(screen.getByText("Saved sources")).toBeInTheDocument();
 			expect(
 				screen.getByRole("columnheader", { name: "Source" }),
 			).toHaveAttribute("scope", "col");

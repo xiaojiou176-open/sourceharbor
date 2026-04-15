@@ -122,13 +122,13 @@ describe("reader pages", () => {
 
 		expect(
 			screen.getByText(
-				"Read the strongest finished unit before you touch the operator rails",
+				"Pick a finished story and start reading",
 			),
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 3 }),
 		).toBeInTheDocument();
-		expect(screen.getAllByText("Yellow warning").length).toBeGreaterThanOrEqual(
+		expect(screen.getAllByText("Read with care").length).toBeGreaterThanOrEqual(
 			1,
 		);
 		expect(
@@ -137,12 +137,12 @@ describe("reader pages", () => {
 		expect(
 			screen.getByRole("link", { name: "Continue reading" }),
 		).toHaveAttribute("href", "/reader/doc-2");
-		expect(screen.getByRole("link", { name: "Source intake" })).toHaveAttribute(
+		expect(screen.getByRole("link", { name: "Add sources" })).toHaveAttribute(
 			"href",
 			"/subscriptions",
 		);
 		expect(
-			screen.getByRole("link", { name: "Open reader detail" }),
+			screen.getByRole("link", { name: "Open story" }),
 		).toHaveAttribute("href", "/reader/doc-1");
 	});
 
@@ -192,7 +192,7 @@ describe("reader pages", () => {
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 1 }),
 		).toBeInTheDocument();
-		expect(screen.getByText("Source universe")).toBeInTheDocument();
+		expect(screen.getByText("From these sources")).toBeInTheDocument();
 		expect(screen.getAllByText("Agents recap").length).toBeGreaterThanOrEqual(
 			1,
 		);
@@ -205,20 +205,20 @@ describe("reader pages", () => {
 		expect(
 			screen.getByRole("link", { name: "Back to reader" }),
 		).toHaveAttribute("href", "/reader");
-		expect(screen.getByRole("link", { name: "Read the body" })).toHaveAttribute(
+		expect(screen.getByRole("link", { name: "Read the story" })).toHaveAttribute(
 			"href",
 			"#reader-body",
 		);
 		expect(
-			screen.getByRole("link", { name: "Keep the warning in mind" }),
+			screen.getByRole("link", { name: "Keep the note nearby" }),
 		).toHaveAttribute("href", "#reader-warning");
 		expect(
-			screen.getByRole("link", { name: "Open evidence when needed" }),
+			screen.getByRole("link", { name: "See sources" }),
 		).toHaveAttribute("href", "#reader-evidence");
 		expect(
 			screen.getByRole("link", { name: "Check coverage last" }),
 		).toHaveAttribute("href", "#reader-coverage");
-		expect(screen.getByText("Traceability snapshot")).toBeInTheDocument();
+		expect(screen.getByText("Source map")).toBeInTheDocument();
 		expect(screen.getByTestId("reader-repair-panel")).toHaveTextContent(
 			"doc-1:1",
 		);
@@ -271,7 +271,7 @@ describe("reader pages", () => {
 			within(alert).getByRole("link", { name: "Open ops desk" }),
 		).toHaveAttribute("href", "/ops");
 		expect(
-			screen.queryByText("No published reader documents yet"),
+			screen.queryByText("No published decks yet"),
 		).not.toBeInTheDocument();
 	});
 });

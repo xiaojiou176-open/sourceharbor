@@ -18,11 +18,22 @@
       "scope": "scripts",
       "required": false,
       "secret": false,
-      "default": "5432",
+      "default": "15432",
       "consumer": [
         "infra/compose/core-services.compose.yml"
       ],
       "description": "Core services PostgreSQL exposed host port."
+    },
+    {
+      "name": "TEMPORAL_DB_PATH",
+      "scope": "scripts",
+      "required": false,
+      "secret": false,
+      "default": ".runtime-cache/tmp/local-temporal/dev.sqlite",
+      "consumer": [
+        "scripts/deploy/core_services.sh"
+      ],
+      "description": "Repo-owned local Temporal SQLite state path for core-services fallback."
     },
     {
       "name": "SOURCE_HARBOR_CACHE_ROOT",

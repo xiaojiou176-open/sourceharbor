@@ -7,6 +7,7 @@ import { EntryList } from "@/components/entry-list";
 import { FeedFeedbackPanel } from "@/components/feed-feedback-panel";
 import { FormSelectField } from "@/components/form-field";
 import { ReadingPane } from "@/components/reading-pane";
+import { SignalStrip } from "@/components/signal-strip";
 import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SyncNowButton } from "@/components/sync-now-button";
 import { Badge } from "@/components/ui/badge";
@@ -235,6 +236,13 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 	}
 
 	const items = feed?.items ?? [];
+	const readerReadyCount = items.filter((item) =>
+		Boolean(item.published_document_title?.trim()),
+	).length;
+	const savedCount = items.filter((item) => Boolean(item.saved)).length;
+	const feedbackTaggedCount = items.filter((item) =>
+		Boolean(item.feedback_label?.trim()),
+	).length;
 	const nextCursor = feed?.next_cursor ?? null;
 	const isFirstPage = !safeCursor;
 
@@ -308,25 +316,22 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
 					</div>
 					<div className="folo-page-toolbar">
-						<SyncNowButton sessionToken={sessionToken} />
+						<SyncNowButton
+							sessionToken={sessionToken}
+							prominence="secondary"
+						/>
 					</div>
 				</div>
 			</div>
 
-			<section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+			<section className="space-y-4">
 				<div className="folo-panel folo-surface space-y-4">
 					<p className={`folo-page-kicker ${editorialMono.className}`}>
-						Preview before you commit to the full article
+						Read first
 					</p>
-					<h2
-						className={`text-2xl leading-tight text-foreground ${editorialSerif.className}`}
-					>
-						Start with the desk, not the controls
-					</h2>
 					<p className="text-sm leading-7 text-muted-foreground">
-						This page is the curation desk. Pick one digest, preview the body,
-						then open the reader edition when you want the finished article with
-						warning, evidence, and coverage all in one place.
+						Choose one thing worth reading, then open filters only if the desk
+						feels too wide.
 					</p>
 					<div className="flex flex-wrap gap-3">
 						<Button asChild variant="hero">
@@ -340,46 +345,58 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 								Keep reading here
 							</Link>
 						</Button>
-						<Button asChild variant="outline">
-							<Link href="/reader">Open reader shelf</Link>
-						</Button>
-					</div>
-				</div>
-				<section
-					className="folo-panel folo-surface space-y-4"
-					aria-label={copy.activeTrackedUniverseLabel}
-				>
-					<div className="space-y-1">
-						<p className={`folo-page-kicker ${editorialMono.className}`}>
-							{copy.activeTrackedUniverseEyebrow}
-						</p>
-						<h2
-							className={`text-[1.4rem] leading-tight text-foreground ${editorialSerif.className}`}
+						<Link
+							href="/reader"
+							className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
 						>
-							{safeSubscriptionId
-								? copy.activeTrackedUniverseTitle
-								: "No source desk is pinned yet"}
-						</h2>
-						<p className="text-sm text-muted-foreground">
-							{safeSubscriptionId
-								? activeSubscription
-									? copy.activeTrackedUniverseDescription
-									: copy.activeTrackedUniverseFallback
-								: "Open filters only when you need them. Otherwise, let the list and preview guide the next reading choice."}
-						</p>
+							Open reader shelf
+						</Link>
 					</div>
-					{activeSubscription ? (
-						<SourceIdentityCard
-							identity={resolveSubscriptionIdentity(activeSubscription)}
-							compact
+					{items.length > 0 ? (
+						<SignalStrip
+							title="Desk snapshot"
+							description="See what is readable now before you touch filters."
+							items={[
+								{
+									label: "Visible",
+									value: items.length,
+									max: safeLimit,
+									valueLabel: `${items.length}/${safeLimit}`,
+								},
+								{
+									label: "Reader-ready",
+									value: readerReadyCount,
+									max: Math.max(items.length, 1),
+									valueLabel: `${readerReadyCount}/${items.length}`,
+									tone: "success",
+								},
+								{
+									label: "Tagged",
+									value: feedbackTaggedCount,
+									max: Math.max(items.length, 1),
+									valueLabel: String(feedbackTaggedCount),
+									detail: `${savedCount} entries are already saved for later.`,
+								},
+							]}
 						/>
 					) : null}
-				</section>
+					{activeSubscription ? (
+						<div className="space-y-2">
+							<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+								Pinned source
+							</p>
+							<SourceIdentityCard
+								identity={resolveSubscriptionIdentity(activeSubscription)}
+								compact
+							/>
+						</div>
+					) : null}
+				</div>
 			</section>
 
 			<details
 				className="folo-panel folo-surface feed-filter-panel"
-				open={isFiltered || Boolean(safeSubscriptionId)}
+				open={isFiltered}
 			>
 				<summary className="m-[-0.5rem] cursor-pointer list-none rounded-xl p-2 transition-colors hover:bg-muted/20">
 					<div className="flex flex-wrap items-center justify-between gap-3">
@@ -387,17 +404,16 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 							<p
 								className={`text-xs uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 							>
-								Desk controls
+								Filters when you need them
 							</p>
 							<p className="text-sm text-muted-foreground">
-								Use filters only when you need to narrow the desk. They should
-								stay secondary to the preview flow.
+								Open this only when the list feels too wide.
 							</p>
 						</div>
 						{isFiltered ? (
 							<Badge variant="outline">Filtered view</Badge>
 						) : (
-							<Badge variant="outline">Optional</Badge>
+							<Badge variant="outline">Hidden by default</Badge>
 						)}
 					</div>
 				</summary>
@@ -467,7 +483,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 					<div className="feed-filter-actions">
 						<Button
 							type="submit"
-							variant="hero"
+							variant="outline"
 							size="sm"
 							data-interaction="control"
 							data-testid="feed-filter-submit"
@@ -539,13 +555,6 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						selectedJobId={selectedJobId}
 					/>
 					<div className="space-y-4">
-						{selectedJobId ? (
-							<FeedFeedbackPanel
-								initialFeedback={selectedFeedback}
-								jobId={selectedJobId}
-								sessionToken={sessionToken}
-							/>
-						) : null}
 						<ReadingPane
 							jobId={selectedJobId}
 							title={selectedItem?.title}
@@ -558,6 +567,20 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 							)}
 							identity={selectedItem ?? undefined}
 						/>
+						{selectedJobId ? (
+							<details className="rounded-2xl border border-border/60 bg-background/72 p-4">
+								<summary className="cursor-pointer list-none font-semibold text-foreground">
+									React to this item
+								</summary>
+								<div className="mt-4">
+									<FeedFeedbackPanel
+										initialFeedback={selectedFeedback}
+										jobId={selectedJobId}
+										sessionToken={sessionToken}
+									/>
+								</div>
+							</details>
+						) : null}
 					</div>
 				</div>
 			)}

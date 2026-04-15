@@ -83,6 +83,19 @@ class ConsumeBatchWorkflow:
                 job_id = str(item.get("job_id") or "").strip()
                 if not job_id:
                     continue
+                job_status = str(item.get("job_status") or "").strip().lower()
+                if job_status == "succeeded":
+                    process_results.append(
+                        {
+                            "ok": True,
+                            "job_id": job_id,
+                            "status": "succeeded",
+                            "db_status": "succeeded",
+                            "reused_existing_success": True,
+                        }
+                    )
+                    succeeded += 1
+                    continue
                 child_result = await workflow.execute_child_workflow(
                     ProcessJobWorkflow.run,
                     job_id,
@@ -255,7 +268,7 @@ class ProcessJobWorkflow:
             pipeline_result = await workflow.execute_activity(
                 run_pipeline_activity,
                 payload,
-                start_to_close_timeout=timedelta(minutes=30),
+                start_to_close_timeout=timedelta(minutes=60),
                 retry_policy=RetryPolicy(maximum_attempts=1),
             )
             final_status = str(pipeline_result.get("final_status", "failed"))

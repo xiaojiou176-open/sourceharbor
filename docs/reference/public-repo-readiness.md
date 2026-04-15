@@ -40,6 +40,7 @@ Two current reading rules are worth keeping explicit:
 - the repo-managed local first-run path now has two extra maintainer-local hardening behaviors:
   - `./bin/full-stack up` can self-heal Temporal by calling the repo-owned `core_services.sh up` path before failing worker startup
   - the current local video-first lane can use Gemini upload waiting plus a lightweight proxy-video path so oversized raw downloads do not get mistaken for a stable hosted/runtime guarantee
+- the reader-first frontstage on `/reader`, `/feed`, `/search`, and `/ask` is a public product surface, but the working contracts that shaped it stay in the internal planning ledger; public docs should point at the stable summary and proof ladder instead of exposing those internal ledgers as visitor-facing truth
 
 That separation matters because SourceHarbor can honestly advance one layer without pretending all the other layers moved with it.
 

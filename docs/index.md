@@ -2,6 +2,10 @@
 
 If the README is the storefront, this page is the lobby directory.
 
+## Public ledger summary
+
+This index keeps the approved public ledger front and center: reader-first surfaces, proof ladders, and verification checks stay obvious, while working blueprints stay in the internal planning ledger. Whenever you mention release vs remote vs distribution truth, link to [project-status.md](./project-status.md), [proof.md](./proof.md), or [public-distribution.md](./public-distribution.md) so readers can verify the exact ledger.
+
 SourceHarbor has several layers, but the public entry should stay simple:
 
 1. **See the outcome in under a minute**
@@ -46,7 +50,7 @@ This is the shortest honest explanation for why the repo feels more product-shap
 | **Open the compounder layer** | [runtime-truth.md](./runtime-truth.md) | How watchlists, trends, bundles, and sample surfaces fit the current truth |
 | **See what is done vs still a bet** | [project-status.md](./project-status.md) | The shortest truthful status board for delivered, gated, sample-only, and future-direction surfaces |
 | **Check what is publicly provable today** | [proof.md](./proof.md) | Commands, boundaries, and evidence layers |
-| **See what is still a future-direction spike** | [2026-03-31-agent-autopilot-spike.md](./blueprints/2026-03-31-agent-autopilot-spike.md) and [2026-03-31-hosted-readiness-spike.md](./blueprints/2026-03-31-hosted-readiness-spike.md) | What is worth exploring next without pretending it already exists |
+| **See what is still a future-direction spike** | [reference/project-positioning.md](./reference/project-positioning.md) | What is worth exploring next without pretending it already exists |
 | **Understand the moving parts** | [architecture.md](./architecture.md) | API, worker, MCP, web, and shared surfaces |
 | **See how verification works** | [testing.md](./testing.md) | Local checks, CI checks, and smoke paths |
 | **Compare SourceHarbor to other repo shapes** | [compare.md](./compare.md) | Differentiation, trade-offs, and why this repo is product-shaped |
@@ -100,7 +104,7 @@ If you only have one minute, trust these four documents first:
 | [start-here.md](./start-here.md) | First real run | Use this when you want the shortest truthful local path |
 | [proof.md](./proof.md) | Proof ladder | Use this to understand what is locally provable, what needs remote proof, and where the public boundary stops |
 | `docs/generated/*` | Render-only pointers | Follow these only as signposts into runtime-owned evidence, never as the current verdict itself |
-| `.agents/Plans/*` | Historical execution archive | Treat these as archived planning context, not as the current truth route for public readers |
+| Maintainer-only planning ledger | Historical execution archive | Treat it as archived planning context, not as the current truth route for public readers |
 
 ## Public Trust Links
 

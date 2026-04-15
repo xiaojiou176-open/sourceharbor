@@ -122,29 +122,31 @@ export default function BuildersPage() {
 					{builderCopy.title}
 				</h1>
 				<p className="folo-page-subtitle">{builderCopy.subtitle}</p>
+				<div className="mt-4 flex flex-wrap gap-3 text-sm text-muted-foreground">
+					<Link
+						href="/reader"
+						className="underline underline-offset-4 hover:text-foreground"
+					>
+						Back to Reader
+					</Link>
+					<Link
+						href="/feed"
+						className="underline underline-offset-4 hover:text-foreground"
+					>
+						Back to Feed
+					</Link>
+				</div>
 			</div>
 
 			<section className="grid gap-4 xl:grid-cols-[1.1fr_0.92fr]">
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
-						<div className="flex flex-wrap gap-2">
-							{builderCopy.highlightPills.map((pill) => (
-								<Badge
-									key={pill}
-									variant="outline"
-									className="bg-background/70"
-								>
-									{pill}
-								</Badge>
-							))}
-						</div>
 						<h2 className="text-2xl font-semibold leading-none">
-							Start from one honest door
+							Pick one builder lane only after reading
 						</h2>
 						<CardDescription>
-							Pick the narrowest entry that matches what you actually need
-							first. You do not have to learn every surface before you take the
-							first step.
+							Reader and Feed stay first. Open this page only when you already
+							know you need an integration lane.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-6">
@@ -152,67 +154,35 @@ export default function BuildersPage() {
 							<Button asChild variant="hero" className="justify-start">
 								<Link href="/mcp">{builderCopy.mcpCta}</Link>
 							</Button>
-							<Button asChild variant="surface" className="justify-start">
-								<Link href="/use-cases/codex">{builderCopy.codexCta}</Link>
-							</Button>
-							<Button asChild variant="surface" className="justify-start">
-								<Link href="/use-cases/claude-code">
+							<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+								<Link
+									href="/use-cases/codex"
+									className="underline underline-offset-4 hover:text-foreground"
+								>
+									{builderCopy.codexCta}
+								</Link>
+								<Link
+									href="/use-cases/claude-code"
+									className="underline underline-offset-4 hover:text-foreground"
+								>
 									{builderCopy.claudeCodeCta}
 								</Link>
-							</Button>
-							<Button asChild variant="ghost" className="justify-start">
-								<Link href="/proof">{builderCopy.proofCta}</Link>
-							</Button>
+							</div>
 						</div>
-						<div className="grid gap-3 rounded-2xl border border-border/60 bg-background/55 p-4 text-sm text-muted-foreground">
-							<p className="font-semibold text-foreground">
-								Choose the first builder lane, not the whole stack
-							</p>
-							<ul className="space-y-2">
-								<li className="flex gap-3">
-									<span
-										className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/80"
-										aria-hidden
-									/>
-									<span>
-										Open MCP when you want the fastest agent-facing entry that
-										reuses the same retrieval, jobs, and proof surfaces.
-									</span>
-								</li>
-								<li className="flex gap-3">
-									<span
-										className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/80"
-										aria-hidden
-									/>
-									<span>
-										Open a workflow page when you want a guided Codex or Claude
-										Code operator path instead of raw protocol docs.
-									</span>
-								</li>
-								<li className="flex gap-3">
-									<span
-										className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/80"
-										aria-hidden
-									/>
-									<span>
-										Inspect proof when you need the honest answer to what is
-										live, preview-only, or still blocked on external review.
-									</span>
-								</li>
-							</ul>
-						</div>
+						<p className="text-sm leading-7 text-muted-foreground">
+							Start with one tool lane only. Open proof, packages, and starter packs after you already know which door you need.
+						</p>
 					</CardContent>
 				</Card>
 
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
 						<h2 className="text-2xl font-semibold leading-none">
-							Builder atlas
+							Keep the rest as a reference map
 						</h2>
 						<CardDescription>
-							SourceHarbor is easiest to understand when the builder story is
-							split into one map: control plane, proof line, and compounder
-							return loop.
+							Use this only after you already picked the lane you need. It is
+							a map, not the first doorway.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -253,98 +223,113 @@ export default function BuildersPage() {
 			<section className="grid gap-4 xl:grid-cols-[0.94fr_1.06fr]">
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
-						<CardTitle>{builderCopy.resourceTitle}</CardTitle>
+						<CardTitle>Read this only after you pick a lane</CardTitle>
 						<CardDescription>{builderCopy.resourceDescription}</CardDescription>
 					</CardHeader>
-					<CardContent className="grid gap-4 text-sm text-muted-foreground md:grid-cols-2">
+					<CardContent className="grid gap-6 text-sm text-muted-foreground md:grid-cols-2">
 						<div className="space-y-3">
 							<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
 								Docs and starter packs
 							</p>
-							<div className="flex flex-wrap gap-3">
-								<Button asChild variant="outline" size="sm">
+							<ul className="space-y-3">
+								<li>
 									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
 										href={RESOURCE_LINKS.builders}
 										target="_blank"
 										rel="noreferrer"
 									>
 										{builderCopy.buildersGuideCta}
 									</a>
-								</Button>
-								<Button asChild variant="outline" size="sm">
+								</li>
+								<li>
 									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
 										href={RESOURCE_LINKS.starterPacks}
 										target="_blank"
 										rel="noreferrer"
 									>
 										{builderCopy.starterPacksCta}
 									</a>
-								</Button>
-								<Button asChild variant="outline" size="sm">
+								</li>
+								<li>
 									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
 										href={RESOURCE_LINKS.distribution}
 										target="_blank"
 										rel="noreferrer"
 									>
 										Open distribution ledger
 									</a>
-								</Button>
-							</div>
+								</li>
+							</ul>
 						</div>
 						<div className="space-y-3">
 							<p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
 								Packages and public proof
 							</p>
-							<div className="flex flex-wrap gap-3">
-								<Button asChild variant="outline" size="sm">
-									<a href={RESOURCE_LINKS.cli} target="_blank" rel="noreferrer">
+							<ul className="space-y-3">
+								<li>
+									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
+										href={RESOURCE_LINKS.cli}
+										target="_blank"
+										rel="noreferrer"
+									>
 										{builderCopy.cliPackageCta}
 									</a>
-								</Button>
-								<Button asChild variant="outline" size="sm">
-									<a href={RESOURCE_LINKS.sdk} target="_blank" rel="noreferrer">
+								</li>
+								<li>
+									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
+										href={RESOURCE_LINKS.sdk}
+										target="_blank"
+										rel="noreferrer"
+									>
 										{builderCopy.sdkPackageCta}
 									</a>
-								</Button>
-								<Button asChild variant="outline" size="sm">
+								</li>
+								<li>
 									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
 										href={RESOURCE_LINKS.projectStatus}
 										target="_blank"
 										rel="noreferrer"
 									>
 										Open current status board
 									</a>
-								</Button>
-								<Button asChild variant="outline" size="sm">
+								</li>
+								<li>
 									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
 										href={RESOURCE_LINKS.publicSkills}
 										target="_blank"
 										rel="noreferrer"
 									>
 										Open public skills guide
 									</a>
-								</Button>
-								<Button asChild variant="outline" size="sm">
+								</li>
+								<li>
 									<a
+										className="font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary"
 										href={RESOURCE_LINKS.mediaKit}
 										target="_blank"
 										rel="noreferrer"
 									>
 										Open media kit
 									</a>
-								</Button>
-							</div>
+								</li>
+							</ul>
 						</div>
 					</CardContent>
 				</Card>
 
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
-						<CardTitle>Current official-surface status</CardTitle>
+						<CardTitle>What is already public</CardTitle>
 						<CardDescription>
-							These are the strongest public distribution artifacts today. They
-							are not the same thing as a live official listing until the target
-							platform returns a receipt, review URL, or published entry.
+							Use this as a quick status board, not as the main reading
+							experience.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4 text-sm text-muted-foreground">
@@ -362,13 +347,14 @@ export default function BuildersPage() {
 									<Badge variant={item.tone}>{item.status}</Badge>
 								</div>
 								<p>{item.snapshot}</p>
-								<div className="flex flex-wrap gap-3">
-									<Button asChild variant="outline" size="sm">
-										<a href={item.href} target="_blank" rel="noreferrer">
-											{item.cta}
-										</a>
-									</Button>
-								</div>
+								<a
+									href={item.href}
+									target="_blank"
+									rel="noreferrer"
+									className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+								>
+									{item.cta}
+								</a>
 							</div>
 						))}
 					</CardContent>
@@ -377,11 +363,10 @@ export default function BuildersPage() {
 
 			<Card className="folo-surface border-border/70">
 				<CardHeader>
-					<CardTitle>Bundle receipts and registry-ready templates</CardTitle>
+					<CardTitle>Packages and templates</CardTitle>
 					<CardDescription>
-						These are the concrete distribution artifacts behind today&apos;s
-						builder story when you need the actual bundle or template, not just
-						the route map.
+						Open one concrete package or template only when you already know
+						which builder path you need.
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="grid gap-4 text-sm text-muted-foreground md:grid-cols-2 xl:grid-cols-4">
@@ -391,45 +376,42 @@ export default function BuildersPage() {
 							Open the plugin-grade package when you need the real install
 							surface.
 						</p>
-						<Button asChild variant="outline" size="sm">
-							<a
-								href={RESOURCE_LINKS.codexBundle}
-								target="_blank"
-								rel="noreferrer"
-							>
-								Inspect Codex bundle
-							</a>
-						</Button>
+						<a
+							href={RESOURCE_LINKS.codexBundle}
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+						>
+							Inspect Codex bundle
+						</a>
 					</div>
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">Claude bundle</p>
 						<p>
 							Open the starter pack that is ready for official path submission.
 						</p>
-						<Button asChild variant="outline" size="sm">
-							<a
-								href={RESOURCE_LINKS.claudeBundle}
-								target="_blank"
-								rel="noreferrer"
-							>
-								Inspect Claude bundle
-							</a>
-						</Button>
+						<a
+							href={RESOURCE_LINKS.claudeBundle}
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+						>
+							Inspect Claude bundle
+						</a>
 					</div>
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">OpenClaw pack</p>
 						<p>
 							Inspect the publish-ready pack and template layer for OpenClaw.
 						</p>
-						<Button asChild variant="outline" size="sm">
-							<a
-								href={RESOURCE_LINKS.openclawBundle}
-								target="_blank"
-								rel="noreferrer"
-							>
-								Inspect OpenClaw pack
-							</a>
-						</Button>
+						<a
+							href={RESOURCE_LINKS.openclawBundle}
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+						>
+							Inspect OpenClaw pack
+						</a>
 					</div>
 					<div className="space-y-3 rounded-lg border border-border/60 bg-background/55 p-4">
 						<p className="font-medium text-foreground">Registry template</p>
@@ -437,15 +419,14 @@ export default function BuildersPage() {
 							Use the official-registry-shaped template when you need metadata
 							receipts.
 						</p>
-						<Button asChild variant="outline" size="sm">
-							<a
-								href={RESOURCE_LINKS.mcpRegistry}
-								target="_blank"
-								rel="noreferrer"
-							>
-								Inspect MCP registry template
-							</a>
-						</Button>
+						<a
+							href={RESOURCE_LINKS.mcpRegistry}
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+						>
+							Inspect MCP registry template
+						</a>
 					</div>
 				</CardContent>
 			</Card>
@@ -458,13 +439,11 @@ export default function BuildersPage() {
 								Later proof lane
 							</p>
 							<h3 className="text-xl font-semibold">
-								What still needs live submission proof
+								What still needs external proof
 							</h3>
 							<p className="max-w-[52ch] text-sm leading-6 text-muted-foreground">
-								The repo now has real bundles, templates, and starter packs. The
-								next bar is no longer “write another README”, but “show a real
-								submission, listing, pending-review URL, or exact external
-								blocker.”
+								These are the pieces that still depend on a real marketplace,
+								registry, or review receipt.
 							</p>
 						</div>
 						<span className="rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground transition group-open:text-foreground">

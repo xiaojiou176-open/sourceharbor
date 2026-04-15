@@ -110,11 +110,22 @@ Important local-truth notes:
 
 - do not assume `9000/3000`; bootstrap/full-stack may move to other free ports and record them in `.runtime-cache/run/full-stack/resolved.env`
 - the default local Postgres path is container-first on `CORE_POSTGRES_PORT=15432`
+- the repo-owned Temporal fallback keeps its SQLite state in
+  `.runtime-cache/tmp/local-temporal/dev.sqlite`
 - if your machine already has a host Postgres on `127.0.0.1:5432`, that is a different data plane from the core-services container path
 - the repo-managed web runtime also writes `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` so browser-triggered writes keep the same local API base URL and write-session fallback as the supervisor path
 - `CI=false` or similar non-truthy env strings must not suppress the maintainer-local `sourceharbor-local-dev-token` fallback during repo-managed full-stack startup
 - `./bin/full-stack up` can now self-heal Temporal reachability by trying the
   repo-owned `core_services.sh up` path before failing worker startup
+- Temporal preflight now verifies namespace readiness after TCP reachability, so
+  an unhealthy reused listener on `7233` still fails closed
+- if `127.0.0.1:7233` is already occupied by an unhealthy non-repo-owned
+  listener, the local fallback must fail closed instead of reusing that port by
+  presence alone
+- `.runtime-cache/tmp` remains governed scratch space with a hard budget of
+  `1024MB / 80000 files`; if repo-managed `web-runtime/` copies or screenshot
+  batches exceed it, clean only rebuildable scratch paths before rerunning the
+  closeout gates
 - a current local `mode=full` YouTube receipt now depends on:
   - `gemini-3-flash-preview` as the fast-model default
   - Gemini Files waiting until `ACTIVE`
@@ -239,6 +250,9 @@ Closeout note:
 - If the Docker daemon is unavailable on a maintainer workstation, the wrapper
   now falls back to the host-bootstrapped pre-push quality gate instead of
   failing before the actual repo-side gates even start.
+- That host fallback still enforces the same runtime contracts: env
+  registration, documentation drift, scratch-space budget, and namespace-aware
+  Temporal startup truth.
 
 Mutation-readiness note:
 

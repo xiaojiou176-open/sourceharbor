@@ -517,6 +517,7 @@ run_secrets_scan() {
   matches="$(
     rg -n --hidden --no-ignore-vcs \
       --glob "!.git/**" \
+      --glob "!.agents/参考Repo/**" \
       --glob "!node_modules/**" \
       --glob "!.venv/**" \
       --glob "!.runtime-cache/**" \

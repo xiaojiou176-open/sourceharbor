@@ -42,6 +42,7 @@ class _RepoStub:
         self.should_dispatch = should_dispatch
         self.created_calls: list[dict[str, Any]] = []
         self.mark_failed_calls: list[dict[str, Any]] = []
+        self.latest_successful_job: _JobRow | None = None
         self.job = _JobRow(
             id=uuid.uuid4(),
             status="queued",
@@ -67,6 +68,10 @@ class _RepoStub:
         )
         self.job.status = "failed"
         return self.job
+
+    def get_latest_successful_for_video(self, *, video_id: uuid.UUID) -> _JobRow | None:
+        del video_id
+        return self.latest_successful_job
 
 
 class _VideoRepoStub:
@@ -418,6 +423,33 @@ def test_process_video_reuses_existing_job_without_dispatch(
     assert result["idempotency_key"] == repo.job.idempotency_key
     assert result["mode"] == "full"
     assert result["overrides"] == {}
+
+
+def test_process_video_prefers_latest_successful_job_when_reused_row_failed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo = _RepoStub(should_dispatch=False)
+    repo.job.status = "failed"
+    repo.latest_successful_job = _JobRow(
+        id=uuid.uuid4(),
+        status="succeeded",
+        idempotency_key="idem-success",
+        mode="full",
+    )
+    service = VideosService(db=object())
+    video_repo = _VideoRepoStub()
+    service.video_repo = video_repo  # type: ignore[assignment]
+    service.jobs_repo = repo  # type: ignore[assignment]
+
+    fake_client = _FakeClient(should_fail=False)
+    _install_temporal_modules(monkeypatch, client=fake_client)
+
+    result = asyncio.run(_run_process(service))
+
+    assert result["job_id"] == repo.latest_successful_job.id
+    assert result["status"] == "succeeded"
+    assert result["idempotency_key"] == "idem-success"
+    assert result["reused"] is True
     assert result["force"] is False
     assert result["workflow_id"] is None
     assert result["reused"] is True

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
 import type {
+	AskAnswerResponse,
 	AskStorySelectionBasis,
 	RetrievalHit,
 	RetrievalSearchMode,
@@ -171,14 +172,9 @@ function EvidenceCard({ hit }: { hit: RetrievalHit }) {
 				</div>
 			</CardHeader>
 			<CardContent className="flex flex-wrap gap-2">
-				<Button asChild variant="outline" size="sm">
+				<Button asChild variant="secondary" size="sm">
 					<Link href={`/jobs?job_id=${encodeURIComponent(hit.job_id)}`}>
 						{askCopy.openJobTraceButton}
-					</Link>
-				</Button>
-				<Button asChild variant="outline" size="sm">
-					<Link href={`/knowledge?job_id=${encodeURIComponent(hit.job_id)}`}>
-						{askCopy.openKnowledgeCardsButton}
 					</Link>
 				</Button>
 				<Button asChild variant="outline" size="sm">
@@ -186,12 +182,21 @@ function EvidenceCard({ hit }: { hit: RetrievalHit }) {
 						{askCopy.openFeedEntryButton}
 					</Link>
 				</Button>
+				<Link
+					href={`/knowledge?job_id=${encodeURIComponent(hit.job_id)}`}
+					className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+				>
+					{askCopy.openKnowledgeCardsButton}
+				</Link>
 				{hit.source_url ? (
-					<Button asChild variant="ghost" size="sm">
-						<a href={hit.source_url} target="_blank" rel="noreferrer">
-							{askCopy.openSourceButton}
-						</a>
-					</Button>
+					<a
+						href={hit.source_url}
+						target="_blank"
+						rel="noreferrer"
+						className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+					>
+						{askCopy.openSourceButton}
+					</a>
 				) : null}
 			</CardContent>
 		</Card>
@@ -228,18 +233,68 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 	const safeWatchlistId = watchlistId.trim();
 	const safeStoryId = storyId.trim();
 	const safeTopicKey = topicKey.trim();
+	const fallbackBriefingHref = safeWatchlistId
+		? `/briefings?watchlist_id=${encodeURIComponent(safeWatchlistId)}`
+		: "/briefings";
+	const watchlists = await apiClient.listWatchlists().catch(() => []);
+	const selectedWatchlist =
+		watchlists.find((item) => item.id === safeWatchlistId) ?? null;
 
-	const [watchlists, askPayload] = await Promise.all([
-		apiClient.listWatchlists().catch(() => []),
-		apiClient.getAskAnswer({
+	let askPayload: AskAnswerResponse;
+	try {
+		askPayload = await apiClient.getAskAnswer({
 			question: safeQuestion,
 			mode: safeMode,
 			top_k: safeTopK,
 			watchlist_id: safeWatchlistId,
 			story_id: safeStoryId,
 			topic_key: safeTopicKey,
-		}),
-	]);
+		});
+	} catch {
+		askPayload = {
+			question: safeQuestion,
+			mode: safeMode,
+			top_k: safeTopK,
+			context: {
+				watchlist_id: safeWatchlistId || null,
+				watchlist_name: selectedWatchlist?.name ?? null,
+				story_id: safeStoryId || null,
+				selected_story_id: safeStoryId || null,
+				story_headline: null,
+				topic_key: safeTopicKey || null,
+				topic_label: selectedWatchlist?.name ?? null,
+				selection_basis: "none",
+				mode: safeMode,
+				filters: {},
+				briefing_available: false,
+			},
+			answer_state: "briefing_unavailable",
+			answer_headline: null,
+			answer_summary: null,
+			answer_reason: null,
+			answer_confidence: "limited",
+			story_change_summary: null,
+			story_page: null,
+			retrieval: null,
+			citations: [],
+			fallback_reason:
+				"Ask could not load the current answer lane right now.",
+			fallback_next_step:
+				"Open raw search or the latest briefing while the answer lane recovers.",
+			fallback_actions: [
+				{
+					kind: "open_briefing",
+					label: askCopy.askOpenBriefingButton,
+					route: fallbackBriefingHref,
+				},
+				{
+					kind: "open_search",
+					label: askCopy.openRawSearchButton,
+					route: "/search",
+				},
+			],
+		};
+	}
 
 	const genericBriefingHref = askPayload.context.watchlist_id
 		? `/briefings?watchlist_id=${encodeURIComponent(askPayload.context.watchlist_id)}`
@@ -290,6 +345,161 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 		selectedStory?.routes.job_compare ?? null,
 		briefing?.differences.compare?.compare_route ?? null,
 	);
+	const contextReady = Boolean(askPayload.context.watchlist_id && briefing);
+	const shouldShowChangesLane = Boolean(briefing);
+	const shouldShowEvidenceLane = Boolean(
+		citations.length > 0 ||
+			retrievalHits.length > 0 ||
+			selectedStory ||
+			featuredRuns.length > 0 ||
+			!safeQuestion,
+	);
+	const refinePrompt = contextReady
+		? "Need to challenge this answer? Open changes or receipts only when you really need them."
+		: "Pick one saved topic first. Without a watchlist briefing, Ask stays in raw evidence mode instead of pretending it knows more than it does.";
+	const askFormSurface = (
+		<Card className="folo-surface border-border/70">
+			<CardHeader>
+				<h2 className="text-xl font-semibold">{askCopy.askFormTitle}</h2>
+				<CardDescription>{askCopy.askFormDescription}</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-6">
+				<form method="GET" className="grid gap-4 xl:grid-cols-2">
+					<FormInputField
+						id="ask-question"
+						name="question"
+						label={askCopy.questionLabel}
+						type="search"
+						placeholder={askCopy.questionPlaceholder}
+						defaultValue={safeQuestion}
+						hint={askCopy.askHint}
+					/>
+					<FormSelectField
+						name="watchlist_id"
+						label={askCopy.askContextLabel}
+						defaultValue={askPayload.context.watchlist_id ?? ""}
+						options={contextOptions}
+						hint={askCopy.askContextDescription}
+					/>
+					<FormSelectField
+						name="mode"
+						label={askCopy.groundingModeLabel}
+						defaultValue={safeMode}
+						options={MODE_OPTIONS.map((option) => ({
+							...option,
+							label:
+								option.value === "keyword"
+									? askCopy.modeOptions.keyword
+									: option.value === "semantic"
+										? askCopy.modeOptions.semantic
+										: askCopy.modeOptions.hybrid,
+						}))}
+					/>
+					<FormInputField
+						id="ask-top-k"
+						name="top_k"
+						label={askCopy.topKLabel}
+						type="number"
+						min={1}
+						max={12}
+						defaultValue={String(safeTopK)}
+					/>
+					{askPayload.context.story_id ? (
+						<input
+							type="hidden"
+							name="story_id"
+							value={askPayload.context.story_id}
+						/>
+					) : null}
+					{askPayload.context.topic_key ? (
+						<input
+							type="hidden"
+							name="topic_key"
+							value={askPayload.context.topic_key}
+						/>
+					) : null}
+					<div className="flex items-end gap-3">
+						<Button type="submit" variant="hero" size="sm">
+							{askCopy.askButton}
+						</Button>
+						<Button asChild variant="ghost" size="sm">
+							<Link href="/ask">{askCopy.clearButton}</Link>
+						</Button>
+					</div>
+				</form>
+				<div className="space-y-4 rounded-2xl border border-border/60 bg-background/55 p-4">
+					<p className="text-sm leading-6 text-muted-foreground">
+						{refinePrompt}
+					</p>
+					<div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+						{contextReady ? (
+							<>
+								<Link
+									href={briefingHref}
+									className="underline underline-offset-4 hover:text-foreground"
+								>
+									{askCopy.askOpenBriefingButton}
+								</Link>
+								<Link
+									href={trendHref}
+									className="underline underline-offset-4 hover:text-foreground"
+								>
+									{briefingsCopy.openTrendButton}
+								</Link>
+								<Link
+									href={clearContextHref}
+									className="underline underline-offset-4 hover:text-foreground"
+								>
+									{askCopy.askClearContextButton}
+								</Link>
+							</>
+							) : (
+								<>
+									<Link
+										href="/briefings"
+										className="underline underline-offset-4 hover:text-foreground"
+								>
+									{askCopy.askOpenBriefingButton}
+								</Link>
+									<Link
+										href="/search"
+										className="underline underline-offset-4 hover:text-foreground"
+									>
+										{askCopy.openRawSearchButton}
+									</Link>
+								</>
+							)}
+						</div>
+					{!contextReady && watchlists.length > 0 ? (
+						<div className="space-y-3 border-t border-border/50 pt-4">
+							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+								Saved topics
+							</p>
+							<div className="flex flex-wrap gap-3">
+								{watchlists.map((item) => (
+									<Link
+										key={item.id}
+										href={buildAskHref({
+											question: buildContextSeed({
+												question: safeQuestion,
+												fallback: item.matcher_value || item.name,
+											}),
+											mode: safeMode,
+											top_k: String(safeTopK),
+											watchlist_id: item.id,
+										})}
+										className="rounded-full border border-border/60 px-3 py-1 text-sm text-foreground transition hover:bg-muted/20"
+									>
+										{item.name}
+									</Link>
+								))}
+							</div>
+						</div>
+					) : null}
+				</div>
+			</CardContent>
+		</Card>
+	);
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">
@@ -301,258 +511,10 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 				<p className="folo-page-subtitle">{askCopy.askSubtitle}</p>
 			</div>
 
-			<Card className="folo-surface border-border/70">
-				<CardHeader>
-					<h2 className="text-xl font-semibold">{askCopy.askTruthTitle}</h2>
-					<CardDescription>
-						{askCopy.askTruthContractLead} {askCopy.askTruthPrimary}{" "}
-						{askCopy.askTruthSecondary} {askCopy.askTruthNote}
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-wrap gap-3">
-					<div className="rounded-md border border-border/70 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-						{askCopy.askContractArtifactLabel}:{" "}
-						<code>
-							docs/blueprints/2026-03-31-ask-your-sources-grounded-answer-contract.md
-						</code>
-					</div>
-					<Button asChild variant="outline" size="sm">
-						<Link href={briefingHref}>{askCopy.askOpenBriefingButton}</Link>
-					</Button>
-					<Button asChild variant="ghost" size="sm">
-						<Link href="/search">{askCopy.openRawSearchButton} →</Link>
-					</Button>
-				</CardContent>
-			</Card>
+			<div className="space-y-6">
+				{!safeQuestion ? <section>{askFormSurface}</section> : null}
 
-			<Card className="folo-surface border-border/70">
-				<CardHeader>
-					<h2 className="text-xl font-semibold">{askCopy.askFormTitle}</h2>
-					<CardDescription>{askCopy.askFormDescription}</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<form method="GET" className="grid gap-4 xl:grid-cols-2">
-						<FormInputField
-							id="ask-question"
-							name="question"
-							label={askCopy.questionLabel}
-							type="search"
-							placeholder={askCopy.questionPlaceholder}
-							defaultValue={safeQuestion}
-							hint={askCopy.askHint}
-						/>
-						<FormSelectField
-							name="watchlist_id"
-							label={askCopy.askContextLabel}
-							defaultValue={askPayload.context.watchlist_id ?? ""}
-							options={contextOptions}
-							hint={askCopy.askContextDescription}
-						/>
-						<FormSelectField
-							name="mode"
-							label={askCopy.groundingModeLabel}
-							defaultValue={safeMode}
-							options={MODE_OPTIONS.map((option) => ({
-								...option,
-								label:
-									option.value === "keyword"
-										? askCopy.modeOptions.keyword
-										: option.value === "semantic"
-											? askCopy.modeOptions.semantic
-											: askCopy.modeOptions.hybrid,
-							}))}
-						/>
-						<FormInputField
-							id="ask-top-k"
-							name="top_k"
-							label={askCopy.topKLabel}
-							type="number"
-							min={1}
-							max={12}
-							defaultValue={String(safeTopK)}
-						/>
-						{askPayload.context.story_id ? (
-							<input
-								type="hidden"
-								name="story_id"
-								value={askPayload.context.story_id}
-							/>
-						) : null}
-						{askPayload.context.topic_key ? (
-							<input
-								type="hidden"
-								name="topic_key"
-								value={askPayload.context.topic_key}
-							/>
-						) : null}
-						<div className="flex items-end gap-3">
-							<Button type="submit" variant="hero" size="sm">
-								{askCopy.askButton}
-							</Button>
-							<Button asChild variant="ghost" size="sm">
-								<Link href="/ask">{askCopy.clearButton}</Link>
-							</Button>
-						</div>
-					</form>
-				</CardContent>
-			</Card>
-
-			<Card className="folo-surface border-border/70">
-				<CardHeader>
-					<h2 className="text-xl font-semibold">{askCopy.askContextTitle}</h2>
-					<CardDescription>{askCopy.askContextDescription}</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					{askPayload.context.watchlist_id && briefing ? (
-						<>
-							<div className="flex flex-wrap items-center gap-2">
-								<Badge variant="outline">
-									{stateBadgeLabel(askPayload.answer_state)}
-								</Badge>
-								{selectedStory?.topic_label ? (
-									<Badge variant="outline">{selectedStory.topic_label}</Badge>
-								) : null}
-							</div>
-							<dl className="grid gap-3 md:grid-cols-2">
-								<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
-									<dt className="text-xs uppercase tracking-wide text-muted-foreground">
-										{briefingsCopy.currentWatchlistLabel}
-									</dt>
-									<dd className="mt-1 text-sm font-medium text-foreground">
-										{askPayload.context.watchlist_name}
-									</dd>
-								</div>
-								<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
-									<dt className="text-xs uppercase tracking-wide text-muted-foreground">
-										{askCopy.askContextTopicLabel}
-									</dt>
-									<dd className="mt-1 text-sm font-medium text-foreground">
-										{askPayload.context.topic_label ||
-											askPayload.context.topic_key ||
-											briefingsCopy.noneValue}
-									</dd>
-								</div>
-								<div className="rounded-lg border border-border/60 bg-muted/20 p-3 md:col-span-2">
-									<dt className="text-xs uppercase tracking-wide text-muted-foreground">
-										{briefingsCopy.primaryStoryLabel}
-									</dt>
-									<dd className="mt-1 text-sm font-medium text-foreground">
-										{askPayload.context.story_headline ||
-											askPayload.answer_headline ||
-											briefingsCopy.noneValue}
-									</dd>
-								</div>
-							</dl>
-							<div className="flex flex-wrap gap-3">
-								<Button asChild variant="outline" size="sm">
-									<Link href={briefingHref}>
-										{askCopy.askOpenBriefingButton}
-									</Link>
-								</Button>
-								<Button asChild variant="outline" size="sm">
-									<Link href={trendHref}>{briefingsCopy.openTrendButton}</Link>
-								</Button>
-								{askPayload.context.story_id || askPayload.context.topic_key ? (
-									<Button asChild variant="ghost" size="sm">
-										<Link href={clearStoryHref}>
-											{askCopy.askClearStoryContextButton}
-										</Link>
-									</Button>
-								) : null}
-								<Button asChild variant="ghost" size="sm">
-									<Link href={clearContextHref}>
-										{askCopy.askClearContextButton}
-									</Link>
-								</Button>
-							</div>
-							{storyChoices.length > 1 ? (
-								<div className="rounded-lg border border-border/60 bg-background/70 p-4">
-									<div className="space-y-1">
-										<h3 className="text-lg font-semibold">
-											{askCopy.askStorySwitcherTitle}
-										</h3>
-										<p className="text-sm text-muted-foreground">
-											{askCopy.askStorySwitcherDescription}
-										</p>
-									</div>
-									<div className="mt-3 flex flex-wrap gap-2">
-										{storyChoices.map((story) => (
-											<Button
-												key={story.story_id}
-												asChild
-												size="sm"
-												variant={
-													story.story_id === activeStoryId ? "hero" : "outline"
-												}
-											>
-												<Link
-													href={
-														decorateAskRoute(story.routes.ask, {
-															question:
-																safeQuestion ||
-																story.topic_label ||
-																story.headline,
-															mode: safeMode,
-															top_k: String(safeTopK),
-														}) ??
-														buildAskHref({
-															question: safeQuestion || undefined,
-															mode: safeMode,
-															top_k: String(safeTopK),
-															watchlist_id:
-																askPayload.context.watchlist_id ?? undefined,
-															story_id: story.story_id,
-															topic_key: story.topic_key ?? undefined,
-														})
-													}
-												>
-													{story.headline}
-												</Link>
-											</Button>
-										))}
-									</div>
-								</div>
-							) : null}
-						</>
-					) : (
-						<>
-							<div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-								<p className="font-medium text-foreground">
-									{askCopy.askContextMissingTitle}
-								</p>
-								<p className="mt-2">{askCopy.askContextMissingDescription}</p>
-							</div>
-							{watchlists.length > 0 ? (
-								<div className="flex flex-wrap gap-3">
-									{watchlists.map((item) => (
-										<Button key={item.id} asChild variant="outline" size="sm">
-											<Link
-												href={buildAskHref({
-													question: buildContextSeed({
-														question: safeQuestion,
-														fallback: item.matcher_value || item.name,
-													}),
-													mode: safeMode,
-													top_k: String(safeTopK),
-													watchlist_id: item.id,
-												})}
-											>
-												{item.name}
-											</Link>
-										</Button>
-									))}
-								</div>
-							) : (
-								<p className="text-sm text-muted-foreground">
-									{briefingsCopy.empty}
-								</p>
-							)}
-						</>
-					)}
-				</CardContent>
-			</Card>
-
-			<section className="space-y-4" aria-label={askCopy.askResultsAriaLabel}>
+				<section className="space-y-4" aria-label={askCopy.askResultsAriaLabel}>
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
 						<div className="flex flex-wrap items-center gap-3">
@@ -572,11 +534,14 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 					</CardHeader>
 					<CardContent className="space-y-4">
 						{safeQuestion ? (
-							<p className="text-sm text-muted-foreground">
-								{askCopy.askSummaryQuestionPrefix}:{" "}
-								<strong>{safeQuestion}</strong> · {askCopy.askSummaryHitsPrefix}
-								: <strong>{retrievalHits.length}</strong>
-							</p>
+							<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+								<Badge variant="outline">
+									{askCopy.askSummaryQuestionPrefix}: {safeQuestion}
+								</Badge>
+								<Badge variant="outline">
+									{askCopy.askSummaryHitsPrefix}: {retrievalHits.length}
+								</Badge>
+							</div>
 						) : null}
 
 						{selectedStory ? (
@@ -649,6 +614,64 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 										</Button>
 									) : null}
 								</div>
+								{storyChoices.length > 1 ? (
+									<div className="mt-4 rounded-lg border border-border/60 bg-background/70 p-4">
+										<div className="space-y-1">
+											<h3 className="text-lg font-semibold">
+												{askCopy.askStorySwitcherTitle}
+											</h3>
+											<p className="text-sm text-muted-foreground">
+												{askCopy.askStorySwitcherDescription}
+											</p>
+										</div>
+										<div className="mt-3 flex flex-wrap gap-2">
+											{storyChoices.map((story) => (
+												<Button
+													key={story.story_id}
+													asChild
+													size="sm"
+													variant={
+														story.story_id === activeStoryId ? "hero" : "outline"
+													}
+												>
+													<Link
+														href={
+															decorateAskRoute(story.routes.ask, {
+																question:
+																	safeQuestion ||
+																	story.topic_label ||
+																	story.headline,
+																mode: safeMode,
+																top_k: String(safeTopK),
+															}) ??
+															buildAskHref({
+																question: safeQuestion || undefined,
+																mode: safeMode,
+																top_k: String(safeTopK),
+																watchlist_id:
+																	askPayload.context.watchlist_id ?? undefined,
+																story_id: story.story_id,
+																topic_key: story.topic_key ?? undefined,
+															})
+														}
+													>
+														{story.headline}
+													</Link>
+												</Button>
+											))}
+										</div>
+										{askPayload.context.story_id || askPayload.context.topic_key ? (
+											<div className="mt-3 text-sm text-muted-foreground">
+												<Link
+													href={clearStoryHref}
+													className="underline underline-offset-4 hover:text-foreground"
+												>
+													{askCopy.askClearStoryContextButton}
+												</Link>
+											</div>
+										) : null}
+									</div>
+								) : null}
 							</div>
 						) : null}
 
@@ -724,21 +747,32 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 					</CardContent>
 				</Card>
 
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<h2 className="text-xl font-semibold">
-							{briefingsCopy.differencesTitle}
-						</h2>
-						<CardDescription>
-							{briefingsCopy.differencesDescription}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{briefing ? (
-							<>
-								{askPayload.story_change_summary ? (
-									<div className="rounded-lg border border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
-										<p className="font-medium text-foreground">
+						{shouldShowChangesLane || shouldShowEvidenceLane ? (
+							<details className="folo-surface rounded-[1.6rem] border border-border/70 bg-background/95 p-5 shadow-sm">
+								<summary className="m-[-0.5rem] cursor-pointer list-none rounded-[1.2rem] p-2 transition-colors hover:bg-muted/20">
+									<div className="space-y-2">
+										<p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+											Receipts later
+										</p>
+										<p className="text-base font-semibold text-foreground">
+											Open the change log, citations, and raw evidence only when you need to verify the answer.
+										</p>
+									</div>
+								</summary>
+								<div className="mt-5 space-y-6">
+						{shouldShowChangesLane ? (
+							<section className="space-y-4">
+								<div className="space-y-1">
+									<h2 className="text-xl font-semibold">
+										{briefingsCopy.differencesTitle}
+									</h2>
+									<p className="text-sm text-muted-foreground">
+										{briefingsCopy.differencesDescription}
+									</p>
+								</div>
+									{askPayload.story_change_summary ? (
+										<div className="rounded-lg border border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
+											<p className="font-medium text-foreground">
 											{askCopy.askAnswerWhyLabel}
 										</p>
 										<p className="mt-2">{askPayload.story_change_summary}</p>
@@ -838,31 +872,25 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 											<Link href={compareHref}>
 												{briefingsCopy.openCompareButton}
 											</Link>
-										</Button>
-									) : null}
-								</div>
-							</>
-						) : (
-							<p className="text-sm text-muted-foreground">
-								{askCopy.askChangesFallbackDescription}
-							</p>
-						)}
-					</CardContent>
-				</Card>
+											</Button>
+										) : null}
+									</div>
+								</section>
+						) : null}
 
-				<Card className="folo-surface border-border/70">
-					<CardHeader>
-						<h2 className="text-xl font-semibold">
-							{briefingsCopy.evidenceTitle}
-						</h2>
-						<CardDescription>
-							{briefingsCopy.evidenceDescription}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-6">
-						{citations.length > 0 ? (
-							<section className="space-y-4">
+						{shouldShowEvidenceLane ? (
+							<section className="space-y-6">
 								<div className="space-y-1">
+									<h2 className="text-xl font-semibold">
+										{briefingsCopy.evidenceTitle}
+									</h2>
+									<p className="text-sm text-muted-foreground">
+										{briefingsCopy.evidenceDescription}
+									</p>
+								</div>
+								{citations.length > 0 ? (
+									<section className="space-y-4">
+									<div className="space-y-1">
 									<h3 className="text-lg font-semibold">
 										{askCopy.askCitationsTitle}
 									</h3>
@@ -1089,14 +1117,33 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 							</section>
 						) : null}
 
-						{!safeQuestion && !selectedStory && featuredRuns.length === 0 ? (
-							<p className="text-sm text-muted-foreground">
-								{askCopy.askExpectationDescription}
-							</p>
+								{!safeQuestion && !selectedStory && featuredRuns.length === 0 ? (
+									<p className="text-sm text-muted-foreground">
+										{askCopy.askExpectationDescription}
+									</p>
+								) : null}
+								</section>
 						) : null}
-					</CardContent>
-				</Card>
-			</section>
-		</div>
-	);
+								</div>
+							</details>
+						) : null}
+					</section>
+				{safeQuestion ? (
+					<details className="folo-surface rounded-[1.6rem] border border-border/70 bg-background/95 p-5 shadow-sm">
+						<summary className="m-[-0.5rem] cursor-pointer list-none rounded-[1.2rem] p-2 transition-colors hover:bg-muted/20">
+							<div className="space-y-2">
+								<p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+									Refine later
+								</p>
+								<p className="text-base font-semibold text-foreground">
+									Open the question controls only if the first answer is not enough
+								</p>
+							</div>
+						</summary>
+						<div className="mt-5">{askFormSurface}</div>
+					</details>
+				) : null}
+				</div>
+			</div>
+		);
 }

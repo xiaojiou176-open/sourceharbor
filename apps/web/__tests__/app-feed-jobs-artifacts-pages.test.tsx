@@ -44,7 +44,7 @@ vi.mock("@/components/relative-time", () => ({
 }));
 
 vi.mock("@/components/sync-now-button", () => ({
-	SyncNowButton: () => <button type="button">Sync now</button>,
+	SyncNowButton: () => <button type="button">Refresh list</button>,
 }));
 
 vi.mock("@/lib/api/client", () => ({
@@ -134,7 +134,7 @@ describe("feed/jobs/artifacts pages", () => {
 			).toBeInTheDocument();
 			expect(screen.getByRole("button", { name: "Filter" })).toHaveAttribute(
 				"data-variant",
-				"hero",
+				"outline",
 			);
 			expect(screen.getByRole("link", { name: "Next page →" })).toHaveAttribute(
 				"data-variant",
@@ -477,14 +477,14 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(mockListSubscriptions).toHaveBeenCalledWith({
 				enabled_only: false,
 			});
-			expect(screen.getByText("Article")).toBeInTheDocument();
-			expect(
-				screen.getByRole("heading", {
-					name: "You are reading one tracked universe",
-				}),
-			).toBeInTheDocument();
-			expect(screen.getAllByText("Macro Universe").length).toBeGreaterThan(0);
-			expect(screen.getAllByText("Tracked universe").length).toBeGreaterThan(0);
+				expect(screen.getByText("Article")).toBeInTheDocument();
+				expect(
+					screen.getByText("Pinned source"),
+				).toBeInTheDocument();
+				expect(screen.getAllByText("Macro Universe").length).toBeGreaterThan(0);
+				expect(
+					screen.getByText(/Choose one thing worth reading/i),
+				).toBeInTheDocument();
 			expect(
 				screen.getByRole("link", { name: "← Previous page" }),
 			).toHaveAttribute("href", "/feed?sub=sub-123");

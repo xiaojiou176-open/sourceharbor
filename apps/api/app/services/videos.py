@@ -244,6 +244,12 @@ class VideosService:
             idempotency_key=idempotency_key,
             force=force,
         )
+        if not needs_dispatch and str(getattr(job_row, "status", "")).strip().lower() == "failed":
+            latest_successful = self.jobs_repo.get_latest_successful_for_video(
+                video_id=video_row.id
+            )
+            if latest_successful is not None:
+                job_row = latest_successful
 
         workflow_id: str | None = None
         if needs_dispatch:

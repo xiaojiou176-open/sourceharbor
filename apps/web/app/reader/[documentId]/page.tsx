@@ -38,8 +38,8 @@ export async function generateMetadata({
 			? "Reader detail preview"
 			: `Reader document ${resolved.documentId}`,
 		description: isPreviewRoute
-			? "Preview the reader detail frontstage with warning and evidence drawer before your first live document lands."
-			: "Published reader document detail with markdown body, yellow warning state, and source contribution drawer.",
+			? "Preview a sample reading page before the first live story lands."
+			: "Finished story view with source notes and background detail when you want them.",
 		route: "reader",
 	});
 }
@@ -130,7 +130,7 @@ export default async function ReaderDetailPage({
 					>
 						Back to reader
 					</Link>
-					<span>Reader frontstage</span>
+					<span>Reading</span>
 					<span>/</span>
 					<span>{document.topic_label ?? "Published document"}</span>
 				</div>
@@ -149,14 +149,14 @@ export default async function ReaderDetailPage({
 										: undefined
 								}
 							>
-								{document.published_with_gap ? "Yellow warning" : "Clear"}
+								{document.published_with_gap ? "Read with care" : "Ready"}
 							</Badge>
 							{document.topic_label ? (
 								<Badge variant="outline">{document.topic_label}</Badge>
 							) : null}
 						</div>
 						<p className="text-xs font-semibold uppercase tracking-[0.28em] text-foreground/70">
-							Published reading unit
+							Story
 						</p>
 						<h1
 							data-route-heading
@@ -167,12 +167,12 @@ export default async function ReaderDetailPage({
 						</h1>
 						<p className="max-w-4xl text-base leading-8 text-foreground/75">
 							{document.summary ??
-								"This document unifies the reader-facing markdown, yellow-warning contract, and source contribution drawer for one published reader unit."}
+								"Read the story first. Source notes and background detail stay below for when you want a closer look."}
 						</p>
 						{topSources.length ? (
 							<div className="space-y-3">
 								<p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-									Source universe
+									From these sources
 								</p>
 								<div className="grid gap-3 md:grid-cols-2">
 									{topSources.map((source, index) => (
@@ -190,9 +190,8 @@ export default async function ReaderDetailPage({
 						) : null}
 						{resolved.documentId === DEMO_READER_DOCUMENT_ID ? (
 							<div className="max-w-3xl rounded-2xl border border-rose-200/70 bg-rose-50/70 p-4 text-sm leading-6 text-rose-950/80 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-100/80">
-								This is a specimen edition: read the body first, keep the
-								warning in mind, then open evidence only when you want to
-								inspect the backstage contract.
+								This is a sample story. Read it straight through first, then
+								open the notes only if you want to inspect the background.
 							</div>
 						) : null}
 						<div className="flex flex-wrap gap-3 text-sm text-foreground/75">
@@ -205,19 +204,19 @@ export default async function ReaderDetailPage({
 								href="#reader-body"
 								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
 							>
-								Read the body
+								Read the story
 							</a>
 							<a
 								href="#reader-warning"
 								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
 							>
-								Keep the warning in mind
+								Keep the note nearby
 							</a>
 							<a
 								href="#reader-evidence"
 								className="rounded-full border border-border/60 px-3 py-1 text-foreground/80 no-underline transition hover:bg-muted/40"
 							>
-								Open evidence when needed
+								See sources
 							</a>
 							<a
 								href="#reader-coverage"
@@ -231,49 +230,48 @@ export default async function ReaderDetailPage({
 						<p
 							className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 						>
-							Margin note
+							How to use this page
 						</p>
 						<h2
 							className={`mt-2 text-2xl leading-tight text-foreground ${editorialSerif.className}`}
 						>
-							Keep the article in front. Keep proof in the margin.
+							Story first, notes second.
 						</h2>
 						<p className="mt-3 text-sm leading-6 text-muted-foreground">
 							This rail is here to keep your place, not to compete with the main
-							narrative. Read the body like a finished article, then step into
-							warning, footnotes, and coverage in that order.
+							story. Read first, then open notes, sources, and coverage in that
+							order.
 						</p>
 						<ol className="mt-5 divide-y divide-border/60 border-y border-border/60 text-sm">
 							<li className="grid gap-3 py-4 md:grid-cols-[88px_minmax(0,1fr)]">
 								<p
 									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 								>
-									01 Body pass
+									01 Read
 								</p>
 								<p className="leading-6 text-muted-foreground">
-									Read the finished markdown as one deck before touching the
-									backstage tools.
+									Read the finished story before you open anything else.
 								</p>
 							</li>
 							<li className="grid gap-3 py-4 md:grid-cols-[88px_minmax(0,1fr)]">
 								<p
 									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 								>
-									02 Warning pass
+									02 Keep the note nearby
 								</p>
 								<p className="leading-6 text-muted-foreground">
-									Keep the caution in view, but do not let it replace the main
-									argument.
+									If there is a caution, keep it in mind without letting it
+									replace the main story.
 								</p>
 							</li>
 							<li className="grid gap-3 py-4 md:grid-cols-[88px_minmax(0,1fr)]">
 								<p
 									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 								>
-									03 Footnotes
+									03 See the sources
 								</p>
 								<p className="leading-6 text-muted-foreground">
-									Open evidence only when you need provenance, then check
+									Open source notes only when you want provenance, then check
 									coverage and repair last.
 								</p>
 							</li>
@@ -286,10 +284,10 @@ export default async function ReaderDetailPage({
 											<p
 												className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 											>
-												Section outline
+												Story outline
 											</p>
 											<p className="mt-1 text-sm text-foreground">
-												Open the map only when you need to re-anchor yourself.
+												Open this only when you want a quick outline.
 											</p>
 										</div>
 										<ListTree className="h-4 w-4 text-rose-600" />
@@ -320,11 +318,11 @@ export default async function ReaderDetailPage({
 				<div className="space-y-2">
 					<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 						<NotebookText className="h-4 w-4 text-rose-600" />
-						Reader body
+							Story
 					</div>
 					<CardDescription className="max-w-3xl leading-6">
-						The published markdown unit. Treat this as the frontstage and let it
-						carry the first pass before you inspect supporting rails.
+							This is the finished reading view. Start here before you open
+							notes or source details.
 					</CardDescription>
 					{sections.length ? (
 						<div className="flex flex-wrap gap-2">
@@ -351,12 +349,11 @@ export default async function ReaderDetailPage({
 						<CardHeader className="space-y-3 pb-4">
 							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 								<FileStack className="h-4 w-4 text-rose-600" />
-								Reading contract
+								Reading note
 							</div>
 							<CardDescription className="leading-6">
-								This document is published as a stable reading unit. Stay with
-								the body as the main narrative, then step into evidence only if
-								you need to inspect provenance or coverage detail.
+								This story is ready to read. Notes and source details are still
+								here if you want them, but they should stay in the background.
 							</CardDescription>
 						</CardHeader>
 					</Card>
@@ -372,16 +369,16 @@ export default async function ReaderDetailPage({
 					<p
 						className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
 					>
-						Margin proof rail
+						Behind this story
 					</p>
 					<h2
 						className={`text-2xl leading-tight text-foreground ${editorialSerif.className}`}
 					>
-						Coverage, traceability, and repair stay beside the article.
+						Coverage, sources, and fixes stay off to the side.
 					</h2>
 					<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-						These panels are here to verify what you just read, not to replace
-						the reading flow with a second dashboard.
+						These panels help you verify what you read after the fact. They
+						should not compete with the story itself.
 					</p>
 				</div>
 
@@ -390,7 +387,7 @@ export default async function ReaderDetailPage({
 						<CardHeader className="space-y-3 pb-4">
 							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 								<FileStack className="h-4 w-4 text-rose-600" />
-								Coverage snapshot
+								Coverage
 							</div>
 							<CardDescription className="leading-6">
 								Check coverage last, after the body, warning, and footnote
@@ -443,12 +440,11 @@ export default async function ReaderDetailPage({
 						<CardHeader className="space-y-3 pb-4">
 							<div className="flex items-center gap-2 text-sm font-medium text-foreground">
 								<ListTree className="h-4 w-4 text-rose-600" />
-								Traceability snapshot
+								Source map
 							</div>
 							<CardDescription className="leading-6">
-								This is the proof rail behind the article: which sections are
-								traced, how many source items are mapped, and how much evidence
-								is ready to open on demand.
+								This shows which parts of the story are mapped back to source
+								material when you want to inspect them.
 							</CardDescription>
 						</CardHeader>
 						<CardDescription className="px-6 pb-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">

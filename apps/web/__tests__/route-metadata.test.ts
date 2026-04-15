@@ -124,8 +124,10 @@ describe("route metadata", () => {
 			]),
 		);
 
-		expect(askMetadata.title).toBe("Ask your sources");
-		expect(askMetadata.description).toMatch(/briefing-backed Ask front door/i);
+		expect(askMetadata.title).toBe("Ask what you've saved");
+		expect(askMetadata.description).toMatch(
+			/one question at a time|saved topic/i,
+		);
 		expect(toKeywordList(askMetadata.keywords)).toEqual(
 			expect.arrayContaining([
 				"briefing-aware Ask",
@@ -160,7 +162,7 @@ describe("route metadata", () => {
 			]),
 		);
 
-		expect(feedMetadata.title).toBe("Digest Feed");
+		expect(feedMetadata.title).toBe("Reading Feed");
 		expect(feedMetadata.description).toMatch(/digest feed/i);
 		expect(toKeywordList(feedMetadata.keywords)).toEqual(
 			expect.arrayContaining([
@@ -170,7 +172,7 @@ describe("route metadata", () => {
 			]),
 		);
 
-		expect(subscriptionsMetadata.title).toBe("Subscriptions");
+		expect(subscriptionsMetadata.title).toBe("Follow sources");
 		expect(subscriptionsMetadata.description).toMatch(/subscription/i);
 		expect(toKeywordList(subscriptionsMetadata.keywords)).toEqual(
 			expect.arrayContaining([

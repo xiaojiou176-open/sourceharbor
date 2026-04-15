@@ -10,6 +10,7 @@ import {
 	FormSelectField,
 } from "@/components/form-field";
 import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel";
+import { SignalStrip } from "@/components/signal-strip";
 import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SubmitButton } from "@/components/submit-button";
 import { SubscriptionBatchPanel } from "@/components/subscription-batch-panel";
@@ -276,6 +277,11 @@ export default async function SubscriptionsPage({
 	const pageErrorCode =
 		subscriptionsResult.errorCode ?? templateCatalogResult.errorCode;
 	const highlightedSubscriptions = subscriptions.slice(0, 6);
+	const strongTemplateCount = templatesForSupportTier(
+		templates,
+		"strong_supported",
+	).length;
+	const genericTemplateCount = genericTemplates.length;
 
 	return (
 		<div
@@ -291,7 +297,41 @@ export default async function SubscriptionsPage({
 					{copy.heroTitle}
 				</h1>
 				<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
+				<div className="mt-4 flex flex-wrap gap-3">
+					<Button asChild variant="hero">
+						<Link href="#manual-source-intake-input">Paste a source</Link>
+					</Button>
+					<Button asChild variant="outline">
+						<Link href="#tracked-universes">See saved sources</Link>
+					</Button>
+				</div>
 			</div>
+
+			<SignalStrip
+				title="Intake snapshot"
+				description="See the shape of the desk first, then open the deeper workbench only when needed."
+				items={[
+					{
+						label: "Tracked",
+						value: subscriptions.length,
+						max: Math.max(subscriptions.length, 1),
+						valueLabel: String(subscriptions.length),
+					},
+					{
+						label: "Strong lanes",
+						value: strongTemplateCount,
+						max: Math.max(templates.length, 1),
+						valueLabel: String(strongTemplateCount),
+						tone: "success",
+					},
+					{
+						label: "General lanes",
+						value: genericTemplateCount,
+						max: Math.max(templates.length, 1),
+						valueLabel: String(genericTemplateCount),
+					},
+				]}
+			/>
 
 			{renderAlert(status, code)}
 			{pageErrorCode ? (
@@ -312,8 +352,19 @@ export default async function SubscriptionsPage({
 				</Card>
 			) : null}
 
+			<section id="manual-source-intake">
+				<ManualSourceIntakePanel
+					copy={copy.manualIntake}
+					sessionToken={sessionToken}
+					headingLevel="h2"
+				/>
+			</section>
+
 			<section className="grid gap-4 xl:grid-cols-[1.28fr_0.92fr]">
-				<Card className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
+				<Card
+					id="tracked-universes"
+					className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60"
+				>
 					<CardHeader className="gap-2">
 						<p
 							className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
@@ -326,8 +377,8 @@ export default async function SubscriptionsPage({
 							Tracked universes
 						</h2>
 						<CardDescription>
-							Start by seeing who already belongs to your reading desk. This
-							frontstage should feel like an atlas of sources, not a tax form.
+							Start by seeing which source worlds already belong to your desk,
+							then add the next one without decoding the whole contract.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -341,9 +392,16 @@ export default async function SubscriptionsPage({
 							))
 						) : (
 							<div className="rounded-[1.2rem] border border-dashed border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
-								No tracked universes yet. Use the workbench below to create the
-								first one and make today&apos;s intake feel attached to a real
-								source world.
+								<p>No saved sources yet.</p>
+								<p className="mt-2">
+									Paste a source and turn the first one into something you can
+									keep following.
+								</p>
+								<Button asChild variant="outline" size="sm" className="mt-4">
+									<Link href="#manual-source-intake-input">
+										Follow the first source
+									</Link>
+								</Button>
 							</div>
 						)}
 					</CardContent>
@@ -359,13 +417,11 @@ export default async function SubscriptionsPage({
 						<h2
 							className={`text-2xl font-semibold ${editorialSerif.className}`}
 						>
-							Intake posture
+							Start in three moves
 						</h2>
 						<CardDescription>
-							Strong lanes should feel immediate. General lanes should stay
-							honest about proof boundaries. Manual intake should always tell
-							you whether an input belongs to an existing universe or starts a
-							new one.
+							Keep the first pass simple: pick a lane, run intake, then read
+							what landed.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="pt-0 text-sm text-muted-foreground">
@@ -377,8 +433,8 @@ export default async function SubscriptionsPage({
 									01 Pick the universe
 								</p>
 								<p className="leading-6">
-									Choose a strong-supported lane when you know the creator, or a
-									general lane when the source is only proven as feed intake.
+									Choose a strong lane when you know the creator. Use a general
+									lane when the source is only proven as feed intake.
 								</p>
 							</li>
 							<li className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1fr)]">
@@ -388,9 +444,8 @@ export default async function SubscriptionsPage({
 									02 Run intake
 								</p>
 								<p className="leading-6">
-									The result cards below should tell you whether the input
-									matched a tracked universe, created a new one, or stayed a
-									one-off lane.
+									Paste a source first. The result cards will tell you whether it
+									became something you follow or stayed one-off.
 								</p>
 							</li>
 							<li className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1fr)]">
@@ -408,19 +463,12 @@ export default async function SubscriptionsPage({
 									<Link href="/reader" className="underline underline-offset-4">
 										Reader
 									</Link>{" "}
-									as the frontstage once the source universe has materialized.
+									once the source is in your reading list.
 								</p>
 							</li>
 						</ol>
 					</CardContent>
 				</Card>
-			</section>
-
-			<section>
-				<ManualSourceIntakePanel
-					copy={copy.manualIntake}
-					sessionToken={sessionToken}
-				/>
 			</section>
 
 			<section className="space-y-4">
@@ -436,9 +484,9 @@ export default async function SubscriptionsPage({
 									when you need them
 								</h2>
 								<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-									Start with the atlas and manual intake above. Open this layer
-									after you know which source world you want to attach and which
-									fields still need operator-grade control.
+									Start with the saved sources and paste flow above. Open this
+									layer only after you know which source you want to keep and
+									which details still need extra control.
 								</p>
 							</div>
 							<Badge variant="outline" className="border-border/60 bg-muted/20">

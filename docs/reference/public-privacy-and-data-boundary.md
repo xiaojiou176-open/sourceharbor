@@ -39,3 +39,4 @@ Two current examples:
 - repo-managed runtime workspaces such as `.runtime-cache/tmp/web-runtime/` and mutation debug sandboxes stay local-only verification state; they must be governed and cleaned, not exposed as public repository artifacts
 - repo-owned fallback service logs under `.runtime-cache/logs/local-core/` stay private runtime diagnostics; they are meant for maintainer troubleshooting, not for public repo storytelling or artifact publication
 - repo-owned proxy-video artifacts created only to satisfy maintainer-local Gemini video input constraints stay private runtime state too; they are not public samples, not media-kit assets, and not proof of redistribution rights
+- donor reference trees under the internal `.agents` reference area may contain upstream test idioms or placeholder secret-shaped strings for study purposes; they are internal reference inputs and must not be treated as public SourceHarbor surfaces or fed back into public trust claims

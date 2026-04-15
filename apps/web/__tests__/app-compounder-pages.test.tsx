@@ -376,18 +376,16 @@ describe("compounder pages", () => {
 		expect(screen.getByText("Retry policy")).toBeInTheDocument();
 		expect(
 			screen
-				.getAllByRole("link", { name: "Open briefing" })
+				.getAllByRole("link", { name: "Open briefing story" })
 				.map((element) => element.getAttribute("href")),
-		).toEqual(
-			expect.arrayContaining([
-				"/briefings?watchlist_id=wl-1",
-				"/briefings?watchlist_id=wl-1",
-			]),
-		);
+		).toEqual([
+			"/briefings?watchlist_id=wl-1&story_id=story-1&via=briefing-story",
+		]);
 		expect(
-			screen.getByText(
-				/Notification send paths exist, but live delivery is blocked/i,
-			),
+			screen.getByText("Alerts"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(/Keep this secondary until it is actually ready/i),
 		).toBeInTheDocument();
 		expect(
 			screen.getAllByRole("heading", { name: "Continue this watchlist" })
@@ -395,7 +393,7 @@ describe("compounder pages", () => {
 		).toBeGreaterThan(0);
 		expect(
 			screen
-				.getAllByRole("link", { name: "Open compounder front door" })
+				.getAllByRole("link", { name: "Open story" })
 				.map((element) => element.getAttribute("href")),
 		).toContain("/trends?watchlist_id=wl-1");
 		expect(
@@ -404,9 +402,28 @@ describe("compounder pages", () => {
 			"href",
 			"/ask?watchlist_id=wl-1&question=Retries+moved+from+recommendation+to+default+posture&story_id=story-1&topic_key=retry-policy&via=briefing-story",
 		);
+	});
+
+	it("renders an explicit ready-empty state before the first watchlist exists", async () => {
+		mockListWatchlists.mockResolvedValue([]);
+
+		render(
+			await WatchlistsPage({
+				searchParams: {},
+			}),
+		);
+
 		expect(
-			screen.getByRole("link", { name: "Review sample-proof boundary" }),
-		).toHaveAttribute("href", "/playground");
+			screen.getByRole("heading", {
+				name: "No saved watchlists yet.",
+			}),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Create a watchlist" }),
+		).toHaveAttribute("href", "/watchlists#create-watchlist");
+		expect(
+			screen.getByRole("link", { name: "Browse feed first" }),
+		).toHaveAttribute("href", "/feed");
 	});
 
 	it("renders trend page as merged story plus source coverage", async () => {
@@ -420,15 +437,12 @@ describe("compounder pages", () => {
 			screen.getByRole("heading", { name: "Merged source stories" }),
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole("heading", { name: "Compounder front door" }),
+			screen.getByRole("heading", { name: "Follow the story" }),
 		).toBeInTheDocument();
 		expect(screen.getByText("Source coverage")).toBeInTheDocument();
 		expect(screen.getByText("Merged stories")).toBeInTheDocument();
-		expect(screen.getByText("Latest lead-story bundle")).toBeInTheDocument();
 		expect(
-			screen.getByText(
-				/Internal evidence bundle only\. Do not treat this as hosted proof/i,
-			),
+			screen.getByText("Open receipts and examples later"),
 		).toBeInTheDocument();
 		expect(screen.getAllByText("AI Weekly").length).toBeGreaterThan(0);
 		expect(screen.getAllByText("Bili Update").length).toBeGreaterThan(0);
@@ -440,10 +454,10 @@ describe("compounder pages", () => {
 		expect(screen.getAllByText("retry-policy").length).toBeGreaterThan(0);
 		expect(screen.getByText(/Added topics: retry-policy/i)).toBeInTheDocument();
 		expect(
-			screen.getByRole("link", { name: "Open evidence bundle" }),
+			screen.getAllByRole("link", { name: "Open bundle" })[0],
 		).toHaveAttribute("href", "/api/v1/jobs/job-1/bundle");
 		expect(
-			screen.getByRole("link", { name: "Open unified briefing" }),
+			screen.getByRole("link", { name: "Open brief" }),
 		).toHaveAttribute("href", "/briefings?watchlist_id=wl-1&story_id=story-1");
 		const aiWeeklyArticle = screen
 			.getAllByText("AI Weekly")[0]
@@ -462,15 +476,6 @@ describe("compounder pages", () => {
 				name: "Open knowledge",
 			})[0],
 		).toHaveAttribute("href", "/knowledge?job_id=job-1");
-		expect(
-			screen.getByRole("link", { name: "Open sample playground" }),
-		).toHaveAttribute("href", "/playground");
-		expect(
-			screen.getByRole("link", { name: "Open watchlists" }),
-		).toHaveAttribute("href", "/watchlists");
-		expect(
-			screen.getByRole("link", { name: "Open research use case" }),
-		).toHaveAttribute("href", "/use-cases/research-pipeline");
 	});
 
 	it("renders story-card CTA labels for merged trends", async () => {

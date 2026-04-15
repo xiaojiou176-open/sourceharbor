@@ -13,21 +13,21 @@ const MESSAGES = {
 			announcementPrefix: "Switched to:",
 			labels: {
 				home: "Home",
-				subscriptions: "Subscriptions",
+				subscriptions: "Sources",
 				search: "Search",
 				ask: "Ask",
-				mcp: "MCP Quickstart",
-				ops: "Ops inbox",
+				mcp: "Assistant tools",
+				ops: "System status",
 				reader: "Reader",
-				watchlists: "Watchlists",
-				trends: "Trends",
-				briefings: "Briefings",
+				watchlists: "Saved topics",
+				trends: "What changed",
+				briefings: "Story briefs",
 				playground: "Playground",
 				proof: "Proof",
-				knowledge: "Knowledge",
-				jobs: "Jobs",
-				ingestRuns: "Ingest runs",
-				feed: "Digest feed",
+				knowledge: "Source notes",
+				jobs: "Processing history",
+				ingestRuns: "Import history",
+				feed: "Reading desk",
 				settings: "Settings",
 				useCases: "Use cases",
 				page: "Page",
@@ -41,12 +41,12 @@ const MESSAGES = {
 		},
 		loading: {
 			app: {
-				title: "Front door loading",
-				message: "Loading the front door. Please wait.",
+				title: "Loading your reading view",
+				message: "This will only take a moment.",
 			},
 			feed: {
-				title: "Digest feed loading",
-				message: "Loading the digest feed. Please wait.",
+				title: "Preparing the digest desk",
+				message: "Loading the current reading stack.",
 			},
 			jobs: {
 				title: "Job trace loading",
@@ -57,8 +57,8 @@ const MESSAGES = {
 				message: "Loading notification settings. Please wait.",
 			},
 			subscriptions: {
-				title: "Loading subscriptions",
-				message: "Loading subscription data. Please wait.",
+				title: "Opening your source atlas",
+				message: "Loading saved sources and source tools.",
 			},
 		},
 		submitButton: {
@@ -68,31 +68,31 @@ const MESSAGES = {
 		},
 		syncNow: {
 			idle: {
-				buttonLabel: "Sync now",
-				badgeLabel: "Idle",
-				statusLabel: "Idle: sync the newest source updates on demand.",
+				buttonLabel: "Refresh list",
+				badgeLabel: "Latest",
+				statusLabel: "Refresh the list whenever you want the newest reading.",
 			},
 			loading: {
-				buttonLabel: "Syncing…",
-				badgeLabel: "Syncing",
-				statusLabel: "Fetching and analyzing new content. Please wait.",
-				liveStatusLabel: "Sync in progress. Please wait.",
-				retryTitle: "Sync failed. Press Enter or Space to retry.",
+				buttonLabel: "Refreshing…",
+				badgeLabel: "Updating",
+				statusLabel: "Pulling in the newest reading. Please wait.",
+				liveStatusLabel: "Refreshing the list. Please wait.",
+				retryTitle: "Refresh failed. Press Enter or Space to retry.",
 			},
 			done: {
-				buttonLabel: "Sync complete",
-				badgeLabel: "Done",
-				statusLabel: "Sync complete. Refreshing the list next.",
-				liveStatusLabel: "Sync complete. Refreshing the list now.",
+				buttonLabel: "List updated",
+				badgeLabel: "Updated",
+				statusLabel: "List updated. Refreshing the view next.",
+				liveStatusLabel: "List updated. Refreshing the view now.",
 			},
 			error: {
-				buttonLabel: "Sync failed, retry",
-				badgeLabel: "Retry needed",
+				buttonLabel: "Refresh failed, retry",
+				badgeLabel: "Retry",
 				statusLabel:
-					"Sync failed. Check the network or API health, then retry.",
+					"Refresh failed. Check the network or API health, then retry.",
 				liveStatusLabel:
-					"Sync failed. Check the network or API health, then retry.",
-				retryTitle: "Sync failed. Press Enter or Space to retry.",
+					"Refresh failed. Check the network or API health, then retry.",
+				retryTitle: "Refresh failed. Press Enter or Space to retry.",
 			},
 		},
 		relativeTime: {
@@ -116,96 +116,96 @@ const MESSAGES = {
 		dashboard: {
 			metadataTitle: "Front Door",
 			metadataDescription:
-				"Reader-first front door for source-universe intake, digest curation, published reader documents, and builder entry through MCP and HTTP API.",
-			kicker: "SourceHarbor front door",
-			heroTitle: "From source intake to finished reading",
+				"Reader-first front door for following sources, scanning the feed, and opening finished stories.",
+			kicker: "Start reading",
+			heroTitle: "Start with something worth reading",
 			heroSubtitle:
-				"Choose one first path: attach a source universe, browse the digest feed, or open the reader when the story is ready. Builder and ops rails stay one click away.",
+				"Open the reader, scan today's feed, or follow a few new sources. Everything else can wait.",
 			frontDoors: {
-				subscriptionsTitle: "Source-universe intake",
+				subscriptionsTitle: "Follow sources",
 				subscriptionsDescription:
-					"Start from strong-supported YouTube and Bilibili templates, then widen to RSSHub routes and generic RSS without pretending every route is already proven.",
-				subscriptionsCta: "Open Subscriptions",
+					"Add a favorite creator, site, or feed without learning the whole system first.",
+				subscriptionsCta: "Follow sources",
 				subscriptionsHint:
-					"One shared template catalog now drives Web, API, and MCP intake.",
-				searchTitle: "Search front door",
+					"Paste a source first. The deeper setup can wait.",
+				searchTitle: "Search your library",
 				searchDescription:
-					"Search digests, knowledge cards, transcripts, and related evidence from one operator-facing route.",
+					"Search past reading, notes, and supporting sources from one calm place.",
 				searchCta: "Open Search",
-				knowledgeCta: "Open Knowledge",
-				askTitle: "Ask your sources",
+				knowledgeCta: "Open Notes",
+				askTitle: "Ask about what you follow",
 				askDescription:
-					"Carry briefing-backed story context into answer, changes, and evidence instead of stopping at raw retrieval hits.",
+					"Bring a question, then open the answer, recent changes, and the original sources when you need them.",
 				askCta: "Open Ask",
-				briefingsCta: "Open Briefings",
+				briefingsCta: "Open Briefs",
 				askHint:
 					"Ask now reuses the server-owned story payload shared with Briefings instead of a second browser-side view model.",
-				mcpTitle: "MCP front door",
+				mcpTitle: "For builders",
 				mcpDescription:
-					"Reuse the same intake, story, job, and retrieval truth through MCP instead of rebuilding a second agent surface.",
-				mcpCta: "Open MCP quickstart",
-				jobCta: "Inspect job evidence",
+					"Use these only when you're integrating SourceHarbor into another tool.",
+				mcpCta: "Open tool setup",
+				jobCta: "Open job details",
 			},
 			sectionHeadings: {
-				whyNow: "Why this front door works",
-				firstHop: "Choose your first route",
+				whyNow: "What this does for readers",
+				firstHop: "Choose where to start",
 				primaryFrontDoors: "Primary front doors",
-				builderEntryPoints: "Builder entry points",
-				compounderSurfaces: "Compounder surfaces",
+				builderEntryPoints: "For builders",
+				compounderSurfaces: "Keep following",
 				keyMetrics: "Command center metrics",
 			},
 			whyNow: {
-				sharedTruthTitle: "One reading product across Web, API, and MCP",
+				sharedTruthTitle: "One calm place to read",
 				sharedTruthDescription:
-					"Reader, feed, search, and MCP all point to the same jobs, artifacts, and story state instead of sending newcomers into parallel product shells.",
-				proofFirstTitle: "Proof sits next to every route",
+					"Reader and feed stay in one simple flow.",
+				proofFirstTitle: "Source trails are there when you need them",
 				proofFirstDescription:
-					"Every path stays honest about what is already real, what is preview-only, and what still needs a stronger receipt before you lean on it.",
-				returnLoopTitle: "Worth returning to after the first read",
+					"You can check where something came from without letting notes take over the page.",
+				returnLoopTitle: "A reading list worth coming back to",
 				returnLoopDescription:
-					"Watchlists, trends, briefings, bundles, and the playground make SourceHarbor feel like a reusable reading system instead of a one-shot summarizer.",
+					"Saved topics and briefs give you a reason to come back tomorrow.",
 			},
 			firstHop: {
 				evaluateTitle: "Read the finished surface first",
 				evaluateDescription:
-					"Start from the reader frontstage or the specimen detail when you want to understand the product before you decode the operator rails.",
+					"Start with the clean reading surface first.",
 				evaluatePrimaryCta: "Open Reader",
 				evaluateSecondaryCta: "Open specimen detail",
-				operateTitle: "Attach a source universe",
+				operateTitle: "Follow a few sources",
 				operateDescription:
-					"Start with tracked universes and manual intake, then move into the digest feed once the source is in motion.",
-				operatePrimaryCta: "Open Subscriptions",
+					"Add a creator, site, or feed, then let the reading list catch up.",
+				operatePrimaryCta: "Follow sources",
 				operateSecondaryCta: "Open Feed",
 				operateTertiaryCta: "Open Trends",
-				buildTitle: "Build or inspect the system",
+				buildTitle: "Use developer tools later",
 				buildDescription:
-					"When you are here as a builder or operator, jump into MCP, builders docs, or ops after you already understand the reading path.",
-				buildPrimaryCta: "Open MCP quickstart",
-				buildSecondaryCta: "Open builders guide",
-				buildTertiaryCta: "Open Ops inbox",
+					"Only open these if you are integrating or checking the system itself.",
+				buildPrimaryCta: "Open tool setup",
+				buildSecondaryCta: "Open developer guide",
+				buildTertiaryCta: "Open system status",
 			},
 			compounders: {
-				watchlistsTitle: "Watchlists are tracking objects",
+				watchlistsTitle: "Saved topics and sources",
 				watchlistsDescription:
-					"Save the watchlist here, then move into Trends for the unified information surface instead of treating both pages like the same thing.",
-				watchlistsCta: "Open Watchlists",
-				trendsTitle: "Trends are the compounder front door",
+					"Save what you want to keep following, then move into changes or briefs when you want the ongoing story.",
+				watchlistsCta: "Open saved topics",
+				trendsTitle: "See what keeps coming back",
 				trendsDescription:
 					"Start here when you want the repeated story across runs: merged stories up top, recent evidence runs below, and the next jump into Briefings or Jobs.",
-				trendsCta: "Open Trends",
-				briefingsTitle: "Briefings are the shared story surface",
+				trendsCta: "Open changes",
+				briefingsTitle: "Read the short version",
 				briefingsDescription:
 					"Briefings lower cognitive load: current story first, then the delta, then evidence drill-down, with Ask reusing the same selected-story truth.",
-				briefingsCta: "Open Briefings",
-				bundleTitle: "Evidence bundle",
+				briefingsCta: "Open Briefs",
+				bundleTitle: "Inspect one update closely",
 				bundleDescription:
 					"Carry a run forward as an internal bundle with digest, trace summary, knowledge cards, and artifact manifest instead of pasting screenshots into chat.",
-				bundleCta: "Open Job Trace",
-				bundleHint: "Download the bundle from any job detail page.",
-				playgroundTitle: "Playground stays sample-proof",
+				bundleCta: "Open job details",
+				bundleHint: "You can do this from any story or feed item.",
+				playgroundTitle: "Try a sample reading flow",
 				playgroundDescription:
 					"Explore a clearly labeled sample-proof lane and then jump back to live front doors when you need current operator truth.",
-				playgroundCta: "Open Playground",
+				playgroundCta: "Open sample flow",
 				proofCta: "Open Proof",
 				useCasesCta: "Open use case pages",
 			},
@@ -407,18 +407,18 @@ const MESSAGES = {
 			kicker: "SourceHarbor MCP Front Door",
 			heroTitle: "MCP Quickstart",
 			heroSubtitle:
-				"Treat this as the agent-facing control plane. Web serves operators, API serves system integrations, and MCP serves assistants and workflows, while all three point at the same pipeline.",
+				"Use this when you need the tool surface first. Web serves operators, API serves integrations, and MCP gives assistants the same pipeline through one thinner door.",
 			startTitle: "Start locally in one command",
 			startDescription:
-				"MCP is not a second copy of the business logic. Use the thin repo-local CLI facade to discover the route first, then start the same API-backed system through MCP.",
+				"Start MCP through the repo-local CLI so you get the same server and route contract the rest of the product already uses.",
 			startNote:
 				"`./bin/sourceharbor mcp` routes to the same FastMCP server wired in apps/mcp/server.py. `./bin/dev-mcp` remains the direct underlying entrypoint.",
 			toolsTitle: "Representative tools",
 			toolsDescription:
-				"These are enough to explain the surface in under three minutes.",
+				"Most sessions only need one or two of these families first.",
 			relationshipTitle: "How MCP relates to the rest of the product",
 			relationshipDescription:
-				"Web is the operator-facing command center. API is the shared contract. MCP is the agent-facing surface. SourceHarbor routes MCP through the API instead of letting tools talk straight to the database.",
+				"Keep MCP as the tool surface. Open Search or Ask only when you need a human-readable explanation of the same evidence.",
 			searchCta: "Open Search",
 			askCta: "Open Ask",
 		},
@@ -509,13 +509,13 @@ const MESSAGES = {
 			},
 		},
 		feedPage: {
-			metadataTitle: "Digest Feed",
+			metadataTitle: "Reading Feed",
 			metadataDescription:
 				"SourceHarbor digest feed for reading entries, filtering source/category/feedback, and moving from feed curation into reading pane, job trace, and evidence.",
 			kicker: "SourceHarbor Feed",
-			heroTitle: "Digest Feed",
+			heroTitle: "Reading Feed",
 			heroSubtitle:
-				"Browse digest entries and body content in one reading flow, with quick source and category filtering when you need it.",
+				"Browse the desk, preview one item, then open the finished reader only when it is worth the jump.",
 			filterRegionLabel: "Digest filters",
 			filterLabels: {
 				source: "Source",
@@ -562,25 +562,25 @@ const MESSAGES = {
 				misc: "Misc",
 			},
 			subscriptionFilterLabel: "Tracked universe",
-			activeTrackedUniverseLabel: "Active tracked universe",
-			activeTrackedUniverseEyebrow: "Tracked universe",
-			activeTrackedUniverseTitle: "You are reading one tracked universe",
+			activeTrackedUniverseLabel: "Current reading focus",
+			activeTrackedUniverseEyebrow: "Following now",
+			activeTrackedUniverseTitle: "This list is focused on one source",
 			activeTrackedUniverseDescription:
-				"This feed is pinned to the same source universe that manual intake and reader footnotes point back to.",
+				"This list is already focused on the same source that your saved reading and footnotes point back to.",
 			activeTrackedUniverseFallback:
-				"This feed is pinned to one tracked universe, but the identity card could not be loaded right now.",
+				"This list is focused on one source, but the source card could not be loaded right now.",
 		},
 		subscriptionsPage: {
-			metadataTitle: "Subscriptions",
+			metadataTitle: "Follow sources",
 			metadataDescription:
 				"SourceHarbor source intake front door for strong YouTube and Bilibili presets, general RSSHub routes, and generic RSS feeds, with guided template setup and bulk subscription management.",
-			kicker: "SourceHarbor Sources",
-			heroTitle: "Subscriptions",
+			kicker: "Follow new sources",
+			heroTitle: "Follow sources",
 			heroSubtitle:
-				"Start with strong YouTube and Bilibili presets, branch into RSSHub routes or generic feeds when the source universe widens, and keep the intake contract honest from the first click.",
-			supportMatrixTitle: "Support levels at a glance",
+				"Paste a creator, site, video, article, or feed first. The deeper setup can wait until after you start following it.",
+			supportMatrixTitle: "Source types at a glance",
 			supportMatrixDescription:
-				"Think of this like an intake menu. Some source shapes are already plated and tested, some are broadly useful, and some still need route-level proof before you trust them every day.",
+				"Some source types are smoother than others, but they all start from the same simple first step.",
 			supportLevels: {
 				strong: {
 					title: "Strong support",
@@ -598,15 +598,15 @@ const MESSAGES = {
 						"Route-specific or unusual source patterns should be treated as real experiments until the feed stays stable in live runs.",
 				},
 			},
-			templateSectionTitle: "Choose a source template",
+			templateSectionTitle: "Pick a source type",
 			templateSectionDescription:
-				"Templates pre-wire platform, source type, and adapter defaults so the form feels like guided intake instead of a raw internal editor.",
+				"Templates keep the first setup light, so you do not have to think like an operator.",
 			templateButton: "Use template",
 			templateSelectedButton: "Current template",
-			openMergedStoriesButton: "Open merged stories",
-			intakeGuideTitle: "Selected intake contract",
+			openMergedStoriesButton: "Open trends",
+			intakeGuideTitle: "What this option supports",
 			intakeGuideDescription:
-				"This panel spells out what the current template is optimized for, which field matters first, and where the proof boundary still lives.",
+				"This panel tells you what this option is best for and which field matters first.",
 			guideLabels: {
 				supportLevel: "Support level",
 				platform: "Platform",
@@ -655,9 +655,9 @@ const MESSAGES = {
 			},
 			loadErrorTitle: "Unable to load subscriptions",
 			retryCurrentPageButton: "Retry this page",
-			editorTitle: "Guided universe editor",
+			editorTitle: "Source details",
 			editorDescription:
-				"The selected template pre-fills the intake shape so you can focus on the real source details instead of reconstructing the contract from scratch.",
+				"The template fills the shape first, so you can focus on the real source details.",
 			formLabels: {
 				platform: "Platform",
 				sourceType: "Source type",
@@ -680,20 +680,20 @@ const MESSAGES = {
 			savePending: "Saving...",
 			saveStatus: "Saving subscription settings",
 			manualIntake: {
-				title: "Manual source intake",
+				title: "Paste a source",
 				description:
-					"Paste URLs, handles, creator pages, or RSSHub routes. Creator-level inputs become subscriptions; direct YouTube/Bilibili video URLs and article URLs enter today and, when historical ingest evidence already exists, can match back to a tracked universe instead of staying one-off.",
+					"Paste a creator page, video, article, or feed. SourceHarbor will decide whether it should become something you follow or just enter today's reading.",
 				placeholder:
 					"https://space.bilibili.com/13416784\nhttps://www.youtube.com/@MindAmend\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ\n/36kr/newsflashes\nhttps://example.com/feed.xml",
-				hint: "One line per input. Bilibili creator pages and YouTube handles save subscriptions; direct video URLs and article URLs add to today and may reconnect to an existing tracked universe after queueing.",
+				hint: "One line per input. Creator pages usually become followed sources. Direct links usually enter today's reading first.",
 				categoryLabel: "Default category",
 				tagsLabel: "Tags for new subscriptions (comma-separated, optional)",
 				enabledLabel: "Enable created subscriptions immediately",
-				submitButton: "Run manual intake",
+				submitButton: "Add source",
 				submitPending: "Running intake...",
-				resultsTitle: "Manual intake results",
+				resultsTitle: "What happened",
 				resultsDescription:
-					"Each row shows whether the input became a recurring subscription, entered today and matched back to a tracked universe, stayed in the one-off lane, or was rejected with an explicit reason.",
+					"Each row shows whether the source became something you follow, connected to an existing source, stayed one-off, or was rejected.",
 				summaryPrefix: "Processed",
 				legend: {
 					saveSubscription: "Save subscription",
@@ -709,7 +709,7 @@ const MESSAGES = {
 				},
 				emptyState: "No resolved target",
 			},
-			currentTitle: "Current subscriptions",
+			currentTitle: "Saved sources",
 			loadedPrefix: "Loaded",
 			loadedSuffix: "subscriptions.",
 			currentDescription:
@@ -741,39 +741,39 @@ const MESSAGES = {
 			metadataTitle: "Search",
 			metadataDescription:
 				"Grounded search and Ask entry for SourceHarbor, with cited retrieval over digests, transcripts, outlines, and knowledge cards.",
-			searchKicker: "SourceHarbor Search Front Door",
-			askKicker: "SourceHarbor Ask Front Door",
+			searchKicker: "Find something to read",
+			askKicker: "Ask about what you follow",
 			searchTitle: "Search",
-			askTitle: "Ask your sources",
+			askTitle: "Ask what you've saved",
 			searchSubtitle:
-				"This is the real operator-facing retrieval surface. It turns digests, transcripts, outlines, and knowledge cards into auditable jumps.",
+				"Search what you've saved, then open the original source the moment something looks worth reading.",
 			askSubtitle:
-				"This is a briefing-backed Ask front door. With watchlist context, it can answer with the current story, recent changes, and citations. Without context, it falls back to raw grounded retrieval.",
-			searchFormTitle: "Search your sources",
-			askFormTitle: "Ask in grounded mode",
+				"Ask one question at a time. When you choose a saved topic, this page can answer, show what's changed, and point you back to the sources.",
+			searchFormTitle: "Search what you've saved",
+			askFormTitle: "Ask about what you've saved",
 			searchFormDescription:
-				"`keyword` is the steadiest mode right now. Search already spans strong video sources plus RSS-backed source families, while `semantic` and `hybrid` stay clearly marked as experimental.",
+				"Start with a plain-language search. Advanced methods are still here, but the steady default is simple keyword search.",
 			askFormDescription:
-				"Bring a watchlist or briefing context, narrow the question into cited retrieval, then keep the answer, recent changes, and receipts on one page.",
-			queryLabel: "Query",
-			questionLabel: "Question",
+				"Ask one plain-language question. Add a saved topic only when you want the answer, recent changes, and source links to stay together.",
+			queryLabel: "Search for",
+			questionLabel: "Ask",
 			queryPlaceholder: "agent workflow, retry policy, knowledge cards...",
 			questionPlaceholder:
 				"What did recent runs say about retry policy, agent workflow, or knowledge cards?",
 			searchHint:
-				"Every result should jump back into job trace, knowledge, or the source URL.",
+				"Every result should take you back to the source, the preview, or the evidence trail.",
 			askHint:
-				"Attach a watchlist briefing when you want answer + changes + citations. Without context, Ask stays in raw grounded retrieval mode.",
-			askContextLabel: "Briefing context",
-			askContextTitle: "Context that Ask can stand on",
+				"Pick a saved topic when you want one answer, the latest change, and the source links on the same page.",
+			askContextLabel: "Saved topic",
+			askContextTitle: "What this answer can stand on",
 			askContextDescription:
-				"Pick a watchlist or open Ask from Briefings so this page can reuse a real briefing before it looks for question-level evidence.",
-			askContextEmptyOption: "No briefing context yet",
-			askContextMissingTitle: "Add briefing context first",
+				"Pick one watchlist or open Ask from Briefings so this page can stand on a real briefing before it widens into evidence.",
+			askContextEmptyOption: "No saved topic yet",
+			askContextMissingTitle: "Pick a saved topic first",
 			askContextMissingDescription:
-				"Ask can still search raw evidence, but it cannot honestly frame an answer-and-change view until you anchor it to a watchlist briefing.",
+				"Without a watchlist briefing, Ask can still search raw evidence, but it cannot honestly frame an answer-and-change view.",
 			askContextTopicLabel: "Story or topic focus",
-			askSelectionBasisLabel: "Selected by",
+			askSelectionBasisLabel: "Based on",
 			askSelectionBasis: {
 				requested_story_id: "Requested story",
 				query_match: "Question match",
@@ -784,12 +784,12 @@ const MESSAGES = {
 			askOpenBriefingButton: "Open selected briefing",
 			askClearContextButton: "Clear briefing context",
 			askClearStoryContextButton: "Clear story focus",
-			modeLabel: "Mode",
-			groundingModeLabel: "Grounding mode",
-			platformLabel: "Platform",
+			modeLabel: "How to search",
+			groundingModeLabel: "How to search",
+			platformLabel: "Source",
 			platformPlaceholder:
 				"youtube, bilibili, rss, rsshub, github, newsletter ...",
-			topKLabel: "Top K",
+			topKLabel: "Show",
 			searchButton: "Search",
 			askButton: "Ask",
 			clearButton: "Clear",
@@ -800,30 +800,30 @@ const MESSAGES = {
 				rss: "RSS / web source",
 			},
 			modeOptions: {
-				keyword: "Keyword",
-				semantic: "Semantic (experimental)",
-				hybrid: "Hybrid (experimental)",
+				keyword: "Simple",
+				semantic: "Semantic (beta)",
+				hybrid: "Combined (beta)",
 			},
-			searchTruthTitle: "Current truth",
-			askTruthTitle: "Grounded Ask mode",
+			searchTruthTitle: "What this page does",
+			askTruthTitle: "What this page can do",
 			searchTruthPrimary:
-				"Search is a production-facing front door over a real retrieval backend, and the retrieval substrate already reaches beyond two video platforms.",
+				"Search helps you look through what SourceHarbor has already saved, then jump back to the original source or preview the moment something looks worth reading.",
 			searchTruthSecondary:
-				"The default picker stays intentionally curated while broader source families continue through the same backend contracts and query surface.",
+				"Keep the first pass simple. Filters and broader source families are there when you need them, not before.",
 			askTruthPrimary:
-				"What exists today: a briefing-backed answer contract for watchlist-scoped Ask, plus raw retrieval, job trace, knowledge cards, and original source links.",
+				"Ask works best when it stands on one saved topic. Then it can answer in plain language, show what changed, and point back to the sources.",
 			askTruthSecondary:
-				"What does not exist yet: a global free-form answer engine that works without briefing context or real citations.",
+				"It is not a magic free-form chatbot. Without saved topic context, it should stay closer to search.",
 			askTruthNote:
-				"Without watchlist context, Ask still stays honest by falling back to grounded retrieval instead of pretending the answer model is universal.",
+				"Without a saved topic, Ask should stay honest by falling back to search-like results instead of pretending it already knows the whole story.",
 			askTruthContractLead:
-				"Current contract: answer first, recent changes second, cited drill-down third, and operator auditable throughout.",
-			searchTruthCta: "Open Ask mode",
-			askTruthCta: "Open Ask details",
-			openRawSearchButton: "Open raw search",
-			askContractArtifactLabel: "Ask contract artifact",
-			searchContractTitle: "Result contract",
-			askContractTitle: "Best current use",
+				"Current contract: answer first, recent changes second, cited drill-down third.",
+			searchTruthCta: "Open Ask",
+			askTruthCta: "Open the brief",
+			openRawSearchButton: "Open Search",
+			askContractArtifactLabel: "How this answer is built",
+			searchContractTitle: "How results work",
+			askContractTitle: "Best way to use Ask",
 			searchContractPrimary:
 				"Each hit exposes a snippet, source type, score, and jump targets into a job trace, knowledge page, or original source URL.",
 			searchContractSecondary:
@@ -831,23 +831,23 @@ const MESSAGES = {
 			askContractPrimary:
 				"Use Ask with a watchlist-backed briefing when you want the current answer, the newest change summary, and the evidence trail in one place.",
 			askContractSecondary:
-				"If you do not attach a watchlist briefing, Ask should stay truthful by dropping back to raw grounded retrieval instead of inventing an answer layer.",
-			searchResultsTitle: "Results",
-			askResultsTitle: "Grounded result set",
+				"If you do not attach a watchlist briefing, Ask should drop back to raw grounded retrieval instead of inventing an answer layer.",
+			searchResultsTitle: "What we found",
+			askResultsTitle: "Answer and sources",
 			askErrorTitle: "Ask failed",
 			askErrorDescription:
 				"The retrieval layer is present, but this question did not return a valid response. Retry before treating the mode as unavailable.",
 			askExpectationTitle: "What to expect",
 			askExpectationDescription:
 				"Use this page when you want to ask in natural language without pretending the system already has a grounded answer model. Every result should point you back to job trace, knowledge cards, or the original source.",
-			askSummaryTitle: "Best evidence for your question",
+			askSummaryTitle: "Best answer path for this question",
 			askSummaryQuestionPrefix: "Question",
-			askSummaryHitsPrefix: "Evidence hits",
+			askSummaryHitsPrefix: "Sources",
 			askAnswerTitle: "Best current answer",
-			askAnswerGroundedState: "Briefing-grounded",
-			askAnswerNeedsContextState: "Needs context",
-			askAnswerUnavailableState: "Briefing unavailable",
-			askAnswerNoConfidentState: "No confident answer yet",
+			askAnswerGroundedState: "Ready to answer",
+			askAnswerNeedsContextState: "Add a saved topic",
+			askAnswerUnavailableState: "Saved topic unavailable",
+			askAnswerNoConfidentState: "Not enough to answer yet",
 			askAnswerGroundedDescription:
 				"SourceHarbor can now answer this as a briefing-aware front door: current answer first, recent change next, receipts underneath.",
 			askAnswerContextOnlyDescription:
@@ -861,25 +861,25 @@ const MESSAGES = {
 			askAnswerContextOnlyNote:
 				"This is the current briefing answer. Add or refine a question to narrow it into question-level evidence.",
 			askAnswerFallbackTitle: "Current briefing answer",
-			askAnswerWhyLabel: "Why this is the current answer",
-			askStoryFocusTitle: "Story focus driving this answer",
+			askAnswerWhyLabel: "Why this answer",
+			askStoryFocusTitle: "This answer is about",
 			askStoryFocusDescription:
 				"This is the story Ask is currently standing on before it fans out into change tracking and evidence drill-down.",
-			askStorySwitcherTitle: "Switch story focus",
+			askStorySwitcherTitle: "Try another angle",
 			askStorySwitcherDescription:
 				"Keep the same question, but pivot the answer layer onto another story from this briefing when you need to compare narratives.",
 			askNoEvidenceTitle: "No cited evidence yet",
 			askNoEvidenceDescription:
 				"Try a narrower question, switch to keyword mode, or process more sources before treating this as a missing capability.",
-			askQuestionEvidenceTitle: "Evidence for this question",
+			askQuestionEvidenceTitle: "What we found",
 			askQuestionEvidenceDescription:
 				"These hits come from the current retrieval layer. Use them to verify or challenge the answer above.",
-			askCitationsTitle: "Citations behind this answer",
+			askCitationsTitle: "Where this answer came from",
 			askCitationsDescription:
 				"These are the shortest route back to the exact story, card, compare view, or source that supports the answer above.",
 			askOpenCitationRouteButton: "Open cited route",
 			askFeaturedRunsDescription:
-				"These runs are still the fastest way to inspect the newest receipts behind the current answer.",
+				"These are the fastest recent runs to open when you want to check the answer against fresh source material.",
 			askChangesFallbackDescription:
 				"Recent changes only become honest on Ask after a watchlist briefing is attached.",
 			askFallbackActionsTitle: "Helpful next steps",
@@ -894,12 +894,12 @@ const MESSAGES = {
 				"No grounded results yet. That usually means the current corpus is empty or the query is too narrow.",
 			askResultsAriaLabel: "Ask evidence results",
 			groundedEvidenceTitle: "Grounded evidence",
-			openJobTraceButton: "Open job trace",
-			openKnowledgeCardsButton: "Open knowledge cards",
-			openFeedEntryButton: "Open feed entry",
+			openJobTraceButton: "See source trail",
+			openKnowledgeCardsButton: "Open notes",
+			openFeedEntryButton: "Open preview",
 			openSourceButton: "Open source",
 			knowledgeCardsSourceLabel: "Knowledge cards",
-			experimentalMode: "experimental mode",
+			experimentalMode: "beta",
 		},
 		watchlistsPage: {
 			metadataTitle: "Watchlists",
@@ -908,10 +908,15 @@ const MESSAGES = {
 			kicker: "SourceHarbor Compounders",
 			heroTitle: "Watchlists",
 			heroSubtitle:
-				"Treat this like a long-horizon tracking ledger. You are not searching once and leaving; you are pinning the topics, claims, or sources worth returning to.",
-			saveTitle: "Save a watchlist",
+				"Treat this like a simple list of topics you want to keep following. Start with one topic or source, then open story views only when you need more context.",
+			emptyReadyTitle: "No saved watchlists yet.",
+			emptyReadyDescription:
+				"Create one topic, claim, platform, or source to start following it over time. The story views appear after the first saved watchlist exists.",
+			emptyReadyButton: "Create a watchlist",
+			emptyReadySecondaryButton: "See example",
+			saveTitle: "Start a watchlist",
 			saveDescription:
-				"Current matchers cover `topic_key`, `claim_kind`, `platform`, and `source_match`. Wave 1 focuses on persistent tracking first, then deeper external alerting later.",
+				"Name the topic you want to follow first. Delivery settings can wait until you know this watchlist is useful.",
 			nameLabel: "Name",
 			namePlaceholder:
 				"Retry policy, AI workflow, YouTube AI channel, Claude Code updates...",
@@ -926,28 +931,28 @@ const MESSAGES = {
 			createNewButton: "Create new",
 			openTrendViewButton: "Open merged story view",
 			openBriefingButton: "Open briefing",
-			alertTitle: "Alert readiness",
+			alertTitle: "Alerts",
 			alertDescription:
-				"SourceHarbor can already persist watchlists and reuse them inside the dashboard. Whether external alerts are ready depends on the notification gate, not on whether the form submission succeeds.",
+				"On-site tracking works now. External alerts only become real after delivery is actually ready.",
 			alertFallback:
-				"Notification readiness is unavailable right now. Keep using dashboard tracking first.",
+				"Notification status is unavailable right now. Keep following the topic here first.",
 			openNotificationSettingsButton: "Open notification settings",
-			currentTitle: "Current watchlists",
+			currentTitle: "Watchlists you already follow",
 			currentDescription:
-				"These are real persisted tracking objects, not a UI shell. You can save them, read them back, and route them into the trend view today.",
+				"Start here to see the topics you are already following. Open story views only when you want the longer arc.",
 			currentError:
 				"Unable to load watchlists right now. Check API health, then retry this page.",
 			currentEmpty:
-				"There are no watchlists yet. Save one topic or source first so this page becomes a tracking console instead of an empty form.",
+				"There are no watchlists yet. Save one topic or source first so this page becomes a tracking console instead of a blank state.",
 			updatedPrefix: "Updated",
 			enabledState: "enabled",
 			pausedState: "paused",
 			editButton: "Edit",
 			viewTrendButton: "View trend",
 			deleteButton: "Delete",
-			recentMovementTitle: "Recent movement",
+			recentMovementTitle: "Recent updates",
 			recentMovementDescription:
-				"Start with the latest three movements to decide whether this watchlist is worth following. The fuller continuity view lives on the trend page.",
+				"Start with the latest three updates to decide whether this watchlist is worth following. The fuller story lives on the trend page.",
 			openJobButton: "Open job",
 			matchedCardsPrefix: "matched cards",
 			addedTopicsPrefix: "Added topics",
@@ -971,10 +976,10 @@ const MESSAGES = {
 			kicker: "SourceHarbor Trends",
 			heroTitle: "Merged source stories",
 			heroSubtitle:
-				"This is where repeated watchlist hits start looking like a product surface instead of scattered diffs. The merged story stays visible, and the raw run receipts remain right below it.",
+				"This is where repeated watchlist hits start turning into one readable story. Start with the current line, then drop into source coverage and raw movement only when you need receipts.",
 			chooseTitle: "Choose a watchlist",
 			chooseDescription:
-				"Pick one watchlist to inspect source coverage, merged stories, and the latest evidence runs without pretending the system already has a magical global narrative layer.",
+				"Pick one watchlist. The page leads with the current story first and keeps source coverage and raw movement as secondary layers.",
 			empty:
 				"Save at least one watchlist first so this page can show real merged stories instead of an empty selector.",
 			matcherLabel: "Matcher",
@@ -1221,7 +1226,7 @@ const MESSAGES = {
 		builderSurfaces: {
 			title: "Build with Codex, Claude Code, and MCP clients",
 			subtitle:
-				"Use SourceHarbor as an agent-facing control tower through MCP, the HTTP API, the thin repo-local CLI facade, and the shared TypeScript client layer.",
+				"Start from one builder lane at a time: MCP for tool calls, workflow pages for guided setup, and packages only after you know which door you actually need.",
 			mcpCta: "Open MCP quickstart",
 			codexCta: "Open Codex workflow",
 			claudeCodeCta: "Open Claude Code workflow",
@@ -1277,21 +1282,21 @@ const MESSAGES = {
 			announcementPrefix: "Switched to:",
 			labels: {
 				home: "Home",
-				subscriptions: "Subscriptions",
+				subscriptions: "Sources",
 				search: "Search",
 				ask: "Ask",
-				mcp: "MCP Quickstart",
-				ops: "Ops inbox",
+				mcp: "Assistant tools",
+				ops: "System status",
 				reader: "Reader",
-				watchlists: "Watchlists",
-				trends: "Trends",
-				briefings: "Briefings",
+				watchlists: "Saved topics",
+				trends: "Story signals",
+				briefings: "Story briefs",
 				playground: "Playground",
 				proof: "Proof",
-				knowledge: "Knowledge",
-				jobs: "Jobs",
-				ingestRuns: "Ingest runs",
-				feed: "Digest feed",
+				knowledge: "Source notes",
+				jobs: "Processing history",
+				ingestRuns: "Import history",
+				feed: "Reading desk",
 				settings: "Settings",
 				useCases: "Use cases",
 				page: "Page",
@@ -1303,10 +1308,10 @@ const MESSAGES = {
 			requireOneExclusive: "当前只能填写一项来源，请清空多余输入后再提交。",
 		},
 		loading: {
-			app: { title: "页面加载中", message: "正在加载首页内容，请稍候。" },
+			app: { title: "正在准备阅读界面", message: "请稍候片刻。" },
 			feed: {
-				title: "Digest feed loading",
-				message: "Loading the digest feed. Please wait.",
+				title: "正在准备 digest desk",
+				message: "正在加载当前阅读桌面。",
 			},
 			jobs: {
 				title: "Job trace loading",
@@ -1317,8 +1322,8 @@ const MESSAGES = {
 				message: "正在加载设置项，请稍候。",
 			},
 			subscriptions: {
-				title: "Loading subscriptions",
-				message: "Loading subscription data. Please wait.",
+				title: "正在打开 source atlas",
+				message: "正在加载 tracked universes 和 intake 工具。",
 			},
 		},
 		submitButton: {
@@ -1378,7 +1383,7 @@ const MESSAGES = {
 			kicker: "SourceHarbor front door",
 			heroTitle: "从 source intake 走到 finished reading",
 			heroSubtitle:
-				"先选一条第一路径：挂接 source universe、进入 digest feed，或在故事成形后直接打开 reader。builder 和 ops rail 保持一跳可达。",
+				"先选一条第一路径：挂接 source universe、进入阅读桌面，或在故事成形后直接打开 reader。builder rail 保持次级入口。",
 			frontDoors: {
 				subscriptionsTitle: "Source-universe intake",
 				subscriptionsDescription:
@@ -1386,7 +1391,7 @@ const MESSAGES = {
 				subscriptionsCta: "打开 Subscriptions",
 				subscriptionsHint:
 					"同一份 template catalog 现在同时驱动 Web、API 和 MCP intake。",
-				searchTitle: "搜索入口",
+				searchTitle: "搜索你的阅读库",
 				searchDescription:
 					"从一个面向运营者的入口里检索 digest、知识卡片、转写和相关证据。",
 				searchCta: "打开 Search",
@@ -1398,7 +1403,7 @@ const MESSAGES = {
 				briefingsCta: "打开 Briefings",
 				askHint:
 					"Ask 现在会复用与 Briefings 共用的 server-owned story payload，而不是再拼一套浏览器侧 view model。",
-				mcpTitle: "MCP 入口",
+				mcpTitle: "开发者入口",
 				mcpDescription:
 					"通过 MCP 复用同一套 intake、story、job 与 retrieval 真相，而不是再造第二层 agent surface。",
 				mcpCta: "打开 MCP quickstart",
@@ -1406,7 +1411,7 @@ const MESSAGES = {
 			},
 			sectionHeadings: {
 				whyNow: "为什么值得继续看",
-				firstHop: "先选第一条路径",
+				firstHop: "先决定从哪里开始",
 				primaryFrontDoors: "核心入口",
 				builderEntryPoints: "Builder 入口",
 				compounderSurfaces: "复利层",
@@ -1426,32 +1431,32 @@ const MESSAGES = {
 			firstHop: {
 				evaluateTitle: "Read the finished surface first",
 				evaluateDescription:
-					"先从 reader frontstage 或 specimen detail 理解产品，不要一上来就去解码 operator rails。",
+					"先从 reader frontstage 或 specimen detail 理解产品，再决定要不要进入更重的 rails。",
 				evaluatePrimaryCta: "Open Reader",
 				evaluateSecondaryCta: "Open specimen detail",
-				operateTitle: "Attach a source universe",
+				operateTitle: "先把来源接进来",
 				operateDescription:
-					"先从 tracked universes 和 manual intake 开始，再在 source 动起来之后进入 digest feed。",
+					"先挂上一个 source universe，再在 source 动起来后进入 digest desk。",
 				operatePrimaryCta: "Open Subscriptions",
 				operateSecondaryCta: "Open Feed",
 				operateTertiaryCta: "Open Trends",
-				buildTitle: "Build or inspect the system",
+				buildTitle: "开发者入口",
 				buildDescription:
-					"如果你是作为 builder 或 operator 进来，先理解 reading path，再进入 MCP、builders docs 或 ops。",
+					"如果你是作为 builder 进来，先理解 reading path，再进入 MCP 或 builders 指南。",
 				buildPrimaryCta: "打开 MCP quickstart",
 				buildSecondaryCta: "打开 builders 指南",
 				buildTertiaryCta: "打开 Ops inbox",
 			},
 			compounders: {
-				watchlistsTitle: "Watchlists 是 tracking object",
+				watchlistsTitle: "保存主题和来源",
 				watchlistsDescription:
 					"先在这里保存 watchlist，再去 Trends 看统一信息面，不要把两个页面当成同一种角色。",
 				watchlistsCta: "打开 Watchlists",
-				trendsTitle: "Trends 是 compounder 前门",
+				trendsTitle: "故事信号",
 				trendsDescription:
 					"当你想先看“多次运行里反复出现的主线”时，先来这里：上面是 merged stories，下面是 recent evidence runs，再继续跳到 Briefings 或 Jobs。",
 				trendsCta: "打开 Trends",
-				briefingsTitle: "Briefings 是 shared story surface",
+				briefingsTitle: "故事简报",
 				briefingsDescription:
 					"Briefings 先降认知负担：先看当前 story，再看 delta，最后 drill-down 到证据；Ask 会复用同一条 selected-story truth。",
 				briefingsCta: "打开 Briefings",
@@ -1662,17 +1667,17 @@ const MESSAGES = {
 			kicker: "SourceHarbor MCP Front Door",
 			heroTitle: "MCP Quickstart",
 			heroSubtitle:
-				"把它理解成 agent-facing control plane。Web 服务运营者，API 服务系统集成，MCP 服务助手和工作流，而三者都指向同一套 pipeline。",
+				"把它理解成 tool-first 入口。Web 给运营者看，API 给系统集成用，MCP 给助手和工作流用，但三者都指向同一套 pipeline。",
 			startTitle: "一条命令本地启动",
 			startDescription:
-				"MCP 不是第二套业务逻辑。先用薄的 repo-local CLI 门面找路，再通过 MCP 启动同一套 API-backed system。",
+				"先通过 repo-local CLI 启动 MCP，这样拿到的还是同一套 server 和 route contract，不会多学一层壳。",
 			startNote:
 				"`./bin/sourceharbor mcp` 会路由到接在 apps/mcp/server.py 上的同一台 FastMCP server。`./bin/dev-mcp` 仍然是底层直达入口。",
 			toolsTitle: "代表性工具",
-			toolsDescription: "这些已经足够在三分钟内解释清楚当前 surface。",
+			toolsDescription: "多数会话先摸一个工具族就够了，不需要一上来背全套名字。",
 			relationshipTitle: "MCP 与其他产品面的关系",
 			relationshipDescription:
-				"Web 是 operator-facing command center。API 是共享契约。MCP 是 agent-facing surface。SourceHarbor 会先经过 API，而不是让工具直接打数据库。",
+				"把 MCP 保持成工具入口。只有当你需要给人读的 explanation 时，再跳到 Search 或 Ask。",
 			searchCta: "打开 Search",
 			askCta: "打开 Ask",
 		},
@@ -1768,7 +1773,7 @@ const MESSAGES = {
 			kicker: "SourceHarbor Feed",
 			heroTitle: "Digest Feed",
 			heroSubtitle:
-				"在一个阅读流里浏览 digest entries 和正文内容；需要时再加 source 与 category 过滤。",
+				"先看桌面、预览一条，再决定要不要打开 finished reader；过滤器只在需要时再打开。",
 			filterRegionLabel: "Digest filters",
 			filterLabels: {
 				source: "Source",
@@ -1783,7 +1788,7 @@ const MESSAGES = {
 			emptyFiltered: "没有条目匹配当前过滤条件。可以先清空过滤器再试。",
 			emptyUnfiltered:
 				"当前还没有处理完成的视频或文章。先添加订阅，再触发 intake。",
-			goToSubscriptionsButton: "Go to subscriptions",
+			goToSubscriptionsButton: "Follow sources",
 			paginationLabel: "Pagination",
 			pagePrefix: "Page",
 			previousPageButton: "← Previous page",
@@ -1819,7 +1824,7 @@ const MESSAGES = {
 			activeTrackedUniverseEyebrow: "Tracked universe",
 			activeTrackedUniverseTitle: "你当前正在阅读一个 tracked universe",
 			activeTrackedUniverseDescription:
-				"这个 feed 已经固定在和 manual intake、reader footnotes 回跳一致的 source universe 上。",
+				"这个桌面已经固定在和 manual intake、reader footnotes 回跳一致的 source universe 上。",
 			activeTrackedUniverseFallback:
 				"这个 feed 已固定到一个 tracked universe，但当前没有读到对应的身份卡。",
 		},
@@ -1830,10 +1835,10 @@ const MESSAGES = {
 			kicker: "SourceHarbor Sources",
 			heroTitle: "Subscriptions",
 			heroSubtitle:
-				"先从 YouTube 和 Bilibili 的强支持模板起步，再把宇宙扩到 RSSHub 路由和通用 feed，让 intake 从第一步就像产品前门，而不是内部字段编辑器。",
+				"先从强支持模板或手动粘贴开始，只有在需要时再扩到 RSSHub 路由和通用 feed。",
 			supportMatrixTitle: "支持层级一眼看懂",
 			supportMatrixDescription:
-				"你可以把这里理解成 intake 菜单。某些来源已经是主打套餐，某些是通用入口，还有一些需要先经过路线级验证，不能一上来就吹成稳定能力。",
+				"把这里理解成 intake 菜单：有些入口已经很稳，有些入口很宽，但还要保持诚实。",
 			supportLevels: {
 				strong: {
 					title: "强支持",
@@ -1853,13 +1858,13 @@ const MESSAGES = {
 			},
 			templateSectionTitle: "先选 source template",
 			templateSectionDescription:
-				"模板会先帮你锁定平台、source type 和 adapter 默认值，让这页更像引导式 intake，而不是生硬的内部编辑表单。",
+				"模板会先锁住 intake 形状，让这页更像引导式前门，而不是内部表单。",
 			templateButton: "使用模板",
 			templateSelectedButton: "当前模板",
 			openMergedStoriesButton: "打开 merged stories",
 			intakeGuideTitle: "当前 intake 契约",
 			intakeGuideDescription:
-				"这块会直白告诉你：当前模板最适合什么、应该先填哪一项，以及证明边界还在哪里。",
+				"这里直接告诉你：当前模板适合什么、先填哪一项、证明边界还在哪里。",
 			guideLabels: {
 				supportLevel: "支持层级",
 				platform: "平台",
@@ -1909,7 +1914,7 @@ const MESSAGES = {
 			retryCurrentPageButton: "Retry this page",
 			editorTitle: "引导式 source editor",
 			editorDescription:
-				"当前模板会先把 intake 形状预填好，你只需要补充真正的 source 细节，而不是自己从零猜契约。",
+				"模板会先把 intake 形状预填好，你只需要补 source 细节。",
 			formLabels: {
 				platform: "Platform",
 				sourceType: "Source type",
@@ -1934,10 +1939,10 @@ const MESSAGES = {
 			manualIntake: {
 				title: "手动 source intake",
 				description:
-					"把 URL、handle、创作者空间页或 RSSHub route 直接贴进来。创作者级输入会落成订阅；YouTube/Bilibili 的直链视频会先进入 today，如果历史 intake 证据已经存在，还会尽量认回已追踪的 source universe，而不是永远停在 one-off。",
+					"把 URL、handle、创作者页或 RSSHub route 贴进来。创作者输入会落成订阅；直链视频或文章会先进入 today。",
 				placeholder:
 					"https://space.bilibili.com/13416784\nhttps://www.youtube.com/@MindAmend\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ\n/36kr/newsflashes\nhttps://example.com/feed.xml",
-				hint: "一行一个输入。Bilibili 空间页和 YouTube handle 会保存成订阅；直链视频和直链文章会先进入今天，排队后也可能重新认回现有 tracked universe。",
+				hint: "一行一个输入。创作者页会保存成订阅；直链视频和文章会先进入今天，排队后也可能重新认回已有 tracked universe。",
 				categoryLabel: "新订阅默认分类",
 				tagsLabel: "新订阅标签（逗号分隔，可选）",
 				enabledLabel: "新建订阅后立即启用",
@@ -1945,7 +1950,7 @@ const MESSAGES = {
 				submitPending: "正在 intake...",
 				resultsTitle: "手动 intake 结果",
 				resultsDescription:
-					"每一行都会明确告诉你：这条输入最后是落成长期订阅、进入 today 后认回 tracked universe、停在 one-off lane，还是因为当前运行时边界被拒绝。",
+					"每一行都会告诉你：这条输入最后是落成长期订阅、认回 tracked universe、停在 one-off lane，还是被拒绝。",
 				summaryPrefix: "已处理",
 				legend: {
 					saveSubscription: "保存订阅",
@@ -1992,38 +1997,38 @@ const MESSAGES = {
 			metadataTitle: "Search",
 			metadataDescription:
 				"SourceHarbor 的 grounded search 与 Ask 入口，基于 digests、transcripts、outlines 与 knowledge cards 做 citation-first retrieval。",
-			searchKicker: "SourceHarbor Search Front Door",
-			askKicker: "SourceHarbor Ask Front Door",
+			searchKicker: "先找一篇想读的",
+			askKicker: "围绕你在追的内容提问",
 			searchTitle: "Search",
-			askTitle: "Ask your sources",
+			askTitle: "Ask what you've saved",
 			searchSubtitle:
-				"这是面向运营者的真实检索前台。它把 digest、transcript、outline 和 knowledge cards 变成可回跳、可审计的结果。",
+				"先搜你已经保存的内容，再在看到值得读的线索时回到原始来源。",
 			askSubtitle:
-				"这是一个建立在 briefing 上下文之上的 Ask 前门。带上 watchlist 时，它可以先给当前答案、再给最近变化、最后给 citations；不带上下文时，就退回 raw grounded retrieval。",
-			searchFormTitle: "Search your sources",
-			askFormTitle: "Ask in grounded mode",
+				"一次只问一个问题。选好保存的话题后，这一页就能先给答案、再给变化、最后给来源。",
+			searchFormTitle: "Search what you've saved",
+			askFormTitle: "Ask about what you've saved",
 			searchFormDescription:
-				"`keyword` 目前最稳。Search 已经覆盖视频强支持来源与 RSS 驱动的 source family，`semantic` 和 `hybrid` 仍保持 experimental 呈现。",
+				"先用最直白的搜索开始。高级方法还在，但最稳的默认仍然是简单关键词搜索。",
 			askFormDescription:
-				"先带上 watchlist 或 briefing 上下文，再把问题收敛成 cited retrieval，这样答案、变化和证据就能留在同一页。",
-			queryLabel: "Query",
-			questionLabel: "Question",
+				"一次只问一个问题。只有当你想把答案、变化和来源放在同一页时，再加上保存的话题。",
+			queryLabel: "Search for",
+			questionLabel: "Ask",
 			queryPlaceholder: "agent workflow、retry policy、knowledge cards...",
 			questionPlaceholder:
 				"最近几轮到底怎么提 retry policy、agent workflow 或 knowledge cards？",
-			searchHint: "每条结果都应该能回跳到 job trace、knowledge 或 source URL。",
+			searchHint: "每条结果都应该能回到原始来源、预览，或者证据路径。",
 			askHint:
-				"如果你想拿到“答案 + 变化 + citations”，先挂上 watchlist briefing；不带上下文时，Ask 会诚实地退回 raw grounded retrieval。",
-			askContextLabel: "Briefing 上下文",
-			askContextTitle: "Ask 现在能站住脚的上下文",
+				"如果你想在同一页看到答案、最新变化和来源链接，就先选一个保存的话题。",
+			askContextLabel: "保存的话题",
+			askContextTitle: "这条答案现在能站住脚的基础",
 			askContextDescription:
 				"先选一个 watchlist，或者从 Briefings 打开 Ask，这页才能先复用真实 briefing，再去看问题级证据。",
-			askContextEmptyOption: "还没有 briefing 上下文",
-			askContextMissingTitle: "先补 briefing 上下文",
+			askContextEmptyOption: "还没有保存的话题",
+			askContextMissingTitle: "先选一个保存的话题",
 			askContextMissingDescription:
 				"Ask 仍然可以搜原始证据，但如果没有 watchlist briefing，它就不能诚实地把页面组织成“答案 + 变化”视图。",
 			askContextTopicLabel: "聚焦的 story / topic",
-			askSelectionBasisLabel: "选择依据",
+			askSelectionBasisLabel: "基于",
 			askSelectionBasis: {
 				requested_story_id: "指定 story",
 				query_match: "问题匹配",
@@ -2034,12 +2039,12 @@ const MESSAGES = {
 			askOpenBriefingButton: "打开当前 briefing",
 			askClearContextButton: "清除 briefing 上下文",
 			askClearStoryContextButton: "清除 story 聚焦",
-			modeLabel: "Mode",
-			groundingModeLabel: "Grounding mode",
-			platformLabel: "Platform",
+			modeLabel: "怎么搜",
+			groundingModeLabel: "怎么搜",
+			platformLabel: "来源",
 			platformPlaceholder:
 				"youtube、bilibili、rss、rsshub、github、newsletter ...",
-			topKLabel: "Top K",
+			topKLabel: "显示数量",
 			searchButton: "Search",
 			askButton: "Ask",
 			clearButton: "Clear",
@@ -2050,30 +2055,30 @@ const MESSAGES = {
 				rss: "RSS / web source",
 			},
 			modeOptions: {
-				keyword: "Keyword",
-				semantic: "Semantic (experimental)",
-				hybrid: "Hybrid (experimental)",
+				keyword: "简单搜索",
+				semantic: "语义搜索（测试中）",
+				hybrid: "混合搜索（测试中）",
 			},
-			searchTruthTitle: "Current truth",
-			askTruthTitle: "Grounded Ask mode",
+			searchTruthTitle: "这页能做什么",
+			askTruthTitle: "这页现在能做什么",
 			searchTruthPrimary:
-				"Search 是一个建立在真实 retrieval backend 之上的 production-facing front door，而它背后的 retrieval substrate 已经不止两家视频网站。",
+				"Search 用来查你已经保存下来的内容，一旦有值得读的线索，就可以直接跳回原始来源或预览。",
 			searchTruthSecondary:
-				"默认 picker 仍然是刻意收窄的，但更宽的 source family 已经通过同一套后端 contract 和 query surface 往外延伸。",
+				"第一轮尽量保持简单。更细的过滤和更宽的来源范围都还在，但不该在一开始就压到你脸上。",
 			askTruthPrimary:
-				"今天已经存在的是：基于 watchlist briefing 的答案 contract，以及 cited retrieval、job trace、knowledge cards 和原始来源链接。",
+				"当 Ask 站在一个保存的话题上时，它可以先给人话答案，再给最近变化，最后带你回到来源。",
 			askTruthSecondary:
-				"还没有的是：一个脱离 briefing 上下文、也能到处成立的全局 free-form answer engine。",
+				"它不是万能聊天机器人。没有保存话题的上下文时，它就应该更像 Search。",
 			askTruthNote:
-				"如果没有 watchlist 上下文，Ask 仍然会诚实地退回 grounded retrieval，而不是假装答案层已经无处不在。",
+				"如果没有保存话题的上下文，Ask 就应该诚实地退回接近搜索结果的模式，而不是假装自己已经知道全局故事。",
 			askTruthContractLead:
 				"Current contract: 先给答案，再给最近变化，最后给 citations，而且整条链都可回查。",
-			searchTruthCta: "打开 Ask mode",
-			askTruthCta: "打开 Ask details",
-			openRawSearchButton: "Open raw search",
-			askContractArtifactLabel: "Ask contract artifact",
-			searchContractTitle: "Result contract",
-			askContractTitle: "Best current use",
+			searchTruthCta: "打开 Ask",
+			askTruthCta: "打开简报",
+			openRawSearchButton: "打开 Search",
+			askContractArtifactLabel: "这条答案怎么来的",
+			searchContractTitle: "结果怎么来的",
+			askContractTitle: "Ask 最适合怎么用",
 			searchContractPrimary:
 				"每条命中都带 snippet、source type、score，以及跳转到 job trace、knowledge page 或原始来源 URL 的入口。",
 			searchContractSecondary:
@@ -2082,22 +2087,22 @@ const MESSAGES = {
 				"当你带着 watchlist briefing 来 Ask 时，这一页会把当前答案、最新变化和证据回跳放在同一页上。",
 			askContractSecondary:
 				"如果你没有挂 briefing，上面这套 answer view 就不会硬装存在，而会退回 raw grounded retrieval。",
-			searchResultsTitle: "Results",
-			askResultsTitle: "Grounded result set",
+			searchResultsTitle: "我们找到了什么",
+			askResultsTitle: "答案与来源",
 			askErrorTitle: "Ask failed",
 			askErrorDescription:
 				"retrieval layer 已存在，但这次问题没有返回有效结果。先重试，不要直接把它当成模式不可用。",
 			askExpectationTitle: "What to expect",
 			askExpectationDescription:
 				"如果你想用自然语言提问，但又不想假装系统已经有 grounded answer model，就用这一页。每条结果都应该把你带回 job trace、knowledge cards 或原始来源。",
-			askSummaryTitle: "Best evidence for your question",
+			askSummaryTitle: "这个问题最该先看什么",
 			askSummaryQuestionPrefix: "Question",
-			askSummaryHitsPrefix: "Evidence hits",
+			askSummaryHitsPrefix: "来源数量",
 			askAnswerTitle: "当前最可信的答案",
-			askAnswerGroundedState: "基于 briefing",
-			askAnswerNeedsContextState: "需要上下文",
-			askAnswerUnavailableState: "briefing 不可用",
-			askAnswerNoConfidentState: "还不能自信回答",
+			askAnswerGroundedState: "可以回答",
+			askAnswerNeedsContextState: "先选保存的话题",
+			askAnswerUnavailableState: "保存的话题暂不可用",
+			askAnswerNoConfidentState: "现在还不够回答",
 			askAnswerGroundedDescription:
 				"现在的 Ask 可以作为 briefing-aware 前门来回答：先给当前答案，再给最近变化，最后把证据摊开。",
 			askAnswerContextOnlyDescription:
@@ -2111,25 +2116,25 @@ const MESSAGES = {
 			askAnswerContextOnlyNote:
 				"这是当前 briefing 的答案。继续补问题或缩小问题，才能把它压到 question-level evidence。",
 			askAnswerFallbackTitle: "当前 briefing 答案",
-			askAnswerWhyLabel: "为什么这是当前答案",
-			askStoryFocusTitle: "当前答案依赖的 story focus",
+			askAnswerWhyLabel: "为什么会这样回答",
+			askStoryFocusTitle: "这条答案在讲什么",
 			askStoryFocusDescription:
 				"你可以把它理解成 Ask 当前踩着哪条 story 在回答，然后再往 changes 和 evidence 往下钻。",
-			askStorySwitcherTitle: "切换 story focus",
+			askStorySwitcherTitle: "换个角度看看",
 			askStorySwitcherDescription:
 				"保留同一个问题，但把 answer layer 切到 briefing 里的另一条 story 上，方便比较不同 narrative。",
 			askNoEvidenceTitle: "No cited evidence yet",
 			askNoEvidenceDescription:
 				"试着把问题收窄、切回 keyword mode，或者先处理更多 sources，再判断这是不是能力缺口。",
-			askQuestionEvidenceTitle: "这个问题对应的证据",
+			askQuestionEvidenceTitle: "我们找到了什么",
 			askQuestionEvidenceDescription:
 				"这些命中来自当前 retrieval layer。你可以用它们验证上面的答案，或者推翻上面的答案。",
-			askCitationsTitle: "支撑当前答案的 citations",
+			askCitationsTitle: "这条答案来自哪里",
 			askCitationsDescription:
 				"这些入口会把你直接带回真正支撑答案的 story、card、compare 视图或原始来源。",
 			askOpenCitationRouteButton: "打开 cited route",
 			askFeaturedRunsDescription:
-				"这些 runs 仍然是回看“当前答案背后最新收据”的最快入口。",
+				"如果你想核对这条答案背后最新的来源材料，先看这几次最新运行。",
 			askChangesFallbackDescription:
 				"只有挂上 watchlist briefing，Ask 才能诚实地讲“最近变了什么”。",
 			askFallbackActionsTitle: "下一步建议",
@@ -2143,12 +2148,12 @@ const MESSAGES = {
 				"当前还没有 grounded results。通常表示语料为空，或查询条件太窄。",
 			askResultsAriaLabel: "Ask evidence results",
 			groundedEvidenceTitle: "Grounded evidence",
-			openJobTraceButton: "Open job trace",
-			openKnowledgeCardsButton: "Open knowledge cards",
-			openFeedEntryButton: "Open feed entry",
+			openJobTraceButton: "查看来源路径",
+			openKnowledgeCardsButton: "打开笔记",
+			openFeedEntryButton: "打开预览",
 			openSourceButton: "Open source",
 			knowledgeCardsSourceLabel: "Knowledge cards",
-			experimentalMode: "experimental mode",
+			experimentalMode: "测试中",
 		},
 		watchlistsPage: {
 			metadataTitle: "Watchlists",
@@ -2157,10 +2162,15 @@ const MESSAGES = {
 			kicker: "SourceHarbor Compounders",
 			heroTitle: "Watchlists",
 			heroSubtitle:
-				"把它理解成长期追踪清单。你不是只搜一次就走，而是把值得反复回看的主题、claims 或来源钉住。",
-			saveTitle: "保存 watchlist",
+				"把它理解成你要持续关注的话题清单。先从一个主题或来源开始，再按需要打开更深的故事视图。",
+			emptyReadyTitle: "还没有保存任何 watchlist。",
+			emptyReadyDescription:
+				"先创建一个主题、claim、平台或来源，这样系统才知道你想长期跟什么。故事视图会在第一条 watchlist 出现后再打开。",
+			emptyReadyButton: "创建一个 watchlist",
+			emptyReadySecondaryButton: "看一个例子",
+			saveTitle: "开始一个 watchlist",
 			saveDescription:
-				"当前支持 `topic_key`、`claim_kind`、`platform` 和 `source_match`。Wave 1 先做 persistent tracking，再把更深的 external alerts 接进来。",
+				"先把你要长期跟的话题起好名字。投递方式可以等你确认这条 watchlist 值得保留之后再开。",
 			nameLabel: "名称",
 			namePlaceholder:
 				"重试策略、AI workflow、YouTube AI 频道、Claude Code 更新...",
@@ -2175,27 +2185,27 @@ const MESSAGES = {
 			createNewButton: "新建一个",
 			openTrendViewButton: "打开 merged story 视图",
 			openBriefingButton: "打开 briefing",
-			alertTitle: "提醒 readiness",
+			alertTitle: "提醒",
 			alertDescription:
-				"SourceHarbor 现在已经能保存 watchlist 并在 dashboard 内复用。外发提醒是否 ready，要看 notification gate，而不是看表单有没有提交成功。",
+				"站内跟踪现在已经能用。外发提醒要不要打开，取决于投递是否真的准备好了。",
 			alertFallback:
-				"当前拿不到 notification gate，先以 dashboard tracking 为主。",
+				"当前拿不到通知状态，先在这里继续跟踪。",
 			openNotificationSettingsButton: "打开通知设置",
-			currentTitle: "当前 watchlists",
+			currentTitle: "你正在跟踪的话题",
 			currentDescription:
-				"这些是已经持久化的 tracking objects。它们不是 UI 壳子，而是当前可保存、可读取、可挂趋势页的真实对象。",
+				"先在这里看清你已经在跟哪些主题，再按需要跳去更长的故事视图。",
 			currentError: "当前无法读取 watchlists。先确认 API health，再重试这页。",
 			currentEmpty:
-				"还没有 watchlists。先保存一个主题或来源，这页才会开始像持续追踪面板，而不是空白表单。",
+				"还没有 watchlists。先保存一个主题或来源，这页才会开始像持续追踪面板，而不是空白状态。",
 			updatedPrefix: "更新时间",
 			enabledState: "启用中",
 			pausedState: "已暂停",
 			editButton: "编辑",
 			viewTrendButton: "查看趋势",
 			deleteButton: "删除",
-			recentMovementTitle: "最近变化",
+			recentMovementTitle: "最近更新",
 			recentMovementDescription:
-				"先看最近 3 次变化，确认这个 watchlist 值不值得继续追。更完整的连续变化视图在 trend page。",
+				"先看最近 3 次更新，确认这个 watchlist 值不值得继续追。更完整的故事在 trend page。",
 			openJobButton: "打开 Job",
 			matchedCardsPrefix: "匹配卡片",
 			addedTopicsPrefix: "新增主题",
@@ -2219,10 +2229,10 @@ const MESSAGES = {
 			kicker: "SourceHarbor Trends",
 			heroTitle: "Merged source stories",
 			heroSubtitle:
-				"这里开始把重复出现的 watchlist 命中收拢成可见 story，而不是只剩散装 diff。上面的 merged story 负责给你主线，下面的原始 runs 负责给你收据。",
+				"这里把重复出现的 watchlist 命中收拢成可见 story。先读当前主线，再按需要往下翻 source coverage 和原始变化。",
 			chooseTitle: "选择 watchlist",
 			chooseDescription:
-				"先选一个 watchlist，再看 source coverage、merged stories 和最近 evidence runs。页面会保持诚实，不假装已经有全自动大叙事层。",
+				"先选一个 watchlist。页面会先给你当前主线，再把 source coverage 和原始变化放到第二层。",
 			empty: "先保存至少一个 watchlist，这里才会出现真正可比的连续变化视图。",
 			matcherLabel: "匹配器",
 			recentRunsLabel: "最近运行数",
@@ -2468,7 +2478,7 @@ const MESSAGES = {
 		builderSurfaces: {
 			title: "通过 Codex、Claude Code 和 MCP 客户端接入",
 			subtitle:
-				"把 SourceHarbor 当作 agent-facing control tower 使用：走 MCP、HTTP API、薄的 repo-local CLI 门面和共享 TypeScript client layer，而不是复制一套新的业务逻辑。",
+				"先挑一扇 builder 门进去：MCP、workflow 页面，或包级入口。不要一上来把所有 surface 和 proof 账本一起背下来。",
 			mcpCta: "打开 MCP quickstart",
 			codexCta: "打开 Codex workflow",
 			claudeCodeCta: "打开 Claude Code workflow",

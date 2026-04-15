@@ -40,6 +40,14 @@ function humanizeSource(source: string): string {
 		.join(" ");
 }
 
+function describeMatchStrength(score: number, maxScore: number): string {
+	if (maxScore <= 0) return "Match";
+	const ratio = score / maxScore;
+	if (ratio >= 0.85) return "Top match";
+	if (ratio >= 0.55) return "Strong match";
+	return "Related";
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
 	const copy = getLocaleMessages().searchPage;
 	const modeOptions = [
@@ -96,27 +104,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 	}
 
 	const results = payload?.items ?? [];
-	const routeFacts = askIntent
-		? [copy.askTruthPrimary, copy.askTruthSecondary, copy.askTruthNote]
-		: [copy.searchTruthPrimary, copy.searchTruthSecondary];
-	const contractBullets = askIntent
-		? [
-				copy.askContractPrimary,
-				copy.askContractSecondary,
-				copy.askTruthContractLead,
-			]
-		: [
-				copy.searchContractPrimary,
-				copy.searchContractSecondary,
-				copy.searchHint,
-			];
-	const emphasisBadges = askIntent
-		? [
-				copy.groundingModeLabel,
-				copy.openJobTraceButton,
-				copy.openKnowledgeCardsButton,
-			]
-		: ["Keyword-first", "Cited jumps", "Operator-auditable"];
+	const leadResult = results[0] ?? null;
+	const maxScore = results.reduce(
+		(max, item) => Math.max(max, Number.isFinite(item.score) ? item.score : 0),
+		0,
+	);
+	const remainingResults = leadResult ? results.slice(1) : results;
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">
@@ -132,31 +125,246 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 				</p>
 			</div>
 
-			<section className="grid gap-4 xl:grid-cols-[1.45fr_0.82fr]">
+			{queryValue && leadResult ? (
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
+						<h2 className="text-xl font-semibold">Start with the best hit</h2>
+						<CardDescription>
+							Read the strongest match first, then adjust the search only if you
+							still need it.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
 						<div className="flex flex-wrap gap-2">
-							{emphasisBadges.map((label) => (
-								<Badge
-									key={label}
-									variant="outline"
-									className="bg-background/70"
-								>
-									{label}
-								</Badge>
-							))}
+							<Badge variant="outline">{humanizeSource(leadResult.source)}</Badge>
+							<Badge variant="outline">{leadResult.platform || "unknown"}</Badge>
+							<Badge variant="secondary">
+								{describeMatchStrength(leadResult.score, maxScore)}
+							</Badge>
 						</div>
-						<h2 className="text-xl font-semibold">
-							{askIntent ? copy.askFormTitle : copy.searchFormTitle}
+						<div className="space-y-2">
+							<h3 className="text-lg font-semibold">
+								{leadResult.title?.trim() || `Job ${leadResult.job_id}`}
+							</h3>
+							<p className="text-sm text-muted-foreground">
+								{leadResult.snippet}
+							</p>
+						</div>
+						<div className="flex flex-wrap gap-3">
+							<Button asChild variant="hero" size="sm">
+								<Link href={`/feed?item=${encodeURIComponent(leadResult.job_id)}`}>
+									{copy.openFeedEntryButton}
+								</Link>
+							</Button>
+							<Button asChild variant="secondary" size="sm">
+								<Link href={`/jobs?job_id=${encodeURIComponent(leadResult.job_id)}`}>
+									{copy.openJobTraceButton}
+								</Link>
+							</Button>
+							{leadResult.source_url ? (
+								<a
+									href={leadResult.source_url}
+									target="_blank"
+									rel="noreferrer"
+									className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+								>
+									{copy.openSourceButton}
+								</a>
+							) : null}
+						</div>
+					</CardContent>
+				</Card>
+			) : null}
+
+			<div className={queryValue ? "flex flex-col gap-6" : "space-y-6"}>
+					{queryValue && (error || !leadResult || remainingResults.length > 0) ? (
+						<Card className="order-1 folo-surface border-border/70">
+							<CardHeader>
+								<h2 className="text-xl font-semibold">
+									{error && !leadResult
+										? "The reading lane is temporarily unavailable"
+										: leadResult
+										? "Keep reading"
+										: askIntent
+											? copy.askResultsTitle
+											: copy.searchResultsTitle}
+								</h2>
+								<CardDescription>
+									{error && !leadResult
+										? "Search could not load the current reading lane. Retry first, then widen into the API or ops view only if it still stays quiet."
+										: leadResult
+										? "Only the remaining matches stay here so the strongest hit can keep the stage."
+										: queryValue
+											? `${askIntent ? copy.askResultsPrefix : copy.searchResultsPrefix} for “${queryValue}”.`
+											: askIntent
+												? copy.askRunPrompt
+												: copy.searchRunPrompt}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4">
+								{!error && queryValue && results.length === 0 ? (
+									<p className="text-sm text-muted-foreground">{copy.noResults}</p>
+								) : null}
+								{remainingResults.map((item, index) => (
+									<Card
+										key={`${item.job_id}-${item.source}-${index}`}
+										className="border-border/60"
+								>
+									<CardContent className="space-y-4 pt-6">
+										<div className="flex flex-wrap gap-2">
+											<Badge variant="outline">{humanizeSource(item.source)}</Badge>
+											<Badge variant="outline">{item.platform || "unknown"}</Badge>
+											<Badge variant="secondary">
+												{describeMatchStrength(item.score, maxScore)}
+											</Badge>
+											{normalizedMode !== "keyword" ? (
+												<Badge variant="secondary">{copy.experimentalMode}</Badge>
+											) : null}
+										</div>
+										<div className="space-y-2">
+											<h3 className="text-lg font-semibold">
+												{item.title?.trim() || `Job ${item.job_id}`}
+											</h3>
+											<p className="text-sm text-muted-foreground">
+												{item.snippet}
+											</p>
+										</div>
+										<div className="flex flex-wrap gap-3">
+											<Button asChild variant="secondary" size="sm">
+												<Link
+													href={`/jobs?job_id=${encodeURIComponent(item.job_id)}`}
+												>
+													{copy.openJobTraceButton}
+												</Link>
+											</Button>
+											<Button asChild variant="outline" size="sm">
+												<Link
+													href={`/feed?item=${encodeURIComponent(item.job_id)}`}
+												>
+													{copy.openFeedEntryButton}
+												</Link>
+											</Button>
+											<Link
+												href={`/knowledge?job_id=${encodeURIComponent(item.job_id)}`}
+												className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+											>
+												{copy.openKnowledgeCardsButton}
+											</Link>
+											{item.source_url ? (
+												<a
+													href={item.source_url}
+													target="_blank"
+													rel="noreferrer"
+													className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+												>
+													{copy.openSourceButton}
+												</a>
+											) : null}
+										</div>
+									</CardContent>
+								</Card>
+							))}
+						</CardContent>
+					</Card>
+				) : null}
+
+					{queryValue ? (
+					<details className="order-2 folo-surface rounded-[1.6rem] border border-border/70 bg-background/95 p-5 shadow-sm">
+					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-[1.2rem] p-2 transition-colors hover:bg-muted/20">
+						<div className="space-y-2">
+							<p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+								Refine later
+							</p>
+							<p className="text-base font-semibold text-foreground">
+								Open the search controls only if the first result is not enough
+							</p>
+						</div>
+						</summary>
+						<div className="mt-5 space-y-5">
+							<form
+								method="GET"
+								className="grid gap-4 xl:grid-cols-[1.5fr_0.72fr_0.72fr_0.26fr]"
+							>
+								<input type="hidden" name="intent" value={askIntent ? "ask" : ""} />
+								<FormInputField
+									name="q"
+									label={askIntent ? copy.questionLabel : copy.queryLabel}
+									placeholder={
+										askIntent ? copy.questionPlaceholder : copy.queryPlaceholder
+									}
+									defaultValue={queryValue}
+									hint={askIntent ? copy.askHint : copy.searchHint}
+								/>
+								<FormSelectField
+									name="mode"
+									label={askIntent ? copy.groundingModeLabel : copy.modeLabel}
+									defaultValue={normalizedMode}
+									options={modeOptions}
+								/>
+								<FormSelectField
+									name="platform"
+									label={copy.platformLabel}
+									defaultValue={safePlatform}
+									options={platformOptions}
+								/>
+								<FormInputField
+									name="top_k"
+									label={copy.topKLabel}
+									type="number"
+									min={1}
+									max={20}
+									defaultValue={safeTopK}
+								/>
+								<div className="flex flex-wrap items-end gap-3 xl:col-span-full">
+									<Button type="submit" variant="hero" size="sm">
+										{askIntent ? copy.askButton : copy.searchButton}
+									</Button>
+									<Button asChild variant="ghost" size="sm">
+										<Link href={askIntent ? "/ask" : "/search"}>
+											{copy.clearButton}
+										</Link>
+									</Button>
+								</div>
+							</form>
+							<p className="text-sm leading-6 text-muted-foreground">
+								Need a wider reading path?{" "}
+								<Link
+									href={askIntent ? "/briefings" : "/ask"}
+									className="underline underline-offset-4 hover:text-foreground"
+								>
+									{askIntent ? briefingsCopy.openBriefingButton : copy.searchTruthCta}
+								</Link>
+								{askIntent ? null : (
+									<>
+										{" "}
+										or{" "}
+										<Link
+											href="/briefings"
+											className="underline underline-offset-4 hover:text-foreground"
+										>
+											{briefingsCopy.openBriefingButton}
+										</Link>
+									</>
+								)}
+								.
+							</p>
+						</div>
+					</details>
+					) : (
+					<section>
+						<Card className="folo-surface border-border/70">
+						<CardHeader>
+							<h2 className="text-xl font-semibold">
+								{askIntent ? copy.askFormTitle : copy.searchFormTitle}
 						</h2>
 						<CardDescription>
 							{askIntent ? copy.askFormDescription : copy.searchFormDescription}
 						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-6">
-						<form
-							method="GET"
-							className="grid gap-4 xl:grid-cols-[1.5fr_0.72fr_0.72fr_0.26fr]"
+						</CardHeader>
+						<CardContent className="space-y-6">
+							<form
+								method="GET"
+								className="grid gap-4 xl:grid-cols-[1.5fr_0.72fr_0.72fr_0.26fr]"
 						>
 							<input
 								type="hidden"
@@ -200,137 +408,40 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 									<Link href={askIntent ? "/ask" : "/search"}>
 										{copy.clearButton}
 									</Link>
-								</Button>
-							</div>
-						</form>
-
-						<div className="grid gap-4 rounded-2xl border border-border/60 bg-background/55 p-4 lg:grid-cols-[1.15fr_0.9fr]">
-							<div className="space-y-3">
-								<p className="font-semibold text-foreground">
-									{askIntent ? copy.askTruthTitle : copy.searchTruthTitle}
-								</p>
-								<div className="space-y-3 text-sm leading-6 text-muted-foreground">
-									{routeFacts.map((fact) => (
-										<p key={fact}>{fact}</p>
-									))}
-								</div>
-							</div>
-							<div className="space-y-3 border-border/50 lg:border-l lg:pl-4">
-								<p className="font-semibold text-foreground">
-									{askIntent ? copy.askContractTitle : copy.searchContractTitle}
-								</p>
-								<ul className="space-y-2 text-sm leading-6 text-muted-foreground">
-									{contractBullets.map((bullet) => (
-										<li key={bullet} className="flex gap-3">
-											<span
-												className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/80"
-												aria-hidden
-											/>
-											<span>{bullet}</span>
-										</li>
-									))}
-								</ul>
-								<div className="flex flex-wrap gap-3 pt-1">
-									<Button asChild variant="outline" size="sm">
-										<Link href="/ask">
-											{askIntent ? copy.askTruthCta : copy.searchTruthCta}
-										</Link>
 									</Button>
-									<Button asChild variant="outline" size="sm">
-										<Link href="/briefings">
+								</div>
+							</form>
+							<p className="text-sm leading-6 text-muted-foreground">
+								Start with one plain-language question. Open filters only after
+								the first reading path feels too wide.
+							</p>
+							<p className="text-sm leading-6 text-muted-foreground">
+								Need a wider reading path?{" "}
+								<Link
+									href={askIntent ? "/briefings" : "/ask"}
+									className="underline underline-offset-4 hover:text-foreground"
+								>
+									{askIntent ? briefingsCopy.openBriefingButton : copy.searchTruthCta}
+								</Link>
+								{askIntent ? null : (
+									<>
+										{" "}
+										or{" "}
+										<Link
+											href="/briefings"
+											className="underline underline-offset-4 hover:text-foreground"
+										>
 											{briefingsCopy.openBriefingButton}
 										</Link>
-									</Button>
-								</div>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-			</section>
-
-			<Card className="folo-surface border-border/70">
-				<CardHeader>
-					<h2 className="text-xl font-semibold">
-						{askIntent ? copy.askResultsTitle : copy.searchResultsTitle}
-					</h2>
-					<CardDescription>
-						{queryValue
-							? `${askIntent ? copy.askResultsPrefix : copy.searchResultsPrefix} for “${queryValue}”.`
-							: askIntent
-								? copy.askRunPrompt
-								: copy.searchRunPrompt}
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					{error ? (
-						<p className="text-sm text-muted-foreground">
-							{copy.requestFailed}
-						</p>
-					) : null}
-					{!error && queryValue && results.length === 0 ? (
-						<p className="text-sm text-muted-foreground">{copy.noResults}</p>
-					) : null}
-					{results.map((item, index) => (
-						<Card
-							key={`${item.job_id}-${item.source}-${index}`}
-							className="border-border/60"
-						>
-							<CardContent className="space-y-4 pt-6">
-								<div className="flex flex-wrap gap-2">
-									<Badge variant="outline">{humanizeSource(item.source)}</Badge>
-									<Badge variant="outline">{item.platform || "unknown"}</Badge>
-									<Badge variant="outline">score {item.score.toFixed(2)}</Badge>
-									{normalizedMode !== "keyword" ? (
-										<Badge variant="secondary">{copy.experimentalMode}</Badge>
-									) : null}
-								</div>
-								<div className="space-y-2">
-									<h3 className="text-lg font-semibold">
-										{item.title?.trim() || `Job ${item.job_id}`}
-									</h3>
-									<p className="text-sm text-muted-foreground">
-										{item.snippet}
-									</p>
-								</div>
-								<div className="flex flex-wrap gap-3">
-									<Button asChild variant="outline" size="sm">
-										<Link
-											href={`/jobs?job_id=${encodeURIComponent(item.job_id)}`}
-										>
-											{copy.openJobTraceButton}
-										</Link>
-									</Button>
-									<Button asChild variant="outline" size="sm">
-										<Link
-											href={`/knowledge?job_id=${encodeURIComponent(item.job_id)}`}
-										>
-											{copy.openKnowledgeCardsButton}
-										</Link>
-									</Button>
-									<Button asChild variant="outline" size="sm">
-										<Link
-											href={`/feed?item=${encodeURIComponent(item.job_id)}`}
-										>
-											{copy.openFeedEntryButton}
-										</Link>
-									</Button>
-									{item.source_url ? (
-										<Button asChild variant="ghost" size="sm">
-											<a
-												href={item.source_url}
-												target="_blank"
-												rel="noreferrer"
-											>
-												{copy.openSourceButton}
-											</a>
-										</Button>
-									) : null}
-								</div>
-							</CardContent>
+									</>
+								)}
+								.
+							</p>
+						</CardContent>
 						</Card>
-					))}
-				</CardContent>
-			</Card>
+					</section>
+				)}
+			</div>
 		</div>
 	);
 }

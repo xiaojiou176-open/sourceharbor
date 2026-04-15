@@ -30,7 +30,7 @@ describe("SyncNowButton", () => {
 
 	it("renders idle label", () => {
 		render(<SyncNowButton />);
-		expect(screen.getByRole("button", { name: "Sync now" })).toHaveAttribute(
+		expect(screen.getByRole("button", { name: "Refresh list" })).toHaveAttribute(
 			"data-variant",
 			"hero",
 		);
@@ -45,17 +45,17 @@ describe("SyncNowButton", () => {
 		);
 
 		render(<SyncNowButton />);
-		const button = screen.getByRole("button", { name: "Sync now" });
+		const button = screen.getByRole("button", { name: "Refresh list" });
 
 		fireEvent.click(button);
 		fireEvent.click(button);
 
 		await waitFor(() =>
 			expect(
-				screen.getByRole("button", { name: "Syncing…" }),
+				screen.getByRole("button", { name: "Refreshing…" }),
 			).toBeInTheDocument(),
 		);
-		expect(screen.getByRole("button", { name: "Syncing…" })).toBeDisabled();
+		expect(screen.getByRole("button", { name: "Refreshing…" })).toBeDisabled();
 		expect(mockPollIngest).toHaveBeenCalledTimes(1);
 		expect(mockPollIngest).toHaveBeenCalledWith({});
 
@@ -69,12 +69,12 @@ describe("SyncNowButton", () => {
 		render(<SyncNowButton />);
 
 		await act(async () => {
-			fireEvent.click(screen.getByRole("button", { name: "Sync now" }));
+			fireEvent.click(screen.getByRole("button", { name: "Refresh list" }));
 		});
 
 		await waitFor(() =>
 			expect(
-				screen.getByRole("button", { name: "Sync complete" }),
+				screen.getByRole("button", { name: "List updated" }),
 			).toBeInTheDocument(),
 		);
 		expect(mockPollIngest).toHaveBeenCalledTimes(1);
@@ -82,7 +82,7 @@ describe("SyncNowButton", () => {
 		await waitFor(
 			() => {
 				expect(
-					screen.getByRole("button", { name: "Sync now" }),
+					screen.getByRole("button", { name: "Refresh list" }),
 				).toBeInTheDocument();
 				expect(mockRefresh).toHaveBeenCalled();
 			},
@@ -102,17 +102,17 @@ describe("SyncNowButton", () => {
 		expect(status).toHaveAttribute("aria-live", "polite");
 
 		await act(async () => {
-			fireEvent.click(screen.getByRole("button", { name: "Sync now" }));
+			fireEvent.click(screen.getByRole("button", { name: "Refresh list" }));
 		});
 
 		await waitFor(() =>
 			expect(
-				screen.getByRole("button", { name: "Sync failed, retry" }),
+				screen.getByRole("button", { name: "Refresh failed, retry" }),
 			).toBeInTheDocument(),
 		);
 		expect(status).toHaveAttribute("aria-live", "assertive");
 		expect(
-			screen.getByRole("button", { name: "Sync failed, retry" }),
+			screen.getByRole("button", { name: "Refresh failed, retry" }),
 		).toHaveAttribute("data-variant", "destructive");
 	});
 
@@ -122,19 +122,19 @@ describe("SyncNowButton", () => {
 		render(<SyncNowButton />);
 
 		await act(async () => {
-			fireEvent.click(screen.getByRole("button", { name: "Sync now" }));
+			fireEvent.click(screen.getByRole("button", { name: "Refresh list" }));
 		});
 
 		await waitFor(() =>
 			expect(
-				screen.getByRole("button", { name: "Sync failed, retry" }),
+				screen.getByRole("button", { name: "Refresh failed, retry" }),
 			).toBeInTheDocument(),
 		);
 		expect(
-			screen.getByRole("button", { name: "Sync failed, retry" }),
+			screen.getByRole("button", { name: "Refresh failed, retry" }),
 		).toHaveAttribute("data-variant", "destructive");
 		expect(
-			screen.getByRole("button", { name: "Sync failed, retry" }),
+			screen.getByRole("button", { name: "Refresh failed, retry" }),
 		).toHaveAttribute("data-feedback-state", "error");
 		expect(mockPollIngest).toHaveBeenCalledTimes(1);
 		expect(mockRefresh).not.toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe("SyncNowButton", () => {
 		await waitFor(
 			() => {
 				expect(
-					screen.getByRole("button", { name: "Sync failed, retry" }),
+					screen.getByRole("button", { name: "Refresh failed, retry" }),
 				).toBeInTheDocument();
 			},
 			{
@@ -152,19 +152,19 @@ describe("SyncNowButton", () => {
 
 		await act(async () => {
 			fireEvent.click(
-				screen.getByRole("button", { name: "Sync failed, retry" }),
+				screen.getByRole("button", { name: "Refresh failed, retry" }),
 			);
 		});
 
 		await waitFor(() =>
 			expect(
-				screen.getByRole("button", { name: "Sync complete" }),
+				screen.getByRole("button", { name: "List updated" }),
 			).toBeInTheDocument(),
 		);
 		await waitFor(
 			() => {
 				expect(
-					screen.getByRole("button", { name: "Sync now" }),
+					screen.getByRole("button", { name: "Refresh list" }),
 				).toBeInTheDocument();
 				expect(mockRefresh).toHaveBeenCalledTimes(1);
 			},
@@ -185,11 +185,11 @@ describe("SyncNowButton", () => {
 		render(<SyncNowButton />);
 
 		await act(async () => {
-			fireEvent.click(screen.getByRole("button", { name: "Sync now" }));
+			fireEvent.click(screen.getByRole("button", { name: "Refresh list" }));
 		});
 
 		const loadingButton = await screen.findByRole("button", {
-			name: "Syncing…",
+			name: "Refreshing…",
 		});
 		expect(loadingButton).toHaveAttribute("data-variant", "secondary");
 		expect(loadingButton).toHaveAttribute("data-feedback-state", "loading");
@@ -198,7 +198,7 @@ describe("SyncNowButton", () => {
 		);
 		expect(loadingHint).not.toBeNull();
 		expect(loadingHint).toHaveTextContent(
-			"Fetching and analyzing new content. Please wait.",
+			"Pulling in the newest reading. Please wait.",
 		);
 
 		await act(async () => {
@@ -206,7 +206,7 @@ describe("SyncNowButton", () => {
 		});
 
 		const doneButton = await screen.findByRole("button", {
-			name: "Sync complete",
+			name: "List updated",
 		});
 		expect(doneButton).toHaveAttribute("data-variant", "success");
 		expect(doneButton).toHaveAttribute("data-feedback-state", "done");
@@ -215,13 +215,13 @@ describe("SyncNowButton", () => {
 		);
 		expect(doneHint).not.toBeNull();
 		expect(doneHint).toHaveTextContent(
-			"Sync complete. Refreshing the list next.",
+			"List updated. Refreshing the view next.",
 		);
 		expect(doneHint).not.toHaveClass("status-chip-feedback");
 
 		const idleButton = await screen.findByRole(
 			"button",
-			{ name: "Sync now" },
+			{ name: "Refresh list" },
 			{ timeout: 2500 },
 		);
 		expect(idleButton).toHaveAttribute("data-variant", "hero");
@@ -231,20 +231,20 @@ describe("SyncNowButton", () => {
 		});
 
 		const errorButton = await screen.findByRole("button", {
-			name: "Sync failed, retry",
+			name: "Refresh failed, retry",
 		});
 		expect(errorButton).toHaveAttribute("data-variant", "destructive");
 		expect(errorButton).toHaveAttribute("data-feedback-state", "error");
 		expect(errorButton).toHaveAttribute(
 			"title",
-			"Sync failed. Press Enter or Space to retry.",
+			"Refresh failed. Press Enter or Space to retry.",
 		);
 		const errorHint = document.querySelector(
 			'[data-part="status-hint"][data-state="error"]',
 		);
 		expect(errorHint).not.toBeNull();
 		expect(errorHint).toHaveTextContent(
-			"Sync failed. Check the network or API health, then retry.",
+			"Refresh failed. Check the network or API health, then retry.",
 		);
 		expect(errorHint).not.toHaveClass("status-chip-feedback");
 	}, 8000);

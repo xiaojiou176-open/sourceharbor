@@ -38,8 +38,14 @@ SourceHarbor keeps runtime and governance logs under `.runtime-cache/logs/`.
   log files under `.runtime-cache/logs/local-core/` so background-service
   failures stay attributable to repo-owned runtime state instead of vanishing
   into the shell that launched them.
+- The repo-owned Temporal fallback also keeps its SQLite state at
+  `.runtime-cache/tmp/local-temporal/dev.sqlite`; this path is runtime state,
+  not public documentation or a host-global service directory.
 - If `full_stack` needs to self-heal Temporal, that decision must still appear
   in the full-stack component log instead of becoming a silent retry path.
+- If a reused listener exists on the Temporal port but namespace health still
+  fails, logs must preserve that `unhealthy (reused)` distinction instead of
+  collapsing it into a generic timeout.
 - If a worker/web/api rollback runs after a failed start or readiness gate, the rollback must remove the corresponding `*.pid` receipt instead of leaving stale process markers behind.
 
 `repo-side-strict-ci` now has two honest log-bearing entry modes:
@@ -55,6 +61,12 @@ Repo-managed `full_stack` startup also writes a temporary
 `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` overlay for the
 web runtime. Treat that file as local runtime state, not as public
 documentation, and never commit it or copy it into outward-facing artifacts.
+
+`.runtime-cache/tmp/**` is still budgeted scratch space, not a second durable
+log plane. If repo-managed `web-runtime/`, screenshots, or other ad-hoc debug
+folders push `tmp/` over budget, clean only rebuildable scratch paths after the
+stack is stopped and keep `run/`, `logs/`, `reports/`, and `evidence/`
+receipts intact.
 
 ## Why This Exists
 

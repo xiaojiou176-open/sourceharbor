@@ -7,6 +7,8 @@ ENV_FILE="$ROOT_DIR/.env"
 RUN_DIR="$ROOT_DIR/.runtime-cache/run/local-core"
 LOG_DIR="$ROOT_DIR/.runtime-cache/logs/local-core"
 POSTGRES_DATA_DIR="$ROOT_DIR/.runtime-cache/tmp/local-postgres/data"
+TEMPORAL_STATE_DIR="$ROOT_DIR/.runtime-cache/tmp/local-temporal"
+TEMPORAL_DB_PATH="$TEMPORAL_STATE_DIR/dev.sqlite"
 POSTGRES_PID_FILE="$RUN_DIR/postgres.pid"
 TEMPORAL_PID_FILE="$RUN_DIR/temporal.pid"
 POSTGRES_LOG_PATH="$LOG_DIR/postgres.log"
@@ -57,7 +59,7 @@ CORE_POSTGRES_PORT="${CORE_POSTGRES_PORT:-$CORE_POSTGRES_PORT_DEFAULT}"
 TEMPORAL_TARGET_HOST="${TEMPORAL_TARGET_HOST:-127.0.0.1:${TEMPORAL_PORT_DEFAULT}}"
 TEMPORAL_PORT="${TEMPORAL_TARGET_HOST##*:}"
 
-mkdir -p "$RUN_DIR" "$LOG_DIR" "$ROOT_DIR/.runtime-cache/tmp/local-postgres"
+mkdir -p "$RUN_DIR" "$LOG_DIR" "$ROOT_DIR/.runtime-cache/tmp/local-postgres" "$TEMPORAL_STATE_DIR"
 
 docker_compose_available() {
   command -v docker >/dev/null 2>&1 || return 1
@@ -85,6 +87,31 @@ port_listening() {
   return 1
 }
 
+listener_pid_for_port() {
+  local port="$1"
+  if ! command -v lsof >/dev/null 2>&1; then
+    return 1
+  fi
+  lsof -nP -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null | head -n 1
+}
+
+temporal_listener_is_repo_scoped_start_dev() {
+  local pid="$1"
+  [[ -n "$pid" ]] || return 1
+  local command_line
+  command_line="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+  [[ "$command_line" == *"temporal server start-dev"* ]] || return 1
+  [[ "$command_line" == *"--port $TEMPORAL_PORT"* ]] || return 1
+  return 0
+}
+
+temporal_namespace_ready() {
+  temporal operator namespace describe \
+    --address "127.0.0.1:${TEMPORAL_PORT}" \
+    --namespace "${TEMPORAL_NAMESPACE:-default}" \
+    >/dev/null 2>&1
+}
+
 cleanup_stale_pid_file() {
   local pid_file="$1"
   if [[ ! -f "$pid_file" ]]; then
@@ -101,6 +128,8 @@ spawn_temporal_local_fallback() {
   TEMPORAL_LOG_PATH="$TEMPORAL_LOG_PATH" \
   TEMPORAL_IP="127.0.0.1" \
   TEMPORAL_PORT="$TEMPORAL_PORT" \
+  TEMPORAL_DB_PATH="$TEMPORAL_DB_PATH" \
+  TEMPORAL_NAMESPACE="${TEMPORAL_NAMESPACE:-default}" \
     python3 - <<'PY'
 import os
 import subprocess
@@ -109,6 +138,8 @@ import sys
 log_path = os.environ["TEMPORAL_LOG_PATH"]
 host = os.environ["TEMPORAL_IP"]
 port = os.environ["TEMPORAL_PORT"]
+db_path = os.environ["TEMPORAL_DB_PATH"]
+namespace = os.environ["TEMPORAL_NAMESPACE"]
 
 with open(log_path, "ab", buffering=0) as log_file:
     process = subprocess.Popen(
@@ -121,6 +152,10 @@ with open(log_path, "ab", buffering=0) as log_file:
             host,
             "--port",
             port,
+            "--db-filename",
+            db_path,
+            "--namespace",
+            namespace,
         ],
         stdin=subprocess.DEVNULL,
         stdout=log_file,
@@ -146,6 +181,18 @@ wait_for_port() {
   return 1
 }
 
+wait_for_temporal_namespace() {
+  local timeout_seconds="${1:-20}"
+  local second
+  for second in $(seq 1 "$timeout_seconds"); do
+    if temporal_namespace_ready; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
 local_core_status() {
   cleanup_stale_pid_file "$POSTGRES_PID_FILE"
   cleanup_stale_pid_file "$TEMPORAL_PID_FILE"
@@ -159,9 +206,17 @@ local_core_status() {
   fi
 
   if [[ -f "$TEMPORAL_PID_FILE" ]] && kill -0 "$(cat "$TEMPORAL_PID_FILE")" 2>/dev/null; then
-    echo "temporal: running (owned) pid=$(cat "$TEMPORAL_PID_FILE") port=$TEMPORAL_PORT"
+    if temporal_namespace_ready; then
+      echo "temporal: running (owned) pid=$(cat "$TEMPORAL_PID_FILE") port=$TEMPORAL_PORT"
+    else
+      echo "temporal: unhealthy (owned) pid=$(cat "$TEMPORAL_PID_FILE") port=$TEMPORAL_PORT"
+    fi
   elif port_listening "$TEMPORAL_PORT"; then
-    echo "temporal: running (reused) port=$TEMPORAL_PORT"
+    if temporal_namespace_ready; then
+      echo "temporal: running (reused) port=$TEMPORAL_PORT"
+    else
+      echo "temporal: unhealthy (reused) port=$TEMPORAL_PORT"
+    fi
   else
     echo "temporal: stopped"
   fi
@@ -198,6 +253,25 @@ PY
   }
 
   cleanup_stale_pid_file "$TEMPORAL_PID_FILE"
+  if port_listening "$TEMPORAL_PORT"; then
+    if ! temporal_namespace_ready; then
+      local temporal_listener_pid
+      temporal_listener_pid="$(listener_pid_for_port "$TEMPORAL_PORT" || true)"
+      if temporal_listener_is_repo_scoped_start_dev "$temporal_listener_pid"; then
+        kill "$temporal_listener_pid" 2>/dev/null || true
+        rm -f "$TEMPORAL_PID_FILE"
+        for _ in $(seq 1 10); do
+          if ! port_listening "$TEMPORAL_PORT"; then
+            break
+          fi
+          sleep 1
+        done
+      else
+        echo "[core-services] temporal port $TEMPORAL_PORT is occupied by an unhealthy non-repo-owned process" >&2
+        exit 1
+      fi
+    fi
+  fi
   if ! port_listening "$TEMPORAL_PORT"; then
     # Launch Temporal in its own session so the local fallback survives
     # bootstrap/full-stack parent shell exit instead of becoming a stale pid file.
@@ -205,6 +279,10 @@ PY
   fi
   wait_for_port "$TEMPORAL_PORT" 20 || {
     echo "[core-services] temporal failed to become reachable on port $TEMPORAL_PORT" >&2
+    exit 1
+  }
+  wait_for_temporal_namespace 20 || {
+    echo "[core-services] temporal became reachable on port $TEMPORAL_PORT but namespace ${TEMPORAL_NAMESPACE:-default} is still unavailable" >&2
     exit 1
   }
 

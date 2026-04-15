@@ -97,7 +97,7 @@ describe("RouteTransition", () => {
 		);
 
 		expect(screen.getByRole("status")).toHaveTextContent(
-			"Switched to: Ops inbox",
+			"Switched to: System status",
 		);
 	});
 
@@ -110,7 +110,7 @@ describe("RouteTransition", () => {
 		);
 
 		expect(screen.getByRole("status")).toHaveTextContent(
-			"Switched to: Watchlists",
+			"Switched to: Saved topics",
 		);
 	});
 
@@ -122,7 +122,9 @@ describe("RouteTransition", () => {
 			</RouteTransition>,
 		);
 
-		expect(screen.getByRole("status")).toHaveTextContent("Switched to: Trends");
+		expect(screen.getByRole("status")).toHaveTextContent(
+			"Switched to: What changed",
+		);
 	});
 
 	it("maps briefings route to the dedicated label", () => {
@@ -134,7 +136,7 @@ describe("RouteTransition", () => {
 		);
 
 		expect(screen.getByRole("status")).toHaveTextContent(
-			"Switched to: Briefings",
+			"Switched to: Story briefs",
 		);
 	});
 
@@ -158,7 +160,7 @@ describe("RouteTransition", () => {
 		);
 
 		expect(screen.getByRole("status")).toHaveTextContent(
-			"Switched to: Ingest runs",
+			"Switched to: Import history",
 		);
 	});
 
@@ -171,7 +173,7 @@ describe("RouteTransition", () => {
 		);
 
 		expect(screen.getByRole("status")).toHaveTextContent(
-			"Switched to: Digest feed",
+			"Switched to: Reading desk",
 		);
 	});
 
@@ -200,7 +202,9 @@ describe("RouteTransition", () => {
 		);
 
 		const heading = screen.getByRole("heading", { name: "历史任务" });
-		expect(screen.getByRole("status")).toHaveTextContent("Switched to: Jobs");
+		expect(screen.getByRole("status")).toHaveTextContent(
+			"Switched to: Processing history",
+		);
 		expect(heading).toHaveAttribute("tabindex", "-1");
 		expect(document.activeElement).toBe(heading);
 	});
@@ -214,7 +218,7 @@ describe("RouteTransition", () => {
 		);
 
 		expect(screen.getByRole("status")).toHaveTextContent(
-			"Switched to: Ingest runs",
+			"Switched to: Import history",
 		);
 	});
 

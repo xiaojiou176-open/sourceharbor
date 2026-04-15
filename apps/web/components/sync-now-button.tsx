@@ -12,9 +12,13 @@ import { cn } from "@/lib/utils";
 
 type SyncNowButtonProps = {
 	sessionToken?: string;
+	prominence?: "primary" | "secondary";
 };
 
-export function SyncNowButton({ sessionToken }: SyncNowButtonProps) {
+export function SyncNowButton({
+	sessionToken,
+	prominence = "primary",
+}: SyncNowButtonProps) {
 	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
 	const copy = getLocaleMessages().syncNow;
 	const [state, setState] = useState<"idle" | "loading" | "done" | "error">(
@@ -53,7 +57,9 @@ export function SyncNowButton({ sessionToken }: SyncNowButtonProps) {
 				? "success"
 				: state === "error"
 					? "destructive"
-					: "hero";
+					: prominence === "secondary"
+						? "surface"
+						: "hero";
 	const liveStatusLabel =
 		state === "loading"
 			? copy.loading.liveStatusLabel
@@ -111,7 +117,8 @@ export function SyncNowButton({ sessionToken }: SyncNowButtonProps) {
 				disabled={isLoading}
 				variant={buttonVariant}
 				className={cn(
-					"min-w-[13rem] justify-between rounded-xl",
+					"justify-between rounded-xl",
+					prominence === "secondary" ? "min-w-[11rem]" : "min-w-[13rem]",
 					!isLoading && "card-interactive",
 				)}
 				aria-describedby="sync-now-status"

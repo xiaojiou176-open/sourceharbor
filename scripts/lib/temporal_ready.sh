@@ -1,5 +1,32 @@
 #!/usr/bin/env bash
 
+temporal_namespace_is_ready() {
+  local target_host="$1"
+  local namespace="$2"
+
+  command -v temporal >/dev/null 2>&1 || return 1
+
+  temporal operator namespace describe \
+    --address "$target_host" \
+    --namespace "$namespace" \
+    >/dev/null 2>&1
+}
+
+wait_for_temporal_namespace() {
+  local target_host="$1"
+  local namespace="$2"
+  local timeout="${3:-20}"
+  local attempt
+
+  for attempt in $(seq 1 "$timeout"); do
+    if temporal_namespace_is_ready "$target_host" "$namespace"; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
 temporal_task_queue_has_worker_pollers() {
   local target_host="$1"
   local namespace="$2"

@@ -30,6 +30,12 @@ Keep the local boot topology honest:
 - `./bin/full-stack up` can now self-heal this same core layer: if worker
   preflight sees Temporal down, it first attempts the repo-owned
   `core_services.sh up` path before declaring the stack blocked.
+- That fallback keeps Temporal state inside the repo-owned SQLite file
+  `.runtime-cache/tmp/local-temporal/dev.sqlite` instead of silently borrowing
+  a host-global state directory.
+- Temporal truth is now two-step: the port must answer, and the namespace must
+  be readable. A random unhealthy listener on `7233` does not count as a green
+  local fallback.
 - The reader stack is still a Docker-only optional lane. If you want it, rerun
   bootstrap with `--with-reader-stack 1` instead of assuming it is part of the
   default first-run contract.
@@ -44,6 +50,8 @@ Keep the local boot topology honest:
 - Python gate: `bash scripts/ci/python_tests.sh`
 - Structured full-stack logs: `.runtime-cache/logs/components/full-stack`
 - Local core-services fallback logs: `.runtime-cache/logs/local-core`
+- Local Temporal fallback SQLite state:
+  `.runtime-cache/tmp/local-temporal/dev.sqlite`
 - Generated evidence and reports: `.runtime-cache/reports`
 - Canonical repo-side web runtime: `.runtime-cache/tmp/web-runtime/workspace/apps/web`
 - Repo-managed web runtime env overlay: `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local`
@@ -80,9 +88,17 @@ footprint. Use `runtime-cache-maintenance` for repo-side maintenance, and use
 governed cleanup wave from
 [reference/disk-space-governance.md](./reference/disk-space-governance.md).
 
+Current scratch-space rule:
+
+- `.runtime-cache/tmp` is budgeted at `1024MB / 80000 files`
+- if repo-managed `web-runtime/`, screenshots, or ad-hoc debug folders push it
+  over budget, stop the stack first and clean only rebuildable scratch paths,
+  then rerun `./bin/runtime-cache-maintenance`
+
 The two runtime-heavy local caches worth recognizing by name are:
 
 - `.runtime-cache/tmp/web-runtime/` for the repo-managed Next.js workspace copy
+- `.runtime-cache/tmp/local-temporal/` for repo-owned Temporal fallback state
 - `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` for the latest
   mutation-readiness receipt consumed by repo-side strict CI
 

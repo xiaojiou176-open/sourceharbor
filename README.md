@@ -62,6 +62,42 @@ knowledge cards, traceable job runs, and MCP-ready operations. It stays
 source-first and proof-first: you can inspect it, run it locally, and verify
 each surface instead of trusting product copy on vibes alone.
 
+## Reader-first public truth
+
+This repository is organized around the same reader-first surfaces that show
+up as soon as you wake the web command center. The front door, feed desk,
+watchlists, watchlist-based briefings, search, Ask, and published reader
+documents now share a single proof ladder, and builder/agent tooling recycles
+that same state instead of inventing a parallel control shell. The public docs
+keep that story tight: lead with the reader flow, collapse the proof next to it,
+and only open the deeper builder or MCP details from there.
+
+- **Reader surface:** `/reader`, `/feed`, and published reader document
+  pages surface the navigation brief, yellow warnings, and source contribution
+  drawer before any builder / proof block shows up.
+- **Intake and tracking:** `/subscriptions`, `/watchlists`, `/trends`, and
+  `/briefings` stay content-first, with system controls hidden in secondary
+  details or contextual actions that never steal the dominant path.
+- **Search + Ask + MCP:** the story-aware search and Ask flows, as well as the
+  MCP tools, reuse the same selected-story payload that `/briefings` and the
+  canonical story page already expose so the public narrative stays shared.
+- **Proof and runtime truth:** `docs/proof.md`, `docs/project-status.md`, and
+  `docs/runtime-truth.md` explain what surfaces are real, what is gated, and
+  what still belongs to human-managed checkpoints.
+
+## Release vs main vs distribution truth
+
+We treat release-current proof, remote `main`, and external distribution as
+three distinct ledgers. The README can mention that the public repo already
+publishes a release object, but every claim that mentions “release ready” or
+“public distribution” must be paired with a fresh read-back or pointer to the
+relevant docs. Likewise, terminal-ready commands and job traces live under the
+local path, while hosted proofs stay human-only until the proper credentials
+and platform uploads land. This doc links directly to [project-status.md](./docs/project-status.md)
+and [proof.md](./docs/proof.md) so you can verify whether the latest release
+still matches `main`, whether the official distribution surface has a live
+receipt, and which lanes still require operator action.
+
 Three quick reasons developers keep reading:
 
 - **One truth across Web, API, and MCP.** Operators and agent builders see the same jobs, artifacts, and retrieval state instead of three disconnected product shells.
@@ -146,7 +182,7 @@ The fastest way to understand the product is to open the highest-value rooms fir
 | **Reader** | Published-doc frontstage over frozen consumption batches, where merge docs and singleton polish docs share one reading surface with navigation brief, yellow warning, and source contribution drawer | Real Web route after local boot: `/reader`; current repo truth is local-first and repo-side proven, not hosted-distribution proof |
 | **Subscriptions** | Source-universe intake front door with one shared template catalog, tracked-universe atlas, and manual-intake workbench for strong-supported YouTube/Bilibili lanes, generalized RSSHub/RSS intake, and one-off video/article URLs that can enter today without becoming subscriptions first | Real Web route after local boot: `/subscriptions` + shared catalog through API and MCP |
 | **Search** | Operator-facing evidence search over digests, knowledge cards, transcripts, and related artifacts | Real Web route after local boot: `/search` |
-| **Ask your sources** | Story-aware, briefing-backed Ask front door: with watchlist and story context it returns the current answer, recent changes, and citation drill-down through a server-owned page payload; without context it falls back to grounded retrieval | Real Web route after local boot: `/ask` + [grounded contract](./docs/blueprints/2026-03-31-ask-your-sources-grounded-answer-contract.md) |
+| **Ask your sources** | Story-aware, briefing-backed Ask front door: with watchlist and story context it returns the current answer, recent changes, and citation drill-down through a server-owned page payload; without context it falls back to grounded retrieval | Real Web route after local boot: `/ask` + the public proof ladder in [docs/proof.md](./docs/proof.md) |
 | **Briefings** | Lowest-cognitive-load unified story view for one watchlist: summary first, then differences, then evidence drill-down, with one canonical selected-story page payload that Ask reuses instead of parallel browser-side aliases | Real Web route after local boot: `/briefings`; grounded in watchlists, merged stories, jobs, and knowledge |
 | **Watchlists** | Durable tracking object surface for saved topics, claim kinds, platform slices, and source matchers | Real Web route after local boot: `/watchlists` |
 | **Trends** | Compounder front door that turns repeated watchlist hits into merged stories plus recent evidence runs | Real Web route after local boot: `/trends` |
@@ -266,8 +302,7 @@ Think of this as the label on the box, not fine print:
 If you need the explicit bet boundaries, read:
 
 - [Ecosystem And Big-Bet Decisions](./docs/reference/ecosystem-and-big-bet-decisions.md)
-- [Agent Autopilot Spike](./docs/blueprints/2026-03-31-agent-autopilot-spike.md)
-- [Hosted Readiness Spike](./docs/blueprints/2026-03-31-hosted-readiness-spike.md)
+- [Future-direction boundaries](./docs/reference/project-positioning.md)
 
 ## Public Readiness Notes
 
@@ -298,8 +333,8 @@ These are the surfaces that make SourceHarbor reusable instead of one-and-done:
 
 These are real directions, but they are **not** current product claims:
 
-- **Agent Autopilot** is currently a spike topic, not a shipped capability. The most honest next slice is human-approved workflow orchestration, not silent autonomy. See [docs/blueprints/2026-03-31-agent-autopilot-spike.md](./docs/blueprints/2026-03-31-agent-autopilot-spike.md).
-- **Hosted or managed SourceHarbor** is also a spike topic, not a current promise. Today the repository remains source-first and local-proof-first. See [docs/blueprints/2026-03-31-hosted-readiness-spike.md](./docs/blueprints/2026-03-31-hosted-readiness-spike.md).
+- **Agent Autopilot** is currently a spike topic, not a shipped capability. The most honest next slice is human-approved workflow orchestration, not silent autonomy. See [docs/reference/project-positioning.md](./docs/reference/project-positioning.md).
+- **Hosted or managed SourceHarbor** is also a spike topic, not a current promise. Today the repository remains source-first and local-proof-first. See [docs/reference/project-positioning.md](./docs/reference/project-positioning.md).
 
 ## First Practical Win
 
@@ -319,13 +354,13 @@ There are three honest first paths:
 - **Inspect the trust boundary:** read the proof ladder first so you know exactly which claims are local proof and which still depend on live remote verification.
 
 > Truth route, in plain English:
-> `README.md` is the front door, [`docs/start-here.md`](./docs/start-here.md) is the first real run, [`docs/proof.md`](./docs/proof.md) is the proof ladder, `docs/generated/*` pages are render-only pointers, and `.agents/Plans/*` files are historical execution archives rather than current public truth.
+> `README.md` is the front door, [`docs/start-here.md`](./docs/start-here.md) is the first real run, [`docs/proof.md`](./docs/proof.md) is the proof ladder, `docs/generated/*` pages are render-only pointers, and the maintainer-only planning ledger is historical execution context rather than current public truth.
 
 Current non-promises:
 
 - SourceHarbor is **not** described here as a turnkey hosted team workspace.
 - Agent autopilot remains a bounded spike direction, not a shipped product capability.
-- Those future-direction boundaries live in [docs/reference/project-positioning.md](./docs/reference/project-positioning.md), [docs/reference/ecosystem-and-big-bet-decisions.md](./docs/reference/ecosystem-and-big-bet-decisions.md), and the Prompt 5 spike blueprints under [docs/blueprints/](./docs/blueprints/).
+- Those future-direction boundaries live in [docs/reference/project-positioning.md](./docs/reference/project-positioning.md) and [docs/reference/ecosystem-and-big-bet-decisions.md](./docs/reference/ecosystem-and-big-bet-decisions.md). Volatile working contracts stay in the internal planning ledger and are not part of the public repo story.
 
 If you want the shortest honest summary of what is already real, what is still gated, and what remains future direction, read [docs/project-status.md](./docs/project-status.md).
 
@@ -581,7 +616,7 @@ description, homepage, and topics against the current tracked intent, and use
 sync those settings after current `main` truth is ready. Social preview upload
 still requires a manual GitHub Settings check.
 
-Generated docs under `docs/generated/` can point you toward runtime-owned evidence, but they are not the current verdict themselves. Historical plans under `.agents/Plans/` explain past execution context only and should not be read as the current public truth route.
+Generated docs under `docs/generated/` can point you toward runtime-owned evidence, but they are not the current verdict themselves. Historical planning ledgers explain past execution context only and should not be read as the current public truth route.
 
 > SourceHarbor is a public, source-first engineering repository.
 >

@@ -28,10 +28,9 @@ SourceHarbor should still **not** be described as:
 - a managed SaaS product
 - an autonomous agent autopilot
 
-Those directions now have explicit spike artifacts instead of implied roadmap copy:
-
-- [Agent Autopilot spike](../blueprints/2026-03-31-agent-autopilot-spike.md)
-- [Hosted readiness spike](../blueprints/2026-03-31-hosted-readiness-spike.md)
+Those directions now have explicit internal ledgers instead of implied roadmap
+copy. Public docs keep only the stable summary here; the full working contracts
+stay in the internal planning ledger used by maintainers.
 
 Two directions are intentionally kept in the "evaluate before promise" bucket:
 
@@ -45,11 +44,22 @@ The same principle also governs builder packaging:
 - public starter packs are now real, but still first-cut
 - plugin-first positioning stays no-go now
 
-Relevant spike artifacts:
-
-- [2026-03-31-agent-autopilot-spike.md](../blueprints/2026-03-31-agent-autopilot-spike.md)
-- [2026-03-31-hosted-readiness-spike.md](../blueprints/2026-03-31-hosted-readiness-spike.md)
-
 If you want the durable ship-now / later / spike-only / no-go ledger for CLI,
 SDK, builder ecosystem, hosted, autopilot, and plugin-style expansion, read
 [ecosystem-and-big-bet-decisions.md](./ecosystem-and-big-bet-decisions.md).
+
+## Future-Direction Boundaries
+
+These two directions remain real topics, but they are not current public
+product promises:
+
+- **Agent Autopilot**: worth a human-in-the-loop exploration slice; not ready
+  for shipped-capability copy.
+- **Hosted workspace**: worth a readiness study; still incompatible with the
+  current source-first and local-proof-first promise if overstated.
+
+Public docs intentionally stop here. If a maintainer needs the full working
+contract, the canonical internal copy lives in the internal planning ledger.
+Keep those blueprints internal; the
+public narrative should always stay summarized in this document and the other
+public ledger docs, not lifted directly from the internal execution contracts.

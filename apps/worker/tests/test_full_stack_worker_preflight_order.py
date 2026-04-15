@@ -157,6 +157,165 @@ def test_full_stack_up_records_temporal_preflight_failure_before_service_start(
     assert "conclusion=temporal_not_ready" in failure_text
 
 
+def test_full_stack_up_self_heals_unhealthy_temporal_namespace_before_service_start(
+    tmp_path: Path,
+) -> None:
+    full_stack_target = _prepare_full_stack_script(tmp_path)
+    scripts_dir = tmp_path / "scripts"
+    deploy_dir = scripts_dir / "deploy"
+    web_bin_dir = tmp_path / "apps" / "web" / "node_modules" / ".bin"
+    fake_bin_dir = tmp_path / "fake-bin"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    deploy_dir.mkdir(parents=True, exist_ok=True)
+    web_bin_dir.mkdir(parents=True, exist_ok=True)
+    fake_bin_dir.mkdir(parents=True, exist_ok=True)
+
+    (scripts_dir / "dev_api.sh").write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+python3 - <<'PY'
+import os
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+port = int(os.environ["API_PORT"])
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):  # noqa: N802
+        if self.path == "/healthz":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok")
+            return
+        self.send_response(404)
+        self.end_headers()
+
+    def log_message(self, format, *args):  # noqa: A003
+        return
+
+
+HTTPServer(("127.0.0.1", port), Handler).serve_forever()
+PY
+""",
+        encoding="utf-8",
+    )
+    (scripts_dir / "dev_worker.sh").write_text(
+        "#!/usr/bin/env bash\nset -euo pipefail\nsleep 300\n",
+        encoding="utf-8",
+    )
+    (deploy_dir / "core_services.sh").write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "up" ]]; then
+  : > "${FULL_STACK_TEMPORAL_HEALTH_MARKER}"
+fi
+""",
+        encoding="utf-8",
+    )
+    (web_bin_dir / "next").write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+port="3000"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --port)
+      port="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+python3 - "$port" <<'PY'
+import socket
+import sys
+import time
+
+sock = socket.socket()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("127.0.0.1", int(sys.argv[1])))
+sock.listen()
+while True:
+    time.sleep(1)
+PY
+""",
+        encoding="utf-8",
+    )
+    (fake_bin_dir / "temporal").write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "operator" && "${2:-}" == "namespace" && "${3:-}" == "describe" ]]; then
+  if [[ -f "${FULL_STACK_TEMPORAL_HEALTH_MARKER}" ]]; then
+    exit 0
+  fi
+  exit 1
+fi
+exit 0
+""",
+        encoding="utf-8",
+    )
+    (fake_bin_dir / "uv").write_text(
+        '#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n',
+        encoding="utf-8",
+    )
+    for path in (
+        scripts_dir / "dev_api.sh",
+        scripts_dir / "dev_worker.sh",
+        deploy_dir / "core_services.sh",
+        web_bin_dir / "next",
+        fake_bin_dir / "temporal",
+        fake_bin_dir / "uv",
+    ):
+        path.chmod(0o755)
+
+    marker = tmp_path / "core-services-self-healed"
+    base_env = {
+        "PATH": f"{fake_bin_dir}:{os.environ['PATH']}",
+        "API_PORT": "19100",
+        "WEB_PORT": "19101",
+        "SQLITE_PATH": str(tmp_path / "state.sqlite3"),
+        "DATABASE_URL": "sqlite+pysqlite:///:memory:",
+        "TEMPORAL_NAMESPACE": "default",
+        "TEMPORAL_TASK_QUEUE": "video-analysis",
+        "PIPELINE_WORKSPACE_DIR": str(tmp_path / "workspace"),
+        "PIPELINE_ARTIFACT_ROOT": str(tmp_path / "artifacts"),
+        "FULL_STACK_TEMPORAL_HEALTH_MARKER": str(marker),
+    }
+
+    class _SilentHandler(socketserver.BaseRequestHandler):
+        def handle(self) -> None:
+            return
+
+    with socketserver.TCPServer(("127.0.0.1", 0), _SilentHandler) as temporal_server:
+        temporal_port = temporal_server.server_address[1]
+        temporal_thread = threading.Thread(
+            target=temporal_server.serve_forever,
+            daemon=True,
+        )
+        temporal_thread.start()
+        _wait_for_tcp_ready(temporal_port)
+        env = {**base_env, "TEMPORAL_TARGET_HOST": f"127.0.0.1:{temporal_port}"}
+        try:
+            proc = _run_bash(
+                f'"{full_stack_target}" up',
+                cwd=tmp_path,
+                env=env,
+            )
+        finally:
+            _run_bash(
+                f'"{full_stack_target}" down',
+                cwd=tmp_path,
+                env=env,
+            )
+            temporal_server.shutdown()
+            temporal_thread.join(timeout=5)
+
+    assert proc.returncode == 0, proc.stderr
+    assert marker.exists()
+    assert "attempting_core_services_self_heal" in proc.stderr
+
+
 def test_full_stack_up_waits_for_worker_temporal_pollers_after_worker_start(
     tmp_path: Path,
 ) -> None:

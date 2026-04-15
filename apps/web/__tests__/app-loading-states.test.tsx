@@ -21,8 +21,8 @@ const LOADING_CASES: LoadingCase[] = [
 	{
 		name: "dashboard loading",
 		Component: AppLoading,
-		heading: "Front door loading",
-		message: "Loading the front door. Please wait.",
+		heading: "Loading your reading view",
+		message: "This will only take a moment.",
 		describedBy: "app-loading-message",
 		hasSrOnlyPageHeading: true,
 	},
@@ -43,15 +43,15 @@ const LOADING_CASES: LoadingCase[] = [
 	{
 		name: "subscriptions loading",
 		Component: SubscriptionsLoading,
-		heading: "Loading subscriptions",
-		message: "Loading subscription data. Please wait.",
+		heading: "Opening your source atlas",
+		message: "Loading saved sources and source tools.",
 		describedBy: "subscriptions-loading-message",
 	},
 	{
 		name: "feed loading",
 		Component: FeedLoading,
-		heading: "Digest feed loading",
-		message: "Loading the digest feed. Please wait.",
+		heading: "Preparing the digest desk",
+		message: "Loading the current reading stack.",
 		describedBy: "feed-loading-message",
 	},
 ];

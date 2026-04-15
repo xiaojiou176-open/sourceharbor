@@ -431,7 +431,7 @@ export function SubscriptionBatchPanel({ subscriptions, sessionToken }: Props) {
 			<CardContent className="space-y-4">
 				<div className="overflow-x-auto rounded-lg border">
 					<table className="min-w-[920px] w-full text-sm">
-						<caption className="sr-only">Current subscriptions</caption>
+						<caption className="sr-only">Saved sources</caption>
 						<thead className="bg-muted/40">
 							<tr className="[&_th]:px-3 [&_th]:py-2.5 [&_th]:text-left [&_th]:text-xs [&_th]:font-medium [&_th]:text-muted-foreground">
 								<th scope="col" className="w-12">

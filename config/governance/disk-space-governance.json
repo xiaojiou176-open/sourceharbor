@@ -123,6 +123,14 @@
       "category": "runtime-duplicate"
     },
     {
+      "id": "repo-pypi-verify-venv",
+      "label": "Repo PyPI verify venv",
+      "path": ".runtime-cache/tmp/sourceharbor-pypi-verify-venv",
+      "layer": "repo-internal",
+      "ownership": "repo-exclusive",
+      "category": "runtime-duplicate"
+    },
+    {
       "id": "repo-ws6-test-venv",
       "label": "Repo ws6 test venv",
       "path": ".runtime-cache/tmp/ws6-test-venv",
@@ -447,6 +455,20 @@
             "bash",
             "-lc",
             "UV_PROJECT_ENVIRONMENT=\"$PWD/.runtime-cache/tmp/sourceharbor-verify-venv\" uv sync --frozen --extra dev --extra e2e >/dev/null"
+          ],
+          "layer": "repo-internal",
+          "ownership": "repo-exclusive",
+          "classification": "cautious-clear"
+        },
+        {
+          "id": "repo-pypi-verify-venv",
+          "path": ".runtime-cache/tmp/sourceharbor-pypi-verify-venv",
+          "quiet_minutes": 10,
+          "requires_lsof_clear": true,
+          "rebuild_command": [
+            "bash",
+            "-lc",
+            "UV_PROJECT_ENVIRONMENT=\"$PWD/.runtime-cache/tmp/sourceharbor-pypi-verify-venv\" uv sync --frozen --extra dev --extra e2e >/dev/null"
           ],
           "layer": "repo-internal",
           "ownership": "repo-exclusive",

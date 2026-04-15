@@ -23,7 +23,7 @@ describe("builders page", () => {
 	it("covers builder resource and official-surface CTA labels", () => {
 		render(<BuildersPage />);
 		const liveSubmissionSection = screen
-			.getByText("What still needs live submission proof")
+			.getByText("What still needs external proof")
 			.closest("section");
 		if (!liveSubmissionSection) {
 			throw new Error("Expected live submission section");

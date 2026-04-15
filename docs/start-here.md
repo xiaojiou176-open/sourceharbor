@@ -32,6 +32,10 @@ sourceharbor help
 - If you want the **API image lane**, treat `ghcr.io/xiaojiou176-open/sourceharbor-api` as a separate builder surface, not the whole product stack.
 - Do not treat `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` as the install story. That image is CI/devcontainer infrastructure.
 
+## Public docs as stable summary
+
+This page keeps the shortest operator story without pulling in internal ledger details. Reader-first surfaces come first, proof ladders stay nearby, and builder or docs-blueprint context only appears when it is a stable public fact. Release-ready language, external distribution status, and gated engines are described through the linked [project-status](./project-status.md) and [proof](./proof.md) summaries so that visitors can verify each layer without chasing execution notes.
+
 ## What You Should See By The End
 
 - the web command center at the route recorded in `.runtime-cache/run/full-stack/resolved.env`
@@ -208,6 +212,10 @@ curl -sS -X POST "${SOURCE_HARBOR_API_BASE_URL}/api/v1/retrieval/search" \
   -d '{"query":"summary","top_k":5,"mode":"keyword"}' | jq
 ```
 
+## Release vs main vs distribution ledger
+
+This doc keeps all three public truth ledgers obvious. [project-status.md](./project-status.md) records the release-current proof, [proof.md](./proof.md) shows the evidence ladder for release vs remote vs local, and [public-distribution.md](./public-distribution.md) holds the external submission matrix. When you cite release or distribution claims, link back to those ledgers so readers can verify the exact proof set instead of chasing dated hashes.
+
 Open these UI views:
 
 - `/` for the command center
@@ -338,8 +346,8 @@ doctor` is already healthy.
 - Local proof is different from remote release proof.
 - Public screenshots and diagrams are presentation assets, not a substitute for live verification.
 - For the shortest delivered-vs-bet summary, read [project-status.md](./project-status.md).
-- For the exhaustive program closeout matrix, read [2026-03-31-program-closeout-matrix.md](./blueprints/2026-03-31-program-closeout-matrix.md).
-- Agent autopilot and hosted workspace directions remain spike artifacts, not current operator promises. See [reference/project-positioning.md](./reference/project-positioning.md) and the related files in [blueprints/](./blueprints/).
+- For the shortest delivered-vs-bet summary, read [project-status.md](./project-status.md).
+- Agent autopilot and hosted workspace directions remain future-direction topics, not current operator promises. See [reference/project-positioning.md](./reference/project-positioning.md).
 
 ## Public Trust Links
 

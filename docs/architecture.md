@@ -99,10 +99,12 @@ Two directions are intentionally kept outside the current runtime surface:
 - **Agent Autopilot**: SourceHarbor has workflows, MCP, retrieval, notifications, and evidence surfaces that can support a future spike, but it does not currently expose autonomous research ops as a product claim.
 - **Hosted workspace**: SourceHarbor already has product-shaped front doors, but the repository still assumes source-first, local-proof-first operation rather than a managed multi-tenant service.
 
-See:
+See [reference/project-positioning.md](./reference/project-positioning.md) for
+the stable public summary of those future-direction boundaries.
 
-- [2026-03-31-agent-autopilot-spike.md](./blueprints/2026-03-31-agent-autopilot-spike.md)
-- [2026-03-31-hosted-readiness-spike.md](./blueprints/2026-03-31-hosted-readiness-spike.md)
+## Public docs path
+
+Public docs keep this system map at a summary level: reader-first surfaces, shared proof ladders, and intake/tracking pillars stay front and center, while blueprint-level contracts stay inside the internal planning ledger. When you need the stable public boundary for agent autopilot, hosted workspaces, or other bids, link to [reference/project-positioning.md](./reference/project-positioning.md) and [reference/ecosystem-and-big-bet-decisions.md](./reference/ecosystem-and-big-bet-decisions.md) instead of citing the internal blueprints directly.
 
 ## Design Principles
 

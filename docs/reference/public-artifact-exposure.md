@@ -38,5 +38,6 @@ Two special cases matter in the current repo:
 - mutation receipts under `.runtime-cache/reports/mutation/` are public-safe only as proof summaries; they must not be mistaken for a published package, release, or registry surface
 - repo-owned local core-services logs under `.runtime-cache/logs/local-core/` are runtime diagnostics only; they exist to explain local fallback behavior, not to become public-facing product artifacts
 - lightweight proxy-video files generated only to satisfy maintainer-local Gemini input constraints are runtime-only surrogate artifacts; they are part of local verification behavior, not a public distribution surface
+- `docs/blueprints/*.md` now act only as thin public pointers into stable summary docs; the full working contracts stay in the internal planning ledger and are not public artifacts to surface from README or other visitor-facing routes
 
 For public presentation files under `docs/assets/`, use the file-level ledger in [public-assets-provenance.md](./public-assets-provenance.md).

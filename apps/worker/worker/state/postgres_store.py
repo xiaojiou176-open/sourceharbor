@@ -539,11 +539,24 @@ class PostgresBusinessStore:
 
         safe_max_items = max(1, min(int(max_items or 200), 1000))
         scan_limit = max(50, safe_max_items * 5)
+        filters: list[str] = [
+            "iri.item_status = 'pending_consume'",
+            "iri.job_id IS NOT NULL",
+            "j.status IN ('queued', 'succeeded')",
+        ]
+        query_params: dict[str, Any] = {"scan_limit": scan_limit}
+        if subscription_id is not None:
+            filters.append("iri.subscription_id = CAST(:subscription_id AS UUID)")
+            query_params["subscription_id"] = subscription_id
+        if platform is not None:
+            filters.append("iri.platform = :platform")
+            query_params["platform"] = platform
+        where_clause = " AND ".join(filters)
         with self._engine.begin() as conn:
             rows = (
                 conn.execute(
                     text(
-                        """
+                        f"""
                     SELECT
                         iri.id::text AS ingest_run_item_id,
                         iri.subscription_id::text AS subscription_id,
@@ -562,21 +575,13 @@ class PostgresBusinessStore:
                     FROM ingest_run_items iri
                     JOIN jobs j
                       ON j.id = iri.job_id
-                    WHERE iri.item_status = 'pending_consume'
-                      AND iri.job_id IS NOT NULL
-                      AND j.status = 'queued'
-                      AND (:subscription_id IS NULL OR iri.subscription_id = CAST(:subscription_id AS UUID))
-                      AND (:platform IS NULL OR iri.platform = :platform)
+                    WHERE {where_clause}
                     ORDER BY COALESCE(iri.published_at, iri.created_at) ASC, iri.created_at ASC
                     LIMIT :scan_limit
                     FOR UPDATE OF iri SKIP LOCKED
                     """
                     ),
-                    {
-                        "scan_limit": scan_limit,
-                        "subscription_id": subscription_id,
-                        "platform": platform,
-                    },
+                    query_params,
                 )
                 .mappings()
                 .all()
@@ -833,29 +838,32 @@ class PostgresBusinessStore:
                     text(
                         """
                     SELECT
-                        id::text AS id,
-                        consumption_batch_id::text AS consumption_batch_id,
-                        ingest_run_item_id::text AS ingest_run_item_id,
-                        subscription_id::text AS subscription_id,
-                        video_id::text AS video_id,
-                        job_id::text AS job_id,
-                        ingest_event_id::text AS ingest_event_id,
-                        platform,
-                        video_uid,
-                        source_url,
-                        title,
-                        published_at,
-                        source_effective_at,
-                        discovered_at,
-                        entry_hash,
-                        pipeline_mode,
-                        content_type,
-                        source_origin,
-                        created_at,
-                        updated_at
-                    FROM consumption_batch_items
-                    WHERE consumption_batch_id = CAST(:batch_id AS UUID)
-                    ORDER BY source_effective_at ASC, created_at ASC
+                        cbi.id::text AS id,
+                        cbi.consumption_batch_id::text AS consumption_batch_id,
+                        cbi.ingest_run_item_id::text AS ingest_run_item_id,
+                        cbi.subscription_id::text AS subscription_id,
+                        cbi.video_id::text AS video_id,
+                        cbi.job_id::text AS job_id,
+                        cbi.ingest_event_id::text AS ingest_event_id,
+                        cbi.platform,
+                        cbi.video_uid,
+                        cbi.source_url,
+                        cbi.title,
+                        cbi.published_at,
+                        cbi.source_effective_at,
+                        cbi.discovered_at,
+                        cbi.entry_hash,
+                        cbi.pipeline_mode,
+                        cbi.content_type,
+                        j.status AS job_status,
+                        cbi.source_origin,
+                        cbi.created_at,
+                        cbi.updated_at
+                    FROM consumption_batch_items cbi
+                    JOIN jobs j
+                      ON j.id = cbi.job_id
+                    WHERE cbi.consumption_batch_id = CAST(:batch_id AS UUID)
+                    ORDER BY cbi.source_effective_at ASC, cbi.created_at ASC
                     """
                     ),
                     {"batch_id": batch_id},
