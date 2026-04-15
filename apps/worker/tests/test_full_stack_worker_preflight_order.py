@@ -165,7 +165,6 @@ def test_full_stack_up_attempts_self_heal_for_unhealthy_temporal_namespace_befor
     deploy_dir = scripts_dir / "deploy"
     web_bin_dir = tmp_path / "apps" / "web" / "node_modules" / ".bin"
     fake_bin_dir = tmp_path / "fake-bin"
-    worker_signature = f"worker.main run-worker {tmp_path.name}"
     worker_signature_regex = f"worker\\.main run-worker {tmp_path.name}"
     scripts_dir.mkdir(parents=True, exist_ok=True)
     deploy_dir.mkdir(parents=True, exist_ok=True)
