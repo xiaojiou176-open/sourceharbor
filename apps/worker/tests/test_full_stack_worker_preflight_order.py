@@ -256,7 +256,7 @@ exit 0
         encoding="utf-8",
     )
     (fake_bin_dir / "uv").write_text(
-        '#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n',
+        "#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n",
         encoding="utf-8",
     )
     for path in (

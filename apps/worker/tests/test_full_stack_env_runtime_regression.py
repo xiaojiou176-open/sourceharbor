@@ -196,10 +196,10 @@ def test_core_services_does_not_reuse_unhealthy_temporal_listener_by_port_only()
 
     assert "temporal_namespace_ready()" in script
     assert '--address "127.0.0.1:${TEMPORAL_PORT}"' in script
-    assert 'temporal operator namespace describe' in script
-    assert 'temporal: unhealthy (reused)' in script
-    assert 'temporal port $TEMPORAL_PORT is occupied by an unhealthy non-repo-owned process' in script
-    assert 'temporal_listener_is_repo_scoped_start_dev' in script
+    assert "temporal operator namespace describe" in script
+    assert "temporal: unhealthy (reused)" in script
+    assert "temporal port $TEMPORAL_PORT is occupied by an unhealthy non-repo-owned process" in script
+    assert "temporal_listener_is_repo_scoped_start_dev" in script
 
 
 def test_full_stack_status_handles_stale_pid_metadata(tmp_path: Path) -> None:
