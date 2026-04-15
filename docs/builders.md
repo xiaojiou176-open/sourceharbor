@@ -174,7 +174,7 @@ Current truth:
 - **Claude Code**: the bundle is submission-ready for the official marketplace path, but live listing still depends on Anthropic review.
 - **VS Code agent workflows**: the repo now ships a source-installable plugin bundle for agent workflows, but live Marketplace listing still remains a separate proof layer.
 - **OpenClaw**: the local pack remains first-cut, while the ClawHub package template is the strongest publish-ready artifact the repo can ship today.
-- **MCP**: the root Python package now produces the real `sourceharbor-mcp` install artifact, the registry template points at the PyPI identifier `sourceharbor`, and the PyPI project still has a live public read-back at `0.1.14`; a fresh anonymous Official MCP Registry index read-back does not currently return `SourceHarbor`, so the registry line should be treated as unverified until publish/refresh plus read-back exists. The repo-controlled package line is `0.1.19`.
+- **MCP**: the root Python package now produces the real `sourceharbor-mcp` install artifact, the registry template points at the PyPI identifier `sourceharbor`, and both the PyPI project and the Official MCP Registry still have live public read-back at `0.1.14`; the repo-controlled package line is `0.1.19`, so the remaining gap is refresh credentials/auth for a newer publish, not first-time listing existence.
 
 ## Container Truth For Builders
 
