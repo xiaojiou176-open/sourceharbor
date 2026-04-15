@@ -25,6 +25,6 @@ Current boundary:
 
 - the official MCP Registry exists
 - the repo now has a real Python package + console-script install lane
-- the repo now also tracks `config/public/mcp-directory-profile.json` and `docs/submission/*.md` as the shared non-registry directory packet layer
+- the repo now also tracks `config/public/mcp-directory-profile.json` and the public distribution ledger as the shared non-registry directory listing layer
 - registry publication still requires live PyPI publish/read-back, namespace
   verification, and an actual registry submission receipt

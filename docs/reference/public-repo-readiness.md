@@ -46,4 +46,5 @@ That separation matters because SourceHarbor can honestly advance one layer with
 
 Read this together with [proof.md](../proof.md) whenever you want to separate local credibility from remote proof.
 
-For the tracked render-only pointer into commit-sensitive remote lanes, see [docs/generated/external-lane-truth-entry.md](../generated/external-lane-truth-entry.md).
+Commit-sensitive remote lanes should stay in maintainer-owned runtime reports and
+must not be promoted into the public truth route.

@@ -44,7 +44,7 @@ What lives here:
 | drive it from OpenClaw | `starter-packs/openclaw/README.md` | first-cut local starter pack today over the same MCP/API path |
 | prepare OpenClaw / ClawHub packaging metadata | `starter-packs/openclaw/clawhub.package.template.json` | publish-template only today; still not proof of ClawHub publication |
 | prepare official MCP Registry distribution | `starter-packs/mcp-registry/README.md` | PyPI-ready server package plus registry template today; still not proof of live registry publication |
-| prepare site-specific MCP directory packets | `config/public/mcp-directory-profile.json` + `docs/submission/*.md` | first-cut directory submission packet today; live submit/read-back still separate |
+| prepare site-specific MCP directory listings | `config/public/mcp-directory-profile.json` + `docs/public-distribution.md` | first-cut listing input set today; live submit/read-back still separate |
 | start from SDK code instead of an agent | `starter-packs/typescript-sdk/example.ts` | public example, not a full framework pack |
 
 What does **not** live here:

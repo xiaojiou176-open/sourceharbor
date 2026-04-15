@@ -103,7 +103,7 @@ If you only have one minute, trust these four documents first:
 | [README.md](../README.md) | Front door | Start here for product shape and navigation, not for commit-sensitive verdicts |
 | [start-here.md](./start-here.md) | First real run | Use this when you want the shortest truthful local path |
 | [proof.md](./proof.md) | Proof ladder | Use this to understand what is locally provable, what needs remote proof, and where the public boundary stops |
-| `docs/generated/*` | Render-only pointers | Follow these only as signposts into runtime-owned evidence, never as the current verdict itself |
+| Operator-generated pointers and ledgers | Secondary maintainer aids | Keep them off the first-hop truth route; use them only after the public ledgers above |
 | Maintainer-only planning ledger | Historical execution archive | Treat it as archived planning context, not as the current truth route for public readers |
 
 ## Public Trust Links

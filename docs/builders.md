@@ -165,7 +165,6 @@ If you need artifacts closer to public distribution than a starter README, open:
 - [`starter-packs/openclaw/clawhub.package.template.json`](../starter-packs/openclaw/clawhub.package.template.json)
 - [`starter-packs/mcp-registry/sourceharbor-server.template.json`](../starter-packs/mcp-registry/sourceharbor-server.template.json)
 - [`config/public/mcp-directory-profile.json`](../config/public/mcp-directory-profile.json)
-- [`docs/submission/awesome-opencode.md`](./submission/awesome-opencode.md)
 - [`docs/public-distribution.md`](./public-distribution.md)
 
 Current truth:
@@ -175,7 +174,7 @@ Current truth:
 - **Claude Code**: the bundle is submission-ready for the official marketplace path, but live listing still depends on Anthropic review.
 - **VS Code agent workflows**: the repo now ships a source-installable plugin bundle for agent workflows, but live Marketplace listing still remains a separate proof layer.
 - **OpenClaw**: the local pack remains first-cut, while the ClawHub package template is the strongest publish-ready artifact the repo can ship today.
-- **MCP**: the root Python package now produces the real `sourceharbor-mcp` install artifact, the registry template points at the PyPI identifier `sourceharbor`, and the repo now also tracks per-directory submission packet drafts; live registry/PyPI read-back still needs submit/publish proof.
+- **MCP**: the root Python package now produces the real `sourceharbor-mcp` install artifact, the registry template points at the PyPI identifier `sourceharbor`, and both the Official MCP Registry entry and the PyPI project already have live public read-back at `0.1.14`; the repo-controlled package line is `0.1.19`, so the remaining gap is refresh credentials, not first-time publication proof.
 
 ## Container Truth For Builders
 

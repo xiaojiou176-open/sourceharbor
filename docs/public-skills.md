@@ -23,7 +23,7 @@ Think of it like the difference between an internal workshop notebook and a publ
 | `starter-packs/vscode-agent/sourceharbor-vscode-agent-plugin/` | VS Code agent plugin-grade bundle | public, plugin-shaped, source-installable today |
 | `starter-packs/openclaw/clawhub.package.template.json` | OpenClaw / ClawHub package metadata template | public, publish-ready template, not a live publish receipt |
 | root `pyproject.toml` + `starter-packs/mcp-registry/sourceharbor-server.template.json` | PyPI-ready MCP server package plus official MCP Registry template | public install-artifact lane plus registry template, but still not a live publish receipt |
-| `config/public/mcp-directory-profile.json` + `docs/submission/*.md` | site-specific MCP directory submission packets | public packet layer, but still not a live submit/read-back receipt |
+| `config/public/mcp-directory-profile.json` + `docs/public-distribution.md` | site-specific MCP directory listing inputs and truth ledger | public distribution summary only; submit/read-back remains maintainer-managed |
 | `starter-packs/**` | primary public starter-pack directory | public top-level adoption surface |
 | `templates/public-skills/**` | copyable prompt/template assets referenced by the starter packs | public starter surface, not internal skill export |
 | `examples/sdk/search.ts` | minimal SDK example | public example for `@sourceharbor/sdk` |

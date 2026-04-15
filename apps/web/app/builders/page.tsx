@@ -77,11 +77,11 @@ const OFFICIAL_SURFACE_ROWS = [
 	},
 	{
 		name: "Official MCP Registry",
-		status: "Metadata-ready",
-		tone: "outline" as const,
-		snapshot: "Namespace proof and install artifact are still pending.",
+		status: "Listed, refresh blocked",
+		tone: "secondary" as const,
+		snapshot: "Live entry exists at 0.1.14; refresh to 0.1.19 is credential-blocked.",
 		summary:
-			"The official-registry-shaped server template exists today, but real publication still needs a public install artifact and verified namespace ownership.",
+			"The official registry entry and PyPI package already exist publicly at 0.1.14. The repo-controlled package line is 0.1.19, so the remaining step is a credentialed refresh, not first-time publication.",
 		href: RESOURCE_LINKS.mcpRegistry,
 		cta: "Open MCP registry pack",
 	},

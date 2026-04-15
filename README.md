@@ -104,14 +104,6 @@ Three quick reasons developers keep reading:
 - **Proof sits next to the product story.** The README, proof ladder, runtime truth, and job receipts all point at the same contract, so the repo earns trust instead of asking for it.
 - **Strong lanes plus honest boundaries.** YouTube and Bilibili are the rich lanes today, RSSHub and generic RSS widen the source universe, and the docs say plainly where route-by-route proof still stops.
 
-Two repo-managed runtime details matter when you verify changes locally:
-
-- the web app runs from the repo-owned runtime workspace under
-  `.runtime-cache/tmp/web-runtime/workspace/apps/web`
-- repo-side strict CI reads the current-commit mutation receipt from
-  `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` when that artifact
-  already exists and matches the current HEAD
-
 The honest intake boundary today is:
 
 - **strong support:** YouTube channels and Bilibili creators
@@ -314,7 +306,7 @@ Keep these truth layers separate when you read or share the repo:
 - local support-service containers plus devcontainer/strict-CI images do not turn Docker or GHCR into the current product front door
 - local real-profile browser proof can confirm login persistence and page state without turning those same sites into source-ingestion product claims
 
-That is why SourceHarbor keeps `proof.md`, `project-status.md`, `runbook-local.md`, and the public-reference docs as separate ledgers instead of one blanket “ready” claim.
+That is why SourceHarbor keeps `proof.md`, `project-status.md`, and the public-reference docs as separate ledgers instead of one blanket “ready” claim.
 
 ## Compounder Layer
 
@@ -354,7 +346,7 @@ There are three honest first paths:
 - **Inspect the trust boundary:** read the proof ladder first so you know exactly which claims are local proof and which still depend on live remote verification.
 
 > Truth route, in plain English:
-> `README.md` is the front door, [`docs/start-here.md`](./docs/start-here.md) is the first real run, [`docs/proof.md`](./docs/proof.md) is the proof ladder, `docs/generated/*` pages are render-only pointers, and the maintainer-only planning ledger is historical execution context rather than current public truth.
+> `README.md` is the front door, [`docs/start-here.md`](./docs/start-here.md) is the first real run, [`docs/proof.md`](./docs/proof.md) is the proof ladder, and [`docs/project-status.md`](./docs/project-status.md) plus the public reference docs keep the stable shipped-vs-gated summary.
 
 Current non-promises:
 
@@ -616,7 +608,7 @@ description, homepage, and topics against the current tracked intent, and use
 sync those settings after current `main` truth is ready. Social preview upload
 still requires a manual GitHub Settings check.
 
-Generated docs under `docs/generated/` can point you toward runtime-owned evidence, but they are not the current verdict themselves. Historical planning ledgers explain past execution context only and should not be read as the current public truth route.
+Operator-generated pointers and historical planning ledgers can help maintainers inspect deeper evidence, but they are not the public truth route.
 
 > SourceHarbor is a public, source-first engineering repository.
 >

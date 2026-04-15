@@ -161,7 +161,7 @@ export default async function ReaderDetailPage({
 						<h1
 							data-route-heading
 							tabIndex={-1}
-							className={`max-w-4xl text-4xl leading-[0.98] tracking-tight md:text-5xl xl:text-6xl ${editorialSerif.className}`}
+							className={`max-w-4xl text-3xl leading-[1.02] tracking-tight [overflow-wrap:anywhere] sm:text-4xl md:text-5xl xl:text-6xl ${editorialSerif.className}`}
 						>
 							{document.title}
 						</h1>

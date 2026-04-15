@@ -40,6 +40,7 @@ They should not assume:
 - a maintainer-local proxy-video artifact used only to make Gemini video ingestion behave honestly under current API constraints changes the public rights boundary; it is still just local verification substrate
 - a donor or reference mirror kept in the internal `.agents` reference tree becomes part of SourceHarbor's public provenance; those inputs remain internal study material and do not widen the rights boundary of the public repo
 - a thin public blueprint stub means the internal working contract is public; the stub is the public pointer, while the full contract still stays in the internal planning ledger
+- a thin public submission-packet or UI-spec stub means the working packet/spec is public; those stubs are only pointers, while the maintainer-ready submission and design handoffs stay in the internal planning ledger
 
 When rights or provenance are unclear, the safer reading is:
 

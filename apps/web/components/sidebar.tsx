@@ -484,6 +484,7 @@ export function Sidebar({
 	apiHealthLabel,
 }: SidebarProps) {
 	const [collapsed, setCollapsed] = useState(false);
+	const [isMobile, setIsMobile] = useState(false);
 
 	useEffect(() => {
 		if (
@@ -494,7 +495,9 @@ export function Sidebar({
 		}
 		const mediaQuery = window.matchMedia("(max-width: 768px)");
 		const syncCollapsed = () => {
-			setCollapsed(mediaQuery.matches);
+			const mobile = mediaQuery.matches;
+			setIsMobile(mobile);
+			setCollapsed(mobile);
 		};
 		syncCollapsed();
 		mediaQuery.addEventListener("change", syncCollapsed);
@@ -502,6 +505,47 @@ export function Sidebar({
 			mediaQuery.removeEventListener("change", syncCollapsed);
 		};
 	}, []);
+
+	if (isMobile) {
+		return (
+			<div className="pointer-events-none fixed left-3 top-3 z-40 md:hidden">
+				<Sheet>
+					<SheetTrigger asChild>
+						<Button
+							variant="outline"
+							size="icon"
+							aria-label="Open navigation panel"
+							className="pointer-events-auto rounded-full border-border/70 bg-background/95 shadow-sm backdrop-blur"
+						>
+							<Menu className="size-4" />
+						</Button>
+					</SheetTrigger>
+					<SheetContent side="left" className="w-[280px] p-0">
+						<SheetTitle className="sr-only">Mobile navigation</SheetTitle>
+						<SheetDescription className="sr-only">
+							Open page navigation, subscription groups, and global status
+							shortcuts on mobile.
+						</SheetDescription>
+						<aside
+							aria-label="Sidebar navigation"
+							className="flex h-full flex-col bg-background"
+						>
+							<ScrollArea className="flex-1">
+								<SidebarNavContent
+									collapsed={false}
+									subscriptions={subscriptions}
+									subscriptionsLoadError={subscriptionsLoadError}
+									apiHealthState={apiHealthState}
+									apiHealthUrl={apiHealthUrl}
+									apiHealthLabel={apiHealthLabel}
+								/>
+							</ScrollArea>
+						</aside>
+					</SheetContent>
+				</Sheet>
+			</div>
+		);
+	}
 
 	return (
 		<aside
@@ -524,10 +568,10 @@ export function Sidebar({
 							</Button>
 						</SheetTrigger>
 						<SheetContent side="left" className="w-[280px] p-0">
-							<SheetTitle className="sr-only">Mobile navigation</SheetTitle>
+							<SheetTitle className="sr-only">Collapsed navigation</SheetTitle>
 							<SheetDescription className="sr-only">
 								Open page navigation, subscription groups, and global status
-								shortcuts on mobile.
+								shortcuts while the desktop rail is collapsed.
 							</SheetDescription>
 							<aside
 								aria-label="Sidebar navigation"

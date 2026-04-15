@@ -137,10 +137,8 @@
       "surface_role": "directory-screenshot",
       "public_surfaces": [
         "config/public/mcp-directory-profile.json",
-        "docs/submission/mcp-so.md",
-        "docs/submission/pulsemcp.md",
-        "docs/submission/mcpservers-org.md",
-        "docs/submission/awesome-opencode.md"
+        "docs/public-distribution.md",
+        "docs/media-kit.md"
       ],
       "provenance_status": "repository-tracked-derived-file",
       "rights_basis": "maintainer-assertion-required",

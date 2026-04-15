@@ -190,8 +190,6 @@ These require stronger evidence:
 
 Tracked manifests and public presentation assets are inputs to this layer, not proof on their own.
 
-For the tracked render-only pointer into the external lane, see [docs/generated/external-lane-truth-entry.md](./generated/external-lane-truth-entry.md). That page is a signpost, not the verdict.
-
 Historical planning ledgers are archived execution context only. They can explain how the repo arrived here, but they must not be treated as the current public truth for SourceHarbor.
 
 For the shortest current-state summary of what is shipped, what is still gated, and what remains future direction, read [project-status.md](./project-status.md).
