@@ -227,7 +227,7 @@ Plugin-grade distribution is now one layer stronger than raw docs:
 - Claude Code has a submission-ready plugin bundle, but official listing still depends on Anthropic review.
 - VS Code agent workflows now have a source-installable plugin bundle, but a live Marketplace listing is still a separate proof layer.
 - OpenClaw has a first-cut local starter pack plus a publish-ready ClawHub package template, but not a live ClawHub publish receipt.
-- MCP now has a real Python package lane plus the official-registry-shaped template; PyPI and the official MCP Registry already have live public read-back, while version refresh and third-party directory proof still stay as separate follow-through work.
+- MCP now has a real Python package lane plus the official-registry-shaped template; the live PyPI / Official MCP Registry snapshot and third-party directory follow-through stay in [docs/public-distribution.md](./docs/public-distribution.md) so this front door does not duplicate fast-moving version or listing state.
 
 If you want the shortest truthful answer to "what already exists vs what still
 needs official submit/read-back proof," open

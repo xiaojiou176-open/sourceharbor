@@ -32,6 +32,7 @@ Two special cases matter in the current repo:
 - workflow-dispatch readiness receipts may be public-safe to track while still waiting on protected-environment approval
 - browser/login proof receipts can explain local operator state without turning third-party account surfaces into public product claims
 - generated required-check ledgers and current-state summaries are public-safe only when they stay aligned to the current live branch-protection contract and current HEAD; stale snapshots must be treated as historical
+- `docs/public-distribution.md` is the public-safe home for fast-moving package, registry, and directory read-backs; other public docs should cite that ledger instead of carrying their own duplicated version or listing snapshots
 - a tracked release-ready artifact or social-preview asset is still an input to public proof, not the same thing as the current remote `main` head or a completed live platform upload
 - a tracked registry template, directory packet, or older listing note is still only an input to public proof; without a fresh live registry read-back it must not be cited as a current official listing artifact
 - tracked public homepage URLs must also be treated as proof-bearing artifacts: if the committed path casing 404s on the live Pages host, that URL is a broken public artifact rather than an acceptable cosmetic variant

@@ -34,6 +34,7 @@ They should not assume:
 - a workflow-dispatch receipt implies the protected environment has already approved or published the result
 - a latest tagged release is automatically the same snapshot as the current remote `main`
 - a generated required-check ledger remains current after GitHub branch protection adds or removes required checks
+- a duplicated README, builder-guide, or status-page sentence about package versions or directory visibility carries fresher provenance than the canonical `docs/public-distribution.md` ledger
 - a repo-managed web runtime copy or a local mutation receipt automatically upgrades into public proof of hosted, packaged, or registry-listed distribution
 - a registry starter packet, package metadata template, or older repo ledger automatically proves a current Official MCP Registry listing without a fresh anonymous read-back
 - a lowercase GitHub Pages URL variant carries the same public provenance as the live deployed homepage path when the actual Pages host only serves the case-correct route

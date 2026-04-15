@@ -32,6 +32,7 @@ Two current reading rules are worth keeping explicit:
 
 - a live GitHub Release object can exist while current remote `main` has already moved ahead again
 - the live branch-protected required-check set is its own remote contract; if GitHub protection changes, tracked required-check docs and summaries must be refreshed before the repo repeats a "current remote proof" claim
+- fast-moving public distribution facts such as exact PyPI / Official MCP Registry versions or directory-site read-backs should stay centralized in `docs/public-distribution.md`; README, builder guides, and status pages should point at that ledger instead of duplicating day-specific listing state
 - the repo-managed web runtime under `.runtime-cache/tmp/web-runtime/workspace/apps/web` is local operator proof only; it is a staging copy for local verification, not a public distribution artifact
 - the repo-managed web runtime's `.env.local` under `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` is also local operator proof only; it exists to align browser writes with the local stack and must never be treated as a public surface or release artifact
 - a current-commit mutation receipt under `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` can support repo-side strict CI, but it still belongs to the local/manual proof ledger until a fresh strict receipt or remote check says otherwise
