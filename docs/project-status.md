@@ -56,7 +56,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo has a live GitHub Release object
-- the latest live release now reads `v0.1.36`, and it currently matches the remote `main` head
+- the latest live release now reads `v0.1.36`, and it currently lags the remote `main` head by 2 commits
 - the latest-release ledger must still be checked live against the current remote `main` head before any release-aligned claim is repeated
 - current-head workflow-dispatch evidence is still its own ledger; successful
   reruns prove the lane can close on a given head, but they do not make later
@@ -66,7 +66,7 @@ Practical implication:
 
 - release-current proof now exists for the current canonical public repo, but it
   should still be treated as a separate ledger from the latest remote `main`
-  head even when a fresh live read-back currently shows them aligned
+  head
 - release-current wording must stay honest when current `main` moves ahead again
   after the tag cut or after a docs/metadata sync merge
 - older tag-era wording should stay historical, not be reused as if it were the
