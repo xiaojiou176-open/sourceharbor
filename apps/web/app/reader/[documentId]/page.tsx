@@ -29,7 +29,9 @@ type ReaderDetailPageProps = {
 };
 
 function looksLikeRawUrl(value: string | null | undefined): boolean {
-	const text = String(value || "").trim().toLowerCase();
+	const text = String(value || "")
+		.trim()
+		.toLowerCase();
 	return text.startsWith("http://") || text.startsWith("https://");
 }
 
@@ -50,7 +52,9 @@ function formatReaderHeroTitle(document: {
 	const firstSource = Array.isArray(document.source_refs)
 		? document.source_refs[0]
 		: null;
-	const sourceTitle = firstSource ? resolveReaderSourceIdentity(firstSource).title : "";
+	const sourceTitle = firstSource
+		? resolveReaderSourceIdentity(firstSource).title
+		: "";
 	if (sourceTitle && !looksLikeRawUrl(sourceTitle)) {
 		return sourceTitle;
 	}
@@ -195,13 +199,13 @@ export default async function ReaderDetailPage({
 						<p className="text-xs font-semibold uppercase tracking-[0.28em] text-foreground/70">
 							Story
 						</p>
-							<h1
-								data-route-heading
-								tabIndex={-1}
-								className={`max-w-4xl text-3xl leading-[1.02] tracking-tight [overflow-wrap:anywhere] sm:text-4xl md:text-5xl xl:text-6xl ${editorialSerif.className}`}
-							>
-								{heroTitle}
-							</h1>
+						<h1
+							data-route-heading
+							tabIndex={-1}
+							className={`max-w-4xl text-3xl leading-[1.02] tracking-tight [overflow-wrap:anywhere] sm:text-4xl md:text-5xl xl:text-6xl ${editorialSerif.className}`}
+						>
+							{heroTitle}
+						</h1>
 						<p className="max-w-4xl text-base leading-8 text-foreground/75">
 							{document.summary ??
 								"Read the story first. Source notes and background detail stay below for when you want a closer look."}

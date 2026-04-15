@@ -281,7 +281,10 @@ describe("reader pages", () => {
 		);
 
 		expect(
-			screen.getByRole("heading", { name: "Reading note from youtube", level: 1 }),
+			screen.getByRole("heading", {
+				name: "Reading note from youtube",
+				level: 1,
+			}),
 		).toBeInTheDocument();
 		expect(
 			screen.queryByRole("heading", {

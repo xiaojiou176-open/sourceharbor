@@ -245,7 +245,10 @@ describe("feed/jobs/artifacts pages", () => {
 
 			expect(mockGetFeedFeedback).toHaveBeenCalledWith("job-default-1");
 			expect(
-				screen.getByRole("heading", { name: "Default preview article", level: 2 }),
+				screen.getByRole("heading", {
+					name: "Default preview article",
+					level: 2,
+				}),
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole("link", { name: "Keep reading here" }),
