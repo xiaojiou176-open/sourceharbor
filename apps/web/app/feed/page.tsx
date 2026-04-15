@@ -566,7 +566,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 							source={effectiveSelectedItem?.source}
 							sourceName={effectiveSelectedItem?.source_name}
 							videoUrl={effectiveSelectedItem?.video_url}
-							publishedAt={selectedItem?.published_at}
+							publishedAt={effectiveSelectedItem?.published_at}
 							publishedDateLabel={formatPublishedDateLabel(
 								effectiveSelectedItem?.published_at,
 							)}

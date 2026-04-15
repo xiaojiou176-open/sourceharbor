@@ -253,6 +253,7 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(
 				screen.getByRole("link", { name: "Keep reading here" }),
 			).toHaveAttribute("href", "/feed?item=job-default-1");
+			expect(screen.getByText("February 5, 2026")).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);
