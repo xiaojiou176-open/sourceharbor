@@ -157,7 +157,7 @@ def test_full_stack_up_records_temporal_preflight_failure_before_service_start(
     assert "conclusion=temporal_not_ready" in failure_text
 
 
-def test_full_stack_up_attempts_self_heal_for_unhealthy_temporal_namespace_and_recovers(
+def test_full_stack_up_attempts_self_heal_for_unhealthy_temporal_namespace_before_fail_close(
     tmp_path: Path,
 ) -> None:
     full_stack_target = _prepare_full_stack_script(tmp_path)
@@ -165,10 +165,21 @@ def test_full_stack_up_attempts_self_heal_for_unhealthy_temporal_namespace_and_r
     deploy_dir = scripts_dir / "deploy"
     web_bin_dir = tmp_path / "apps" / "web" / "node_modules" / ".bin"
     fake_bin_dir = tmp_path / "fake-bin"
+    worker_signature = f"worker.main run-worker {tmp_path.name}"
+    worker_signature_regex = f"worker\\.main run-worker {tmp_path.name}"
     scripts_dir.mkdir(parents=True, exist_ok=True)
     deploy_dir.mkdir(parents=True, exist_ok=True)
     web_bin_dir.mkdir(parents=True, exist_ok=True)
     fake_bin_dir.mkdir(parents=True, exist_ok=True)
+
+    runtime_full_stack_target = scripts_dir / "runtime" / "full_stack.sh"
+    runtime_full_stack_target.write_text(
+        runtime_full_stack_target.read_text(encoding="utf-8").replace(
+            "(worker\\.main run-worker|scripts/dev_worker\\.sh)",
+            f"({worker_signature_regex})",
+        ),
+        encoding="utf-8",
+    )
 
     (scripts_dir / "dev_api.sh").write_text(
         """#!/usr/bin/env bash
@@ -200,7 +211,7 @@ PY
         encoding="utf-8",
     )
     (scripts_dir / "dev_worker.sh").write_text(
-        "#!/usr/bin/env bash\nset -euo pipefail\nwhile true; do\n  sleep 1\ndone\n",
+        "#!/usr/bin/env bash\nset -euo pipefail\nexit 1\n",
         encoding="utf-8",
     )
     (deploy_dir / "core_services.sh").write_text(
@@ -311,11 +322,14 @@ exit 0
             temporal_server.shutdown()
             temporal_thread.join(timeout=5)
 
-    assert proc.returncode == 0, proc.stderr
+    assert proc.returncode != 0, proc.stderr
     assert marker.exists()
     assert "attempting_core_services_self_heal" in proc.stderr
-    assert "worker temporal pollers ready on task queue video-analysis" in proc.stderr
-    assert "full stack is ready" in proc.stderr
+    assert (
+        "DIAGNOSE stage=worker_start_retry" in proc.stderr
+        or "DIAGNOSE stage=worker_start conclusion=worker_failed_to_start" in proc.stderr
+        or "DIAGNOSE stage=worker_start conclusion=worker_process_not_detected" in proc.stderr
+    )
 
 
 def test_full_stack_up_waits_for_worker_temporal_pollers_after_worker_start(
