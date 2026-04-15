@@ -10,6 +10,8 @@ WORKFLOW_PATH = WORKFLOW_DIR / "ci.yml"
 BUILD_PUBLIC_API_IMAGE_WORKFLOW_PATH = WORKFLOW_DIR / "build-public-api-image.yml"
 BUILD_STANDARD_IMAGE_WORKFLOW_PATH = WORKFLOW_DIR / "build-ci-standard-image.yml"
 RELEASE_EVIDENCE_WORKFLOW_PATH = WORKFLOW_DIR / "release-evidence-attest.yml"
+PUBLISH_PYPI_WORKFLOW_PATH = WORKFLOW_DIR / "publish-pypi.yml"
+PUBLISH_MCP_REGISTRY_WORKFLOW_PATH = WORKFLOW_DIR / "publish-mcp-registry.yml"
 RUNNER_HEALTH_WORKFLOW_PATH = WORKFLOW_DIR / "runner-health.yml"
 REMOTE_INTEGRITY_WORKFLOW_PATH = WORKFLOW_DIR / "remote-integrity-audit.yml"
 TRUSTED_BOUNDARY_REUSABLE_WORKFLOW_PATH = WORKFLOW_DIR / "_trusted-pr-boundary.yml"
@@ -959,6 +961,118 @@ def _check_release_evidence_specific_rules(text: str, failures: list[str]) -> No
         )
 
 
+def _check_publish_pypi_specific_rules(text: str, failures: list[str]) -> None:
+    blocks = dict(_job_blocks(text))
+    if not _workflow_has_only_workflow_dispatch(text):
+        failures.append("publish-pypi.yml: external publish lane must be workflow_dispatch only")
+    if not _workflow_has_explicit_trigger(text, "workflow_dispatch"):
+        failures.append("publish-pypi.yml: missing workflow_dispatch trigger")
+    if not re.search(
+        r"workflow_dispatch:\n(?:\s{4}.+\n)*\s{6}expected_version:\n(?:\s{8}.+\n)*\s{8}required:\s+true",
+        text,
+        flags=re.MULTILINE,
+    ):
+        failures.append(
+            "publish-pypi.yml: workflow_dispatch.expected_version must stay required for manual publish runs"
+        )
+    publish = blocks.get("publish", "")
+    if not publish:
+        failures.append("publish-pypi.yml: publish: missing job")
+        return
+    if "environment:\n      name: external-pypi-publish" not in publish:
+        failures.append(
+            "publish-pypi.yml: publish: must use protected environment `external-pypi-publish`"
+        )
+    if "runs-on: ubuntu-latest" not in publish:
+        failures.append("publish-pypi.yml: publish: must run on ubuntu-latest")
+    if "id-token: write" not in publish:
+        failures.append(
+            "publish-pypi.yml: publish: must request `id-token: write` for Trusted Publishing"
+        )
+    if 'if [[ "${GITHUB_REF}" != "refs/heads/main" ]]' not in text:
+        failures.append(
+            "publish-pypi.yml: must fail closed unless workflow_dispatch runs from `refs/heads/main`"
+        )
+    if "pypa/gh-action-pypi-publish@" not in text:
+        failures.append(
+            "publish-pypi.yml: must publish through `pypa/gh-action-pypi-publish@release/v1`"
+        )
+    if "uv build" not in text:
+        failures.append("publish-pypi.yml: must build distributions through `uv build`")
+    if "README.md must keep the MCP ownership marker" not in text:
+        failures.append(
+            "publish-pypi.yml: must fail-close when the MCP ownership marker is missing"
+        )
+    for token in LOCAL_REAL_CHROME_PROFILE_ENV_VARS:
+        if token in text:
+            failures.append(
+                f"publish-pypi.yml: hosted external lane must not reference local-only real Chrome profile env `{token}`"
+            )
+    if re.search(r"^\s{2}contents:\s+write\s*$", text, flags=re.MULTILINE):
+        failures.append(
+            "publish-pypi.yml: permissions.contents must stay read-only; publish must not mutate the repository"
+        )
+
+
+def _check_publish_mcp_registry_specific_rules(text: str, failures: list[str]) -> None:
+    blocks = dict(_job_blocks(text))
+    if not _workflow_has_only_workflow_dispatch(text):
+        failures.append(
+            "publish-mcp-registry.yml: external publish lane must be workflow_dispatch only"
+        )
+    if not _workflow_has_explicit_trigger(text, "workflow_dispatch"):
+        failures.append("publish-mcp-registry.yml: missing workflow_dispatch trigger")
+    if not re.search(
+        r"workflow_dispatch:\n(?:\s{4}.+\n)*\s{6}expected_version:\n(?:\s{8}.+\n)*\s{8}required:\s+true",
+        text,
+        flags=re.MULTILINE,
+    ):
+        failures.append(
+            "publish-mcp-registry.yml: workflow_dispatch.expected_version must stay required for manual publish runs"
+        )
+    publish = blocks.get("publish", "")
+    if not publish:
+        failures.append("publish-mcp-registry.yml: publish: missing job")
+        return
+    if "environment:\n      name: external-mcp-registry-publish" not in publish:
+        failures.append(
+            "publish-mcp-registry.yml: publish: must use protected environment `external-mcp-registry-publish`"
+        )
+    if "runs-on: ubuntu-latest" not in publish:
+        failures.append("publish-mcp-registry.yml: publish: must run on ubuntu-latest")
+    if "id-token: write" not in publish:
+        failures.append(
+            "publish-mcp-registry.yml: publish: must request `id-token: write` for registry OIDC auth"
+        )
+    if 'if [[ "${GITHUB_REF}" != "refs/heads/main" ]]' not in text:
+        failures.append(
+            "publish-mcp-registry.yml: must fail closed unless workflow_dispatch runs from `refs/heads/main`"
+        )
+    if "mcp-publisher login github-oidc" not in text:
+        failures.append(
+            "publish-mcp-registry.yml: must authenticate through `mcp-publisher login github-oidc`"
+        )
+    if "mcp-publisher publish" not in text:
+        failures.append("publish-mcp-registry.yml: must call `mcp-publisher publish`")
+    if "https://pypi.org/pypi/sourceharbor/json" not in text:
+        failures.append(
+            "publish-mcp-registry.yml: must verify the expected SourceHarbor version is already live on PyPI before registry publish"
+        )
+    if "starter-packs/mcp-registry/sourceharbor-server.template.json" not in text:
+        failures.append(
+            "publish-mcp-registry.yml: must source registry metadata from starter-packs/mcp-registry/sourceharbor-server.template.json"
+        )
+    for token in LOCAL_REAL_CHROME_PROFILE_ENV_VARS:
+        if token in text:
+            failures.append(
+                f"publish-mcp-registry.yml: hosted external lane must not reference local-only real Chrome profile env `{token}`"
+            )
+    if re.search(r"^\s{2}contents:\s+write\s*$", text, flags=re.MULTILINE):
+        failures.append(
+            "publish-mcp-registry.yml: permissions.contents must stay read-only; publish must not mutate the repository"
+        )
+
+
 def _check_remote_integrity_specific_rules(
     text: str, blocks: dict[str, str], failures: list[str]
 ) -> None:
@@ -1187,6 +1301,10 @@ def main() -> int:
             _check_build_standard_image_specific_rules(text, failures)
         elif workflow == RELEASE_EVIDENCE_WORKFLOW_PATH:
             _check_release_evidence_specific_rules(text, failures)
+        elif workflow == PUBLISH_PYPI_WORKFLOW_PATH:
+            _check_publish_pypi_specific_rules(text, failures)
+        elif workflow == PUBLISH_MCP_REGISTRY_WORKFLOW_PATH:
+            _check_publish_mcp_registry_specific_rules(text, failures)
         elif workflow == RUNNER_HEALTH_WORKFLOW_PATH:
             _check_runner_health_specific_rules(text, blocks, failures)
         elif workflow == REMOTE_INTEGRITY_WORKFLOW_PATH:

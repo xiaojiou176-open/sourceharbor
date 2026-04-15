@@ -194,6 +194,8 @@ def test_hosted_workflow_set_is_small_and_explicit() -> None:
         "codeql.yml",
         "dependency-review.yml",
         "pre-commit.yml",
+        "publish-mcp-registry.yml",
+        "publish-pypi.yml",
         "release-evidence-attest.yml",
         "trivy.yml",
         "trufflehog.yml",
