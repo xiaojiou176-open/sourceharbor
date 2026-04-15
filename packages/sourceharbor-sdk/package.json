@@ -2,13 +2,13 @@
   "name": "@sourceharbor/sdk",
   "version": "0.1.19",
   "description": "Thin public TypeScript SDK for the SourceHarbor HTTP API.",
-  "homepage": "https://xiaojiou176-open.github.io/sourceharbor/",
+  "homepage": "https://xiaojiou176-open.github.io/SourceHarbor/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xiaojiou176-open/sourceharbor.git"
+    "url": "git+https://github.com/xiaojiou176-open/SourceHarbor.git"
   },
   "bugs": {
-    "url": "https://github.com/xiaojiou176-open/sourceharbor/issues"
+    "url": "https://github.com/xiaojiou176-open/SourceHarbor/issues"
   },
   "license": "MIT",
   "type": "module",

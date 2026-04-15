@@ -346,7 +346,6 @@ doctor` is already healthy.
 - Local proof is different from remote release proof.
 - Public screenshots and diagrams are presentation assets, not a substitute for live verification.
 - For the shortest delivered-vs-bet summary, read [project-status.md](./project-status.md).
-- For the shortest delivered-vs-bet summary, read [project-status.md](./project-status.md).
 - Agent autopilot and hosted workspace directions remain future-direction topics, not current operator promises. See [reference/project-positioning.md](./reference/project-positioning.md).
 
 ## Public Trust Links

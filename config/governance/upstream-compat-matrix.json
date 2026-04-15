@@ -65,9 +65,9 @@
       "blocking_level": "blocker",
       "verification_lane": "external",
       "verification_entrypoint": "strict_ci_entry:pre-push + core-services compose health + reader stack smoke",
-      "verification_status": "pending",
-      "last_verified_at": "2026-03-16T06:33:23Z",
-      "last_verified_run_id": "build-ci-standard-image-23131035664",
+      "verification_status": "verified",
+      "last_verified_at": "2026-04-15T12:03:58Z",
+      "last_verified_run_id": "build-ci-standard-image-24452825249",
       "freshness_window_hours": 72,
       "verification_scope": "upstream:strict-ci-compose-image-set",
       "verification_artifacts": [
@@ -75,7 +75,7 @@
         ".runtime-cache/reports/governance/quality-gate/summary.json"
       ],
       "evidence_artifact": ".runtime-cache/reports/governance/upstream-compat-report.json",
-      "failure_signature": "pending until current-head `ghcr-standard-image` is verified; current blocker is GHCR registry auth / packages write boundary, so compose image parity cannot be re-verified yet"
+      "failure_signature": "degrade back to pending if the current-head ghcr-standard-image verification or repo-side strict-ci compose parity receipts stop aligning"
     },
     {
       "name": "yt-dlp-media-chain",

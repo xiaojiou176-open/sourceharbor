@@ -5,7 +5,7 @@ import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import process from "node:process";
 
-const DOCS_URL = "https://xiaojiou176-open.github.io/sourceharbor/";
+const DOCS_URL = "https://xiaojiou176-open.github.io/SourceHarbor/";
 
 function resolveApiBaseUrl() {
 	const candidates = [

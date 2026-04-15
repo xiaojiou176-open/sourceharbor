@@ -4,7 +4,7 @@
   "title": "SourceHarbor MCP",
   "description": "Source-first AI knowledge control tower MCP server for YouTube, Bilibili, RSSHub, and RSS.",
   "repository": {
-    "url": "https://github.com/xiaojiou176-open/sourceharbor",
+    "url": "https://github.com/xiaojiou176-open/SourceHarbor",
     "source": "github"
   },
   "version": "0.1.19",

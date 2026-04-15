@@ -1,14 +1,14 @@
 blank_issues_enabled: false
 contact_links:
   - name: Product questions and setup help
-    url: https://github.com/xiaojiou176-open/sourceharbor/discussions/categories/q-a
+    url: https://github.com/xiaojiou176-open/SourceHarbor/discussions/categories/q-a
     about: Ask evaluation, setup, and workflow questions in Q&A.
   - name: Ideas and roadmap discussion
-    url: https://github.com/xiaojiou176-open/sourceharbor/discussions/categories/ideas
+    url: https://github.com/xiaojiou176-open/SourceHarbor/discussions/categories/ideas
     about: Share product ideas, use cases, and integration requests.
   - name: Docs and quickstart
-    url: https://xiaojiou176-open.github.io/sourceharbor/
+    url: https://xiaojiou176-open.github.io/SourceHarbor/
     about: Start with the layered docs map and public proof pages.
   - name: Security report
-    url: https://github.com/xiaojiou176-open/sourceharbor/security
+    url: https://github.com/xiaojiou176-open/SourceHarbor/security
     about: Use GitHub Security Advisories for sensitive vulnerability reports.
