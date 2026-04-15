@@ -1,0 +1,11 @@
+{
+  "release_tag": "v0.1.36",
+  "executed_at": "2026-04-15T10:09:51.911408+00:00",
+  "executor": "scripts/release/run_db_rollback_drill.sh",
+  "strategy": "temporary-postgres-up-down-drill",
+  "result": "success",
+  "migrations_checked": [
+    "20260308_000016_content_type.sql"
+  ],
+  "notes": "Executed init -> content_type up -> content_type down on a temporary PostgreSQL container. Verified the content_type column exists after the up migration, is removed by the down migration, and the drill row count remains 1 after rollback. This confirms schema restoration while content_type data is dropped by design."
+}
