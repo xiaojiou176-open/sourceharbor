@@ -605,12 +605,10 @@
     },
     {
       "name": "pytest",
-      "version": "8.4.2",
+      "version": "9.0.3",
       "license": "MIT",
-      "license_source": "license-field",
-      "classifiers": [
-        "License :: OSI Approved :: MIT License"
-      ],
+      "license_source": "license-expression",
+      "classifiers": [],
       "summary": "pytest: simple powerful testing with Python",
       "homepage": "Changelog, https://docs.pytest.org/en/stable/changelog.html"
     },

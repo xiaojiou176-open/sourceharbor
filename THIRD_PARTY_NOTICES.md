@@ -182,7 +182,7 @@ http://www.apache.org/licenses/LICENSE-2.0` | `license-field` |
 | `pydantic_core` | `2.41.5` | `MIT` | `license-expression` |
 | `Pygments` | `2.20.0` | `BSD-2-Clause` | `license-expression` |
 | `PyJWT` | `2.12.1` | `MIT` | `license-expression` |
-| `pytest` | `8.4.2` | `MIT` | `license-field` |
+| `pytest` | `9.0.3` | `MIT` | `license-expression` |
 | `pytest-cov` | `6.3.0` | `MIT` | `license-field` |
 | `pytest-rerunfailures` | `15.1` | `MPL-2.0` | `license-field` |
 | `pytest-xdist` | `3.8.0` | `MIT` | `license-expression` |
