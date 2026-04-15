@@ -1,0 +1,173 @@
+name: publish-mcp-registry
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: Version that must already be live on PyPI and match the registry template.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-mcp-registry-${{ github.workflow }}-${{ inputs.expected_version || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: external-mcp-registry-publish
+    permissions:
+      contents: read
+      id-token: write
+      artifact-metadata: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          clean: true
+          persist-credentials: false
+
+      - name: Install hosted runner prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+
+      - name: Enforce runner disk budget
+        run: |
+          bash scripts/governance/runner_workspace_maintenance.sh --workspace "$GITHUB_WORKSPACE" --include-runner-diag 1
+          python3 scripts/governance/check_runner_baseline.py --profile ci-heavy --workspace "$GITHUB_WORKSPACE"
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Verify version and metadata alignment
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import tomllib
+
+          expected_version = os.environ["EXPECTED_VERSION"]
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
+          package_version = pyproject["project"]["version"]
+          if package_version != expected_version:
+              raise SystemExit(
+                  f"pyproject version {package_version!r} does not match expected_version {expected_version!r}"
+              )
+
+          template = json.loads(
+              pathlib.Path("starter-packs/mcp-registry/sourceharbor-server.template.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          profile = json.loads(
+              pathlib.Path("config/public/mcp-directory-profile.json").read_text(encoding="utf-8")
+          )
+          expected_name = "io.github.xiaojiou176-open/sourceharbor-mcp"
+          if template["name"] != expected_name or profile["name"] != expected_name:
+              raise SystemExit("registry server name drift detected between template/profile")
+          if template["version"] != expected_version or profile["version"] != expected_version:
+              raise SystemExit("registry template/profile version must match expected_version")
+          package = template["packages"][0]
+          if package["registryType"] != "pypi" or package["identifier"] != "sourceharbor":
+              raise SystemExit("registry template must keep PyPI package identity sourceharbor")
+          if package["version"] != expected_version:
+              raise SystemExit("registry template package version must match expected_version")
+          marker = "mcp-name: io.github.xiaojiou176-open/sourceharbor-mcp"
+          if marker not in pathlib.Path("README.md").read_text(encoding="utf-8"):
+              raise SystemExit("README.md must keep the MCP ownership marker before registry publish")
+          print(f"verified registry metadata alignment for {expected_version}")
+          PY
+
+      - name: Verify live PyPI version
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          expected_version = os.environ["EXPECTED_VERSION"]
+          with urllib.request.urlopen("https://pypi.org/pypi/sourceharbor/json", timeout=30) as response:
+              payload = json.load(response)
+          live_version = str(payload["info"]["version"])
+          if live_version != expected_version:
+              raise SystemExit(
+                  f"live PyPI version {live_version!r} does not match expected_version {expected_version!r}; publish PyPI first"
+              )
+          print(f"verified live PyPI version {live_version}")
+          PY
+
+      - name: Install mcp-publisher
+        run: |
+          archive_url="https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz"
+          curl -fsSL "$archive_url" | tar xz mcp-publisher
+          chmod +x ./mcp-publisher
+
+      - name: Stage server.json for registry publish
+        run: |
+          mkdir -p .runtime-cache/tmp/mcp-registry-publish
+          cp starter-packs/mcp-registry/sourceharbor-server.template.json .runtime-cache/tmp/mcp-registry-publish/server.json
+
+      - name: Write MCP Registry publish metadata
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          metadata = {
+              "server_name": "io.github.xiaojiou176-open/sourceharbor-mcp",
+              "package_identifier": "sourceharbor",
+              "expected_version": os.environ["EXPECTED_VERSION"],
+              "workflow": "publish-mcp-registry.yml",
+              "environment": "external-mcp-registry-publish",
+              "server_json_path": ".runtime-cache/tmp/mcp-registry-publish/server.json",
+          }
+          output = Path(".runtime-cache/reports/publish-mcp-registry/metadata.json")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Authenticate to MCP Registry
+        working-directory: .runtime-cache/tmp/mcp-registry-publish
+        run: $GITHUB_WORKSPACE/mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        working-directory: .runtime-cache/tmp/mcp-registry-publish
+        run: $GITHUB_WORKSPACE/mcp-publisher publish
+
+      - name: Upload MCP Registry publish artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: mcp-registry-publish-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            .runtime-cache/tmp/mcp-registry-publish/server.json
+            .runtime-cache/reports/publish-mcp-registry/metadata.json
+
+      - name: Summarize MCP Registry publish result
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: |
+          {
+            echo "### MCP Registry publish result"
+            echo "- server name: \`io.github.xiaojiou176-open/sourceharbor-mcp\`"
+            echo "- expected version: \`${EXPECTED_VERSION}\`"
+            echo "- workflow: \`.github/workflows/publish-mcp-registry.yml\`"
+            echo "- this lane assumes the matching PyPI version is already live and GitHub OIDC auth is accepted by the registry"
+          } >> "$GITHUB_STEP_SUMMARY"
