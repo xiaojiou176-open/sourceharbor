@@ -5,7 +5,7 @@
     "web": "production packages from `apps/web/package-lock.json` with dev=false"
   },
   "summary": {
-    "python_runtime_packages": 96,
+    "python_runtime_packages": 98,
     "python_unknown_licenses": 0,
     "web_runtime_packages": 287,
     "web_unknown_licenses": 0
@@ -168,6 +168,17 @@
       ],
       "summary": "Date parsing library designed to parse dates from HTML pages",
       "homepage": "https://github.com/scrapinghub/dateparser"
+    },
+    {
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "license": "PSFL",
+      "license_source": "license-field",
+      "classifiers": [
+        "License :: OSI Approved :: Python Software Foundation License"
+      ],
+      "summary": "XML bomb protection for Python stdlib modules",
+      "homepage": "https://github.com/tiran/defusedxml"
     },
     {
       "name": "distro",
@@ -964,6 +975,17 @@
       ],
       "summary": "Yet another URL library",
       "homepage": "https://github.com/aio-libs/yarl"
+    },
+    {
+      "name": "youtube-transcript-api",
+      "version": "1.2.4",
+      "license": "MIT",
+      "license_source": "license-field",
+      "classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "summary": "This is a python API which allows you to get the transcripts/subtitles for a given YouTube video. It also works for automatically generated subtitles, supports translating subtitles and it does not require a headless browser, like other selenium based solutions do!",
+      "homepage": "Homepage, https://github.com/jdepoix/youtube-transcript-api"
     }
   ],
   "web_runtime": [
