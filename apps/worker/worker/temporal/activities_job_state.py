@@ -197,7 +197,7 @@ async def run_pipeline_activity(payload: dict[str, Any]) -> dict[str, Any]:
     if content_type not in ("video", "article"):
         content_type = "video"
 
-    return await run_pipeline(
+    result = await run_pipeline(
         settings,
         sqlite_store,
         pg_store,
@@ -207,6 +207,22 @@ async def run_pipeline_activity(payload: dict[str, Any]) -> dict[str, Any]:
         overrides=overrides,
         content_type=content_type,
     )
+    compact_result = dict(result)
+    step_records = result.get("steps")
+    if isinstance(step_records, dict):
+        compact_steps = {}
+        for step_name, raw_record in step_records.items():
+            if not isinstance(raw_record, dict):
+                continue
+            compact_steps[str(step_name)] = {
+                "status": raw_record.get("status"),
+                "reason": raw_record.get("reason"),
+                "error": raw_record.get("error"),
+                "error_kind": raw_record.get("error_kind"),
+                "degraded": bool(raw_record.get("degraded")),
+            }
+        compact_result["steps"] = compact_steps
+    return compact_result
 
 
 @activity.defn(name="mark_succeeded_activity")
