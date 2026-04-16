@@ -56,7 +56,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo has a live GitHub Release object
-- the latest live release currently reads `v0.1.38`
+- the latest live release is its own ledger and should be read live before any version-specific claim is repeated
 - the latest-release ledger must still be checked live against the current remote `main` head before any release-aligned claim is repeated
 - current-head workflow-dispatch evidence is still its own ledger; successful
   reruns prove the lane can close on a given head, but they do not make later
