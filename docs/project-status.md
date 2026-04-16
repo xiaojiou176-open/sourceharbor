@@ -56,7 +56,7 @@ Treat release-current truth as its own ledger.
 Current live reading:
 
 - the public repo has a live GitHub Release object
-- the latest live release now reads `v0.1.36`, and the remote `main` head is now ahead of that release
+- the latest live release currently reads `v0.1.38`
 - the latest-release ledger must still be checked live against the current remote `main` head before any release-aligned claim is repeated
 - current-head workflow-dispatch evidence is still its own ledger; successful
   reruns prove the lane can close on a given head, but they do not make later
@@ -81,10 +81,12 @@ and official-surface distribution truth are still separate ledgers.
 
 - current `main` is active and externally verifiable through GitHub checks and
   workflow-dispatch lanes when those current-head runs have been freshly reread
-- fresh current-head workflow-dispatch success receipts now exist for:
+- current-head workflow-dispatch proof is tracked through:
   - `build-public-api-image`
   - `build-ci-standard-image`
   - `release-evidence-attest`
+- those lanes must be reread for each head; older successful runs do not carry
+  forward automatically
 - the Wave 2 reader-frontstage tail now lives on current `main`, so the front
   door, subscriptions atlas, feed desk, and reader detail surfaces should be
   read as current-main truth rather than repo-local archive-only work
@@ -240,7 +242,8 @@ are more specific than generic "secret missing" language.
 | --- | --- | --- | --- |
 | Resend sender identity | provider canary still reports `config_error`; sender configuration remains incomplete because `RESEND_FROM_EMAIL` is still missing | repo code already exposes notifications and settings; GitHub/release truth is no longer the missing piece | set `RESEND_FROM_EMAIL`, verify the sender/domain in Resend, choose a real destination mailbox, then rerun the provider canary or strict live-smoke lane |
 | YouTube strict live-smoke | recent local proof now passes direct probe, provider canary, and strict live-smoke preflight; the remaining step is restoring operator-managed YouTube API access whenever the full live lane is reopened | repo-side implementation is no longer the blocker; the remaining action is making the intended YouTube API access available when the lane is rerun | restore the intended YouTube API access in the environment used for the live-smoke lane, then rerun the strict live-smoke lane when you want the full end-to-end receipt |
-| Official MCP Registry + PyPI version refresh | [public-distribution.md](./public-distribution.md) is the canonical place for the exact live version read-backs and current refresh gap | the repo now has a successful `uv build` receipt for the current package line and workflow-dispatch publish lanes prepared; the remaining blocker is platform-side Trusted Publisher / registry auth availability, not whether the repo can build or route the publish | once the platform-side trust/auth config exists, run `publish-pypi.yml`, then `publish-mcp-registry.yml`, and read both surfaces back in `public-distribution.md` before repeating a newer live claim |
+| PyPI version refresh | [public-distribution.md](./public-distribution.md) is the canonical place for the exact live version read-backs and publish-state gap | the latest live PyPI read-back still serves `sourceharbor==0.1.14`, while the repo package line is `0.1.19`; the latest publish attempt reached the real publish step and failed with exact blocker `invalid-publisher` | configure the PyPI Trusted Publisher for repository `xiaojiou176-open/SourceHarbor`, workflow `.github/workflows/publish-pypi.yml`, and environment `external-pypi-publish`; then rerun `publish-pypi.yml` and read the live version back before repeating a newer claim |
+| Official MCP Registry version refresh | [public-distribution.md](./public-distribution.md) is the canonical place for the exact live registry read-back and current refresh gap | the public registry entry still reads `0.1.14`; the latest refresh attempt failed early because the workflow first verifies that live PyPI already serves `sourceharbor==0.1.19`, and today that prerequisite still fails | after PyPI serves `0.1.19`, rerun `publish-mcp-registry.yml` and read the refreshed registry entry back before repeating a newer snapshot claim |
 | MCP.so direct listing | [public-distribution.md](./public-distribution.md) now holds the exact current direct-page read-back and listing status | the repo-side packet exists, but this public route still does not prove a live listing | capture either a real submit/accept receipt or a later direct-page read-back in `public-distribution.md` that shows the listing has appeared |
 | mcpservers.org listing | [public-distribution.md](./public-distribution.md) now holds the exact current direct/search read-back and listing status | the repo-side packet exists, but the public surface still does not show a readable listing proof | capture either the approval/listing URL or a later public read-back in `public-distribution.md` that shows the server |
 | awesome-opencode maintainer review | [public-distribution.md](./public-distribution.md) now holds the current upstream PR state | the repo-side packet already landed upstream, so the remaining step is maintainer review rather than repo work | wait for merge/rejection/feedback and capture the resulting URL or maintainer comment in `public-distribution.md` |
