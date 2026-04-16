@@ -14,7 +14,7 @@ This file is the machine-generated third-party rights ledger for the tracked pub
 
 | Ecosystem | Packages | UNKNOWN license declarations |
 | --- | ---: | ---: |
-| Python runtime | 96 | 0 |
+| Python runtime | 98 | 0 |
 | Web runtime | 287 | 0 |
 
 ## Python Runtime Packages
@@ -37,6 +37,7 @@ This file is the machine-generated third-party rights ledger for the tracked pub
 | `coverage` | `7.13.4` | `Apache-2.0` | `license-field` |
 | `cryptography` | `46.0.7` | `Apache-2.0 OR BSD-3-Clause` | `license-expression` |
 | `dateparser` | `1.3.0` | `BSD` | `license-field` |
+| `defusedxml` | `0.7.1` | `PSFL` | `license-field` |
 | `distro` | `1.9.0` | `Apache License, Version 2.0` | `license-field` |
 | `execnet` | `2.1.2` | `MIT` | `license-expression` |
 | `fastapi` | `0.129.0` | `MIT` | `license-expression` |
@@ -218,6 +219,7 @@ http://www.apache.org/licenses/LICENSE-2.0` | `license-field` |
 | `uvicorn` | `0.41.0` | `BSD-3-Clause` | `license-expression` |
 | `websockets` | `15.0.1` | `BSD-3-Clause` | `license-field` |
 | `yarl` | `1.22.0` | `Apache-2.0` | `license-field` |
+| `youtube-transcript-api` | `1.2.4` | `MIT` | `license-field` |
 
 ## Web Runtime Packages
 
