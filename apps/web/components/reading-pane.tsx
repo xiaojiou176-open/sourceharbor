@@ -381,7 +381,9 @@ export function ReadingPane({
 														<li
 															key={heading.id}
 															className="text-sm"
-															style={{ paddingLeft: `${(heading.level - 1) * 14}px` }}
+															style={{
+																paddingLeft: `${(heading.level - 1) * 14}px`,
+															}}
 														>
 															<a
 																href={`#${heading.id}`}

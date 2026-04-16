@@ -11,10 +11,7 @@ import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SyncNowButton } from "@/components/sync-now-button";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api/client";
-import {
-	editorialSans,
-	editorialSerif,
-} from "@/lib/editorial-fonts";
+import { editorialSans, editorialSerif } from "@/lib/editorial-fonts";
 import { getLocaleMessages } from "@/lib/i18n/messages";
 import {
 	resolveSearchParams,
@@ -354,7 +351,12 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						{isFiltered ? copy.emptyFiltered : copy.emptyUnfiltered}
 					</p>
 					{isFiltered ? (
-						<Button asChild variant="outline" size="sm" data-interaction="link-muted">
+						<Button
+							asChild
+							variant="outline"
+							size="sm"
+							data-interaction="link-muted"
+						>
 							<Link
 								href={
 									effectiveSelectedJobId
@@ -427,7 +429,9 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 										</summary>
 										<div className="mt-3">
 											<SourceIdentityCard
-												identity={resolveSubscriptionIdentity(activeSubscription)}
+												identity={resolveSubscriptionIdentity(
+													activeSubscription,
+												)}
 												compact
 											/>
 										</div>
@@ -462,10 +466,12 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 											defaultValue={category}
 											options={[
 												{ value: "", label: copy.categoryOptions.all },
-												...Object.entries(categoryLabels).map(([key, value]) => ({
-													value: key,
-													label: value,
-												})),
+												...Object.entries(categoryLabels).map(
+													([key, value]) => ({
+														value: key,
+														label: value,
+													}),
+												),
 											]}
 											fieldClassName="feed-filter-field"
 											labelClassName="sr-only"
@@ -497,7 +503,11 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 										/>
 									</div>
 									{safeSubscriptionId ? (
-										<input type="hidden" name="sub" value={safeSubscriptionId} />
+										<input
+											type="hidden"
+											name="sub"
+											value={safeSubscriptionId}
+										/>
 									) : null}
 									<input type="hidden" name="limit" value={String(safeLimit)} />
 									<div className="feed-filter-actions">

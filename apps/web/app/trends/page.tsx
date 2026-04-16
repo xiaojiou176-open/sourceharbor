@@ -585,24 +585,24 @@ export default async function TrendsPage({ searchParams }: TrendsPageProps) {
 										{leadBundle.knowledge_cards.length}
 									</p>
 								) : null}
-									{leadBundle ? <p>{leadBundle.proof_boundary}</p> : null}
-									<div className="flex flex-wrap gap-3">
-										{leadStoryJobId ? (
-											<Button asChild variant="outline" size="sm">
-												<Link
-													href={`/api/v1/jobs/${encodeURIComponent(leadStoryJobId)}/bundle`}
-												>
-													Open bundle
-												</Link>
-											</Button>
-										) : null}
-										{leadStoryJobId ? (
-											<Button asChild variant="outline" size="sm">
-												<Link
-													href={`/knowledge?job_id=${encodeURIComponent(leadStoryJobId)}`}
-												>
-													Open notes
-												</Link>
+								{leadBundle ? <p>{leadBundle.proof_boundary}</p> : null}
+								<div className="flex flex-wrap gap-3">
+									{leadStoryJobId ? (
+										<Button asChild variant="outline" size="sm">
+											<Link
+												href={`/api/v1/jobs/${encodeURIComponent(leadStoryJobId)}/bundle`}
+											>
+												Open bundle
+											</Link>
+										</Button>
+									) : null}
+									{leadStoryJobId ? (
+										<Button asChild variant="outline" size="sm">
+											<Link
+												href={`/knowledge?job_id=${encodeURIComponent(leadStoryJobId)}`}
+											>
+												Open notes
+											</Link>
 										</Button>
 									) : null}
 									<Button asChild variant="outline" size="sm">

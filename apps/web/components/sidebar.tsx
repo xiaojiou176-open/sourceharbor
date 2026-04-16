@@ -271,11 +271,13 @@ function SidebarNavContent({
 	];
 	const primarySections = navSections.filter(
 		(section) =>
-			section.id === "read" || (!frontstageFocused && section.id === "compounder"),
+			section.id === "read" ||
+			(!frontstageFocused && section.id === "compounder"),
 	);
 	const utilitySections = navSections.filter(
 		(section) =>
-			!frontstageFocused && (section.id === "build" || section.id === "operate"),
+			!frontstageFocused &&
+			(section.id === "build" || section.id === "operate"),
 	);
 
 	return (
@@ -479,10 +481,14 @@ function SidebarNavContent({
 										? "bg-sidebar-accent text-sidebar-accent-foreground"
 										: "text-sidebar-foreground/90 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
 								)}
-								aria-current={pathname.startsWith("/settings") ? "page" : undefined}
+								aria-current={
+									pathname.startsWith("/settings") ? "page" : undefined
+								}
 							>
 								<Settings className="size-4 shrink-0 opacity-80" aria-hidden />
-								<span className={collapsed ? "sr-only" : undefined}>Settings</span>
+								<span className={collapsed ? "sr-only" : undefined}>
+									Settings
+								</span>
 							</Link>
 							<Separator className="my-2" />
 						</>

@@ -121,8 +121,8 @@ export default async function ReaderPage() {
 							<CardDescription className="max-w-3xl text-base leading-8 text-foreground/75">
 								{shelfUnavailable
 									? "The reading shelf could not be loaded just now. You can still open the sample story or check the backstage status while it recovers."
-									: leadDocument?.summary ??
-										"Pick one finished story. Read first, then open notes only when you need provenance."}
+									: (leadDocument?.summary ??
+										"Pick one finished story. Read first, then open notes only when you need provenance.")}
 							</CardDescription>
 						</div>
 					</CardHeader>

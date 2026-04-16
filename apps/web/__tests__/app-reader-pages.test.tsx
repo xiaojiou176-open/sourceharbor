@@ -118,17 +118,17 @@ describe("reader pages", () => {
 			],
 		});
 
-			render(await ReaderPage());
+		render(await ReaderPage());
 
-			expect(
-				screen.getByRole("heading", {
-					name: "AI Agents follow-up",
-					level: 1,
-				}),
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("heading", { name: "AI Agents", level: 3 }),
-			).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", {
+				name: "AI Agents follow-up",
+				level: 1,
+			}),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", { name: "AI Agents", level: 3 }),
+		).toBeInTheDocument();
 		expect(screen.getAllByText("Read with care").length).toBeGreaterThanOrEqual(
 			1,
 		);

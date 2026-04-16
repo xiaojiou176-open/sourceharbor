@@ -861,16 +861,16 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 											<p className="font-medium text-foreground">
 												{briefingsCopy.compareTitle}
 											</p>
+											<p className="mt-2">
+												{briefingCompare?.diff_excerpt ||
+													briefingsCopy.noCompareExcerpt}
+											</p>
+											{briefingCompare ? (
 												<p className="mt-2">
-													{briefingCompare?.diff_excerpt ||
-														briefingsCopy.noCompareExcerpt}
+													+{briefingCompare.added_lines} / -
+													{briefingCompare.removed_lines}
 												</p>
-												{briefingCompare ? (
-													<p className="mt-2">
-														+{briefingCompare.added_lines} / -
-														{briefingCompare.removed_lines}
-													</p>
-												) : null}
+											) : null}
 										</div>
 										<div className="flex flex-wrap gap-3">
 											<Button asChild variant="outline" size="sm">

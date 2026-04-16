@@ -180,14 +180,24 @@ describe("Sidebar + Sheet contract", () => {
 			expect(
 				screen.queryByRole("link", { name: "Story briefs" }),
 			).not.toBeInTheDocument();
-			expect(screen.queryByRole("link", { name: "Search" })).not.toBeInTheDocument();
-			expect(screen.queryByRole("link", { name: "Ask" })).not.toBeInTheDocument();
-			expect(screen.queryByRole("link", { name: "Tech" })).not.toBeInTheDocument();
-			expect(screen.queryByRole("link", { name: "Tech Daily" })).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: "Search" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: "Ask" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: "Tech" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: "Tech Daily" }),
+			).not.toBeInTheDocument();
 			expect(
 				screen.queryByRole("link", { name: "Disabled Source" }),
 			).toBeNull();
-			expect(screen.queryByRole("link", { name: /API health/i })).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: /API health/i }),
+			).not.toBeInTheDocument();
 		},
 		SIDEBAR_TIMEOUT_MS,
 	);
@@ -386,8 +396,12 @@ describe("Sidebar + Sheet contract", () => {
 			expect(
 				screen.queryByRole("link", { name: "https://example.com/source" }),
 			).not.toBeInTheDocument();
-			expect(screen.queryByRole("link", { name: "Untitled" })).not.toBeInTheDocument();
-			expect(screen.queryByRole("link", { name: /API health/i })).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: "Untitled" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: /API health/i }),
+			).not.toBeInTheDocument();
 		},
 		SIDEBAR_TIMEOUT_MS,
 	);
@@ -477,7 +491,9 @@ describe("Sidebar + Sheet contract", () => {
 			expect(
 				screen.getByRole("link", { name: "Reading desk" }),
 			).toHaveAttribute("aria-current", "page");
-			expect(screen.queryByRole("link", { name: /API health/i })).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: /API health/i }),
+			).not.toBeInTheDocument();
 		},
 		SIDEBAR_TIMEOUT_MS,
 	);

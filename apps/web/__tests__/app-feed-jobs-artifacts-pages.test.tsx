@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import FeedPage from "@/app/feed/page";
 import IngestRunsPage from "@/app/ingest-runs/page";
@@ -250,9 +256,9 @@ describe("feed/jobs/artifacts pages", () => {
 					level: 2,
 				}),
 			).toBeInTheDocument();
-				expect(
-					screen.getByRole("link", { name: "Start with this story" }),
-				).toHaveAttribute("href", "/feed?item=job-default-1");
+			expect(
+				screen.getByRole("link", { name: "Start with this story" }),
+			).toHaveAttribute("href", "/feed?item=job-default-1");
 			expect(screen.getByText("February 5, 2026")).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
@@ -535,9 +541,7 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(screen.getByText("Article")).toBeInTheDocument();
 			expect(screen.getByText("Pinned source")).toBeInTheDocument();
 			expect(screen.getAllByText("Macro Universe").length).toBeGreaterThan(0);
-			expect(
-				screen.getByText(/Open one item and read/i),
-			).toBeInTheDocument();
+			expect(screen.getByText(/Open one item and read/i)).toBeInTheDocument();
 			expect(
 				screen.getByRole("link", { name: "← Previous page" }),
 			).toHaveAttribute("href", "/feed?sub=sub-123&item=job-sub");

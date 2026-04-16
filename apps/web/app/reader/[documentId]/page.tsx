@@ -185,9 +185,13 @@ export default async function ReaderDetailPage({
 							</div>
 							<div className="flex flex-wrap gap-2 text-sm">
 								<Badge
-									variant={document.published_with_gap ? "secondary" : "outline"}
+									variant={
+										document.published_with_gap ? "secondary" : "outline"
+									}
 								>
-									{document.published_with_gap ? "Read with care" : "Story notes"}
+									{document.published_with_gap
+										? "Read with care"
+										: "Story notes"}
 								</Badge>
 							</div>
 						</div>
@@ -201,7 +205,9 @@ export default async function ReaderDetailPage({
 
 						{isPreviewRoute ? (
 							<div className="rounded-2xl border border-border/60 bg-muted/15 p-4 text-sm leading-6 text-muted-foreground">
-								This specimen only shows where note-taking and provenance will live. Live repair stays disabled until a real published reader document exists.
+								This specimen only shows where note-taking and provenance will
+								live. Live repair stays disabled until a real published reader
+								document exists.
 							</div>
 						) : (
 							<ReaderRepairPanel
