@@ -662,7 +662,7 @@
     },
     {
       "name": "python-multipart",
-      "version": "0.0.22",
+      "version": "0.0.26",
       "license": "Apache-2.0",
       "license_source": "license-expression",
       "classifiers": [

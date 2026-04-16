@@ -188,7 +188,7 @@ http://www.apache.org/licenses/LICENSE-2.0` | `license-field` |
 | `pytest-xdist` | `3.8.0` | `MIT` | `license-expression` |
 | `python-dateutil` | `2.9.0.post0` | `Dual License` | `license-field` |
 | `python-dotenv` | `1.2.1` | `BSD-3-Clause` | `license-expression` |
-| `python-multipart` | `0.0.22` | `Apache-2.0` | `license-expression` |
+| `python-multipart` | `0.0.26` | `Apache-2.0` | `license-expression` |
 | `pytz` | `2026.1.post1` | `MIT` | `license-field` |
 | `PyYAML` | `6.0.3` | `MIT` | `license-field` |
 | `referencing` | `0.37.0` | `MIT` | `license-expression` |
