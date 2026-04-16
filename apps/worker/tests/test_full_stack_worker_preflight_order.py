@@ -157,6 +157,32 @@ def test_full_stack_up_records_temporal_preflight_failure_before_service_start(
     assert "conclusion=temporal_not_ready" in failure_text
 
 
+def test_full_stack_down_attempts_repo_owned_core_services_cleanup(tmp_path: Path) -> None:
+    full_stack_target = _prepare_full_stack_script(tmp_path)
+    deploy_dir = tmp_path / "scripts" / "deploy"
+    deploy_dir.mkdir(parents=True, exist_ok=True)
+    calls_log = tmp_path / "core-services-calls.log"
+
+    (deploy_dir / "core_services.sh").write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$FULL_STACK_CORE_SERVICES_CALLS_LOG"
+""",
+        encoding="utf-8",
+    )
+    (deploy_dir / "core_services.sh").chmod(0o755)
+
+    proc = _run_bash(
+        f'"{full_stack_target}" down',
+        cwd=tmp_path,
+        env={"FULL_STACK_CORE_SERVICES_CALLS_LOG": str(calls_log)},
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    assert calls_log.exists()
+    assert calls_log.read_text(encoding="utf-8").strip() == f"down --env-file {tmp_path / '.env'}"
+
+
 def test_full_stack_up_attempts_self_heal_for_unhealthy_temporal_namespace_before_fail_close(
     tmp_path: Path,
 ) -> None:

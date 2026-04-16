@@ -139,7 +139,7 @@ Why source the runtime snapshot:
 
 - bootstrap/full-stack may move off `9000/3000` when those ports are already occupied
 - the snapshot is the repo-managed local truth for API/Web routes
-- if the snapshot and actual services disagree, run `./bin/full-stack down` and restart the clean path
+- if the snapshot and actual services disagree, run `./bin/full-stack down` and restart the clean path; that teardown now also attempts to stop repo-owned core services before the next clean boot
 - the snapshot records the real core-services route truth even when the helper had to leave Docker and use repo-owned local Postgres/Temporal instead
 
 ### 3. Set the local write token

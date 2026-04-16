@@ -828,6 +828,14 @@ run_down() {
   stop_one web
   stop_one worker
   stop_one api
+
+  local core_services_script="$ROOT_DIR/scripts/deploy/core_services.sh"
+  if [[ -x "$core_services_script" ]]; then
+    if ! (cd "$ROOT_DIR" && "$core_services_script" down --env-file "$ROOT_DIR/.env") >/dev/null 2>&1; then
+      printf '[full_stack] WARN stage=core_services_down conclusion=best_effort_failed\n' >&2
+      log "DIAGNOSE stage=core_services_down conclusion=best_effort_failed"
+    fi
+  fi
 }
 
 cmd="${1:-up}"

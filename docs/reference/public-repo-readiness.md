@@ -42,6 +42,7 @@ Two current reading rules are worth keeping explicit:
 - repo-owned local core-services fallback under `.runtime-cache/` strengthens local first-run resilience, but it remains local runtime proof rather than a hosted or release-current claim
 - the repo-managed local first-run path now has two extra maintainer-local hardening behaviors:
   - `./bin/full-stack up` can self-heal Temporal by calling the repo-owned `core_services.sh up` path before failing worker startup
+  - `./bin/full-stack down` now attempts the matching repo-owned `core_services.sh down` cleanup so a clean local restart no longer leaves those core services behind by default
   - the current local video-first lane can use Gemini upload waiting plus a lightweight proxy-video path so oversized raw downloads do not get mistaken for a stable hosted/runtime guarantee
 - the reader-first frontstage on `/reader`, `/feed`, `/search`, and `/ask` is a public product surface, but the working contracts that shaped it stay in the internal planning ledger; public docs should point at the stable summary and proof ladder instead of exposing those internal ledgers as visitor-facing truth
 

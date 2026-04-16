@@ -40,6 +40,9 @@ They should not assume:
 - a lowercase GitHub Pages URL variant carries the same public provenance as the live deployed homepage path when the actual Pages host only serves the case-correct route
 - a repo-managed web runtime `.env.local` file or local write-session fallback token carries any public redistribution rights; it remains maintainer-local runtime state only
 - a host-bootstrapped strict-CI fallback or repo-owned local core-services fallback changes the rights boundary of the public repo; both are maintainer-local verification behavior, not new public distribution rights
+- the fact that `./bin/full-stack down` now tears down repo-owned core services
+  during a clean local reset also stays inside maintainer-local verification
+  behavior; it does not widen any public runtime or redistribution claim
 - a maintainer-local proxy-video artifact used only to make Gemini video ingestion behave honestly under current API constraints changes the public rights boundary; it is still just local verification substrate
 - a donor or reference mirror kept in the internal `.agents` reference tree becomes part of SourceHarbor's public provenance; those inputs remain internal study material and do not widen the rights boundary of the public repo
 - a thin public blueprint stub means the internal working contract is public; the stub is the public pointer, while the full contract still stays in the internal planning ledger

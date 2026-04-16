@@ -40,6 +40,9 @@ Two special cases matter in the current repo:
 - the temporary `.env.local` written into `.runtime-cache/tmp/web-runtime/workspace/apps/web/` is runtime glue for local browser writes, not a distributable config artifact
 - mutation receipts under `.runtime-cache/reports/mutation/` are public-safe only as proof summaries; they must not be mistaken for a published package, release, or registry surface
 - repo-owned local core-services logs under `.runtime-cache/logs/local-core/` are runtime diagnostics only; they exist to explain local fallback behavior, not to become public-facing product artifacts
+- repo-owned core-services teardown behavior under `./bin/full-stack down` is
+  still runtime hygiene only; it cleans repo-local verification state and does
+  not create any new public artifact surface
 - lightweight proxy-video files generated only to satisfy maintainer-local Gemini input constraints are runtime-only surrogate artifacts; they are part of local verification behavior, not a public distribution surface
 - `docs/blueprints/*.md` now act only as thin public pointers into stable summary docs; the full working contracts stay in the internal planning ledger and are not public artifacts to surface from README or other visitor-facing routes
 - `docs/submission/*.md` and internal UI specs may remain as thin public pointers, but the working submission packets and design handoffs stay in the maintainer-only planning ledger rather than the newcomer-facing docs path
