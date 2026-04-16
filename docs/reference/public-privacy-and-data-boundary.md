@@ -39,6 +39,9 @@ Two current examples:
 - public proof ledgers may also say that a fresh anonymous registry read-back returned no SourceHarbor entry or that a lowercase Pages homepage path 404s, but they must not fill those gaps with operator-only dashboard screenshots or credential state
 - fast-moving anonymous distribution read-backs should stay centralized in one public ledger (`docs/public-distribution.md`) rather than being recopied into multiple public docs with slightly different day-specific wording
 - repo-managed runtime workspaces such as `.runtime-cache/tmp/web-runtime/` and mutation debug sandboxes stay local-only verification state; they must be governed and cleaned, not exposed as public repository artifacts
+- repo-owned core services cleaned by `./bin/full-stack down` also remain
+  local-only verification state; stopping them is workstation hygiene, not a
+  public platform action or public proof artifact
 - repo-owned fallback service logs under `.runtime-cache/logs/local-core/` stay private runtime diagnostics; they are meant for maintainer troubleshooting, not for public repo storytelling or artifact publication
 - repo-owned proxy-video artifacts created only to satisfy maintainer-local Gemini video input constraints stay private runtime state too; they are not public samples, not media-kit assets, and not proof of redistribution rights
 - donor reference trees under the internal `.agents` reference area may contain upstream test idioms or placeholder secret-shaped strings for study purposes; they are internal reference inputs and must not be treated as public SourceHarbor surfaces or fed back into public trust claims

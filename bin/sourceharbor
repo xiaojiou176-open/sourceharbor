@@ -16,7 +16,7 @@ Commands:
   help                 Show this help message.
   bootstrap            Run ./bin/bootstrap-full-stack
   up                   Run ./bin/full-stack up
-  down                 Run ./bin/full-stack down
+  down                 Run ./bin/full-stack down and clean repo-owned core services
   status               Run ./bin/full-stack status
   full-stack           Run ./bin/full-stack
   mcp                  Run ./bin/dev-mcp

@@ -43,6 +43,9 @@ SourceHarbor keeps runtime and governance logs under `.runtime-cache/logs/`.
   not public documentation or a host-global service directory.
 - If `full_stack` needs to self-heal Temporal, that decision must still appear
   in the full-stack component log instead of becoming a silent retry path.
+- If `full_stack down` attempts repo-owned core-services cleanup, any miss must
+  be logged as `stage=core_services_down` instead of silently leaving Postgres
+  or Temporal residue behind.
 - If a reused listener exists on the Temporal port but namespace health still
   fails, logs must preserve that `unhealthy (reused)` distinction instead of
   collapsing it into a generic timeout.

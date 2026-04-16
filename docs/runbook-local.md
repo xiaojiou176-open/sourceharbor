@@ -102,6 +102,10 @@ The two runtime-heavy local caches worth recognizing by name are:
 - `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` for the latest
   mutation-readiness receipt consumed by repo-side strict CI
 
+If you want a clean local runtime reset before another verification pass, use
+`./bin/full-stack down` first; that shutdown path now also attempts to tear down
+repo-owned core services instead of leaving Postgres/Temporal residue behind.
+
 If you create an ad-hoc mutation workspace such as `.runtime-cache/tmp/mutation-debug`,
 delete it after the debugging turn ends so the `tmp/` budget does not fail-close
 future governance runs.

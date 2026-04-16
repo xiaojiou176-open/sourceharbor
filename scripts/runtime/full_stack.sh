@@ -183,6 +183,7 @@ Starts/stops local app processes:
 - Web (next dev)
 
 Notes:
+- `down` also attempts repo-owned core-services cleanup through `./scripts/deploy/core_services.sh down --env-file ./.env` so a clean local restart does not leave Postgres/Temporal residue behind.
 - `bin/dev-mcp` is an interactive stdio entrypoint, not a background daemon managed by this script.
 - Run `./bin/dev-mcp` manually in a dedicated terminal when you need local MCP debugging.
 EOF
@@ -828,6 +829,14 @@ run_down() {
   stop_one web
   stop_one worker
   stop_one api
+
+  local core_services_script="$ROOT_DIR/scripts/deploy/core_services.sh"
+  if [[ -x "$core_services_script" ]]; then
+    if ! (cd "$ROOT_DIR" && "$core_services_script" down --env-file "$ROOT_DIR/.env") >/dev/null 2>&1; then
+      printf '[full_stack] WARN stage=core_services_down conclusion=best_effort_failed\n' >&2
+      log "DIAGNOSE stage=core_services_down conclusion=best_effort_failed"
+    fi
+  fi
 }
 
 cmd="${1:-up}"
