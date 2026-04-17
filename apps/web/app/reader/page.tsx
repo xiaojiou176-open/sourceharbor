@@ -153,7 +153,7 @@ export default async function ReaderPage() {
 							<h1
 								data-route-heading
 								tabIndex={-1}
-								className={`max-w-4xl text-4xl leading-[1.06] tracking-tight md:text-5xl md:leading-[1] xl:text-6xl ${editorialSerif.className}`}
+								className={`max-w-4xl pb-1 text-4xl leading-[1.1] tracking-tight md:text-5xl md:leading-[1.02] xl:text-6xl ${editorialSerif.className}`}
 							>
 								{shelfUnavailable
 									? "Reader shelf is temporarily unavailable"
