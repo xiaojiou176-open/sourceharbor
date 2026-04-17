@@ -1,8 +1,9 @@
 {
   "manifest_version": 1,
+  "historical_example": true,
   "release_tag": "v0.1.41",
   "generated_at": "2026-04-17T14:18:07.280819+00:00",
-  "evidence_scope": "current-run",
+  "evidence_scope": "historical-example",
   "git": {
     "head_sha": "2a5d7d163eb7d4e0c4fe88f3f47a72cb2265432c",
     "branch": "codex/external-lane-publish-probes",
