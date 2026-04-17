@@ -188,7 +188,7 @@ describe("reader pages", () => {
 		expect(
 			screen.getByRole("heading", { name: "AI Agents", level: 1 }),
 		).toBeInTheDocument();
-		expect(screen.getByText("Source notes and repair")).toBeInTheDocument();
+		expect(screen.getByText("Story notes")).toBeInTheDocument();
 		expect(screen.getByTestId("reader-source-drawer")).toHaveTextContent(
 			"AI Agents",
 		);
@@ -199,7 +199,7 @@ describe("reader pages", () => {
 			screen.getByRole("link", { name: "Back to reader" }),
 		).toHaveAttribute("href", "/reader");
 		expect(screen.getByText(/Read the story first/i)).toBeInTheDocument();
-		expect(screen.getByText("Source notes and repair")).toBeInTheDocument();
+		expect(screen.getByText("Story notes")).toBeInTheDocument();
 		expect(screen.getByTestId("reader-repair-panel")).toHaveTextContent(
 			"doc-1:1",
 		);
@@ -261,7 +261,7 @@ describe("reader pages", () => {
 
 		expect(
 			screen.getByRole("heading", {
-				name: "Reading note from youtube",
+				name: "Reading note",
 				level: 1,
 			}),
 		).toBeInTheDocument();
@@ -271,6 +271,62 @@ describe("reader pages", () => {
 				level: 1,
 			}),
 		).not.toBeInTheDocument();
+	});
+
+	it("hides raw url scaffolding and source-context boilerplate for singleton polish docs", async () => {
+		mockGetPublishedReaderDocument.mockResolvedValue({
+			id: "doc-url-clean",
+			title: "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+			window_id: "2026-04-14@America/Los_Angeles",
+			topic_label: null,
+			source_item_count: 1,
+			published_with_gap: false,
+			materialization_mode: "singleton_polish",
+			version: 1,
+			summary: "A polish-only reader document from youtube.",
+			markdown: `# https://www.youtube.com/watch?v=aqz-KE-bpKQ
+
+https://www.youtube.com/watch?v=aqz-KE-bpKQ remains a polish-only reader document from youtube.
+
+## Summary
+- Keep the summary.
+
+## Source Context
+- Platform: youtube
+- Source origin: manual_injected
+- Claim kinds: none captured
+
+## What this covers
+- Keep this section.`,
+			sections: [],
+			source_refs: [
+				{
+					source_item_id: "src-1",
+					title: "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+					platform: "youtube",
+				},
+			],
+			coverage_ledger: {},
+			traceability_pack: {},
+			repair_history: [],
+			warning: null,
+			consumption_batch_id: "batch-url-clean",
+		});
+
+		render(
+			await ReaderDocumentPage({
+				params: Promise.resolve({ documentId: "doc-url-clean" }),
+			}),
+		);
+
+		const preview = screen.getAllByTestId("markdown-preview")[0];
+		expect(preview).not.toHaveTextContent(
+			"https://www.youtube.com/watch?v=aqz-KE-bpKQ remains a polish-only reader document from youtube.",
+		);
+		expect(preview).not.toHaveTextContent("Source Context");
+		expect(preview).not.toHaveTextContent("manual_injected");
+		expect(preview).toHaveTextContent("## Summary");
+		expect(preview).toHaveTextContent("## What this covers");
 	});
 
 	it("renders an honest shelf error instead of pretending the shelf is empty", async () => {

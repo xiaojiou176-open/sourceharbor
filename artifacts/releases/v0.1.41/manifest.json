@@ -1,0 +1,17 @@
+{
+  "manifest_version": 1,
+  "release_tag": "v0.1.41",
+  "generated_at": "2026-04-17T14:18:07.280819+00:00",
+  "evidence_scope": "current-run",
+  "git": {
+    "head_sha": "2a5d7d163eb7d4e0c4fe88f3f47a72cb2265432c",
+    "branch": "codex/external-lane-publish-probes",
+    "latest_tag": "v0.1.41",
+    "dirty": true
+  },
+  "artifacts": {
+    "checksums_file": "artifacts/releases/v0.1.41/checksums.sha256",
+    "rollback_readiness_file": "artifacts/releases/v0.1.41/rollback/db-rollback-readiness.json",
+    "rollback_drill_file": "artifacts/releases/v0.1.41/rollback/drill.json"
+  }
+}

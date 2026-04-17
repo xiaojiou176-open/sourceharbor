@@ -38,6 +38,7 @@ Two special cases matter in the current repo:
 - tracked public homepage URLs must also be treated as proof-bearing artifacts: if the committed path casing 404s on the live Pages host, that URL is a broken public artifact rather than an acceptable cosmetic variant
 - the repo-managed web runtime workspace under `.runtime-cache/tmp/web-runtime/` is an internal verification substrate, not a public artifact to expose or cite as shipped output
 - the temporary `.env.local` written into `.runtime-cache/tmp/web-runtime/workspace/apps/web/` is runtime glue for local browser writes, not a distributable config artifact
+- clean proof screenshot packs and mini packs created by repo-owned UI audit helpers are maintainer-local verification artifacts; they may feed local Gemini/UI-audit review, but they are not public distribution assets or release artifacts
 - mutation receipts under `.runtime-cache/reports/mutation/` are public-safe only as proof summaries; they must not be mistaken for a published package, release, or registry surface
 - repo-owned local core-services logs under `.runtime-cache/logs/local-core/` are runtime diagnostics only; they exist to explain local fallback behavior, not to become public-facing product artifacts
 - repo-owned core-services teardown behavior under `./bin/full-stack down` is

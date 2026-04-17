@@ -236,6 +236,7 @@ and provider evidence that go beyond the ordinary local and PR-facing lanes.
 ./bin/repo-side-strict-ci --mode pre-push
 ./bin/quality-gate --mode pre-push
 ./bin/governance-audit --mode audit
+python3 scripts/runtime/run_reader_clean_ui_audit.py
 python3 scripts/governance/probe_remote_platform_truth.py
 python3 scripts/governance/check_remote_required_checks.py
 python3 scripts/governance/check_remote_security_alerts.py
@@ -244,6 +245,18 @@ python3 scripts/governance/check_current_proof_commit_alignment.py
 python3 scripts/governance/render_newcomer_result_proof.py && python3 scripts/governance/check_newcomer_result_proof.py
 python3 scripts/governance/render_current_state_summary.py && python3 scripts/governance/check_current_state_summary.py
 ```
+
+Reader-frontstage UI proof note:
+
+- `python3 scripts/runtime/run_reader_clean_ui_audit.py` is the local
+  reader-proof lane for current-head screenshot capture plus `/api/v1/ui-audit/run`.
+- It captures a clean proof pack into system temp space, hides Next dev-only
+  overlay noise from the screenshots, and writes a local `ui-audit-report.json`
+  beside the captured images.
+- If the full screenshot pack hits a Gemini provider timeout, the runner
+  automatically retries with a smaller mini pack so the maintainer-local UI
+  review lane can still produce a usable verdict.
+- Treat it as a maintainer-local proof helper, not a hosted-distribution claim.
 
 Closeout note:
 

@@ -173,9 +173,10 @@ describe("dashboard/settings/subscriptions pages", () => {
 				document.querySelectorAll('[data-slot="card"]').length,
 			).toBeGreaterThanOrEqual(1);
 			expect(
-				screen.getAllByRole("heading", {
+				screen.getByRole("heading", {
 					name: "Start with something worth reading",
-				})[0],
+					level: 1,
+				}),
 			).toBeInTheDocument();
 			expect(
 				screen.getAllByRole("link", { name: "Open Reader" })[0],
@@ -235,9 +236,10 @@ describe("dashboard/settings/subscriptions pages", () => {
 			render(await DashboardPage());
 
 			expect(
-				screen.getAllByRole("heading", {
+				screen.getByRole("heading", {
 					name: "Start with something worth reading",
-				})[0],
+					level: 1,
+				}),
 			).toBeInTheDocument();
 			expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 		},
@@ -254,9 +256,10 @@ describe("dashboard/settings/subscriptions pages", () => {
 			render(await DashboardPage());
 
 			expect(
-				screen.getAllByRole("heading", {
+				screen.getByRole("heading", {
 					name: "Start with something worth reading",
-				})[0],
+					level: 1,
+				}),
 			).toBeInTheDocument();
 			expect(
 				screen.queryByText("Ingestion job queued."),
@@ -314,13 +317,11 @@ describe("dashboard/settings/subscriptions pages", () => {
 				screen.getByRole("link", { name: /Open trends/i }),
 			).toHaveAttribute("href", "/trends");
 			expect(
+				screen.getByRole("link", { name: "Open saved sources" }),
+			).toHaveAttribute("href", "#tracked-universes");
+			expect(
 				screen.getByRole("link", { name: "Paste a source" }),
 			).toHaveAttribute("href", "#manual-source-intake-input");
-			expect(
-				screen.getByRole("link", {
-					name: "Open saved sources after you paste the first one",
-				}),
-			).toHaveAttribute("href", "#tracked-universes");
 			expect(
 				screen.getByRole("button", { name: "Save subscription" }),
 			).toBeInTheDocument();

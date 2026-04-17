@@ -99,6 +99,7 @@ describe("RootLayout", () => {
 		expect(html).toContain('aria-live="polite"');
 		expect(html).toContain("Skip to main content");
 		expect(html).toContain('id="main-content"');
+		expect(html).toContain("pl-14");
 		expect(html).toContain('tabindex="-1"');
 	});
 

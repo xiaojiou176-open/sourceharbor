@@ -32,6 +32,21 @@ function looksLikeRawUrl(value: string | null | undefined): boolean {
 	return text.startsWith("http://") || text.startsWith("https://");
 }
 
+function isSingletonReadingMode(mode: string): boolean {
+	return mode === "singleton_polish" || mode === "polish_only";
+}
+
+function isGenericSourceFallbackTitle(value: string | null | undefined): boolean {
+	const normalized = String(value || "")
+		.trim()
+		.toLowerCase();
+	if (!normalized) return false;
+	if (normalized === "tracked source" || normalized === "reading source") {
+		return true;
+	}
+	return normalized.endsWith(" source") && normalized.split(/\s+/).length <= 2;
+}
+
 function formatReaderHeroTitle(document: {
 	title: string;
 	topic_label?: string | null;
@@ -52,17 +67,100 @@ function formatReaderHeroTitle(document: {
 	const sourceTitle = firstSource
 		? resolveReaderSourceIdentity(firstSource).title
 		: "";
-	if (sourceTitle && !looksLikeRawUrl(sourceTitle)) {
+	if (
+		sourceTitle &&
+		!looksLikeRawUrl(sourceTitle) &&
+		!isGenericSourceFallbackTitle(sourceTitle)
+	) {
 		return sourceTitle;
 	}
 	if (firstSource?.platform) {
-		return document.materialization_mode === "singleton_polish"
-			? `Reading note from ${String(firstSource.platform).trim()}`
-			: `Reading story from ${String(firstSource.platform).trim()}`;
+		return isSingletonReadingMode(document.materialization_mode)
+			? "Reading note"
+			: "Published story";
 	}
-	return document.materialization_mode === "singleton_polish"
+	return isSingletonReadingMode(document.materialization_mode)
 		? "Reading note"
 		: "Published story";
+}
+
+function formatReaderHeroSummary(document: {
+	title: string;
+	summary?: string | null;
+	materialization_mode: string;
+}) {
+	const summary = String(document.summary ?? "").trim();
+	if (
+		summary &&
+		!looksLikeRawUrl(summary) &&
+		!summary.toLowerCase().includes("reader document")
+	) {
+		return summary;
+	}
+	return isSingletonReadingMode(document.materialization_mode)
+		? "A finished reading note. Open source notes only when you need provenance."
+		: "A finished story. Open source notes only when you need provenance.";
+}
+
+function sanitizeReaderMarkdown(document: {
+	title: string;
+	markdown: string;
+	materialization_mode: string;
+	source_refs?: Array<Parameters<typeof resolveReaderSourceIdentity>[0]>;
+}) {
+	const originalMarkdown = document.markdown;
+	if (
+		!isSingletonReadingMode(document.materialization_mode) ||
+		!looksLikeRawUrl(document.title)
+	) {
+		return originalMarkdown;
+	}
+
+	const rawTitle = document.title.trim();
+	const firstSource = Array.isArray(document.source_refs)
+		? document.source_refs[0]
+		: null;
+	const platform = String(firstSource?.platform ?? "")
+		.trim()
+		.toLowerCase();
+	const fallbackSummaryLine = `${rawTitle} remains a polish-only reader document from ${platform}.`;
+	const lines = originalMarkdown.split("\n");
+	const cleaned: string[] = [];
+
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index];
+		const trimmed = line.trim();
+
+		if (
+			trimmed === rawTitle ||
+			trimmed === `# ${rawTitle}` ||
+			trimmed === fallbackSummaryLine
+		) {
+			continue;
+		}
+
+		if (trimmed === "## Source Context") {
+			index += 1;
+			while (index < lines.length) {
+				const nextLine = lines[index];
+				const nextTrimmed = nextLine.trim();
+				if (nextTrimmed.startsWith("## ")) {
+					index -= 1;
+					break;
+				}
+				index += 1;
+			}
+			continue;
+		}
+
+		cleaned.push(line);
+	}
+
+	const normalized = cleaned
+		.join("\n")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim();
+	return normalized || originalMarkdown;
 }
 
 export async function generateMetadata({
@@ -105,6 +203,8 @@ export default async function ReaderDetailPage({
 		? document.repair_history
 		: [];
 	const sessionToken = getActionSessionTokenForForm();
+	const heroSummary = formatReaderHeroSummary(document);
+	const readerMarkdown = sanitizeReaderMarkdown(document);
 	const readingNote = document.published_with_gap
 		? "Read the story first. Keep the warning in mind, then open notes only when you want provenance."
 		: "Read the story first. Open sources, coverage, and repair only when you need them.";
@@ -144,12 +244,12 @@ export default async function ReaderDetailPage({
 						<h1
 							data-route-heading
 							tabIndex={-1}
-							className={`max-w-4xl text-3xl leading-[1.02] tracking-tight [overflow-wrap:anywhere] sm:text-4xl md:text-5xl xl:text-6xl ${editorialSerif.className}`}
+							className={`max-w-4xl text-3xl leading-[1.1] tracking-tight [overflow-wrap:anywhere] sm:text-4xl sm:leading-[1.05] md:text-5xl md:leading-[1.02] xl:text-6xl ${editorialSerif.className}`}
 						>
 							{heroTitle}
 						</h1>
-						<p className="max-w-4xl text-base leading-8 text-foreground/75">
-							{document.summary ??
+						<p className="max-w-4xl text-base leading-8 text-foreground/82">
+							{heroSummary ??
 								"Read the story first. Source notes and background detail stay below for when you want a closer look."}
 						</p>
 					</div>
@@ -159,7 +259,7 @@ export default async function ReaderDetailPage({
 			<section id="reader-body" className="space-y-5">
 				<article className="rounded-[2rem] border border-border/70 bg-background/95 shadow-sm">
 					<div className="mx-auto max-w-[74ch] p-5 md:p-8">
-						<MarkdownPreview markdown={document.markdown} />
+						<MarkdownPreview markdown={readerMarkdown} />
 					</div>
 				</article>
 			</section>
@@ -177,7 +277,7 @@ export default async function ReaderDetailPage({
 								<h2
 									className={`text-2xl leading-tight text-foreground ${editorialSerif.className}`}
 								>
-									Source notes and repair
+									Story notes
 								</h2>
 								<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
 									{readingNote}
@@ -197,11 +297,11 @@ export default async function ReaderDetailPage({
 						</div>
 					</summary>
 					<div className="space-y-6 border-t border-border/60 px-5 pb-5 pt-4">
+						<SourceContributionDrawer document={document} />
+
 						{document.published_with_gap ? (
 							<YellowWarningCard reasons={warningReasons} />
 						) : null}
-
-						<SourceContributionDrawer document={document} />
 
 						{isPreviewRoute ? (
 							<div className="rounded-2xl border border-border/60 bg-muted/15 p-4 text-sm leading-6 text-muted-foreground">

@@ -261,11 +261,7 @@ def test_probe_external_lane_workflows_keeps_optional_publish_lanes_from_flippin
     payload = captured_artifact["payload"]
     assert isinstance(payload, dict)
     assert payload["status"] == "pass"
-    lanes = {
-        str(lane["name"]): lane
-        for lane in payload["lanes"]
-        if isinstance(lane, dict)
-    }
+    lanes = {str(lane["name"]): lane for lane in payload["lanes"] if isinstance(lane, dict)}
     assert lanes["publish-pypi"]["state"] == "blocked"
     assert lanes["publish-pypi"]["affects_overall_status"] is False
     assert lanes["publish-mcp-registry"]["state"] == "blocked"
@@ -320,11 +316,41 @@ def test_render_current_state_summary_uses_publish_lane_canonical_artifacts(
             "version": 1,
             "source_commit": head,
             "lanes": [
-                {"name": "ghcr-standard-image", "state": "verified", "note": "ok", "latest_run_matches_current_head": True, "latest_run": {"headSha": head}},
-                {"name": "public-api-image", "state": "verified", "note": "ok", "latest_run_matches_current_head": True, "latest_run": {"headSha": head}},
-                {"name": "release-evidence-attestation", "state": "verified", "note": "ok", "latest_run_matches_current_head": True, "latest_run": {"headSha": head}},
-                {"name": "publish-pypi", "state": "blocked", "note": "invalid-publisher", "latest_run_matches_current_head": True, "latest_run": {"headSha": head}},
-                {"name": "publish-mcp-registry", "state": "blocked", "note": "live PyPI mismatch", "latest_run_matches_current_head": True, "latest_run": {"headSha": head}},
+                {
+                    "name": "ghcr-standard-image",
+                    "state": "verified",
+                    "note": "ok",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "public-api-image",
+                    "state": "verified",
+                    "note": "ok",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "release-evidence-attestation",
+                    "state": "verified",
+                    "note": "ok",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "publish-pypi",
+                    "state": "blocked",
+                    "note": "invalid-publisher",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "publish-mcp-registry",
+                    "state": "blocked",
+                    "note": "live PyPI mismatch",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
             ],
         },
     )
@@ -332,7 +358,7 @@ def test_render_current_state_summary_uses_publish_lane_canonical_artifacts(
 
     monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(module, "_current_head", lambda: head)
-    monkeypatch.setattr(module, "_worktree_changes", lambda: [])
+    monkeypatch.setattr(module, "_worktree_changes", list)
 
     rendered = module.render()
 

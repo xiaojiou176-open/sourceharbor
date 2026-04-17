@@ -469,6 +469,43 @@ describe("Sidebar + Sheet contract", () => {
 				"href",
 				"/ask",
 			);
+			expect(
+				screen.queryByRole("link", { name: "System status" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: "Saved topics" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: /API health/i }),
+			).not.toBeInTheDocument();
+		},
+		SIDEBAR_TIMEOUT_MS,
+	);
+
+	it(
+		"keeps watchlists inside the same calm frontstage shell",
+		() => {
+			usePathnameMock.mockReturnValue("/watchlists");
+			useSearchParamsMock.mockReturnValue(createSearchParams(""));
+
+			render(
+				<Sidebar
+					subscriptions={[]}
+					apiHealthState="healthy"
+					apiHealthUrl="http://127.0.0.1:9000/healthz"
+					apiHealthLabel="Healthy"
+				/>,
+			);
+
+			expect(
+				screen.getByRole("link", { name: "Saved topics" }),
+			).toHaveAttribute("aria-current", "page");
+			expect(
+				screen.queryByRole("link", { name: "System status" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("link", { name: /API health/i }),
+			).not.toBeInTheDocument();
 		},
 		SIDEBAR_TIMEOUT_MS,
 	);

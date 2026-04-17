@@ -17,6 +17,14 @@ type SourceIdentityCardProps = {
 	action?: ReactNode;
 };
 
+function compactMetaItems(items: string[]) {
+	const filtered = items.filter(
+		(item) => item !== "Tracked source" && item !== "Reading today",
+	);
+	const preferred = filtered.filter((item) => item !== "Generic");
+	return (preferred.length ? preferred : filtered).slice(0, 2);
+}
+
 function relationBadgeTone(kind: string) {
 	if (kind === "matched_subscription" || kind === "subscription_tracked") {
 		return "border-emerald-500/45 bg-emerald-500/12 text-emerald-800";
@@ -36,7 +44,7 @@ export function SourceIdentityCard({
 	compact = false,
 	action,
 }: SourceIdentityCardProps) {
-	const visibleMeta = compact ? identity.meta.slice(0, 2) : identity.meta;
+	const visibleMeta = compact ? compactMetaItems(identity.meta) : identity.meta;
 	return (
 		<article
 			className={cn(
@@ -112,14 +120,16 @@ export function SourceIdentityCard({
 							)}
 						</div>
 					</div>
-					<p
-						className={cn(
-							"truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
-							editorialMono.className,
-						)}
-					>
-						{identity.avatarLabel}
-					</p>
+					{compact ? null : (
+						<p
+							className={cn(
+								"truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
+								editorialMono.className,
+							)}
+						>
+							{identity.avatarLabel}
+						</p>
+					)}
 				</div>
 				<div className="min-w-0 space-y-3">
 					<div className="flex flex-wrap items-center gap-2">
@@ -131,7 +141,7 @@ export function SourceIdentityCard({
 						</Badge>
 					</div>
 					<div className="space-y-1.5">
-						{identity.eyebrow ? (
+						{identity.eyebrow && !compact ? (
 							<p
 								className={cn(
 									"text-[10px] uppercase tracking-[0.18em] text-muted-foreground",

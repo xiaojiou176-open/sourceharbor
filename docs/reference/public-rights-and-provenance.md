@@ -39,6 +39,7 @@ They should not assume:
 - a registry starter packet, package metadata template, or older repo ledger automatically proves a current Official MCP Registry listing without a fresh anonymous read-back
 - a lowercase GitHub Pages URL variant carries the same public provenance as the live deployed homepage path when the actual Pages host only serves the case-correct route
 - a repo-managed web runtime `.env.local` file or local write-session fallback token carries any public redistribution rights; it remains maintainer-local runtime state only
+- a repo-owned clean proof pack or UI audit runner automatically upgrades into public proof; those artifacts remain maintainer-local verification scaffolding even when they use Gemini or Designer feedback
 - a host-bootstrapped strict-CI fallback or repo-owned local core-services fallback changes the rights boundary of the public repo; both are maintainer-local verification behavior, not new public distribution rights
 - the fact that `./bin/full-stack down` now tears down repo-owned core services
   during a clean local reset also stays inside maintainer-local verification

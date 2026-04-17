@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { SourceIdentityCard } from "@/components/source-identity-card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { DigestFeedItem, SubscriptionCategory } from "@/lib/api/types";
@@ -11,7 +10,6 @@ import {
 	editorialSans,
 	editorialSerif,
 } from "@/lib/editorial-fonts";
-import { resolveFeedIdentity } from "@/lib/source-identity";
 import { cn } from "@/lib/utils";
 
 import { RelativeTime } from "./relative-time";
@@ -60,7 +58,6 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 					{items.map((item, index) => {
 						const isVideo = (item.content_type ?? "video") === "video";
 						const isSelected = selectedJobId === item.job_id;
-						const identityModel = resolveFeedIdentity(item);
 						const staggerStyle = {
 							"--feed-stagger-index": index,
 						} as CSSProperties;
@@ -115,37 +112,36 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 											>
 												{item.title}
 											</h3>
-											{item.published_document_title ? (
-												<p className="feed-entry-support">
-													Reader edition ready · {item.published_document_title}
-												</p>
-											) : null}
+											<p className="feed-entry-support">
+												{item.published_document_title
+													? `Reader edition ready · ${item.published_document_title}`
+													: "Preview this item first, then decide whether to open the finished reader edition."}
+											</p>
 										</div>
-										<SourceIdentityCard
-											identity={{
-												...identityModel,
-												description: identityModel.description,
-												meta: [
-													`Universe ${renderSourceName(item.source, item.source_name)}`,
-													`Published ${new Date(
-														item.published_at,
-													).toLocaleDateString("en-US", {
-														month: "short",
-														day: "numeric",
-														year: "numeric",
-													})}`,
-													...(item.feedback_label
-														? [`Feedback ${item.feedback_label}`]
-														: []),
-												],
-											}}
-											compact
+										<div
 											className={cn(
-												"feed-entry-identity-card transition-colors",
+												"rounded-[1rem] border border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground",
 												isSelected &&
-													"border-primary/45 bg-[color:var(--color-primary-light)]/50",
+													"border-primary/45 bg-[color:var(--color-primary-light)]/40",
 											)}
-										/>
+										>
+											<p
+												className={`text-[10px] uppercase tracking-[0.18em] text-muted-foreground ${editorialMono.className}`}
+											>
+												{item.subscription_id
+													? "Reading today"
+													: "Preview lane"}
+											</p>
+											<p className="mt-2 line-clamp-2 text-sm text-foreground">
+												{item.source_name ||
+													renderSourceName(item.source, item.source_name)}
+											</p>
+											<p className="mt-2 text-xs text-muted-foreground">
+												{item.subscription_id
+													? "Open the preview first. The source desk and notes can wait."
+													: "Start with the preview, then decide whether this item belongs in the reading flow."}
+											</p>
+										</div>
 									</div>
 								</Link>
 							</li>

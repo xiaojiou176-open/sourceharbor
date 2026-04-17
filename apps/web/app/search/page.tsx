@@ -387,56 +387,64 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-6">
-								<form
-									method="GET"
-									className="grid gap-4 xl:grid-cols-[1.5fr_0.72fr_0.72fr_0.26fr]"
-								>
+								<form method="GET" className="space-y-5">
 									<input
 										type="hidden"
 										name="intent"
 										value={askIntent ? "ask" : ""}
 									/>
-									<FormInputField
-										name="q"
-										label={askIntent ? copy.questionLabel : copy.queryLabel}
-										placeholder={
-											askIntent
-												? copy.questionPlaceholder
-												: copy.queryPlaceholder
-										}
-										defaultValue={queryValue}
-										hint={askIntent ? copy.askHint : copy.searchHint}
-									/>
-									<FormSelectField
-										name="mode"
-										label={askIntent ? copy.groundingModeLabel : copy.modeLabel}
-										defaultValue={normalizedMode}
-										options={modeOptions}
-									/>
-									<FormSelectField
-										name="platform"
-										label={copy.platformLabel}
-										defaultValue={safePlatform}
-										options={platformOptions}
-									/>
-									<FormInputField
-										name="top_k"
-										label={copy.topKLabel}
-										type="number"
-										min={1}
-										max={20}
-										defaultValue={safeTopK}
-									/>
-									<div className="flex flex-wrap items-end gap-3 xl:col-span-full">
-										<Button type="submit" variant="hero" size="sm">
-											{askIntent ? copy.askButton : copy.searchButton}
-										</Button>
-										<Button asChild variant="ghost" size="sm">
-											<Link href={askIntent ? "/ask" : "/search"}>
-												{copy.clearButton}
-											</Link>
-										</Button>
+									<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+										<FormInputField
+											name="q"
+											label={askIntent ? copy.questionLabel : copy.queryLabel}
+											placeholder={
+												askIntent
+													? copy.questionPlaceholder
+													: copy.queryPlaceholder
+											}
+											defaultValue={queryValue}
+											hint={askIntent ? copy.askHint : copy.searchHint}
+										/>
+										<div className="flex flex-wrap items-end gap-3">
+											<Button type="submit" variant="hero" size="sm">
+												{askIntent ? copy.askButton : copy.searchButton}
+											</Button>
+											<Button asChild variant="ghost" size="sm">
+												<Link href={askIntent ? "/ask" : "/search"}>
+													{copy.clearButton}
+												</Link>
+											</Button>
+										</div>
 									</div>
+									<details className="rounded-2xl border border-border/60 bg-background/55 p-4">
+										<summary className="cursor-pointer list-none text-sm font-semibold text-foreground">
+											Refine later
+										</summary>
+										<div className="mt-4 grid gap-4 xl:grid-cols-[0.72fr_0.72fr_0.26fr]">
+											<FormSelectField
+												name="mode"
+												label={
+													askIntent ? copy.groundingModeLabel : copy.modeLabel
+												}
+												defaultValue={normalizedMode}
+												options={modeOptions}
+											/>
+											<FormSelectField
+												name="platform"
+												label={copy.platformLabel}
+												defaultValue={safePlatform}
+												options={platformOptions}
+											/>
+											<FormInputField
+												name="top_k"
+												label={copy.topKLabel}
+												type="number"
+												min={1}
+												max={20}
+												defaultValue={safeTopK}
+											/>
+										</div>
+									</details>
 								</form>
 								<p className="text-sm leading-6 text-muted-foreground">
 									Start with one plain-language question. Open filters only

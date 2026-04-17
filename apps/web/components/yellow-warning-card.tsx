@@ -31,14 +31,14 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 				</h2>
 				<p className="max-w-4xl text-sm leading-6 text-amber-950/80 dark:text-amber-100/80">
 					The story is readable, but the proof packet is not fully sealed. Keep
-					this note nearby, finish the body, then open the details only if you
-					need to verify provenance.
+					this note nearby; open the details only if you need the specific
+					reasons.
 				</p>
 			</CardHeader>
 			<CardContent className="pt-0">
 				<details className="rounded-2xl border border-amber-300/80 bg-white/60 p-4 text-sm dark:border-amber-800/80 dark:bg-amber-950/20">
 					<summary className="cursor-pointer list-none font-medium text-amber-950 dark:text-amber-100">
-						Open note details
+						Read the caution notes
 					</summary>
 					<div className="mt-3 grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
 						<div>
@@ -49,8 +49,8 @@ export function YellowWarningCard({ reasons }: YellowWarningCardProps) {
 							</p>
 							<ol className="mt-2 space-y-2 leading-6">
 								<li>1. Read the body first.</li>
-								<li>2. Open the footnote drawer before reusing a claim.</li>
-								<li>3. Check coverage last.</li>
+								<li>2. Open source notes before reusing a claim.</li>
+								<li>3. Check repair and coverage last.</li>
 							</ol>
 						</div>
 						<div className="border-t border-amber-300/80 pt-4 dark:border-amber-800/80 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">

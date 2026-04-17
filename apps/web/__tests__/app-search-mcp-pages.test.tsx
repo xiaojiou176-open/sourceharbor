@@ -132,6 +132,23 @@ describe("search and MCP front doors", () => {
 		expect(screen.queryByText(/Search results/i)).not.toBeInTheDocument();
 	});
 
+	it("keeps the empty Search front door focused on one question before showing filters", async () => {
+		render(
+			await SearchPage({
+				searchParams: {},
+			}),
+		);
+
+		expect(
+			screen.getByRole("heading", { name: "Search what you've saved" }),
+		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();
+		expect(screen.getByText("Refine later")).toBeInTheDocument();
+		expect(
+			screen.getByText(/Start with one plain-language question/i),
+		).toBeInTheDocument();
+	});
+
 	it("renders Ask as a briefing-aware front door with answer, changes, and evidence", async () => {
 		mockGetAskAnswer.mockResolvedValue({
 			question: "retry policy",
@@ -633,7 +650,7 @@ describe("search and MCP front doors", () => {
 		const answerHeading = screen.getByRole("heading", {
 			name: "Best current answer",
 		});
-		const refineLaterSummary = screen.getByText("Refine later");
+		const refineLaterSummary = screen.getAllByText("Refine later")[0];
 		expect(
 			answerHeading.compareDocumentPosition(refineLaterSummary) &
 				Node.DOCUMENT_POSITION_FOLLOWING,
@@ -698,6 +715,53 @@ describe("search and MCP front doors", () => {
 		expect(
 			screen.getAllByText(/Without a watchlist briefing/i).length,
 		).toBeGreaterThan(0);
+	});
+
+	it("keeps the empty Ask front door focused on one question before showing deeper controls", async () => {
+		mockGetAskAnswer.mockResolvedValue({
+			question: "",
+			mode: "keyword",
+			top_k: 6,
+			context: {
+				watchlist_id: null,
+				watchlist_name: null,
+				story_id: null,
+				selected_story_id: null,
+				story_headline: null,
+				topic_key: null,
+				topic_label: null,
+				selection_basis: "none",
+				filters: {},
+				briefing_available: false,
+			},
+			answer_state: "briefing_unavailable",
+			answer_headline: null,
+			answer_summary: null,
+			answer_reason: null,
+			answer_confidence: "limited",
+			story_change_summary: null,
+			story_page: null,
+			retrieval: null,
+			citations: [],
+			fallback_reason: "Ask could not load the current answer lane right now.",
+			fallback_next_step:
+				"Open raw search or the latest briefing while the answer lane recovers.",
+			fallback_actions: [],
+		});
+
+		render(
+			await AskPage({
+				searchParams: {},
+			}),
+		);
+
+		expect(
+			screen.getByRole("heading", { name: "Ask about what you've saved" }),
+		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Ask" })).toBeInTheDocument();
+		expect(screen.getAllByText("Refine later").length).toBeGreaterThan(0);
+		expect(screen.getByText("Saved topics")).toBeInTheDocument();
+		expect(screen.getByText(/Pick one saved topic first/i)).toBeInTheDocument();
 	});
 
 	it("keeps Ask available when the answer route rejects", async () => {

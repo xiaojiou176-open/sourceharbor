@@ -56,7 +56,7 @@ export default async function RootLayout({
 						</Suspense>
 						<main
 							id="main-content"
-							className="flex min-w-0 flex-1 flex-col overflow-auto pt-14 md:pt-0"
+							className="flex min-w-0 flex-1 flex-col overflow-auto pl-14 pt-14 md:pl-0 md:pt-0"
 							tabIndex={-1}
 						>
 							<div className="folo-main-stage">

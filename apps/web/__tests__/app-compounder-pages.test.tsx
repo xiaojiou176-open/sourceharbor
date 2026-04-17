@@ -418,7 +418,7 @@ describe("compounder pages", () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole("link", { name: "Create a watchlist" }),
-		).toHaveAttribute("href", "/watchlists#create-watchlist");
+		).toHaveAttribute("href", "/watchlists?compose=1#create-watchlist");
 		expect(
 			screen.getByRole("link", { name: "Browse feed first" }),
 		).toHaveAttribute("href", "/feed");

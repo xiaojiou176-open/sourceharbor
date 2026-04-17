@@ -118,7 +118,20 @@ function SidebarNavContent({
 		pathname === "/" ||
 		pathname.startsWith("/reader") ||
 		pathname.startsWith("/feed") ||
-		pathname.startsWith("/subscriptions");
+		pathname.startsWith("/subscriptions") ||
+		pathname.startsWith("/search") ||
+		pathname.startsWith("/ask") ||
+		pathname.startsWith("/watchlists") ||
+		pathname.startsWith("/trends") ||
+		pathname.startsWith("/briefings") ||
+		pathname.startsWith("/knowledge");
+	const searchOrAskFocused =
+		pathname.startsWith("/search") || pathname.startsWith("/ask");
+	const compounderFocused =
+		pathname.startsWith("/watchlists") ||
+		pathname.startsWith("/trends") ||
+		pathname.startsWith("/briefings") ||
+		pathname.startsWith("/knowledge");
 	const currentCategory = searchParams.get("category") ?? "";
 	const currentSub = searchParams.get("sub") ?? "";
 	const isFeed = pathname === "/feed" || pathname.startsWith("/feed");
@@ -140,61 +153,72 @@ function SidebarNavContent({
 		{
 			id: "read",
 			label: "Read",
-			items: frontstageFocused
-				? [
-						{ href: "/", label: "Home", icon: Home, active: pathname === "/" },
-						{
-							href: "/reader",
-							label: "Reader",
-							icon: FileText,
-							active: pathname.startsWith("/reader"),
-						},
-						{
-							href: "/feed",
-							label: "Reading desk",
-							icon: Sparkles,
-							active: isFeed && !currentCategory && !currentSub,
-						},
-						{
-							href: "/subscriptions",
-							label: "Sources",
-							icon: Plus,
-							active: pathname.startsWith("/subscriptions"),
-						},
-					]
-				: [
-						{ href: "/", label: "Home", icon: Home, active: pathname === "/" },
-						{
-							href: "/reader",
-							label: "Reader",
-							icon: FileText,
-							active: pathname.startsWith("/reader"),
-						},
-						{
-							href: "/feed",
-							label: "Reading desk",
-							icon: Sparkles,
-							active: isFeed && !currentCategory && !currentSub,
-						},
-						{
-							href: "/subscriptions",
-							label: "Sources",
-							icon: Plus,
-							active: pathname.startsWith("/subscriptions"),
-						},
-						{
-							href: "/search",
-							label: "Search",
-							icon: Search,
-							active: pathname.startsWith("/search"),
-						},
-						{
-							href: "/ask",
-							label: "Ask",
-							icon: MessageSquare,
-							active: pathname.startsWith("/ask"),
-						},
-					],
+			items:
+				frontstageFocused && !searchOrAskFocused
+					? [
+							{
+								href: "/",
+								label: "Home",
+								icon: Home,
+								active: pathname === "/",
+							},
+							{
+								href: "/reader",
+								label: "Reader",
+								icon: FileText,
+								active: pathname.startsWith("/reader"),
+							},
+							{
+								href: "/feed",
+								label: "Reading desk",
+								icon: Sparkles,
+								active: isFeed && !currentCategory && !currentSub,
+							},
+							{
+								href: "/subscriptions",
+								label: "Sources",
+								icon: Plus,
+								active: pathname.startsWith("/subscriptions"),
+							},
+						]
+					: [
+							{
+								href: "/",
+								label: "Home",
+								icon: Home,
+								active: pathname === "/",
+							},
+							{
+								href: "/reader",
+								label: "Reader",
+								icon: FileText,
+								active: pathname.startsWith("/reader"),
+							},
+							{
+								href: "/feed",
+								label: "Reading desk",
+								icon: Sparkles,
+								active: isFeed && !currentCategory && !currentSub,
+							},
+							{
+								href: "/subscriptions",
+								label: "Sources",
+								icon: Plus,
+								active: pathname.startsWith("/subscriptions"),
+							},
+							{
+								href: "/search",
+								label: "Search",
+								icon: Search,
+								active: pathname.startsWith("/search"),
+							},
+							{
+								href: "/ask",
+								label: "Ask",
+								icon: MessageSquare,
+								active: pathname.startsWith("/ask"),
+							},
+						],
 		},
 		{
 			id: "build",
@@ -272,6 +296,7 @@ function SidebarNavContent({
 	const primarySections = navSections.filter(
 		(section) =>
 			section.id === "read" ||
+			(compounderFocused && section.id === "compounder") ||
 			(!frontstageFocused && section.id === "compounder"),
 	);
 	const utilitySections = navSections.filter(
@@ -541,7 +566,13 @@ export function Sidebar({
 		pathname === "/" ||
 		pathname.startsWith("/reader") ||
 		pathname.startsWith("/feed") ||
-		pathname.startsWith("/subscriptions");
+		pathname.startsWith("/subscriptions") ||
+		pathname.startsWith("/search") ||
+		pathname.startsWith("/ask") ||
+		pathname.startsWith("/watchlists") ||
+		pathname.startsWith("/trends") ||
+		pathname.startsWith("/briefings") ||
+		pathname.startsWith("/knowledge");
 
 	useEffect(() => {
 		if (
