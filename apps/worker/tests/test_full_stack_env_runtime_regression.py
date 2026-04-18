@@ -393,7 +393,7 @@ def test_e2e_live_smoke_defaults_require_secrets_and_keep_opt_out_explicit() -> 
     assert 'fail "missing required core secrets: ${missing_core[*]}"' in e2e_live_smoke
     assert 'log "SKIP: missing core secrets: ${missing_core[*]}"' in e2e_live_smoke
     assert 'NOTIFICATION_LANE_READY="0"' in e2e_live_smoke
-    assert 'notification lane degraded: ${NOTIFICATION_LANE_REASON}' in e2e_live_smoke
+    assert "notification lane degraded: ${NOTIFICATION_LANE_REASON}" in e2e_live_smoke
     assert "Scenario: cleanup workflow API closure" in e2e_live_smoke
     assert 'api_post "/api/v1/workflows/run"' in e2e_live_smoke
     assert '"workflow": "cleanup"' in e2e_live_smoke
