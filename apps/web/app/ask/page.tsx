@@ -365,7 +365,7 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 				<CardDescription>{askCopy.askFormDescription}</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6">
-				<form method="GET" className="grid gap-4 xl:grid-cols-2">
+				<form method="GET" className="space-y-5">
 					<FormInputField
 						id="ask-question"
 						name="question"
@@ -374,36 +374,6 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 						placeholder={askCopy.questionPlaceholder}
 						defaultValue={safeQuestion}
 						hint={askCopy.askHint}
-					/>
-					<FormSelectField
-						name="watchlist_id"
-						label={askCopy.askContextLabel}
-						defaultValue={askPayload.context.watchlist_id ?? ""}
-						options={contextOptions}
-						hint={askCopy.askContextDescription}
-					/>
-					<FormSelectField
-						name="mode"
-						label={askCopy.groundingModeLabel}
-						defaultValue={safeMode}
-						options={MODE_OPTIONS.map((option) => ({
-							...option,
-							label:
-								option.value === "keyword"
-									? askCopy.modeOptions.keyword
-									: option.value === "semantic"
-										? askCopy.modeOptions.semantic
-										: askCopy.modeOptions.hybrid,
-						}))}
-					/>
-					<FormInputField
-						id="ask-top-k"
-						name="top_k"
-						label={askCopy.topKLabel}
-						type="number"
-						min={1}
-						max={12}
-						defaultValue={String(safeTopK)}
 					/>
 					{askPayload.context.story_id ? (
 						<input
@@ -419,7 +389,7 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 							value={askPayload.context.topic_key}
 						/>
 					) : null}
-					<div className="flex items-end gap-3">
+					<div className="flex flex-wrap items-end gap-3">
 						<Button type="submit" variant="hero" size="sm">
 							{askCopy.askButton}
 						</Button>
@@ -427,6 +397,43 @@ export default async function AskPage({ searchParams }: AskPageProps) {
 							<Link href="/ask">{askCopy.clearButton}</Link>
 						</Button>
 					</div>
+					<details className="rounded-2xl border border-border/60 bg-background/55 p-4">
+						<summary className="cursor-pointer list-none text-sm font-semibold text-foreground">
+							Refine later
+						</summary>
+						<div className="mt-4 grid gap-4 xl:grid-cols-2">
+							<FormSelectField
+								name="watchlist_id"
+								label={askCopy.askContextLabel}
+								defaultValue={askPayload.context.watchlist_id ?? ""}
+								options={contextOptions}
+								hint={askCopy.askContextDescription}
+							/>
+							<FormSelectField
+								name="mode"
+								label={askCopy.groundingModeLabel}
+								defaultValue={safeMode}
+								options={MODE_OPTIONS.map((option) => ({
+									...option,
+									label:
+										option.value === "keyword"
+											? askCopy.modeOptions.keyword
+											: option.value === "semantic"
+												? askCopy.modeOptions.semantic
+												: askCopy.modeOptions.hybrid,
+								}))}
+							/>
+							<FormInputField
+								id="ask-top-k"
+								name="top_k"
+								label={askCopy.topKLabel}
+								type="number"
+								min={1}
+								max={12}
+								defaultValue={String(safeTopK)}
+							/>
+						</div>
+					</details>
 				</form>
 				<div className="space-y-4 rounded-2xl border border-border/60 bg-background/55 p-4">
 					<p className="text-sm leading-6 text-muted-foreground">

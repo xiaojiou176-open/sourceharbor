@@ -31,6 +31,23 @@ function looksLikeRawUrl(value: string | null | undefined): boolean {
 	return text.startsWith("http://") || text.startsWith("https://");
 }
 
+function isSingletonReadingMode(mode: string): boolean {
+	return mode === "singleton_polish" || mode === "polish_only";
+}
+
+function isGenericSourceFallbackTitle(
+	value: string | null | undefined,
+): boolean {
+	const normalized = String(value || "")
+		.trim()
+		.toLowerCase();
+	if (!normalized) return false;
+	if (normalized === "tracked source" || normalized === "reading source") {
+		return true;
+	}
+	return normalized.endsWith(" source") && normalized.split(/\s+/).length <= 2;
+}
+
 function formatReaderShelfTitle(document: {
 	title: string;
 	topic_label?: string | null;
@@ -51,17 +68,40 @@ function formatReaderShelfTitle(document: {
 	const sourceTitle = firstSource
 		? resolveReaderSourceIdentity(firstSource).title
 		: "";
-	if (sourceTitle && !looksLikeRawUrl(sourceTitle)) {
+	if (
+		sourceTitle &&
+		!looksLikeRawUrl(sourceTitle) &&
+		!isGenericSourceFallbackTitle(sourceTitle)
+	) {
 		return sourceTitle;
 	}
 	if (firstSource?.platform) {
-		return document.materialization_mode === "singleton_polish"
-			? `Reading note from ${String(firstSource.platform).trim()}`
-			: `Reading story from ${String(firstSource.platform).trim()}`;
+		return isSingletonReadingMode(document.materialization_mode)
+			? "Reading note"
+			: "Published story";
 	}
-	return document.materialization_mode === "singleton_polish"
+	return isSingletonReadingMode(document.materialization_mode)
 		? "Reading note"
 		: "Published story";
+}
+
+function formatReaderShelfSummary(document: {
+	title: string;
+	summary?: string | null;
+	materialization_mode: string;
+}) {
+	const summary = String(document.summary ?? "").trim();
+	if (
+		summary &&
+		!looksLikeRawUrl(summary) &&
+		!summary.toLowerCase().includes("polish-only reader document")
+	) {
+		return summary;
+	}
+	return document.materialization_mode === "singleton_polish" ||
+		document.materialization_mode === "polish_only"
+		? "A finished reading note. Open notes later only when you need provenance."
+		: "A finished story. Open notes later only when you need provenance.";
 }
 
 export default async function ReaderPage() {
@@ -91,6 +131,9 @@ export default async function ReaderPage() {
 	const totalDocuments = documents.length;
 	const shelfUnavailable = documentsUnavailable && totalDocuments === 0;
 	const leadTitle = leadDocument ? formatReaderShelfTitle(leadDocument) : "";
+	const leadSummary = leadDocument
+		? formatReaderShelfSummary(leadDocument)
+		: null;
 	const needsAttentionDocuments = documents.filter(
 		(document) =>
 			document.published_with_gap && document.id !== (leadDocument?.id ?? ""),
@@ -110,7 +153,7 @@ export default async function ReaderPage() {
 							<h1
 								data-route-heading
 								tabIndex={-1}
-								className={`max-w-4xl text-4xl leading-[0.96] tracking-tight md:text-5xl xl:text-6xl ${editorialSerif.className}`}
+								className={`max-w-4xl pb-1 text-4xl leading-[1.1] tracking-tight md:text-5xl md:leading-[1.02] xl:text-6xl ${editorialSerif.className}`}
 							>
 								{shelfUnavailable
 									? "Reader shelf is temporarily unavailable"
@@ -118,10 +161,10 @@ export default async function ReaderPage() {
 										? leadTitle
 										: "Reader"}
 							</h1>
-							<CardDescription className="max-w-3xl text-base leading-8 text-foreground/75">
+							<CardDescription className="max-w-3xl text-base leading-8 text-foreground/82">
 								{shelfUnavailable
 									? "The reading shelf could not be loaded just now. You can still open the sample story or check the backstage status while it recovers."
-									: (leadDocument?.summary ??
+									: (leadSummary ??
 										"Pick one finished story. Read first, then open notes only when you need provenance.")}
 							</CardDescription>
 						</div>

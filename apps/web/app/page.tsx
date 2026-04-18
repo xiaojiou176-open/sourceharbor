@@ -7,7 +7,6 @@ import {
 	CardContent,
 	CardDescription,
 	CardHeader,
-	CardTitle,
 } from "@/components/ui/card";
 import {
 	editorialMono,
@@ -32,40 +31,28 @@ export default function DashboardPage() {
 		<div
 			className={`folo-page-shell folo-unified-shell ${editorialSans.className}`}
 		>
-			<div className="folo-page-header">
-				<p className="folo-page-kicker">{copy.kicker}</p>
-				<h1
-					className={`folo-page-title ${editorialSerif.className}`}
-					data-route-heading
-					tabIndex={-1}
-				>
-					{copy.heroTitle}
-				</h1>
-				<p className="folo-page-subtitle">
-					Open the reader first. Everything else can wait.
-				</p>
-			</div>
-
 			<section
 				aria-labelledby="dashboard-first-route-heading"
-				className="grid gap-4 xl:grid-cols-[minmax(0,1.28fr)_minmax(0,0.82fr)]"
+				className="mx-auto w-full max-w-5xl"
 			>
 				<h2 id="dashboard-first-route-heading" className="sr-only">
 					Choose your first reading route
 				</h2>
-				<Card className="folo-surface border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
+				<Card className="folo-surface mx-auto w-full border-border/70 bg-gradient-to-br from-background via-background to-rose-50/60">
 					<CardHeader className="gap-4">
 						<p
 							className={`text-xs uppercase tracking-[0.24em] text-muted-foreground ${editorialMono.className}`}
 						>
-							Start reading
+							{copy.kicker}
 						</p>
-						<CardTitle
+						<h1
+							data-route-heading
+							tabIndex={-1}
 							className={`max-w-4xl text-3xl leading-tight md:text-[2.2rem] ${editorialSerif.className}`}
 						>
-							Start with something worth reading
-						</CardTitle>
-						<CardDescription className="max-w-3xl text-base leading-7">
+							{copy.heroTitle}
+						</h1>
+						<CardDescription className="max-w-3xl text-base leading-7 text-foreground/82">
 							Open the reader, scan today&apos;s feed, or follow a few new
 							sources. Search and builder tools can wait.
 						</CardDescription>

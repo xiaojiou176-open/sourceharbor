@@ -276,6 +276,7 @@ export default async function SubscriptionsPage({
 	const pageErrorCode =
 		subscriptionsResult.errorCode ?? templateCatalogResult.errorCode;
 	const highlightedSubscriptions = subscriptions.slice(0, 6);
+	const hasTrackedSources = highlightedSubscriptions.length > 0;
 	return (
 		<div
 			className={`folo-page-shell folo-unified-shell ${editorialSans.className}`}
@@ -290,20 +291,37 @@ export default async function SubscriptionsPage({
 					{copy.heroTitle}
 				</h1>
 				<p className="folo-page-subtitle">
-					Paste a source first. Open the intake details only after you decide
-					you want to keep it.
+					{hasTrackedSources
+						? "Start with the sources you already follow. Paste a new one only when you want to widen that map."
+						: "Paste a source first. Open the intake details only after you decide you want to keep it."}
 				</p>
 				<div className="mt-4 flex flex-wrap gap-3">
-					<Button asChild variant="hero">
-						<Link href="#manual-source-intake-input">Paste a source</Link>
-					</Button>
+					{hasTrackedSources ? (
+						<>
+							<Button asChild variant="hero">
+								<Link href="#tracked-universes">Open saved sources</Link>
+							</Button>
+							<Link
+								href="#manual-source-intake-input"
+								className="inline-flex items-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+							>
+								Paste a source
+							</Link>
+						</>
+					) : (
+						<Button asChild variant="hero">
+							<Link href="#manual-source-intake-input">Paste a source</Link>
+						</Button>
+					)}
 				</div>
-				<Link
-					href="#tracked-universes"
-					className="mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-				>
-					Open saved sources after you paste the first one
-				</Link>
+				{hasTrackedSources ? null : (
+					<Link
+						href="#tracked-universes"
+						className="mt-3 inline-flex text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+					>
+						Open saved sources after you paste the first one
+					</Link>
+				)}
 			</div>
 
 			{renderAlert(status, code)}
@@ -325,64 +343,68 @@ export default async function SubscriptionsPage({
 				</Card>
 			) : null}
 
-			<section id="manual-source-intake">
-				<ManualSourceIntakePanel
-					copy={copy.manualIntake}
-					sessionToken={sessionToken}
-					headingLevel="h2"
-				/>
-			</section>
+			<section className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:items-start">
+				<section id="manual-source-intake" className="xl:order-2">
+					<ManualSourceIntakePanel
+						copy={copy.manualIntake}
+						sessionToken={sessionToken}
+						headingLevel="h2"
+					/>
+				</section>
 
-			<section className="space-y-4">
-				<details
-					id="tracked-universes"
-					className="folo-surface rounded-[1.6rem] border border-border/70 bg-background/95 p-5 shadow-sm"
-				>
-					<summary className="m-[-0.5rem] cursor-pointer list-none rounded-[1.2rem] p-2 transition-colors hover:bg-muted/20">
-						<div className="flex flex-wrap items-start justify-between gap-3">
-							<div className="space-y-2">
-								<p
-									className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
-								>
-									Saved sources
-								</p>
-								<h2
-									className={`text-2xl font-semibold ${editorialSerif.className}`}
-								>
-									Tracked universes
-								</h2>
-								<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-									Open this after you paste a source or when you already know
-									what you want to follow.
-								</p>
+				<section className="space-y-4 xl:order-1">
+					<details
+						id="tracked-universes"
+						open
+						className="folo-surface rounded-[1.6rem] border border-border/70 bg-background/95 p-5 shadow-sm"
+					>
+						<summary className="m-[-0.5rem] cursor-pointer list-none rounded-[1.2rem] p-2 transition-colors hover:bg-muted/20">
+							<div className="flex flex-wrap items-start justify-between gap-3">
+								<div className="space-y-2">
+									<p
+										className={`text-[11px] uppercase tracking-[0.22em] text-muted-foreground ${editorialMono.className}`}
+									>
+										Saved sources
+									</p>
+									<h2
+										className={`text-2xl font-semibold ${editorialSerif.className}`}
+									>
+										Tracked universes
+									</h2>
+									<p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+										Start here when you already know the world you want to keep
+										following. Paste a new source only after that picture looks
+										right.
+									</p>
+								</div>
 							</div>
+						</summary>
+						<div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-1">
+							{highlightedSubscriptions.length ? (
+								highlightedSubscriptions.map((subscription) => (
+									<SourceIdentityCard
+										key={subscription.id}
+										identity={resolveSubscriptionIdentity(subscription)}
+										compact
+									/>
+								))
+							) : (
+								<div className="rounded-[1.2rem] border border-dashed border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
+									<p>No saved sources yet.</p>
+									<p className="mt-2">
+										Paste a source and turn the first one into something you can
+										keep following.
+									</p>
+									<Button asChild variant="outline" size="sm" className="mt-4">
+										<Link href="#manual-source-intake-input">
+											Follow the first source
+										</Link>
+									</Button>
+								</div>
+							)}
 						</div>
-					</summary>
-					<div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-						{highlightedSubscriptions.length ? (
-							highlightedSubscriptions.map((subscription) => (
-								<SourceIdentityCard
-									key={subscription.id}
-									identity={resolveSubscriptionIdentity(subscription)}
-									compact
-								/>
-							))
-						) : (
-							<div className="rounded-[1.2rem] border border-dashed border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
-								<p>No saved sources yet.</p>
-								<p className="mt-2">
-									Paste a source and turn the first one into something you can
-									keep following.
-								</p>
-								<Button asChild variant="outline" size="sm" className="mt-4">
-									<Link href="#manual-source-intake-input">
-										Follow the first source
-									</Link>
-								</Button>
-							</div>
-						)}
-					</div>
-				</details>
+					</details>
+				</section>
 			</section>
 
 			<section className="space-y-4">

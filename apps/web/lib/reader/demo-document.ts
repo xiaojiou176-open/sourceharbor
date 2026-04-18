@@ -101,7 +101,7 @@ export function buildDemoReaderDocument(): ReaderDocument {
 			},
 			{
 				source_item_id: "preview-source-3",
-				title: "Evidence drawer contract",
+				title: "Source notes contract",
 				canonical_author_name: "Evidence Desk",
 				affiliation_label: "Backstage universe",
 				relation_kind: "subscription_tracked",
@@ -131,7 +131,7 @@ export function buildDemoReaderDocument(): ReaderDocument {
 			},
 			{
 				section_id: "evidence-drawer",
-				title: "Evidence drawer",
+				title: "Source notes",
 				markdown:
 					"Open backstage evidence only when you need to inspect source lineage or quote safely.",
 				source_item_ids: ["preview-source-3"],

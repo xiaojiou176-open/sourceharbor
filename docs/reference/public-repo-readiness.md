@@ -9,6 +9,8 @@ That does **not** automatically mean every remote or release claim is proven for
 - the repository exposes API, worker, MCP, and web surfaces
 - the local proof path is documented and rerunnable
 - the public story is backed by real commands and tests
+- the current frontstage/story surfaces can now be re-verified with a repo-owned clean proof pack and UI audit runner instead of one-off manual screenshot commands
+- the current public front door can also be re-verified with a repo-owned frontstage clean proof pack and UI audit runner over `/`, `/feed`, `/subscriptions`, and `/reader/demo`
 
 ## What Needs Stronger Evidence
 
@@ -35,6 +37,8 @@ Two current reading rules are worth keeping explicit:
 - fast-moving public distribution facts such as exact PyPI / Official MCP Registry versions or directory-site read-backs should stay centralized in `docs/public-distribution.md`; README, builder guides, and status pages should point at that ledger instead of duplicating day-specific listing state
 - the repo-managed web runtime under `.runtime-cache/tmp/web-runtime/workspace/apps/web` is local operator proof only; it is a staging copy for local verification, not a public distribution artifact
 - the repo-managed web runtime's `.env.local` under `.runtime-cache/tmp/web-runtime/workspace/apps/web/.env.local` is also local operator proof only; it exists to align browser writes with the local stack and must never be treated as a public surface or release artifact
+- repo-owned clean proof packs created for UI audit use are local verification artifacts only; they can support maintainer-local proof and Gemini/UI-audit review, but they do not widen the public distribution boundary
+- repo-owned frontstage clean proof packs and their fallback mini packs are also local verification artifacts only; they strengthen maintainer-local public-surface review, not hosted or release-current claims
 - a current-commit mutation receipt under `.runtime-cache/reports/mutation/mutmut-cicd-stats.json` can support repo-side strict CI, but it still belongs to the local/manual proof ledger until a fresh strict receipt or remote check says otherwise
 - `./bin/repo-side-strict-ci --mode pre-push` is still a repo-side closeout command, not a remote proof shortcut; on maintainer workstations it can now fall back from the standard-env container path to a host-bootstrapped pre-push quality gate when Docker itself is the only missing layer
 - GitHub Pages URLs are case-sensitive at the site layer even when GitHub repo URLs are not, so tracked public homepages must match the live deployed path exactly instead of assuming lowercase variants will redirect

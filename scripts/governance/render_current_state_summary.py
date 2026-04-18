@@ -382,6 +382,26 @@ def render() -> str:
             ".runtime-cache/reports/release/release-evidence-attest-readiness.json + .runtime-cache/reports/governance/external-lane-workflows.json",
         )
     )
+
+    publish_pypi_workflow = workflow_lanes.get("publish-pypi") or {}
+    lines.append(
+        _lane_row(
+            "publish-pypi",
+            str(publish_pypi_workflow.get("state") or "missing"),
+            str(publish_pypi_workflow.get("note") or "missing"),
+            ".runtime-cache/reports/publish-pypi/metadata.json + .runtime-cache/reports/governance/external-lane-workflows.json",
+        )
+    )
+
+    publish_registry_workflow = workflow_lanes.get("publish-mcp-registry") or {}
+    lines.append(
+        _lane_row(
+            "publish-mcp-registry",
+            str(publish_registry_workflow.get("state") or "missing"),
+            str(publish_registry_workflow.get("note") or "missing"),
+            ".runtime-cache/reports/publish-mcp-registry/metadata.json + .runtime-cache/reports/governance/external-lane-workflows.json",
+        )
+    )
     if workflow_report:
         for lane in workflow_report.get("lanes", []):
             if not isinstance(lane, dict):

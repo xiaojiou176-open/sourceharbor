@@ -13,39 +13,17 @@
 </p>
 
 <p align="center">
-  Proof-first AI knowledge control tower for source intake, grounded search, and one shared Web/API/MCP truth, with strong YouTube/Bilibili lanes and traceable job receipts.
-</p>
-
-<p align="center">
   <a href="#see-it-in-30-seconds">See It In 30 Seconds</a>
   ·
   <a href="./docs/start-here.md">Run Locally</a>
   ·
-  <a href="./docs/see-it-fast.md">No-Boot Tour</a>
-  ·
-  <a href="./docs/project-status.md">Project Status</a>
-</p>
-
-<p align="center">
-  <a href="./docs/index.md">Docs Home</a>
-  ·
-  <a href="./docs/mcp-quickstart.md">MCP Quickstart</a>
+  <a href="./docs/proof.md">Proof</a>
   ·
   <a href="./docs/builders.md">Builders</a>
   ·
-  <a href="./docs/public-distribution.md">Distribution Status</a>
+  <a href="./docs/see-it-fast.md">No-Boot Tour</a>
   ·
-  <a href="./starter-packs/README.md">Starter Packs</a>
-  ·
-  <a href="./docs/media-kit.md">Media Kit</a>
-  ·
-  <a href="./docs/samples/README.md">Sample Corpus</a>
-  ·
-  <a href="./docs/proof.md">Proof</a>
-  ·
-  <a href="./docs/compare.md">Why It Stands Out</a>
-  ·
-  <a href="https://github.com/xiaojiou176-open/SourceHarbor/discussions">Discussions</a>
+  <a href="./docs/index.md">Docs Home</a>
 </p>
 
 <p align="center">

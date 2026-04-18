@@ -64,10 +64,12 @@ export default async function WatchlistsPage({
 		status,
 		code,
 		watchlist_id: watchlistId,
+		compose,
 	} = await resolveSearchParams(searchParams, [
 		"status",
 		"code",
 		"watchlist_id",
+		"compose",
 	] as const);
 	const sessionToken = getActionSessionTokenForForm();
 
@@ -106,6 +108,8 @@ export default async function WatchlistsPage({
 	const selectedStory = briefingPageResult.payload?.selected_story ?? null;
 	const selectedStoryRoutes =
 		selectedStory?.routes ?? briefingPageResult.payload?.routes;
+	const openCreateWatchlist =
+		compose.trim() === "1" || Boolean(editingWatchlist);
 	const compounderFrontDoorHref = trendWatchlist
 		? `/trends?watchlist_id=${encodeURIComponent(trendWatchlist.id)}`
 		: "/trends";
@@ -172,7 +176,7 @@ export default async function WatchlistsPage({
 					</CardHeader>
 					<CardContent className="flex flex-wrap gap-3">
 						<Button asChild variant="hero" size="sm">
-							<Link href="/watchlists#create-watchlist">
+							<Link href="/watchlists?compose=1#create-watchlist">
 								{copy.emptyReadyButton}
 							</Link>
 						</Button>
@@ -211,11 +215,18 @@ export default async function WatchlistsPage({
 						</div>
 
 						{watchlistSnapshotItems.length > 0 ? (
-							<SignalStrip
-								title="Watchlist snapshot"
-								description="See the shape of the story before you open the deeper tools."
-								items={watchlistSnapshotItems}
-							/>
+							<details className="rounded-xl border border-border/60 bg-background/55 p-4">
+								<summary className="cursor-pointer text-sm font-medium text-foreground">
+									Story signals later
+								</summary>
+								<div className="mt-3">
+									<SignalStrip
+										title="Watchlist snapshot"
+										description="Open this only after you decide this is the story you want to keep following."
+										items={watchlistSnapshotItems}
+									/>
+								</div>
+							</details>
 						) : null}
 
 						<div className="flex flex-wrap gap-3">
@@ -247,7 +258,7 @@ export default async function WatchlistsPage({
 				{!isReadyEmpty || watchlistsResult.error ? (
 					<details
 						className="group rounded-xl border border-border/70 bg-card text-card-foreground folo-surface"
-						open={Boolean(editingWatchlist)}
+						open={openCreateWatchlist}
 					>
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-6 marker:content-none [&::-webkit-details-marker]:hidden">
 							<div className="space-y-1">

@@ -257,10 +257,9 @@ describe("source surfaces", () => {
 			/>,
 		);
 
-		expect(screen.getByText("Evidence drawer")).toBeInTheDocument();
-		expect(screen.getByText("Warning context available")).toBeInTheDocument();
-
-		fireEvent.click(screen.getByText("Open footnotes by source"));
+		expect(screen.getByText("Where this story came from")).toBeInTheDocument();
+		expect(screen.getByText("Warning context included")).toBeInTheDocument();
+		expect(screen.getByText("Browse linked sources")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "Open source" })).toHaveAttribute(
 			"href",
 			"https://www.youtube.com/watch?v=demo",
@@ -272,16 +271,16 @@ describe("source surfaces", () => {
 			screen.getByRole("link", { name: "Open tracked universe" }),
 		).toHaveAttribute("href", "/feed?sub=sub-doc-1");
 
-		fireEvent.click(screen.getByText("Open section trace map"));
+		fireEvent.click(screen.getByText("See section support"));
 		const sectionCard = screen.getByText("Section one").closest("div");
 		expect(sectionCard).not.toBeNull();
 		expect(
-			within(sectionCard as HTMLElement).getByText(/Section id: section-1/),
+			within(sectionCard as HTMLElement).getByText(
+				/Supported by 1 linked source/,
+			),
 		).toBeInTheDocument();
 		expect(
-			within(sectionCard as HTMLElement).getByText(
-				/Linked source items: source-1/,
-			),
+			within(sectionCard as HTMLElement).getByText("Deep Source"),
 		).toBeInTheDocument();
 	});
 
@@ -335,8 +334,8 @@ describe("source surfaces", () => {
 			/>,
 		);
 
-		expect(screen.getByText("Clear provenance map")).toBeInTheDocument();
-		fireEvent.click(screen.getByText("Open footnotes by source"));
+		expect(screen.getByText("Provenance ready")).toBeInTheDocument();
+		expect(screen.getByText("Browse linked sources")).toBeInTheDocument();
 		expect(
 			screen.queryByRole("link", { name: "Open source" }),
 		).not.toBeInTheDocument();
@@ -347,8 +346,8 @@ describe("source surfaces", () => {
 			screen.queryByRole("link", { name: "Open tracked universe" }),
 		).not.toBeInTheDocument();
 
-		fireEvent.click(screen.getByText("Open section trace map"));
-		expect(screen.getByText(/Linked source items: none/)).toBeInTheDocument();
+		fireEvent.click(screen.getByText("See section support"));
+		expect(screen.getByText(/No linked sources yet\./)).toBeInTheDocument();
 	});
 
 	it("covers source identity helpers and story routes across edge branches", () => {
@@ -482,8 +481,30 @@ describe("source surfaces", () => {
 		});
 		expect(readerIdentity.eyebrow).toBe("Today's source");
 		expect(readerIdentity.meta).toEqual(
-			expect.arrayContaining(["Video contract gap", "2 claim kinds"]),
+			expect.arrayContaining(["Video contract gap", "Reading today"]),
 		);
+
+		const readerRawUrlIdentity = resolveReaderSourceIdentity({
+			source_item_id: "source-raw",
+			title: "https://www.youtube.com/watch?v=demo",
+			platform: "youtube",
+			source_origin: "manual_injected",
+			source_url: "https://www.youtube.com/watch?v=demo",
+			digest_preview: "",
+			relation_kind: "manual_injected",
+			affiliation_label: "",
+			matched_subscription_name: "",
+			canonical_author_name: "",
+			creator_display_name: "",
+			thumbnail_url: null,
+			avatar_url: null,
+			avatar_label: "",
+			raw_stage_contract: null,
+			identity_status: null,
+			claim_kinds: [],
+		});
+		expect(readerRawUrlIdentity.title).toBe("YouTube source");
+		expect(readerRawUrlIdentity.subtitle).toBe("youtube.com");
 
 		expect(
 			decorateAskRoute("/ask#evidence", {
@@ -673,6 +694,33 @@ describe("source surfaces", () => {
 			/>,
 		);
 		expect(screen.getByText("Marked as archived.")).toBeInTheDocument();
+	});
+
+	it("keeps compact source identity cards quieter than the full card layout", () => {
+		render(
+			<SourceIdentityCard
+				compact
+				identity={{
+					title: "Preview Source",
+					subtitle: "Preview lane",
+					description: "Preview description",
+					eyebrow: "Tracked evidence",
+					thumbnailUrl: null,
+					avatarUrl: null,
+					avatarLabel: "PS",
+					relationKind: "subscription_tracked",
+					relationLabel: "Tracked universe",
+					meta: ["Preview", "Tracked source", "Video-first verified"],
+				}}
+			/>,
+		);
+
+		expect(screen.getByText("Preview Source")).toBeInTheDocument();
+		expect(screen.queryByText("Tracked evidence")).not.toBeInTheDocument();
+		expect(screen.queryAllByText(/^PS$/)).toHaveLength(2);
+		expect(screen.queryByText("Tracked source")).not.toBeInTheDocument();
+		expect(screen.getByText("Preview")).toBeInTheDocument();
+		expect(screen.getByText("Video-first verified")).toBeInTheDocument();
 	});
 
 	it("surfaces manual intake submission failures without leaving stale results behind", async () => {

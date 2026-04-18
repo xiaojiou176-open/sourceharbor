@@ -54,6 +54,35 @@ function toSourceLabel(source: string): string {
 	return source || "Unknown";
 }
 
+function buildPreviewMarkdown(markdown: string): string {
+	const blocks = markdown
+		.split(/\n{2,}/)
+		.map((block) => block.trim())
+		.filter(Boolean)
+		.filter((block) => {
+			const normalized = block.toLowerCase();
+			if (normalized.includes("remains a polish-only reader document")) {
+				return false;
+			}
+			if (
+				normalized === "## source context" ||
+				normalized.startsWith("## source context\n")
+			) {
+				return false;
+			}
+			if (
+				normalized.startsWith("# http://") ||
+				normalized.startsWith("# https://") ||
+				normalized.startsWith("http://") ||
+				normalized.startsWith("https://")
+			) {
+				return false;
+			}
+			return true;
+		});
+	return blocks.slice(0, 4).join("\n\n");
+}
+
 type ReadingPaneProps = {
 	jobId: string | null;
 	title?: string;
@@ -264,6 +293,8 @@ export function ReadingPane({
 				artifact_type: "digest",
 			})
 		: null;
+	const previewMarkdown = markdown ? buildPreviewMarkdown(markdown) : null;
+	const truncatePreview = Boolean(markdown && markdown.length > 1400);
 
 	return (
 		<div
@@ -290,9 +321,20 @@ export function ReadingPane({
 						</div>
 					</header>
 
-					{markdown ? (
-						<div className="markdown-body">
-							<MarkdownPreview markdown={markdown} />
+					{previewMarkdown ? (
+						<div
+							className={
+								truncatePreview
+									? "relative max-h-[34rem] overflow-hidden"
+									: undefined
+							}
+						>
+							<div className="markdown-body">
+								<MarkdownPreview markdown={previewMarkdown} />
+							</div>
+							{truncatePreview ? (
+								<div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background via-background/90 to-transparent" />
+							) : null}
 						</div>
 					) : (
 						<p className="text-muted-foreground">No body content</p>

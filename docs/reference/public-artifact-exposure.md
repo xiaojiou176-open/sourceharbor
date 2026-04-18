@@ -38,13 +38,15 @@ Two special cases matter in the current repo:
 - tracked public homepage URLs must also be treated as proof-bearing artifacts: if the committed path casing 404s on the live Pages host, that URL is a broken public artifact rather than an acceptable cosmetic variant
 - the repo-managed web runtime workspace under `.runtime-cache/tmp/web-runtime/` is an internal verification substrate, not a public artifact to expose or cite as shipped output
 - the temporary `.env.local` written into `.runtime-cache/tmp/web-runtime/workspace/apps/web/` is runtime glue for local browser writes, not a distributable config artifact
+- clean proof screenshot packs and mini packs created by repo-owned UI audit helpers are maintainer-local verification artifacts; they may feed local Gemini/UI-audit review, but they are not public distribution assets or release artifacts
+- frontstage clean proof packs and mini packs created by repo-owned public-surface audit helpers are maintainer-local verification artifacts too; they support local IA and visual review, not public product claims
 - mutation receipts under `.runtime-cache/reports/mutation/` are public-safe only as proof summaries; they must not be mistaken for a published package, release, or registry surface
 - repo-owned local core-services logs under `.runtime-cache/logs/local-core/` are runtime diagnostics only; they exist to explain local fallback behavior, not to become public-facing product artifacts
 - repo-owned core-services teardown behavior under `./bin/full-stack down` is
   still runtime hygiene only; it cleans repo-local verification state and does
   not create any new public artifact surface
 - lightweight proxy-video files generated only to satisfy maintainer-local Gemini input constraints are runtime-only surrogate artifacts; they are part of local verification behavior, not a public distribution surface
-- `docs/blueprints/*.md` now act only as thin public pointers into stable summary docs; the full working contracts stay in the internal planning ledger and are not public artifacts to surface from README or other visitor-facing routes
+- `docs/blueprints/*.md` remain legacy thin stubs inside the tracked tree, but they are no longer part of the public entrypoint or docs-navigation registries; the full working contracts stay in the internal planning ledger and should not surface from visitor-facing routes
 - `docs/submission/*.md` and internal UI specs may remain as thin public pointers, but the working submission packets and design handoffs stay in the maintainer-only planning ledger rather than the newcomer-facing docs path
 
 For public presentation files under `docs/assets/`, use the file-level ledger in [public-assets-provenance.md](./public-assets-provenance.md).

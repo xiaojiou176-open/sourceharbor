@@ -1,0 +1,227 @@
+{
+  "generated_at": "2026-04-17T14:18:07.192015+00:00",
+  "release_tag": "v0.1.41",
+  "latest_tag": "v0.1.41",
+  "summary": {
+    "total_up_migrations": 23,
+    "with_down_sql": 23,
+    "blocked_without_down": 0,
+    "missing_policy": 0,
+    "invalid_down_sql": 0,
+    "gate_status": "pass"
+  },
+  "drill_evidence": {
+    "path": "artifacts/releases/v0.1.41/rollback/drill.json",
+    "valid": true,
+    "errors": []
+  },
+  "migrations": [
+    {
+      "migration": "20260221_000001_init.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260221_000001_init.sql",
+        "down": "infra/migrations/down/20260221_000001_init.down.sql"
+      }
+    },
+    {
+      "migration": "20260221_000002_phase3_artifacts.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260221_000002_phase3_artifacts.sql",
+        "down": "infra/migrations/down/20260221_000002_phase3_artifacts.down.sql"
+      }
+    },
+    {
+      "migration": "20260221_000003_phase4_observability.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260221_000003_phase4_observability.sql",
+        "down": "infra/migrations/down/20260221_000003_phase4_observability.down.sql"
+      }
+    },
+    {
+      "migration": "20260221_000004_notifications.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260221_000004_notifications.sql",
+        "down": "infra/migrations/down/20260221_000004_notifications.down.sql"
+      }
+    },
+    {
+      "migration": "20260221_000005_pipeline_mode_multimodal.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260221_000005_pipeline_mode_multimodal.sql",
+        "down": "infra/migrations/down/20260221_000005_pipeline_mode_multimodal.down.sql"
+      }
+    },
+    {
+      "migration": "20260221_000006_notifications_automation.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260221_000006_notifications_automation.sql",
+        "down": "infra/migrations/down/20260221_000006_notifications_automation.down.sql"
+      }
+    },
+    {
+      "migration": "20260222_000007_delivery_retry_and_health.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260222_000007_delivery_retry_and_health.sql",
+        "down": "infra/migrations/down/20260222_000007_delivery_retry_and_health.down.sql"
+      }
+    },
+    {
+      "migration": "20260222_000008_job_kind_video_digest_v1.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260222_000008_job_kind_video_digest_v1.sql",
+        "down": "infra/migrations/down/20260222_000008_job_kind_video_digest_v1.down.sql"
+      }
+    },
+    {
+      "migration": "20260222_000009_job_kind_enforce_video_digest_v1.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260222_000009_job_kind_enforce_video_digest_v1.sql",
+        "down": "infra/migrations/down/20260222_000009_job_kind_enforce_video_digest_v1.down.sql"
+      }
+    },
+    {
+      "migration": "20260222_000010_phase4_status_contract.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260222_000010_phase4_status_contract.sql",
+        "down": "infra/migrations/down/20260222_000010_phase4_status_contract.down.sql"
+      }
+    },
+    {
+      "migration": "20260222_000011_embedding_pgvector.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260222_000011_embedding_pgvector.sql",
+        "down": "infra/migrations/down/20260222_000011_embedding_pgvector.down.sql"
+      }
+    },
+    {
+      "migration": "20260223_000012_subscriptions_category_and_notification_rules.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260223_000012_subscriptions_category_and_notification_rules.sql",
+        "down": "infra/migrations/down/20260223_000012_subscriptions_category_and_notification_rules.down.sql"
+      }
+    },
+    {
+      "migration": "20260223_000013_remove_platform_source_type_checks.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260223_000013_remove_platform_source_type_checks.sql",
+        "down": "infra/migrations/down/20260223_000013_remove_platform_source_type_checks.down.sql"
+      }
+    },
+    {
+      "migration": "20260223_000014_feed_priority_dispatch_key.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260223_000014_feed_priority_dispatch_key.sql",
+        "down": "infra/migrations/down/20260223_000014_feed_priority_dispatch_key.down.sql"
+      }
+    },
+    {
+      "migration": "20260226_000015_notification_deliveries_updated_at.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260226_000015_notification_deliveries_updated_at.sql",
+        "down": "infra/migrations/down/20260226_000015_notification_deliveries_updated_at.down.sql"
+      }
+    },
+    {
+      "migration": "20260308_000016_content_type.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260308_000016_content_type.sql",
+        "down": "infra/migrations/down/20260308_000016_content_type.down.sql"
+      }
+    },
+    {
+      "migration": "20260329_000017_ingest_runs.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260329_000017_ingest_runs.sql",
+        "down": "infra/migrations/down/20260329_000017_ingest_runs.down.sql"
+      }
+    },
+    {
+      "migration": "20260329_000018_knowledge_cards.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260329_000018_knowledge_cards.sql",
+        "down": "infra/migrations/down/20260329_000018_knowledge_cards.down.sql"
+      }
+    },
+    {
+      "migration": "20260329_000019_feed_feedback.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260329_000019_feed_feedback.sql",
+        "down": "infra/migrations/down/20260329_000019_feed_feedback.down.sql"
+      }
+    },
+    {
+      "migration": "20260329_000020_expand_knowledge_card_types.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260329_000020_expand_knowledge_card_types.sql",
+        "down": "infra/migrations/down/20260329_000020_expand_knowledge_card_types.down.sql"
+      }
+    },
+    {
+      "migration": "20260409_000018_consumption_batches.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260409_000018_consumption_batches.sql",
+        "down": "infra/migrations/down/20260409_000018_consumption_batches.down.sql"
+      }
+    },
+    {
+      "migration": "20260409_000019_cluster_verdict_manifests.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260409_000019_cluster_verdict_manifests.sql",
+        "down": "infra/migrations/down/20260409_000019_cluster_verdict_manifests.down.sql"
+      }
+    },
+    {
+      "migration": "20260409_000020_published_reader_documents.sql",
+      "status": "rehearsable",
+      "strategy": "down_sql",
+      "evidence": {
+        "up": "infra/migrations/20260409_000020_published_reader_documents.sql",
+        "down": "infra/migrations/down/20260409_000020_published_reader_documents.down.sql"
+      }
+    }
+  ]
+}

@@ -36,6 +36,7 @@ const PLATFORM_META: Record<
 	bilibili: { label: "Bilibili", accent: "#0ea5e9", wash: "#e0f2fe" },
 	rsshub: { label: "RSSHub", accent: "#7c3aed", wash: "#f5f3ff" },
 	rss: { label: "RSS", accent: "#0f766e", wash: "#ecfeff" },
+	preview: { label: "Preview", accent: "#4f46e5", wash: "#eef2ff" },
 	generic: { label: "Generic", accent: "#18181b", wash: "#f4f4f5" },
 };
 
@@ -49,6 +50,28 @@ function normalizePlatform(platform: string | null | undefined): string {
 
 function platformMeta(platform: string | null | undefined) {
 	return PLATFORM_META[normalizePlatform(platform)] ?? PLATFORM_META.generic;
+}
+
+function looksLikeRawUrl(value: string | null | undefined): boolean {
+	const text = String(value || "")
+		.trim()
+		.toLowerCase();
+	return text.startsWith("http://") || text.startsWith("https://");
+}
+
+function cleanDisplayText(value: string | null | undefined): string | null {
+	const text = String(value || "").trim();
+	if (!text || looksLikeRawUrl(text)) return null;
+	return text;
+}
+
+function hostnameLabel(rawUrl: string | null | undefined): string | null {
+	try {
+		const parsed = new URL(String(rawUrl || "").trim());
+		return parsed.hostname.replace(/^www\./, "") || null;
+	} catch {
+		return null;
+	}
 }
 
 function initials(label: string | null | undefined): string {
@@ -312,11 +335,22 @@ export function resolveReaderSourceIdentity(
 	source: SourceIdentityRef,
 ): SourceIdentityModel {
 	const platform = normalizePlatform(source.platform);
+	const readableTitle =
+		cleanDisplayText(source.canonical_author_name) ||
+		cleanDisplayText(source.creator_display_name) ||
+		cleanDisplayText(source.title) ||
+		cleanDisplayText(source.matched_subscription_name) ||
+		cleanDisplayText(source.affiliation_label);
+	const urlHost = hostnameLabel(source.source_url);
 	const title =
-		source.canonical_author_name?.trim() ||
-		source.creator_display_name?.trim() ||
-		source.matched_subscription_name?.trim() ||
-		source.title.trim();
+		readableTitle ||
+		(urlHost && platform === "generic"
+			? urlHost
+			: urlHost
+				? `${platformMeta(platform).label} source`
+				: source.source_origin === "manual_injected"
+					? "Reading source"
+					: "Tracked source");
 	const relationKind = String(
 		source.relation_kind ||
 			(source.source_origin === "subscription_tracked"
@@ -325,13 +359,27 @@ export function resolveReaderSourceIdentity(
 					? "manual_injected"
 					: "unmatched_source"),
 	);
+	const subtitleCandidates = [
+		cleanDisplayText(source.affiliation_label),
+		cleanDisplayText(source.matched_subscription_name),
+		urlHost,
+		platformMeta(platform).label,
+	].filter(Boolean) as string[];
+	const subtitle =
+		subtitleCandidates.find((candidate) => candidate !== title) ||
+		platformMeta(platform).label;
+	const descriptionCandidate =
+		cleanDisplayText(source.digest_preview) || cleanDisplayText(source.title);
+	const description =
+		descriptionCandidate &&
+		descriptionCandidate !== title &&
+		descriptionCandidate !== subtitle
+			? descriptionCandidate
+			: undefined;
 	return {
 		title,
-		subtitle:
-			source.affiliation_label?.trim() ||
-			source.matched_subscription_name?.trim() ||
-			platformMeta(platform).label,
-		description: source.digest_preview,
+		subtitle,
+		description,
 		eyebrow:
 			source.source_origin === "manual_injected"
 				? "Today's source"
@@ -349,22 +397,15 @@ export function resolveReaderSourceIdentity(
 		relationLabel: relationLabel(relationKind),
 		meta: safeList([
 			platformMeta(platform).label,
-			source.affiliation_label,
 			source.source_origin === "manual_injected"
 				? "Reading today"
 				: "Tracked source",
-			source.raw_stage_contract?.analysis_mode
-				? `Mode ${source.raw_stage_contract.analysis_mode}`
-				: null,
 			source.raw_stage_contract?.video_contract_satisfied === true
 				? "Video-first verified"
 				: source.raw_stage_contract?.video_contract_satisfied === false
 					? "Video contract gap"
 					: null,
 			source.identity_status === "derived_identity" ? "Linked identity" : null,
-			source.claim_kinds?.length
-				? `${source.claim_kinds.length} claim kinds`
-				: null,
 		]),
 	};
 }

@@ -166,6 +166,212 @@ def test_probe_external_lane_workflows_blocks_when_current_head_has_no_remote_ru
     assert all(isinstance(lane, dict) and lane["state"] == "missing" for lane in lanes)
 
 
+def test_probe_external_lane_workflows_keeps_optional_publish_lanes_from_flipping_overall_status(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _load_governance_module(
+        "probe_external_lane_workflows_optional_publish_test",
+        "scripts/governance/probe_external_lane_workflows.py",
+    )
+    head = "1111111111111111111111111111111111111111"
+    runs = [
+        {
+            "databaseId": 101,
+            "workflowName": "build-ci-standard-image",
+            "displayTitle": "build-ci-standard-image",
+            "headSha": head,
+            "status": "completed",
+            "conclusion": "success",
+        },
+        {
+            "databaseId": 102,
+            "workflowName": "build-public-api-image",
+            "displayTitle": "build-public-api-image",
+            "headSha": head,
+            "status": "completed",
+            "conclusion": "success",
+        },
+        {
+            "databaseId": 103,
+            "workflowName": "release-evidence-attest",
+            "displayTitle": "release-evidence-attest",
+            "headSha": head,
+            "status": "completed",
+            "conclusion": "success",
+        },
+        {
+            "databaseId": 104,
+            "workflowName": "publish-pypi",
+            "displayTitle": "publish-pypi",
+            "headSha": head,
+            "status": "completed",
+            "conclusion": "failure",
+        },
+        {
+            "databaseId": 105,
+            "workflowName": "publish-mcp-registry",
+            "displayTitle": "publish-mcp-registry",
+            "headSha": head,
+            "status": "completed",
+            "conclusion": "failure",
+        },
+    ]
+
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "_repo_slug", lambda: "xiaojiou176-open/sourceharbor")
+    monkeypatch.setattr(module, "current_git_commit", lambda: head)
+    monkeypatch.setattr(module, "_json_or_none", lambda _command: ({"login": "tester"}, None))
+    monkeypatch.setattr(module, "_list_commit_runs", lambda _repo, _head: (runs, None))
+    monkeypatch.setattr(
+        module,
+        "_failed_job_summary",
+        lambda _repo, run_id: (
+            {"failed_step_name": "Publish package distributions to PyPI"}
+            if str(run_id) == "104"
+            else {"failed_step_name": "Verify live PyPI version"},
+            None,
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "_failure_signature",
+        lambda _repo, run_id: (
+            "invalid-publisher" if str(run_id) == "104" else "live-pypi-version-mismatch",
+            None,
+        ),
+    )
+    monkeypatch.setattr(sys, "argv", ["probe_external_lane_workflows.py"])
+
+    captured_artifact: dict[str, object] = {}
+
+    def _capture_artifact(path: Path, payload: dict[str, object], **kwargs) -> None:
+        captured_artifact["path"] = path
+        captured_artifact["payload"] = payload
+
+    monkeypatch.setattr(module, "write_json_artifact", _capture_artifact)
+
+    stdout = io.StringIO()
+    with redirect_stdout(stdout):
+        exit_code = module.main()
+
+    output = stdout.getvalue()
+    assert exit_code == 0, output
+    assert "[external-lane-workflows] PASS" in output
+
+    payload = captured_artifact["payload"]
+    assert isinstance(payload, dict)
+    assert payload["status"] == "pass"
+    lanes = {str(lane["name"]): lane for lane in payload["lanes"] if isinstance(lane, dict)}
+    assert lanes["publish-pypi"]["state"] == "blocked"
+    assert lanes["publish-pypi"]["affects_overall_status"] is False
+    assert lanes["publish-mcp-registry"]["state"] == "blocked"
+    assert lanes["publish-mcp-registry"]["affects_overall_status"] is False
+
+
+def test_render_current_state_summary_uses_publish_lane_canonical_artifacts(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _load_governance_module(
+        "render_current_state_summary_publish_lane_test",
+        "scripts/governance/render_current_state_summary.py",
+    )
+    head = "1111111111111111111111111111111111111111"
+
+    (tmp_path / ".runtime-cache" / "reports" / "governance").mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".runtime-cache" / "reports" / "release").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "config" / "governance").mkdir(parents=True, exist_ok=True)
+
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/standard-image-publish-readiness.json",
+        {"version": 1, "status": "ready", "blocker_type": "ok"},
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/remote-platform-truth.json",
+        {"version": 1, "status": "pass", "blocker_type": ""},
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/remote-required-checks.json",
+        {
+            "version": 1,
+            "status": "pass",
+            "expected_required_checks": ["a"],
+            "actual_required_checks": ["a"],
+        },
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/open-source-audit-freshness.json",
+        {"version": 1, "status": "pass"},
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/newcomer-result-proof.json",
+        {"version": 1, "status": "partial", "repo_side_strict_receipt": {"status": "pass"}},
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/release/release-evidence-attest-readiness.json",
+        {"version": 1, "status": "ready", "blocker_type": ""},
+    )
+    _write_json(
+        tmp_path / ".runtime-cache/reports/governance/external-lane-workflows.json",
+        {
+            "version": 1,
+            "source_commit": head,
+            "lanes": [
+                {
+                    "name": "ghcr-standard-image",
+                    "state": "verified",
+                    "note": "ok",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "public-api-image",
+                    "state": "verified",
+                    "note": "ok",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "release-evidence-attestation",
+                    "state": "verified",
+                    "note": "ok",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "publish-pypi",
+                    "state": "blocked",
+                    "note": "invalid-publisher",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+                {
+                    "name": "publish-mcp-registry",
+                    "state": "blocked",
+                    "note": "live PyPI mismatch",
+                    "latest_run_matches_current_head": True,
+                    "latest_run": {"headSha": head},
+                },
+            ],
+        },
+    )
+    _write_json(tmp_path / "config/governance/upstream-compat-matrix.json", {"matrix": []})
+
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(module, "_current_head", lambda: head)
+    monkeypatch.setattr(module, "_worktree_changes", list)
+
+    rendered = module.render()
+
+    assert (
+        "| `publish-pypi` | `blocked` | invalid-publisher | `.runtime-cache/reports/publish-pypi/metadata.json + .runtime-cache/reports/governance/external-lane-workflows.json` |"
+        in rendered
+    )
+    assert (
+        "| `publish-mcp-registry` | `blocked` | live PyPI mismatch | `.runtime-cache/reports/publish-mcp-registry/metadata.json + .runtime-cache/reports/governance/external-lane-workflows.json` |"
+        in rendered
+    )
+
+
 def test_required_checks_parsers_ignore_workflow_event_rows(tmp_path: Path, monkeypatch) -> None:
     probe_module = _load_governance_module(
         "probe_remote_platform_truth_test",

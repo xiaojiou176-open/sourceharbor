@@ -20,14 +20,27 @@ WORKFLOW_MAP = {
     "ghcr-standard-image": {
         "workflow_file": "build-ci-standard-image.yml",
         "workflow_name": "build-ci-standard-image",
+        "affects_overall_status": True,
     },
     "public-api-image": {
         "workflow_file": "build-public-api-image.yml",
         "workflow_name": "build-public-api-image",
+        "affects_overall_status": True,
     },
     "release-evidence-attestation": {
         "workflow_file": "release-evidence-attest.yml",
         "workflow_name": "release-evidence-attest",
+        "affects_overall_status": True,
+    },
+    "publish-pypi": {
+        "workflow_file": "publish-pypi.yml",
+        "workflow_name": "publish-pypi",
+        "affects_overall_status": False,
+    },
+    "publish-mcp-registry": {
+        "workflow_file": "publish-mcp-registry.yml",
+        "workflow_name": "publish-mcp-registry",
+        "affects_overall_status": False,
     },
 }
 
@@ -166,6 +179,10 @@ def _failure_signature(repo: str, run_id: int | str | None) -> tuple[str, dict[s
             return "ghcr-blob-upload-401-unauthorized", None
         if "403 Forbidden" in line and "blobs/sha256" in line:
             return "blob-head-403-forbidden", None
+        if "invalid-publisher" in line:
+            return "invalid-publisher", None
+        if "does not match expected_version" in line and "publish PyPI first" in line:
+            return "live-pypi-version-mismatch", None
         if "failed to push" in line:
             return "failed-to-push-registry", None
     return "", None
@@ -300,6 +317,7 @@ def main() -> int:
     for lane_name, workflow_config in WORKFLOW_MAP.items():
         workflow_file = str(workflow_config["workflow_file"])
         workflow_name = str(workflow_config["workflow_name"])
+        affects_overall_status = workflow_config.get("affects_overall_status", True) is True
         payload = _filter_workflow_runs(commit_runs, workflow_name, workflow_file)
         error = commit_runs_error
         latest_run = _select_representative_run(payload, current_head)
@@ -323,12 +341,29 @@ def main() -> int:
                     f"{note}; preflight passed; failed at `{failure_details['failed_step_name']}` "
                     "with GHCR blob HEAD 403 Forbidden"
                 )
-        if lane_state in {"blocked", "historical", "missing"}:
+            elif (
+                failure_details.get("failed_step_name")
+                and failure_details.get("failure_signature") == "invalid-publisher"
+            ):
+                note = (
+                    f"{note}; failed at `{failure_details['failed_step_name']}` with PyPI "
+                    "`invalid-publisher` Trusted Publisher mismatch"
+                )
+            elif (
+                failure_details.get("failed_step_name")
+                and failure_details.get("failure_signature") == "live-pypi-version-mismatch"
+            ):
+                note = (
+                    f"{note}; failed at `{failure_details['failed_step_name']}` because live PyPI "
+                    "still does not match the expected package version"
+                )
+        if affects_overall_status and lane_state in {"blocked", "historical", "missing"}:
             overall_status = "blocked"
         lanes.append(
             {
                 "name": lane_name,
                 "workflow_file": workflow_file,
+                "affects_overall_status": affects_overall_status,
                 "state": lane_state,
                 "note": note,
                 "latest_run_matches_current_head": matches_current_head,

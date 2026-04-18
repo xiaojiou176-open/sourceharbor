@@ -91,6 +91,50 @@
         "artifact-quota-or-billing-failure",
         "attestation-failure"
       ]
+    },
+    {
+      "name": "publish-pypi",
+      "canonical_artifact": ".runtime-cache/reports/publish-pypi/metadata.json",
+      "remote_workflow_artifact": ".runtime-cache/reports/governance/external-lane-workflows.json",
+      "verified_requires_current_head": true,
+      "current_head_required_statuses": [],
+      "historical_state": "historical",
+      "verification_scope": "publish-pypi-metadata",
+      "allowed_statuses": [
+        "queued",
+        "in_progress",
+        "verified",
+        "historical",
+        "blocked",
+        "missing"
+      ],
+      "blocked_types": [
+        "trusted-publisher-mismatch",
+        "publish-auth-failure",
+        "package-build-or-upload-failure"
+      ]
+    },
+    {
+      "name": "publish-mcp-registry",
+      "canonical_artifact": ".runtime-cache/reports/publish-mcp-registry/metadata.json",
+      "remote_workflow_artifact": ".runtime-cache/reports/governance/external-lane-workflows.json",
+      "verified_requires_current_head": true,
+      "current_head_required_statuses": [],
+      "historical_state": "historical",
+      "verification_scope": "publish-mcp-registry-metadata",
+      "allowed_statuses": [
+        "queued",
+        "in_progress",
+        "verified",
+        "historical",
+        "blocked",
+        "missing"
+      ],
+      "blocked_types": [
+        "live-pypi-version-mismatch",
+        "registry-publish-auth-failure",
+        "registry-metadata-or-upload-failure"
+      ]
     }
   ]
 }
