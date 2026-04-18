@@ -118,7 +118,7 @@ These are the strongest current claims:
 - **Reader API + MCP surface:** `/api/v1/reader/*` plus reader MCP tools for document listing, detail, and navigation brief
 - **Truth surfaces:** [proof.md](./proof.md), [runtime-truth.md](./runtime-truth.md), [start-here.md](./start-here.md), [testing.md](./testing.md)
 
-## Public Face And Distribution Readiness
+## Public Face Readiness
 
 These are the strongest outward-facing artifacts that already exist today:
 
@@ -139,6 +139,10 @@ What is still missing for a stronger public-ready claim:
 - a truthful strongest-public-surface proof path for Codex while official
   self-serve listing remains unavailable
 
+For the exact package, registry, and listing ledger, stop here and use
+[public-distribution.md](./public-distribution.md). This page only keeps the
+short public-face summary plus blocker families.
+
 ## Implemented But Still Gated
 
 These surfaces are real, but their strongest proof still depends on external conditions:
@@ -148,7 +152,7 @@ These surfaces are real, but their strongest proof still depends on external con
 | Notifications / reports | implemented routes and settings exist | verified sender configuration, especially `RESEND_FROM_EMAIL`, plus a target mailbox |
 | UI audit Gemini review | base audit is real and a recent maintainer-local proof pass exercised the Gemini review layer | other environments still need Gemini access if they want the review layer |
 | Computer use | contract and service exist, and a recent maintainer-local proof pass reached the provider | valid Gemini access, supported account capability, and a real screenshot/input contract |
-| Long live smoke | repo path exists, the repo-managed `bootstrap -> up -> status -> doctor` path was re-proven again, the short smoke path now passes locally, and YouTube provider validation removed the stale-key `403` story as the main blocker | the full end-to-end live receipt still depends on operator-managed API access plus the intentionally deferred Resend sender-identity lane |
+| Long live smoke | repo path exists, the repo-managed `bootstrap -> up -> status -> doctor` path was re-proven again, and the default strict smoke can now prove the core live product path without pretending sender identity or the optional reader stack is already configured | the notification/provider sub-lane still depends on operator-managed sender identity, especially `RESEND_FROM_EMAIL`; the reader stack still requires explicit Miniflux/Nextflux enablement when you want that extra lane checked |
 
 ## Site Capability Truth
 

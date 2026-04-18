@@ -2563,6 +2563,47 @@ def test_run_pipeline_text_only_mode_uses_skip_callable_for_all_skipped_steps(
         assert by_step[skipped_step]["force_run"] is True
 
 
+def test_run_pipeline_text_only_mode_relaxes_video_raw_stage_contract(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    captured_raw_stage: dict[str, Any] = {}
+
+    async def _fake_execute_step(
+        _: orchestrator.PipelineContext,
+        state: dict[str, Any],
+        *,
+        step_name: str,
+        step_func: Any,
+        critical: bool = False,
+        resume_hint: bool = False,
+        force_run: bool = False,
+    ) -> dict[str, Any]:
+        del step_func, critical, resume_hint, force_run
+        if step_name == "llm_digest":
+            captured_raw_stage.update(dict(state["llm_policy"]["raw_stage"]))
+        state["steps"][step_name] = {"status": "succeeded"}
+        return state["steps"][step_name]
+
+    monkeypatch.setattr(orchestrator, "execute_step", _fake_execute_step, raising=False)
+
+    asyncio.run(
+        orchestrator.run_pipeline(
+            _make_settings(tmp_path),
+            _FakeSQLiteStore(),  # type: ignore[arg-type]
+            _FakePGStore(),  # type: ignore[arg-type]
+            job_id="job-text-only-raw-stage-relaxed",
+            attempt=1,
+            mode="text_only",
+        )
+    )
+
+    assert captured_raw_stage["video_first"] is False
+    assert captured_raw_stage["video_input_required"] is False
+    assert captured_raw_stage["review_required"] is False
+    assert captured_raw_stage["primary_input_mode"] == "text"
+    assert captured_raw_stage["review_input_mode"] == "text"
+
+
 def test_run_pipeline_skip_builder_receives_exact_step_name_and_mode(
     monkeypatch: Any, tmp_path: Path
 ) -> None:

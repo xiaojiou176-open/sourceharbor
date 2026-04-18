@@ -140,14 +140,19 @@ Important local-truth notes:
 What it proves:
 
 - the stricter live lane can run after the local supervisor path is already healthy
-- YouTube, Resend, and Gemini-backed checks are wired into a repeatable command
+- core video/retrieval/computer-use checks are wired into a repeatable command
+- notification and sender-identity proof now stays an explicitly skippable sub-lane instead of collapsing the whole smoke run by default
+- reader-stack verification is optional by default, because Miniflux/Nextflux is still a separate floor from the core stack unless you explicitly enable it
 - provider-side gates stay explicit instead of being hand-waved as local repo truth
 
 Important boundary:
 
 - passing the supervisor clean path means the repo is locally runnable
-- passing the long live-smoke lane requires additional provider and sender conditions
+- passing the default long live-smoke lane proves the core product path; forcing the notification/provider lane still requires additional sender conditions
+- forcing reader-stack verification still requires the reader stack to be enabled and reachable
 - failing the long live-smoke lane does **not** automatically mean the local bootstrap/up/status path is broken
+- if you specifically want notification/provider closure too, rerun with `--live-smoke-require-notification-lane 1`
+- if you specifically want the reader stack checked too, rerun with `--require-reader 1`
 
 ## Local-Only Login Browser Lane
 

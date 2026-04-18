@@ -620,14 +620,19 @@ export function Sidebar({
 
 	if (isMobile) {
 		return (
-			<div className="pointer-events-none fixed left-3 top-3 z-40 md:hidden">
+			<div className="pointer-events-none fixed left-2.5 top-2.5 z-40 md:hidden">
 				<Sheet>
 					<SheetTrigger asChild>
 						<Button
-							variant="outline"
+							variant="ghost"
 							size="icon"
 							aria-label="Open navigation panel"
-							className="pointer-events-auto rounded-full border-border/70 bg-background/95 shadow-sm backdrop-blur"
+							className={cn(
+								"pointer-events-auto size-9 rounded-full border border-border/45 text-foreground/78 backdrop-blur-sm",
+								frontstageFocused
+									? "bg-background/72 shadow-none hover:bg-background/88"
+									: "bg-background/95 shadow-sm",
+							)}
 						>
 							<Menu className="size-4" />
 						</Button>

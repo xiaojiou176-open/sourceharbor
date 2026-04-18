@@ -369,10 +369,16 @@ def test_smoke_full_stack_defaults_are_strict_for_local_validation() -> None:
     smoke_full_stack = (root / "scripts" / "ci" / "smoke_full_stack.sh").read_text(encoding="utf-8")
 
     assert 'LIVE_SMOKE_REQUIRE_SECRETS="1"' in smoke_full_stack
+    assert 'LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE="0"' in smoke_full_stack
+    assert 'REQUIRE_READER="0"' in smoke_full_stack
     assert "--offline-fallback <0>" in smoke_full_stack
     assert "Deprecated compatibility alias used by docs." in smoke_full_stack
     assert "e2e live smoke require secrets (default: 1)" in smoke_full_stack
+    assert "e2e live smoke require notification/provider lane readiness" in smoke_full_stack
+    assert "Require reader checks (default: 0)" not in smoke_full_stack
+    assert "Require reader-stack checks (default: 0)" in smoke_full_stack
     assert '--require-secrets "$LIVE_SMOKE_REQUIRE_SECRETS"' in smoke_full_stack
+    assert '--require-notification-lane "$LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE"' in smoke_full_stack
 
 
 def test_e2e_live_smoke_defaults_require_secrets_and_keep_opt_out_explicit() -> None:
@@ -380,10 +386,14 @@ def test_e2e_live_smoke_defaults_require_secrets_and_keep_opt_out_explicit() -> 
     e2e_live_smoke = (root / "scripts" / "ci" / "e2e_live_smoke.sh").read_text(encoding="utf-8")
 
     assert 'LIVE_SMOKE_REQUIRE_SECRETS="1"' in e2e_live_smoke
+    assert 'LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE="0"' in e2e_live_smoke
     assert "Require secrets gate (default: 1)" in e2e_live_smoke
+    assert "Require notification/provider lane readiness (default: 0)" in e2e_live_smoke
     assert 'if is_truthy "$LIVE_SMOKE_REQUIRE_SECRETS"; then' in e2e_live_smoke
-    assert 'fail "missing required secrets: ${missing[*]}"' in e2e_live_smoke
-    assert 'log "SKIP: missing secrets: ${missing[*]}"' in e2e_live_smoke
+    assert 'fail "missing required core secrets: ${missing_core[*]}"' in e2e_live_smoke
+    assert 'log "SKIP: missing core secrets: ${missing_core[*]}"' in e2e_live_smoke
+    assert 'NOTIFICATION_LANE_READY="0"' in e2e_live_smoke
+    assert "notification lane degraded: ${NOTIFICATION_LANE_REASON}" in e2e_live_smoke
     assert "Scenario: cleanup workflow API closure" in e2e_live_smoke
     assert 'api_post "/api/v1/workflows/run"' in e2e_live_smoke
     assert '"workflow": "cleanup"' in e2e_live_smoke

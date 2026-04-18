@@ -61,24 +61,18 @@ and only open the deeper builder or MCP details from there.
   `docs/runtime-truth.md` explain what surfaces are real, what is gated, and
   what still belongs to human-managed checkpoints.
 
-## Release vs main vs distribution truth
+## Truth Split
 
-We treat release-current proof, remote `main`, and external distribution as
-three distinct ledgers. The README can mention that the public repo already
-publishes a release object, but every claim that mentions “release ready” or
-“public distribution” must be paired with a fresh read-back or pointer to the
-relevant docs. Likewise, terminal-ready commands and job traces live under the
-local path, while hosted proofs stay human-only until the proper credentials
-and platform uploads land. This doc links directly to [project-status.md](./docs/project-status.md)
-and [proof.md](./docs/proof.md) so you can verify whether the latest release
-still matches `main`, whether the official distribution surface has a live
-receipt, and which lanes still require operator action.
+SourceHarbor keeps three separate ledgers on purpose:
 
-Three quick reasons developers keep reading:
+- **remote `main` truth** for what the current public branch really ships
+- **release truth** for the latest tagged snapshot
+- **distribution truth** for registries, listings, and marketplace-style surfaces
 
-- **One truth across Web, API, and MCP.** Operators and agent builders see the same jobs, artifacts, and retrieval state instead of three disconnected product shells.
-- **Proof sits next to the product story.** The README, proof ladder, runtime truth, and job receipts all point at the same contract, so the repo earns trust instead of asking for it.
-- **Strong lanes plus honest boundaries.** YouTube and Bilibili are the rich lanes today, RSSHub and generic RSS widen the source universe, and the docs say plainly where route-by-route proof still stops.
+This README stays on the product story. If you want exact proof status, jump to
+[project-status.md](./docs/project-status.md), [proof.md](./docs/proof.md), and
+[public-distribution.md](./docs/public-distribution.md) instead of treating the
+front door like a shipping ledger.
 
 The honest intake boundary today is:
 

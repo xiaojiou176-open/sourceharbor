@@ -64,9 +64,11 @@ If you want the stricter long live-smoke lane, run:
 ```
 
 That command goes beyond the base local supervisor proof above. It intentionally
-enters provider-backed checks such as YouTube preflight and sender
-configuration, so a failure there does not automatically mean the repo-managed
-local stack is broken.
+enters a stricter provider-backed lane after the base local supervisor proof.
+By default it now proves the core live product path first, treats notification
+sender identity as an explicit external sub-lane, and keeps the reader stack as
+an opt-in check because Miniflux/Nextflux is still a separate floor from the
+core stack.
 
 ## Proof Layer 3: Runtime Artifact Evidence
 

@@ -14,6 +14,7 @@ LIVE_SMOKE_COMPUTER_USE_STRICT="1"
 LIVE_SMOKE_COMPUTER_USE_SKIP="0"
 LIVE_SMOKE_COMPUTER_USE_SKIP_REASON=""
 LIVE_SMOKE_REQUIRE_SECRETS="1"
+LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE="0"
 YOUTUBE_SMOKE_URL="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 LIVE_SMOKE_TIMEOUT_SECONDS="180"
 LIVE_SMOKE_POLL_INTERVAL_SECONDS="3"
@@ -24,6 +25,8 @@ LIVE_SMOKE_MAX_RETRIES="2"
 live_smoke_diagnostics_json=".runtime-cache/reports/tests/e2e-live-smoke-result.json"
 LIVE_SMOKE_COMPUTER_USE_CMD=""
 BILIBILI_SMOKE_URL="https://www.bilibili.com/video/BV1xx411c7mD"
+NOTIFICATION_LANE_READY="1"
+NOTIFICATION_LANE_REASON=""
 
 usage() {
   cat <<'EOF'
@@ -34,6 +37,7 @@ Options:
   --api-base-url <url>                        API base URL override
   --require-api <0|1>                         Require API health check (default: 1)
   --require-secrets <0|1>                     Require secrets gate (default: 1)
+  --require-notification-lane <0|1>           Require notification/provider lane readiness (default: 0)
   --computer-use-strict <0|1>                 Strict computer-use validation (default: 1)
   --computer-use-skip <0|1>                   Skip computer-use phase (default: 0)
   --computer-use-skip-reason <text>           Skip reason when --computer-use-skip=1
@@ -67,6 +71,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --require-secrets)
       LIVE_SMOKE_REQUIRE_SECRETS="${2:-}"
+      shift 2
+      ;;
+    --require-notification-lane)
+      LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE="${2:-}"
       shift 2
       ;;
     --computer-use-strict)
@@ -777,24 +785,39 @@ check_prerequisites() {
   computer_use_skip="$(printf '%s' "$LIVE_SMOKE_COMPUTER_USE_SKIP" | tr '[:upper:]' '[:lower:]')"
   require_enum "LIVE_SMOKE_COMPUTER_USE_SKIP" "$computer_use_skip" 0 1 true false yes no on off
 
+  local notification_lane_required
+  notification_lane_required="$(printf '%s' "$LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE" | tr '[:upper:]' '[:lower:]')"
+  require_enum "LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE" "$notification_lane_required" 0 1 true false yes no on off
+
   log "API target: base=${API_BASE_URL}"
   if [[ -z "$(trim_whitespace "$LIVE_SMOKE_COMPUTER_USE_CMD")" ]]; then
     LIVE_SMOKE_COMPUTER_USE_CMD="$ROOT_DIR/scripts/ci/smoke_computer_use_local.sh"
   fi
   LIVE_SMOKE_COMPUTER_USE_CMD="$(resolve_local_script_path "$LIVE_SMOKE_COMPUTER_USE_CMD")"
   ensure_valid_youtube_api_key
-  local missing=()
-  [[ -z "${GEMINI_API_KEY:-}" ]] && missing+=("GEMINI_API_KEY")
-  [[ -z "${RESEND_API_KEY:-}" ]] && missing+=("RESEND_API_KEY")
-  [[ -z "${RESEND_FROM_EMAIL:-}" ]] && missing+=("RESEND_FROM_EMAIL")
-  [[ -z "${YOUTUBE_API_KEY:-}" ]] && missing+=("YOUTUBE_API_KEY")
+  local missing_core=()
+  local missing_notification=()
+  [[ -z "${GEMINI_API_KEY:-}" ]] && missing_core+=("GEMINI_API_KEY")
+  [[ -z "${YOUTUBE_API_KEY:-}" ]] && missing_core+=("YOUTUBE_API_KEY")
+  [[ -z "${RESEND_API_KEY:-}" ]] && missing_notification+=("RESEND_API_KEY")
+  [[ -z "${RESEND_FROM_EMAIL:-}" ]] && missing_notification+=("RESEND_FROM_EMAIL")
 
-  if [[ "${#missing[@]}" -gt 0 ]]; then
+  if [[ "${#missing_core[@]}" -gt 0 ]]; then
     if is_truthy "$LIVE_SMOKE_REQUIRE_SECRETS"; then
-      fail "missing required secrets: ${missing[*]}"
+      fail "missing required core secrets: ${missing_core[*]}"
     fi
-    log "SKIP: missing secrets: ${missing[*]}"
+    log "SKIP: missing core secrets: ${missing_core[*]}"
     exit 0
+  fi
+
+  if [[ "${#missing_notification[@]}" -gt 0 ]]; then
+    NOTIFICATION_LANE_READY="0"
+    NOTIFICATION_LANE_REASON="missing notification lane prerequisites: ${missing_notification[*]}"
+    if is_truthy "$notification_lane_required"; then
+      fail "${NOTIFICATION_LANE_REASON}"
+    fi
+    log "notification lane degraded: ${NOTIFICATION_LANE_REASON}"
+    record_scenario "notification_lane_prerequisites" "skipped" "${NOTIFICATION_LANE_REASON}"
   fi
 
   local llm_input_mode
@@ -1307,15 +1330,21 @@ main() {
   degrade_job_id="$(process_video "youtube" "$YOUTUBE_SMOKE_URL" "text_only" "gemini_degrade")"
   wait_for_terminal_status "$degrade_job_id" "video_process:gemini_degrade"
 
-  log "Scenario: video_digest retry recovery"
-  run_worker_workflow_once "start-notification-retry-workflow" --retry-batch-limit 20
+  if is_truthy "$NOTIFICATION_LANE_READY"; then
+    log "Scenario: video_digest retry recovery"
+    run_worker_workflow_once "start-notification-retry-workflow" --retry-batch-limit 20
 
-  log "Scenario: daily_digest dedupe"
-  run_worker_workflow_once "start-daily-workflow"
-  run_worker_workflow_once "start-daily-workflow"
+    log "Scenario: daily_digest dedupe"
+    run_worker_workflow_once "start-daily-workflow"
+    run_worker_workflow_once "start-daily-workflow"
 
-  log "Scenario: provider canary"
-  run_worker_workflow_once "start-provider-canary-workflow" --timeout-seconds "$LIVE_SMOKE_TIMEOUT_SECONDS"
+    log "Scenario: provider canary"
+    run_worker_workflow_once "start-provider-canary-workflow" --timeout-seconds "$LIVE_SMOKE_TIMEOUT_SECONDS"
+  else
+    record_scenario "video_digest_retry_recovery" "skipped" "$NOTIFICATION_LANE_REASON"
+    record_scenario "daily_digest_dedupe" "skipped" "$NOTIFICATION_LANE_REASON"
+    record_scenario "provider_canary" "skipped" "$NOTIFICATION_LANE_REASON"
+  fi
 
   run_computer_use_smoke
   log "phase=long_tests status=passed"

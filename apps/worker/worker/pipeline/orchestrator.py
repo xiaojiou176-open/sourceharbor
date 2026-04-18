@@ -189,6 +189,18 @@ async def run_pipeline(
         resolved_overrides,
         content_type=resolved_content_type,
     )
+    if resolved_content_type == "video" and pipeline_mode == "text_only":
+        raw_stage = dict(llm_policy.get("raw_stage") or {})
+        raw_stage.update(
+            {
+                "video_first": False,
+                "video_input_required": False,
+                "review_required": False,
+                "primary_input_mode": "text",
+                "review_input_mode": "text",
+            }
+        )
+        llm_policy = {**llm_policy, "raw_stage": raw_stage}
 
     steps_list = pipeline_steps if pipeline_steps is not None else PIPELINE_STEPS
     checkpoint = sqlite_store.get_checkpoint(job_id)

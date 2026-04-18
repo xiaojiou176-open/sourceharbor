@@ -78,6 +78,15 @@ It intentionally steps into provider-backed lanes after the local supervisor
 path is already up. Treat it like an extended flight check, not like the same
 thing as `doctor + up + status`.
 
+One current truth detail matters:
+
+- default `smoke-full-stack` proves the core live product path first
+- notification sender identity is a separate external sub-lane
+- reader-stack verification is opt-in by default, because Miniflux/Nextflux still stays outside the base core-stack contract
+- if you want the smoke run to fail-close on notification readiness too, pass
+  `--live-smoke-require-notification-lane 1`
+- if you want the smoke run to require the reader stack too, pass `--require-reader 1`
+
 One important split now stays explicit:
 
 - **core stack truth** = Postgres + Temporal + API/Web/Worker reachability

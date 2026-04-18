@@ -16,21 +16,20 @@ individual entrypoints, start here:
 That helper stays intentionally thin. The direct `bin/*` commands below remain
 the underlying truth.
 
-If you prefer to install the public wrapper first, the packaged CLI now lives in
-`packages/sourceharbor-cli` and delegates into this same repo-local substrate
-when you run it inside a checkout:
+## Before You Start
+
+- If you want the **operator path**, stay on this page and keep going.
+- If you want the **builder/distribution path**, leave this page early and jump to [builders.md](./builders.md) plus [public-distribution.md](./public-distribution.md).
+- If you want the **API image lane**, treat `ghcr.io/xiaojiou176-open/sourceharbor-api` as a separate builder surface, not the whole product stack.
+- Do not treat `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` as the install story. That image is CI/devcontainer infrastructure.
+
+If you specifically want the packaged public wrapper instead of the operator
+path, install it after you understand the repo-local flow:
 
 ```bash
 npm install --global ./packages/sourceharbor-cli
 sourceharbor help
 ```
-
-## Before You Start
-
-- If you want the **operator path**, stay on this page.
-- If you want the **builder/distribution path**, jump to [builders.md](./builders.md) and [public-distribution.md](./public-distribution.md).
-- If you want the **API image lane**, treat `ghcr.io/xiaojiou176-open/sourceharbor-api` as a separate builder surface, not the whole product stack.
-- Do not treat `ghcr.io/xiaojiou176-open/sourceharbor-ci-standard` as the install story. That image is CI/devcontainer infrastructure.
 
 ## Public docs as stable summary
 

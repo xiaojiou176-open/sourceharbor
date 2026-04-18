@@ -13,7 +13,7 @@ API_BASE="http://127.0.0.1:9000"
 WEB_BASE="http://127.0.0.1:3001"
 API_BASE_EXPLICIT="0"
 WEB_BASE_EXPLICIT="0"
-REQUIRE_READER="1"
+REQUIRE_READER="0"
 MINIFLUX_BASE=""
 NEXTFLUX_PORT="3000"
 READER_ENV_TEMPLATE_FILE="$ROOT_DIR/env/profiles/reader.env"
@@ -28,6 +28,7 @@ LIVE_SMOKE_API_BASE_URL="http://127.0.0.1:9000"
 LIVE_SMOKE_API_BASE_URL_EXPLICIT="0"
 LIVE_SMOKE_REQUIRE_API="1"
 LIVE_SMOKE_REQUIRE_SECRETS="1"
+LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE="0"
 LIVE_SMOKE_COMPUTER_USE_STRICT="1"
 LIVE_SMOKE_COMPUTER_USE_SKIP="0"
 LIVE_SMOKE_COMPUTER_USE_SKIP_REASON=""
@@ -43,7 +44,7 @@ Options:
   --profile, --env-profile <name>     Env profile passed to load_repo_env (default: local)
   --api-base-url <url>                API base URL (default: resolved runtime route / .env / 9000)
   --web-base-url <url>                Web base URL (default: resolved WEB_PORT / .env / 3001)
-  --require-reader <0|1>              Require reader checks (default: 1)
+  --require-reader <0|1>              Require reader-stack checks (default: 0)
   --reader-env-file <path>            Reader env file for Miniflux/Nextflux values
                                       (default: reader.local.env when present, else tracked template)
   --heartbeat-seconds <n>             Smoke heartbeat interval (default: 30)
@@ -52,6 +53,9 @@ Options:
   --live-smoke-api-base-url <url>     e2e live smoke API base URL (default: same as --api-base-url)
   --live-smoke-require-api <0|1>      e2e live smoke require API health gate (default: 1)
   --live-smoke-require-secrets <0|1>  e2e live smoke require secrets (default: 1)
+  --live-smoke-require-notification-lane <0|1>
+                                      e2e live smoke require notification/provider lane readiness
+                                      (default: 0)
   --live-smoke-computer-use-strict <0|1>
                                        e2e live smoke computer-use strict mode (default: 1)
   --live-smoke-computer-use-skip <0|1>
@@ -110,6 +114,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --live-smoke-require-secrets)
       LIVE_SMOKE_REQUIRE_SECRETS="${2:-}"
+      shift 2
+      ;;
+    --live-smoke-require-notification-lane)
+      LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE="${2:-}"
       shift 2
       ;;
     --live-smoke-computer-use-strict)
@@ -281,6 +289,7 @@ if ! (cd "$ROOT_DIR" && ./scripts/ci/e2e_live_smoke.sh \
   --api-base-url "$LIVE_SMOKE_API_BASE_URL" \
   --require-api "$LIVE_SMOKE_REQUIRE_API" \
   --require-secrets "$LIVE_SMOKE_REQUIRE_SECRETS" \
+  --require-notification-lane "$LIVE_SMOKE_REQUIRE_NOTIFICATION_LANE" \
   --computer-use-strict "$LIVE_SMOKE_COMPUTER_USE_STRICT" \
   --computer-use-skip "$LIVE_SMOKE_COMPUTER_USE_SKIP" \
   --computer-use-skip-reason "$LIVE_SMOKE_COMPUTER_USE_SKIP_REASON" \
