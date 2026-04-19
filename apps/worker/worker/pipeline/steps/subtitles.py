@@ -97,9 +97,7 @@ async def step_collect_subtitles(
     overrides = dict(state.get("overrides") or {})
     subtitle_override_section = overrides.get("subtitles")
     subtitle_overrides = (
-        dict(subtitle_override_section)
-        if isinstance(subtitle_override_section, dict)
-        else {}
+        dict(subtitle_override_section) if isinstance(subtitle_override_section, dict) else {}
     )
     youtube_transcript_fallback_enabled = coerce_bool(
         subtitle_overrides.get("youtube_transcript_fallback_enabled"),
@@ -203,10 +201,8 @@ async def step_collect_subtitles(
                 ],
             ]
             run_ctx = ctx
-            if (
-                subtitle_timeout_override is not None
-                and subtitle_timeout_override
-                != int(getattr(ctx.settings, "pipeline_subprocess_timeout_seconds", 180) or 180)
+            if subtitle_timeout_override is not None and subtitle_timeout_override != int(
+                getattr(ctx.settings, "pipeline_subprocess_timeout_seconds", 180) or 180
             ):
                 run_ctx = replace(
                     ctx,

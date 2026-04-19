@@ -145,14 +145,17 @@ def test_full_stack_uses_runtime_snapshot_for_data_plane_and_worker_signature() 
 
 
 def test_live_smoke_bilibili_uses_subtitle_override_and_longer_timeout() -> None:
-    script = (_repo_root() / "scripts" / "ci" / "e2e_live_smoke.sh").read_text(
-        encoding="utf-8"
-    )
+    script = (_repo_root() / "scripts" / "ci" / "e2e_live_smoke.sh").read_text(encoding="utf-8")
 
     assert 'SUBTITLE_ASR_ENABLED="$subtitle_asr_enabled"' in script
     assert 'SUBTITLE_ASR_MODEL="$subtitle_asr_model"' in script
-    assert 'bilibili_job_id="$(process_video "bilibili" "$BILIBILI_SMOKE_URL" "full" "bilibili_full" "1" "tiny" "420")"' in script
-    assert 'wait_for_terminal_status "$bilibili_job_id" "video_process:bilibili_full" "420"' in script
+    assert (
+        'bilibili_job_id="$(process_video "bilibili" "$BILIBILI_SMOKE_URL" "full" "bilibili_full" "1" "tiny" "420")"'
+        in script
+    )
+    assert (
+        'wait_for_terminal_status "$bilibili_job_id" "video_process:bilibili_full" "420"' in script
+    )
 
 
 def test_full_stack_only_falls_back_to_local_dev_tokens_outside_ci() -> None:
