@@ -66,11 +66,6 @@ export default function DashboardPage() {
 							<Button asChild variant="outline" size="sm">
 								<Link href="/feed">{copy.firstHop.operateSecondaryCta}</Link>
 							</Button>
-							<Button asChild variant="outline" size="sm">
-								<Link href="/subscriptions">
-									{copy.firstHop.operatePrimaryCta}
-								</Link>
-							</Button>
 						</div>
 						<p className="text-xs leading-5 text-muted-foreground">
 							If you want a softer first step,{" "}
@@ -82,7 +77,7 @@ export default function DashboardPage() {
 									{copy.firstHop.evaluateSecondaryCta}
 								</Link>
 							</span>
-							. Search and Ask stay nearby after the first click.
+							. You can follow new sources after the first click.
 						</p>
 						<section
 							aria-labelledby="dashboard-why-now-heading"

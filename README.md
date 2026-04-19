@@ -138,62 +138,19 @@ These are real directions, but they are **not** current product claims:
 - **Agent Autopilot** is currently a spike topic, not a shipped capability. The most honest next slice is human-approved workflow orchestration, not silent autonomy. See [docs/reference/project-positioning.md](./docs/reference/project-positioning.md).
 - **Hosted or managed SourceHarbor** is also a spike topic, not a current promise. Today the repository remains source-first and local-proof-first. See [docs/reference/project-positioning.md](./docs/reference/project-positioning.md).
 
-## First Practical Win
-
-Choose the shortest honest path for the result you want first:
-
-| I want to... | Do this first | What I get |
-| --- | --- | --- |
-| discover the repo-local command surface first | `./bin/sourceharbor help` | a thin menu over the existing `bin/*` entrypoints without inventing a second CLI stack |
-| evaluate without booting anything | [docs/see-it-fast.md](./docs/see-it-fast.md) | the fastest public tour of the command center, digest feed, and job trace |
-| run a real local flow | [docs/start-here.md](./docs/start-here.md) | the shortest repo-documented path to a local stack and a queued or completed job |
-| inspect the trust boundary first | [docs/proof.md](./docs/proof.md) | the current proof map, including what is locally provable and where the public boundary stops |
-
-There are three honest first paths:
-
-- **Evaluate fast:** inspect the product shape and evidence surfaces without booting anything.
-- **Run locally:** install dependencies, boot the stack, and queue a real job on your own machine.
-- **Inspect the trust boundary:** read the proof ladder first so you know exactly which claims are local proof and which still depend on live remote verification.
-
-> Truth route, in plain English:
-> `README.md` is the front door, [`docs/start-here.md`](./docs/start-here.md) is the first real run, [`docs/proof.md`](./docs/proof.md) is the proof ladder, and [`docs/project-status.md`](./docs/project-status.md) plus the public reference docs keep the stable shipped-vs-gated summary.
-
-Current non-promises:
-
-- SourceHarbor is **not** described here as a turnkey hosted team workspace.
-- Agent autopilot remains a bounded spike direction, not a shipped product capability.
-- Those future-direction boundaries live in [docs/reference/project-positioning.md](./docs/reference/project-positioning.md) and [docs/reference/ecosystem-and-big-bet-decisions.md](./docs/reference/ecosystem-and-big-bet-decisions.md). Volatile working contracts stay in the internal planning ledger and are not part of the public repo story.
-
-If you want the shortest honest summary of what is already real, what is still gated, and what remains future direction, read [docs/project-status.md](./docs/project-status.md).
-
 ## See It In 30 Seconds
 
-If you only have half a minute, do not start with setup. Start with the three surfaces that explain the product fastest:
+If you only have half a minute, do not start with setup.
 
-1. **Command center:** one operator view for subscriptions, intake, job counts, and recent artifacts.
-2. **Digest feed:** a reading flow where entries such as `AI Weekly` and `Digest One` become reusable summaries instead of lost links, and already-materialized items can jump straight into the current reader edition.
-3. **Job trace:** a step-by-step timeline with statuses, retries, degradations, and artifact references.
+Start with three surfaces:
+
+1. **Reader:** the finished reading surface.
+2. **Digest feed:** the reading desk that keeps one item in focus.
+3. **Job trace:** the evidence view behind each result.
 
 ```text
-Source -> queued job -> digest feed -> searchable artifact -> MCP / API reuse
+Source -> queued job -> digest feed -> reader / job trace -> MCP / API reuse
 ```
-
-Representative result shape, based on the current digest template and UI surfaces:
-
-```markdown
-# AI Weekly
-
-> Source: [Original video](https://www.youtube.com/watch?v=abc)
-> Platform: youtube | Video ID: video-uid-123 | Generated at: 2026-02-10T00:00:00Z
-
-## One-Minute Summary
-- This episode focuses on agent workflows, operator visibility, and job trace.
-
-## Key Takeaways
-- Every job carries a step summary, artifacts index, and pipeline final status.
-```
-
-For the lightweight evaluation path, go to [docs/see-it-fast.md](./docs/see-it-fast.md).
 
 ## Why Star SourceHarbor Now
 
@@ -214,172 +171,16 @@ For the lightweight evaluation path, go to [docs/see-it-fast.md](./docs/see-it-f
 | **Retrieval** | Search over generated artifacts | Reuse digests as a searchable knowledge layer |
 | **MCP tools** | Expose subscriptions, ingestion, jobs, artifacts, search, and notifications to agents | Let assistants act on the same system without custom glue code |
 
-## Evaluate Fast: No-Boot Tour
-
-Think of this like walking past a storefront window before deciding whether to step inside.
-
-This path is for evaluation, not a hosted trial. You are inspecting the product shape, evidence surfaces, and result format before deciding whether a local run is worth it.
-
-1. Open [docs/see-it-fast.md](./docs/see-it-fast.md) to see the command center, digest feed, and job trace path in one page.
-2. Open [docs/proof.md](./docs/proof.md) to see what is locally provable today and where the public-proof boundary stops. Treat it as the evidence map, not as a machine-generated live verdict page.
-3. If the shape matches what you need, continue to [docs/start-here.md](./docs/start-here.md) for the local boot path.
-
 ## Run Locally: Result Path
 
-This is the shortest truthful local setup path. It starts when you are ready to install dependencies and boot the stack yourself; it is not a hosted "try now" flow.
+README is no longer the full operator walkthrough.
 
-By the end of this path, you should have:
+Use it to choose the next page, then leave quickly:
 
-- a local stack running
-- a first queued or completed processing job
-- a digest feed you can inspect
-- a job page with step-level evidence
-
-### 1. Boot the stack
-
-```bash
-./bin/sourceharbor help
-cp .env.example .env
-set -a
-source .env
-set +a
-UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$SOURCE_HARBOR_CACHE_ROOT/project-venv}" \
-  uv sync --frozen --extra dev --extra e2e
-bash scripts/ci/prepare_web_runtime.sh >/dev/null
-./bin/bootstrap-full-stack
-./bin/full-stack up
-source .runtime-cache/run/full-stack/resolved.env
-```
-
-Read the resolved local routes:
-
-- API: `${SOURCE_HARBOR_API_BASE_URL}`
-- Web: `http://127.0.0.1:${WEB_PORT}`
-
-The clean local path is container-first for Postgres. By default `.env.example`
-uses `CORE_POSTGRES_PORT=15432` together with
-`postgresql+psycopg://postgres:postgres@127.0.0.1:${CORE_POSTGRES_PORT}/sourceharbor`
-so a host Postgres on `127.0.0.1:5432` does not silently become the active data
-plane.
-
-Two local runtime layers now stay explicitly separated:
-
-- **core stack:** Postgres + Temporal + API/Web/Worker. `./bin/bootstrap-full-stack`
-  still prefers Docker-backed core services first, but it can now fall back to
-  repo-owned local Postgres/Temporal under `.runtime-cache/` when Docker is
-  unavailable and local `postgres` / `initdb` / `pg_ctl` / `temporal` binaries
-  exist.
-  `./bin/full-stack up` can now self-heal this layer once too: when worker
-  preflight finds Temporal down, it first attempts the repo-owned
-  `core_services.sh up` path before failing the local start.
-- **reader stack:** Miniflux + Nextflux. This stays a Docker-only optional lane
-  and no longer blocks the base first-run path by default.
-
-If you intentionally want the reader stack too, opt in:
-
-```bash
-./bin/bootstrap-full-stack --with-reader-stack 1 --reader-env-file env/profiles/reader.local.env
-```
-
-Open the operator UI at the resolved web URL:
-
-- `http://127.0.0.1:${WEB_PORT}`
-
-If you only need the repo-managed local proof, stop at the supervisor checks
-first:
-
-```bash
-./bin/full-stack status
-./bin/doctor
-curl -sS "${SOURCE_HARBOR_API_BASE_URL}/healthz"
-curl -I "http://127.0.0.1:${WEB_PORT}/ops"
-```
-
-`./bin/smoke-full-stack --offline-fallback 0` is the stricter long live-smoke
-lane. It goes beyond local supervisor proof and can still stop on provider-side
-YouTube preflight or Resend sender configuration even after the local stack is
-healthy.
-
-### 2. Set the local write token for direct API calls
-
-```bash
-export SOURCE_HARBOR_API_KEY="${SOURCE_HARBOR_API_KEY:-sourceharbor-local-dev-token}"
-```
-
-If you launch the API outside `./bin/full-stack up`, export both
-`SOURCE_HARBOR_API_KEY` and `WEB_ACTION_SESSION_TOKEN` **before** starting the
-API process so write routes and web actions share the same local token contract.
-
-When you stay on the repo-managed `./bin/full-stack up` path, SourceHarbor now
-writes the local web runtime's `.env.local` inside
-`.runtime-cache/tmp/web-runtime/workspace/apps/web/` so the browser bundle and
-server actions both inherit the same local write-session fallback. This keeps
-`CI=false` style env noise from accidentally suppressing the maintainer-local
-`sourceharbor-local-dev-token` fallback.
-
-### 3. Queue a first processing run
-
-Replace the sample URL with any public YouTube or Bilibili video:
-
-```bash
-curl -sS -X POST "${SOURCE_HARBOR_API_BASE_URL}/api/v1/videos/process" \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: ${SOURCE_HARBOR_API_KEY}" \
-  -d '{
-    "video": {
-      "platform": "youtube",
-      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    },
-    "mode": "full"
-  }'
-```
-
-### 4. Inspect the resulting job and feed
-
-```bash
-curl -sS "${SOURCE_HARBOR_API_BASE_URL}/api/v1/videos" | jq
-curl -sS "${SOURCE_HARBOR_API_BASE_URL}/api/v1/feed/digests" | jq
-curl -sS "${SOURCE_HARBOR_API_BASE_URL}/api/v1/jobs/<job-id>" | jq
-```
-
-Current maintainer-local truth for the real YouTube `mode=full` lane:
-
-- a fresh local run can complete again
-- the repo-side fixes that made this true were:
-  - current Gemini fast-model naming (`gemini-3-flash-preview`)
-  - file-upload waiting until Gemini Files becomes `ACTIVE`
-  - a lightweight proxy-video path so giant raw `.webm` downloads do not stall
-    the primary video lane forever
-
-Open these front-door routes after the stack is up:
-
-- `/search` for grounded search
-- `/ask` for the story-aware, briefing-backed Ask front door, now sharing the same server-owned selected-story read-model that `/briefings` uses
-- `/mcp` for the in-product MCP front door
-- `/ops` for operator diagnostics and hardening gates
-
-The truthful package story today is intentionally thin:
-
-- `sourceharbor` from [`packages/sourceharbor-cli`](./packages/sourceharbor-cli/README.md) stays repo-aware and delegates to the repo-local command substrate instead of pretending to manage the whole local runtime itself
-- `./bin/sourceharbor mcp` and `./bin/sourceharbor doctor` remain the repo-local operator entrypoints
-- [`packages/sourceharbor-sdk`](./packages/sourceharbor-sdk/README.md) is the public TypeScript SDK surface and still stays contract-first instead of becoming a second business-logic stack
-- Python SDK, Hosted, Autopilot, and plugin-market surfaces still stay later/no-go
-
-### 5. Run the repo smoke path
-
-```bash
-./bin/smoke-full-stack --offline-fallback 0
-```
-
-When you want the operator-side log trail, start at `.runtime-cache/logs/components/full-stack`.
-
-If you want the stricter repo-side closeout gate on a maintainer workstation,
-`./bin/repo-side-strict-ci --mode pre-push` still prefers the standard-env
-container path while Docker is healthy, but it now falls back to the
-host-bootstrapped pre-push quality gate when the Docker daemon itself is the
-only missing layer.
-
-For a guided version with operator notes and public-proof boundaries, go to [docs/start-here.md](./docs/start-here.md).
+- **No-boot tour:** [docs/see-it-fast.md](./docs/see-it-fast.md)
+- **First real local run:** [docs/start-here.md](./docs/start-here.md)
+- **Runtime and verification truth:** [docs/proof.md](./docs/proof.md), [docs/testing.md](./docs/testing.md), [docs/runtime-truth.md](./docs/runtime-truth.md)
+- **Builder/package surfaces:** [docs/builders.md](./docs/builders.md), [packages/sourceharbor-cli/README.md](./packages/sourceharbor-cli/README.md), [packages/sourceharbor-sdk/README.md](./packages/sourceharbor-sdk/README.md)
 
 ## Why SourceHarbor Feels Different
 

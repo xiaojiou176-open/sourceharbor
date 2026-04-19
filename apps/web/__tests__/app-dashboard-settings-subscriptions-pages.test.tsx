@@ -197,16 +197,16 @@ describe("dashboard/settings/subscriptions pages", () => {
 				"/feed",
 			);
 			expect(
-				screen.getByRole("link", { name: "Follow sources" }),
-			).toHaveAttribute("href", "/subscriptions");
-			expect(
-				screen.queryByRole("link", { name: "Open Search" }),
+				screen.queryByRole("link", { name: "Follow sources" }),
 			).not.toBeInTheDocument();
 			expect(
 				screen.queryByRole("link", { name: "Open Ask" }),
 			).not.toBeInTheDocument();
 			expect(
-				screen.getByText(/Search and Ask stay nearby after the first click/i),
+				screen.queryByRole("link", { name: "Open Search" }),
+			).not.toBeInTheDocument();
+			expect(
+				screen.getByText(/You can follow new sources after the first click/i),
 			).toBeInTheDocument();
 			expect(
 				screen.queryByRole("link", { name: "Open saved topics" }),
