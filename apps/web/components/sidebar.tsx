@@ -125,7 +125,7 @@ function SidebarNavContent({
 		pathname.startsWith("/trends") ||
 		pathname.startsWith("/briefings") ||
 		pathname.startsWith("/knowledge");
-	const searchOrAskFocused =
+	const _searchOrAskFocused =
 		pathname.startsWith("/search") || pathname.startsWith("/ask");
 	const compounderFocused =
 		pathname.startsWith("/watchlists") ||

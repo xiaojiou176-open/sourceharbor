@@ -180,9 +180,10 @@ describe("Sidebar + Sheet contract", () => {
 			expect(
 				screen.queryByRole("link", { name: "Story briefs" }),
 			).not.toBeInTheDocument();
-			expect(
-				screen.getByRole("link", { name: "Search" }),
-			).toHaveAttribute("href", "/search");
+			expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute(
+				"href",
+				"/search",
+			);
 			expect(screen.getByRole("link", { name: "Ask" })).toHaveAttribute(
 				"href",
 				"/ask",
