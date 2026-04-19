@@ -29,7 +29,7 @@ Tracked config pointer:
 
 Current truth:
 
-- the PNG is the upload target
+- the PNG is the upload target and is now aligned to GitHub's 1280x640 recommendation
 - the SVG remains the tracked source asset
 - the live GitHub upload itself is still a manual platform step
 

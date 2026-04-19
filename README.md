@@ -38,41 +38,17 @@ knowledge cards, traceable job runs, and MCP-ready operations. It stays
 source-first and proof-first: you can inspect it, run it locally, and verify
 each surface instead of trusting product copy on vibes alone.
 
-## Reader-first public truth
+## Start With One Route
 
-This repository is organized around the same reader-first surfaces that show
-up as soon as you wake the web command center. The front door, feed desk,
-watchlists, watchlist-based briefings, search, Ask, and published reader
-documents now share a single proof ladder, and builder/agent tooling recycles
-that same state instead of inventing a parallel control shell. The public docs
-keep that story tight: lead with the reader flow, collapse the proof next to it,
-and only open the deeper builder or MCP details from there.
+Most people only need one of these on day one:
 
-- **Reader surface:** `/reader`, `/feed`, and published reader document
-  pages surface the navigation brief, yellow warnings, and source contribution
-  drawer before any builder / proof block shows up.
-- **Intake and tracking:** `/subscriptions`, `/watchlists`, `/trends`, and
-  `/briefings` stay content-first, with system controls hidden in secondary
-  details or contextual actions that never steal the dominant path.
-- **Search + Ask + MCP:** the story-aware search and Ask flows, as well as the
-  MCP tools, reuse the same selected-story payload that `/briefings` and the
-  canonical story page already expose so the public narrative stays shared.
-- **Proof and runtime truth:** `docs/proof.md`, `docs/project-status.md`, and
-  `docs/runtime-truth.md` explain what surfaces are real, what is gated, and
-  what still belongs to human-managed checkpoints.
+- **Read the finished surface:** open `/reader`
+- **Follow a few sources:** open `/subscriptions`
+- **Search or ask about saved material:** open `/search` or `/ask`
 
-## Truth Split
-
-SourceHarbor keeps three separate ledgers on purpose:
-
-- **remote `main` truth** for what the current public branch really ships
-- **release truth** for the latest tagged snapshot
-- **distribution truth** for registries, listings, and marketplace-style surfaces
-
-This README stays on the product story. If you want exact proof status, jump to
+If you need ledgers instead of the product story, jump straight to
 [project-status.md](./docs/project-status.md), [proof.md](./docs/proof.md), and
-[public-distribution.md](./docs/public-distribution.md) instead of treating the
-front door like a shipping ledger.
+[public-distribution.md](./docs/public-distribution.md).
 
 The honest intake boundary today is:
 
@@ -83,13 +59,6 @@ The honest intake boundary today is:
 That intake split now lives behind one shared template catalog instead of
 separate Web-only presets: the `/subscriptions` front door, HTTP API, and MCP
 surface all point at the same strong-supported vs generalized intake contract.
-
-It is strongest when you read it as a control tower for source intake:
-
-- operators use the Web command center
-- system builders use the HTTP API
-- Codex, GitHub Copilot, Claude Code, VS Code agent workflows, and other MCP-aware clients use the MCP surface
-- all of them point at the same jobs, artifacts, retrieval index, and operator truth
 
 SourceHarbor is a **multi-surface product repo, not a single skill package**.
 Public starter packs and plugin-grade skill surfaces are adoption layers inside

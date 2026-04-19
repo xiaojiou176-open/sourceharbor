@@ -46,7 +46,7 @@ Two special cases matter in the current repo:
   still runtime hygiene only; it cleans repo-local verification state and does
   not create any new public artifact surface
 - lightweight proxy-video files generated only to satisfy maintainer-local Gemini input constraints are runtime-only surrogate artifacts; they are part of local verification behavior, not a public distribution surface
-- `docs/blueprints/*.md` remain legacy thin stubs inside the tracked tree, but they are no longer part of the public entrypoint or docs-navigation registries; the full working contracts stay in the internal planning ledger and should not surface from visitor-facing routes
+- the old `docs/blueprints/*.md` legacy stubs have now been retired from the tracked public docs tree; the full working contracts stay in the internal planning ledger and should not surface from visitor-facing routes
 - `docs/submission/*.md` and internal UI specs may remain as thin public pointers, but the working submission packets and design handoffs stay in the maintainer-only planning ledger rather than the newcomer-facing docs path
 
 For public presentation files under `docs/assets/`, use the file-level ledger in [public-assets-provenance.md](./public-assets-provenance.md).

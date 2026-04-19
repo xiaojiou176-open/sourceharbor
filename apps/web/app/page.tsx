@@ -33,7 +33,7 @@ export default function DashboardPage() {
 		>
 			<section
 				aria-labelledby="dashboard-first-route-heading"
-				className="mx-auto w-full max-w-5xl"
+				className="mx-auto w-full max-w-6xl"
 			>
 				<h2 id="dashboard-first-route-heading" className="sr-only">
 					Choose your first reading route
@@ -60,6 +60,17 @@ export default function DashboardPage() {
 						<div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
 							<Button asChild variant="hero" size="lg">
 								<Link href="/reader">{copy.firstHop.evaluatePrimaryCta}</Link>
+							</Button>
+						</div>
+						<div className="flex flex-wrap items-center gap-2">
+							<Button asChild variant="outline" size="sm">
+								<Link href="/feed">{copy.firstHop.operateSecondaryCta}</Link>
+							</Button>
+							<Button asChild variant="outline" size="sm">
+								<Link href="/search">{copy.frontDoors.searchCta}</Link>
+							</Button>
+							<Button asChild variant="outline" size="sm">
+								<Link href="/ask">{copy.frontDoors.askCta}</Link>
 							</Button>
 						</div>
 						<p className="text-xs leading-5 text-muted-foreground">
