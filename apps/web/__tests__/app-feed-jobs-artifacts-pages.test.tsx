@@ -128,10 +128,9 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(
 				screen.getAllByText("YouTube · Tech Channel").length,
 			).toBeGreaterThanOrEqual(1);
-				expect(
-					screen.getAllByText("Finished reader ready · AI Weekly edition")
-						.length,
-				).toBeGreaterThanOrEqual(1);
+			expect(
+				screen.getAllByText("Finished reader ready · AI Weekly edition").length,
+			).toBeGreaterThanOrEqual(1);
 			expect(screen.getAllByText("Saved").length).toBeGreaterThan(0);
 			expect(screen.getByText("useful")).toBeInTheDocument();
 			expect(screen.getAllByText("Tech").length).toBeGreaterThan(0);
@@ -469,11 +468,11 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(
 				screen.getByRole("link", { name: "Open source desk" }),
 			).toHaveAttribute("href", "/feed?sub=sub-reader-1");
-				expect(
-					screen.getByText(
-						"Finished reader ready · Reader edition one · published",
-					),
-				).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					"Finished reader ready · Reader edition one · published",
+				),
+			).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);

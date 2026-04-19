@@ -319,9 +319,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						>
 							{copy.heroTitle}
 						</h1>
-						<p className="folo-page-subtitle">
-							{copy.heroSubtitle}
-						</p>
+						<p className="folo-page-subtitle">{copy.heroSubtitle}</p>
 					</div>
 					<div className="folo-page-toolbar flex-wrap">
 						{effectiveSelectedJobId ? (

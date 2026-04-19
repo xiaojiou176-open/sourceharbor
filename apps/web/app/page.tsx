@@ -61,12 +61,16 @@ export default function DashboardPage() {
 							<div className="space-y-4 sm:space-y-5">
 								<div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
 									<Button asChild variant="hero" size="lg">
-										<Link href="/reader">{copy.firstHop.evaluatePrimaryCta}</Link>
+										<Link href="/reader">
+											{copy.firstHop.evaluatePrimaryCta}
+										</Link>
 									</Button>
 								</div>
 								<div className="flex flex-wrap items-center gap-2">
 									<Button asChild variant="outline" size="sm">
-										<Link href="/feed">{copy.firstHop.operateSecondaryCta}</Link>
+										<Link href="/feed">
+											{copy.firstHop.operateSecondaryCta}
+										</Link>
 									</Button>
 								</div>
 								<div className="space-y-2 pt-1">

@@ -45,7 +45,8 @@ function humanizeReaderPlatform(
 	const normalizedHost = String(host || "")
 		.trim()
 		.toLowerCase();
-	if (normalized === "youtube" || normalizedHost === "youtube.com") return "YouTube";
+	if (normalized === "youtube" || normalizedHost === "youtube.com")
+		return "YouTube";
 	if (normalized === "bilibili" || normalizedHost === "bilibili.com") {
 		return "Bilibili";
 	}
@@ -66,9 +67,7 @@ function isGenericSourceFallbackTitle(
 	return normalized.endsWith(" source") && normalized.split(/\s+/).length <= 2;
 }
 
-function isGenericReaderShelfTitle(
-	value: string | null | undefined,
-): boolean {
+function isGenericReaderShelfTitle(value: string | null | undefined): boolean {
 	const normalized = String(value || "")
 		.trim()
 		.toLowerCase();
@@ -112,11 +111,14 @@ function formatReaderShelfTitle(document: {
 		firstSource?.source_url && looksLikeRawUrl(firstSource.source_url)
 			? (() => {
 					try {
-						return new URL(firstSource.source_url).hostname.replace(/^www\./, "");
+						return new URL(firstSource.source_url).hostname.replace(
+							/^www\./,
+							"",
+						);
 					} catch {
 						return "";
 					}
-			  })()
+				})()
 			: "";
 	if (
 		sourceTitle &&
@@ -190,7 +192,9 @@ function formatReaderCardMeta(document: {
 		sourceIdentity.subtitle && sourceIdentity.subtitle !== sourceIdentity.title
 			? sourceIdentity.subtitle
 			: sourceIdentity.title;
-	return sourceLabel ? `${sourceCountLabel} · ${sourceLabel}` : sourceCountLabel;
+	return sourceLabel
+		? `${sourceCountLabel} · ${sourceLabel}`
+		: sourceCountLabel;
 }
 
 function formatReaderNavigationTitle(item: {
@@ -376,7 +380,9 @@ export default async function ReaderPage() {
 				<section className="space-y-4">
 					<div className="flex items-end justify-between gap-3">
 						<div>
-							<h2 className="font-serif text-3xl tracking-tight">Keep reading</h2>
+							<h2 className="font-serif text-3xl tracking-tight">
+								Keep reading
+							</h2>
 							<p className="text-sm text-muted-foreground">
 								Use this only after you finish the story you opened first.
 							</p>
@@ -450,7 +456,9 @@ export default async function ReaderPage() {
 								<CardContent className="space-y-4">
 									<div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
 										<span>{formatReaderCardMeta(document)}</span>
-										<span>{formatReaderModeLabel(document.materialization_mode)}</span>
+										<span>
+											{formatReaderModeLabel(document.materialization_mode)}
+										</span>
 									</div>
 									<Button asChild className="w-full">
 										<Link href={`/reader/${document.id}`}>Open story</Link>

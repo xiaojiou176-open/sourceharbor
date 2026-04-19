@@ -312,9 +312,9 @@ describe("Sidebar + Sheet contract", () => {
 				"page",
 			);
 			expect(screen.queryByRole("link", { name: "Tech" })).toBeNull();
-				expect(
-					screen.queryByRole("link", { name: "Timeline" }),
-				).not.toHaveAttribute("aria-current");
+			expect(
+				screen.queryByRole("link", { name: "Timeline" }),
+			).not.toHaveAttribute("aria-current");
 		},
 		SIDEBAR_TIMEOUT_MS,
 	);
@@ -426,9 +426,9 @@ describe("Sidebar + Sheet contract", () => {
 			expect(
 				screen.getByRole("link", { name: "Processing history" }),
 			).toHaveAttribute("aria-current", "page");
-				expect(
-					screen.getByRole("link", { name: "Timeline" }),
-				).not.toHaveAttribute("aria-current");
+			expect(
+				screen.getByRole("link", { name: "Timeline" }),
+			).not.toHaveAttribute("aria-current");
 
 			usePathnameMock.mockReturnValue("/settings/profile");
 			rerender(
@@ -527,9 +527,10 @@ describe("Sidebar + Sheet contract", () => {
 				/>,
 			);
 
-				expect(
-					screen.getByRole("link", { name: "Timeline" }),
-				).toHaveAttribute("aria-current", "page");
+			expect(screen.getByRole("link", { name: "Timeline" })).toHaveAttribute(
+				"aria-current",
+				"page",
+			);
 			expect(
 				screen.queryByRole("link", { name: /API health/i }),
 			).not.toBeInTheDocument();

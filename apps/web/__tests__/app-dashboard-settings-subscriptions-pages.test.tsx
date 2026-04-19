@@ -194,10 +194,7 @@ describe("dashboard/settings/subscriptions pages", () => {
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole("link", { name: "Open Timeline" }),
-			).toHaveAttribute(
-				"href",
-				"/feed",
-			);
+			).toHaveAttribute("href", "/feed");
 			expect(
 				screen.queryByRole("link", { name: "Follow sources" }),
 			).not.toBeInTheDocument();
