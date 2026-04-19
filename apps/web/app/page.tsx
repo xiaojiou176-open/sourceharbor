@@ -85,10 +85,13 @@ export default function DashboardPage() {
 								</span>
 								.
 							</p>
-							<div
-								aria-label={copy.sectionHeadings.whyNow}
+							<section
+								aria-labelledby="dashboard-why-now-heading"
 								className="grid gap-3 pt-1 sm:grid-cols-3"
 							>
+								<h2 id="dashboard-why-now-heading" className="sr-only">
+									{copy.sectionHeadings.whyNow}
+								</h2>
 								{[
 									{
 										title: copy.whyNow.sharedTruthTitle,
@@ -112,17 +115,17 @@ export default function DashboardPage() {
 										>
 											{copy.kicker}
 										</p>
-										<h2
+										<h3
 											className={`mt-2 text-lg leading-tight text-foreground ${editorialSerif.className}`}
 										>
 											{item.title}
-										</h2>
+										</h3>
 										<p className="mt-2 text-sm leading-6 text-foreground/78">
 											{item.description}
 										</p>
 									</div>
 								))}
-							</div>
+							</section>
 						</CardContent>
 					</Card>
 				</section>
