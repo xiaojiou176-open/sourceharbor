@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+} from "@/components/ui/card";
 
 type TrackedCreator = {
 	name: string;
@@ -132,7 +137,9 @@ export function BilibiliDiscoveryDesk({
 				</div>
 
 				<div className="rounded-xl border border-border/60 bg-muted/15 p-4">
-					<p className="text-sm font-medium text-foreground">Tracked creator shortcuts</p>
+					<p className="text-sm font-medium text-foreground">
+						Tracked creator shortcuts
+					</p>
 					{trackedCreators.length > 0 ? (
 						<div className="mt-3 flex flex-wrap gap-2">
 							{trackedCreators.slice(0, 4).map((creator) => (

@@ -295,7 +295,9 @@ def _load_repo_browser_proof() -> dict[str, Any]:
             "sites": [],
         }
 
-    site_results = payload.get("site_results") if isinstance(payload.get("site_results"), dict) else {}
+    site_results = (
+        payload.get("site_results") if isinstance(payload.get("site_results"), dict) else {}
+    )
     sites: list[dict[str, Any]] = []
     for label, item in site_results.items():
         if not isinstance(item, dict):
@@ -328,7 +330,9 @@ def build_bilibili_account_ops_gate(
     repo_browser_proof: dict[str, Any],
     bilibili_cookie_present: bool,
 ) -> dict[str, Any]:
-    sites = repo_browser_proof.get("sites") if isinstance(repo_browser_proof.get("sites"), list) else []
+    sites = (
+        repo_browser_proof.get("sites") if isinstance(repo_browser_proof.get("sites"), list) else []
+    )
     bilibili_site = next(
         (
             item

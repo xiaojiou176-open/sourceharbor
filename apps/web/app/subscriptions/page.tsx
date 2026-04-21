@@ -4,12 +4,12 @@ import Link from "next/link";
 import { getActionSessionTokenForForm } from "@/app/action-security";
 import { getFlashMessage } from "@/app/flash-message";
 import { upsertSubscriptionAction } from "@/app/subscriptions/actions";
+import { BilibiliDiscoveryDesk } from "@/components/bilibili-discovery-desk";
 import {
 	FormCheckboxField,
 	FormInputField,
 	FormSelectField,
 } from "@/components/form-field";
-import { BilibiliDiscoveryDesk } from "@/components/bilibili-discovery-desk";
 import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel";
 import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SubmitButton } from "@/components/submit-button";
@@ -281,15 +281,20 @@ export default async function SubscriptionsPage({
 	const bilibiliTrackedCreators = subscriptions
 		.filter(
 			(subscription) =>
-				String(subscription.platform || "").trim().toLowerCase() === "bilibili",
+				String(subscription.platform || "")
+					.trim()
+					.toLowerCase() === "bilibili",
 		)
 		.map((subscription) => {
 			const uid = String(subscription.source_value || "").trim();
 			const sourceUrl =
 				String(subscription.source_url || "").trim() ||
-				(uid ? `https://space.bilibili.com/${uid}` : "https://space.bilibili.com/");
+				(uid
+					? `https://space.bilibili.com/${uid}`
+					: "https://space.bilibili.com/");
 			return {
-				name: String(subscription.source_name || "").trim() || "Bilibili creator",
+				name:
+					String(subscription.source_name || "").trim() || "Bilibili creator",
 				uid,
 				url: sourceUrl,
 			};

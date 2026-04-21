@@ -495,9 +495,7 @@ describe("feed/jobs/artifacts pages", () => {
 				});
 			});
 			await waitFor(() => {
-				expect(mockGetJobEvidenceBundle).toHaveBeenCalledWith(
-					"job-reading-1",
-				);
+				expect(mockGetJobEvidenceBundle).toHaveBeenCalledWith("job-reading-1");
 			});
 
 			expect(await screen.findByTestId("markdown-preview")).toHaveTextContent(

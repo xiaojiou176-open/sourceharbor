@@ -378,7 +378,9 @@ describe("dashboard/settings/subscriptions pages", () => {
 				screen.getByRole("link", { name: "Open home feed" }),
 			).toHaveAttribute("href", "https://www.bilibili.com/");
 			expect(
-				screen.getByRole("link", { name: "Open tracked creator: Archive Reader" }),
+				screen.getByRole("link", {
+					name: "Open tracked creator: Archive Reader",
+				}),
 			).toHaveAttribute("href", "https://space.bilibili.com/12345");
 			expect(
 				screen.getByRole("textbox", { name: "Search Bilibili" }),

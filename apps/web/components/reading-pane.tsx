@@ -162,7 +162,11 @@ type ReadingEvidenceBundle = Awaited<
 function readRichEvidence(
 	bundle: ReadingEvidenceBundle | null,
 ): Record<string, unknown> | null {
-	if (!bundle || typeof bundle.rich_evidence !== "object" || !bundle.rich_evidence) {
+	if (
+		!bundle ||
+		typeof bundle.rich_evidence !== "object" ||
+		!bundle.rich_evidence
+	) {
 		return null;
 	}
 	return bundle.rich_evidence;
@@ -388,7 +392,9 @@ export function ReadingPane({
 			? richEvidence.commentary
 			: null;
 	const sourceFacts = [
-		videoMetadata?.view_count ? `${String(videoMetadata.view_count)} views` : null,
+		videoMetadata?.view_count
+			? `${String(videoMetadata.view_count)} views`
+			: null,
 		videoMetadata?.danmaku_count
 			? `${String(videoMetadata.danmaku_count)} danmaku`
 			: null,
@@ -549,7 +555,8 @@ export function ReadingPane({
 										{commentary ? (
 											<p className="mt-3 text-sm text-muted-foreground">
 												{String(commentary.top_comment_count ?? 0)} top comments
-												· {String(commentary.reply_bucket_count ?? 0)} reply buckets
+												· {String(commentary.reply_bucket_count ?? 0)} reply
+												buckets
 											</p>
 										) : null}
 									</div>

@@ -528,7 +528,9 @@ export default async function OpsPage() {
 										className="rounded-lg border border-border/60 bg-muted/20 p-3"
 									>
 										<div className="flex items-center justify-between gap-3">
-											<p className="font-medium text-foreground">{site.label}</p>
+											<p className="font-medium text-foreground">
+												{site.label}
+											</p>
 											<ReadinessBadge
 												label={site.login_state}
 												status={site.login_state}

@@ -92,7 +92,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 		? toDisplayStatus(job.pipeline_final_status)
 		: null;
 	const richEvidence =
-		jobBundle && typeof jobBundle.rich_evidence === "object" && jobBundle.rich_evidence
+		jobBundle &&
+		typeof jobBundle.rich_evidence === "object" &&
+		jobBundle.rich_evidence
 			? jobBundle.rich_evidence
 			: null;
 	const creatorMetadata =
@@ -560,8 +562,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 													Commentary
 												</p>
 												<p className="mt-2 text-muted-foreground">
-													{String(commentary.top_comment_count ?? 0)} top comments
-													· {String(commentary.reply_bucket_count ?? 0)} reply buckets
+													{String(commentary.top_comment_count ?? 0)} top
+													comments ·{" "}
+													{String(commentary.reply_bucket_count ?? 0)} reply
+													buckets
 												</p>
 											</div>
 										) : null}
@@ -572,25 +576,28 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 												</p>
 												<p className="mt-2 text-muted-foreground">
 													{String(danmakuEvidence.status ?? "unknown")} ·{" "}
-													{String(danmakuEvidence.entry_count ?? 0)} sampled entries
+													{String(danmakuEvidence.entry_count ?? 0)} sampled
+													entries
 												</p>
 											</div>
 										) : null}
 										{Object.keys(supportingArtifacts).length > 0 ? (
 											<ul className="space-y-2 text-sm">
-												{Object.entries(supportingArtifacts).map(([key, value]) => (
-													<li key={`supporting-${key}`}>
-														<strong>{key}</strong>:{" "}
-														<a
-															href={buildArtifactAssetUrl(job.id, value)}
-															target="_blank"
-															rel="noreferrer"
-															className="text-primary underline-offset-4 hover:underline"
-														>
-															<code>{value}</code>
-														</a>
-													</li>
-												))}
+												{Object.entries(supportingArtifacts).map(
+													([key, value]) => (
+														<li key={`supporting-${key}`}>
+															<strong>{key}</strong>:{" "}
+															<a
+																href={buildArtifactAssetUrl(job.id, value)}
+																target="_blank"
+																rel="noreferrer"
+																className="text-primary underline-offset-4 hover:underline"
+															>
+																<code>{value}</code>
+															</a>
+														</li>
+													),
+												)}
 											</ul>
 										) : null}
 									</>
