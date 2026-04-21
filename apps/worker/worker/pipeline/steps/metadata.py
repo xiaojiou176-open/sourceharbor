@@ -16,7 +16,9 @@ async def step_fetch_metadata(
     state: dict[str, Any],
     *,
     run_command: Callable[[PipelineContext, list[str]], Awaitable[Any]],
-    fetch_bilibili_rich_evidence: Callable[..., Awaitable[dict[str, Any]]] = fetch_bilibili_rich_evidence,
+    fetch_bilibili_rich_evidence: Callable[
+        ..., Awaitable[dict[str, Any]]
+    ] = fetch_bilibili_rich_evidence,
 ) -> StepExecution:
     source_url = str(state.get("source_url") or "")
     platform = str(state.get("platform") or "").strip().lower()

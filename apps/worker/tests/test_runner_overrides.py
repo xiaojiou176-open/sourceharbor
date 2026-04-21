@@ -366,7 +366,9 @@ def test_cache_signature_includes_override_policies(tmp_path: Path) -> None:
     ]
     assert download_sig_1 != download_sig_2
 
-    subtitle_sig_1 = runner._build_step_cache_info(ctx, base_state, "collect_subtitles")["signature"]
+    subtitle_sig_1 = runner._build_step_cache_info(ctx, base_state, "collect_subtitles")[
+        "signature"
+    ]
     changed_subtitles = dict(base_state)
     changed_subtitles["metadata"] = {"duration": 5400, "language": "zh"}
     subtitle_sig_2 = runner._build_step_cache_info(ctx, changed_subtitles, "collect_subtitles")[

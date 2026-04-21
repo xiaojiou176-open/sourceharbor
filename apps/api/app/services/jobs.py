@@ -551,7 +551,9 @@ class JobsService:
         knowledge_cards = self.get_knowledge_cards(job_id=job_id) or []
         digest_payload = self.get_artifact_payload(job_id=job_id, video_url=None) or {}
         artifact_meta = (
-            dict(digest_payload.get("meta") or {}) if isinstance(digest_payload.get("meta"), dict) else {}
+            dict(digest_payload.get("meta") or {})
+            if isinstance(digest_payload.get("meta"), dict)
+            else {}
         )
         digest_meta = self._flatten_digest_meta(artifact_meta)
         rich_evidence = self._build_rich_evidence(artifact_meta, digest_meta)

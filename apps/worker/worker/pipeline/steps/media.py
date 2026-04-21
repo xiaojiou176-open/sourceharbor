@@ -77,7 +77,9 @@ async def step_download_media(
     if platform == "bilibili":
         download_plan = build_bilibili_download_plan(metadata)
         download_timeout = int(download_plan.get("subprocess_timeout_seconds") or 0)
-        if download_timeout > int(getattr(ctx.settings, "pipeline_subprocess_timeout_seconds", 180) or 180):
+        if download_timeout > int(
+            getattr(ctx.settings, "pipeline_subprocess_timeout_seconds", 180) or 180
+        ):
             run_ctx = _with_subprocess_timeout(ctx, download_timeout)
     output_tmpl = str((ctx.download_dir / "media.%(ext)s").resolve())
     attempts: list[dict[str, Any]] = []

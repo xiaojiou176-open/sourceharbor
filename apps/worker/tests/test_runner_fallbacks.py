@@ -203,14 +203,14 @@ def test_step_download_media_bilibili_keeps_primary_timeout_reason_when_fallback
     )
     ctx = _build_ctx(tmp_path, settings=settings)
 
-    async def _fake_run_command(
-        _: runner.PipelineContext, cmd: list[str]
-    ) -> runner.CommandResult:
+    async def _fake_run_command(_: runner.PipelineContext, cmd: list[str]) -> runner.CommandResult:
         if cmd and cmd[0] == "yt-dlp":
             return runner.CommandResult(
                 ok=False, returncode=None, stderr="timed out", reason="timeout"
             )
-        return runner.CommandResult(ok=False, returncode=None, stderr="missing", reason="binary_not_found")
+        return runner.CommandResult(
+            ok=False, returncode=None, stderr="missing", reason="binary_not_found"
+        )
 
     monkeypatch.setattr(runner, "_run_command", _fake_run_command)
 

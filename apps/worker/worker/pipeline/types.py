@@ -99,7 +99,14 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
     ),
     "fetch_metadata": ("source_url", "title", "platform", "video_uid", "published_at"),
     "download_media": ("source_url", "metadata"),
-    "collect_subtitles": ("media_path", "download_mode", "source_url", "platform", "video_uid", "metadata"),
+    "collect_subtitles": (
+        "media_path",
+        "download_mode",
+        "source_url",
+        "platform",
+        "video_uid",
+        "metadata",
+    ),
     "collect_comments": ("source_url", "platform", "video_uid", "comments_policy"),
     "extract_frames": ("media_path", "frame_policy"),
     "llm_outline": (

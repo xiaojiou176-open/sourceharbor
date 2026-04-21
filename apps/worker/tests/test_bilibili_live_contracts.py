@@ -28,7 +28,9 @@ def test_bilibili_live_canary_matrix_declares_core_extended_and_reader_boundary_
     assert any(str(item.get("tier")) == "core" for item in samples)
     assert any(str(item.get("tier")) == "extended" for item in samples)
     assert len(reader_samples) >= 1
-    assert all(str(item.get("url") or "").startswith("https://www.bilibili.com/video/") for item in samples)
+    assert all(
+        str(item.get("url") or "").startswith("https://www.bilibili.com/video/") for item in samples
+    )
 
 
 def test_build_bilibili_asr_plan_adapts_by_duration_and_language() -> None:

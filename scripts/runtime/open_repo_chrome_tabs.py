@@ -41,7 +41,9 @@ LOGIN_SITE_SETS: dict[str, list[dict[str, str]]] = {
 }
 
 
-def _classify_site_result(*, label: str, requested_url: str, final_url: str, final_title: str) -> dict[str, str]:
+def _classify_site_result(
+    *, label: str, requested_url: str, final_url: str, final_title: str
+) -> dict[str, str]:
     normalized_url = final_url.lower().strip()
     login_state = "unknown"
     if label == "bilibili_account":

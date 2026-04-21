@@ -8,7 +8,7 @@ from integrations.providers.bilibili_evidence import (
 
 def test_parse_bilibili_danmaku_xml_extracts_entries_and_limits_output() -> None:
     payload = parse_bilibili_danmaku_xml(
-        '<i>'
+        "<i>"
         '<d p="1.5,1,25,16777215,1710000000,0,abc,1">hello</d>'
         '<d p="2.0,1,25,16777215,1710000001,0,def,2">world</d>'
         "</i>",
