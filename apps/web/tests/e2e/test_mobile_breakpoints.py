@@ -167,3 +167,40 @@ def test_mobile_sidebar_sheet_trigger_opens_navigation_dialog(page: Page) -> Non
     menu_trigger.click()
     expect(page.get_by_role("dialog")).to_be_visible()
     expect(page.get_by_role("complementary", name="Sidebar navigation")).to_be_visible()
+
+
+def test_mobile_internal_frontdoor_links_are_clickable(page: Page) -> None:
+    page.goto("/subscriptions", wait_until="domcontentloaded")
+    paste_source = page.get_by_role("link", name="Paste a source")
+    expect(paste_source).to_be_visible()
+    paste_source.click()
+
+    open_saved_sources_after = page.get_by_role(
+        "link", name="Open saved sources after you paste the first one"
+    )
+    if open_saved_sources_after.count():
+        open_saved_sources_after.click()
+
+    follow_first_source = page.get_by_role("link", name="Follow the first source")
+    if follow_first_source.count():
+        follow_first_source.click()
+
+    menu_trigger = page.get_by_role("button", name="Open navigation panel")
+    if menu_trigger.count():
+        menu_trigger.click()
+        open_following = page.get_by_role("link", name="Open Following")
+        if open_following.count():
+            open_following.click()
+
+    page.goto("/feed", wait_until="domcontentloaded")
+    start_with_story = page.get_by_role("link", name="Start with this story")
+    if start_with_story.count():
+        start_with_story.click()
+
+    inspect_job_trace = page.get_by_role("link", name="Inspect job trace")
+    if inspect_job_trace.count():
+        inspect_job_trace.click()
+
+    open_source_desk = page.get_by_role("link", name="Open source desk")
+    if open_source_desk.count():
+        open_source_desk.click()

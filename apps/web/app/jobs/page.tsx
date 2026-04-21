@@ -99,25 +99,25 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 		richEvidence &&
 		typeof richEvidence.creator_metadata === "object" &&
 		richEvidence.creator_metadata
-			? richEvidence.creator_metadata
+			? (richEvidence.creator_metadata as Record<string, unknown>)
 			: null;
 	const videoMetadata =
 		richEvidence &&
 		typeof richEvidence.video_metadata === "object" &&
 		richEvidence.video_metadata
-			? richEvidence.video_metadata
+			? (richEvidence.video_metadata as Record<string, unknown>)
 			: null;
 	const commentary =
 		richEvidence &&
 		typeof richEvidence.commentary === "object" &&
 		richEvidence.commentary
-			? richEvidence.commentary
+			? (richEvidence.commentary as Record<string, unknown>)
 			: null;
 	const danmakuEvidence =
 		richEvidence &&
 		typeof richEvidence.danmaku === "object" &&
 		richEvidence.danmaku
-			? richEvidence.danmaku
+			? (richEvidence.danmaku as Record<string, unknown>)
 			: null;
 	const supportingArtifacts =
 		jobBundle && typeof jobBundle.artifact_manifest === "object"

@@ -6,6 +6,9 @@ import { ReadingPane } from "@/components/reading-pane";
 const { mockGetArtifactMarkdown } = vi.hoisted(() => ({
 	mockGetArtifactMarkdown: vi.fn(),
 }));
+const { mockGetJobEvidenceBundle } = vi.hoisted(() => ({
+	mockGetJobEvidenceBundle: vi.fn(),
+}));
 
 vi.mock("next/link", () => ({
 	default: ({
@@ -32,6 +35,8 @@ vi.mock("@/lib/api/client", () => ({
 	apiClient: {
 		getArtifactMarkdown: (...args: unknown[]) =>
 			mockGetArtifactMarkdown(...args),
+		getJobEvidenceBundle: (...args: unknown[]) =>
+			mockGetJobEvidenceBundle(...args),
 	},
 }));
 
@@ -48,6 +53,7 @@ function createDeferred<T>() {
 describe("ReadingPane coverage", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockGetJobEvidenceBundle.mockResolvedValue(null);
 	});
 
 	it("renders empty state when no job is selected", () => {

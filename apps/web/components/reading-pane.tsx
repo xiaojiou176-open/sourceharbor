@@ -184,12 +184,17 @@ export function ReadingPane({
 	const [bundle, setBundle] = useState<ReadingEvidenceBundle | null>(null);
 	const [reloadNonce, setReloadNonce] = useState(0);
 	const [outlineOpen, setOutlineOpen] = useState(true);
+	const getJobEvidenceBundle =
+		typeof apiClient.getJobEvidenceBundle === "function"
+			? apiClient.getJobEvidenceBundle
+			: null;
 
 	useEffect(() => {
 		if (!jobId) {
 			queueMicrotask(() => {
 				setMarkdown(null);
 				setError(false);
+				setBundle(null);
 			});
 			return;
 		}
@@ -205,9 +210,9 @@ export function ReadingPane({
 		apiClient
 			.getArtifactMarkdown({ job_id: jobId, include_meta: true })
 			.then(async (payload) => {
-				const evidenceBundle = await apiClient
-					.getJobEvidenceBundle(jobId)
-					.catch(() => null);
+				const evidenceBundle = getJobEvidenceBundle
+					? await getJobEvidenceBundle(jobId).catch(() => null)
+					: null;
 				if (cancelled) return;
 				setMarkdown(payload.markdown);
 				setBundle(evidenceBundle);
@@ -223,7 +228,7 @@ export function ReadingPane({
 		return () => {
 			cancelled = true;
 		};
-	}, [jobId, reloadNonce]);
+	}, [getJobEvidenceBundle, jobId, reloadNonce]);
 
 	if (!jobId) {
 		return (
