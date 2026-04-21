@@ -113,6 +113,69 @@ def test_build_evidence_bundle_uses_current_helpers_and_shapes_payload() -> None
     assert payload["step_summary"] == steps
 
 
+def test_build_evidence_bundle_flattens_meta_and_surfaces_rich_evidence() -> None:
+    service = _service()
+    job_id = uuid.uuid4()
+    row = SimpleNamespace(
+        id=job_id,
+        video_id=uuid.uuid4(),
+        kind="video_digest_v1",
+        status="succeeded",
+        mode="full",
+        created_at=jobs_module.datetime.now(jobs_module.UTC),
+        updated_at=jobs_module.datetime.now(jobs_module.UTC),
+        error_message=None,
+        artifact_root="/tmp/artifacts",
+        artifact_digest_md="/tmp/artifacts/digest.md",
+        llm_required=True,
+        llm_gate_passed=True,
+        hard_fail_reason=None,
+    )
+    repo = _JobsRepoStub()
+    repo.job = row
+    service.repo = repo
+    service.get_steps = lambda job_id: []
+    service.compare_with_previous = lambda job_id: None
+    service.get_knowledge_cards = lambda job_id: []
+    service.get_artifact_payload = lambda job_id, video_url=None: {
+        "markdown": "# Digest",
+        "meta": {
+            "metadata": {
+                "uploader": "demo-up",
+                "thumbnail": "https://img.example/thumb.jpg",
+                "uploader_mid": "12345",
+                "uploader_url": "https://space.bilibili.com/12345",
+                "view_count": 999,
+                "site_objects": {"owner": {"mid": "12345"}},
+            },
+            "raw_stage_contract": {"video_contract_satisfied": True},
+            "danmaku": {
+                "status": "available",
+                "entry_count": 1,
+                "entries": [{"content": "hello"}],
+            },
+        },
+    }
+    service.resolve_llm_gate_fields = lambda **kwargs: (True, True, None)
+    service.get_pipeline_final_status = lambda job_id, fallback_status: "succeeded"
+    service.get_artifacts_index = lambda artifact_root, artifact_digest_md, steps: {
+        "digest": "digest.md",
+        "danmaku": "danmaku.json",
+    }
+    service.get_degradations = lambda artifact_root, artifact_digest_md, steps: []
+    service.get_notification_retry = lambda job_id: None
+
+    payload = service.build_evidence_bundle(job_id=job_id)
+
+    assert payload is not None
+    assert payload["digest_meta"]["uploader"] == "demo-up"
+    assert payload["digest_meta"]["uploader_mid"] == "12345"
+    assert payload["digest_meta"]["raw_stage_contract"]["video_contract_satisfied"] is True
+    assert payload["rich_evidence"]["danmaku"]["entry_count"] == 1
+    assert payload["rich_evidence"]["site_objects"]["owner"]["mid"] == "12345"
+    assert payload["artifact_manifest"]["danmaku"] == "danmaku.json"
+
+
 def test_extract_thought_metadata_supports_legacy_payload() -> None:
     payload = {
         "thought_metadata": {

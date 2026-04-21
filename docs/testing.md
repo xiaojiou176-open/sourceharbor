@@ -145,6 +145,21 @@ Important local-truth notes:
 ./bin/smoke-full-stack --offline-fallback 0
 ```
 
+When you specifically want the Bilibili hardening lane instead of the default
+single-sample probe, run the curated canary matrix plus one manual-intake ->
+reader boundary receipt:
+
+```bash
+./bin/smoke-full-stack \
+  --offline-fallback 0 \
+  --live-smoke-bilibili-canary-matrix config/runtime/bilibili-live-canary-matrix.json \
+  --live-smoke-bilibili-canary-tier core \
+  --live-smoke-bilibili-canary-limit 2 \
+  --live-smoke-bilibili-reader-receipt-sample science-interview-short \
+  --live-smoke-computer-use-skip 1 \
+  --live-smoke-computer-use-skip-reason "repo-scoped bilibili current-head receipt"
+```
+
 What it proves:
 
 - the stricter live lane can run after the local supervisor path is already healthy
@@ -152,6 +167,9 @@ What it proves:
 - notification and sender-identity proof now stays an explicitly skippable sub-lane instead of collapsing the whole smoke run by default
 - reader-stack verification is optional by default, because Miniflux/Nextflux is still a separate floor from the core stack unless you explicitly enable it
 - provider-side gates stay explicit instead of being hand-waved as local repo truth
+- the Bilibili canary path now has a repo-curated 5-10 sample matrix, adaptive
+  ASR selection, and a current-head reader/public-boundary receipt path instead
+  of relying on one static sample URL
 
 Important boundary:
 
@@ -161,6 +179,20 @@ Important boundary:
 - failing the long live-smoke lane does **not** automatically mean the local bootstrap/up/status path is broken
 - if you specifically want notification/provider closure too, rerun with `--live-smoke-require-notification-lane 1`
 - if you specifically want the reader stack checked too, rerun with `--require-reader 1`
+- if you specifically want the Bilibili deep lane, use
+  `--live-smoke-bilibili-canary-matrix ...` and inspect
+  `.runtime-cache/reports/tests/e2e-live-smoke-result.json` for
+  `bilibili_canary_matrix` plus `bilibili_reader_receipt`
+
+Current Bilibili failure taxonomy for that diagnostics lane:
+
+- `download_failure`
+- `subtitle_missing`
+- `asr_quality_insufficient`
+- `comments_api_failed`
+- `rsshub_route_drift`
+- `login_state_missing`
+- `risk_control_or_geo_restricted`
 
 ## Maintainer Appendix
 

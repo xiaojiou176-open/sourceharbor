@@ -390,6 +390,105 @@ def test_step_collect_subtitles_breaks_on_non_binary_asr_failure(tmp_path: Path)
     assert execution.reason == "asr_failed:non_zero_exit"
 
 
+def test_step_collect_subtitles_escalates_model_when_long_cjk_asr_quality_is_low(
+    tmp_path: Path,
+) -> None:
+    ctx = _make_ctx(
+        tmp_path,
+        youtube_transcript_fallback_enabled=False,
+        asr_fallback_enabled=True,
+        asr_model_size="tiny",
+    )
+    media_path = ctx.download_dir / "sample.mp4"
+    media_path.write_bytes(b"video")
+    seen_models: list[str] = []
+
+    async def _run_command(current_ctx: PipelineContext, cmd: list[str]) -> CommandResult:
+        model = cmd[cmd.index("--model") + 1]
+        seen_models.append(model)
+        transcript = (
+            "你好"
+            if model in {"tiny", "base"}
+            else "\n".join(f"这是第{idx}句足够长的中文转写结果。" for idx in range(160))
+        )
+        (current_ctx.download_dir / "sample.txt").write_text(transcript, encoding="utf-8")
+        return CommandResult(ok=True)
+
+    execution = asyncio.run(
+        subtitles.step_collect_subtitles(
+            ctx,
+            {
+                "platform": "bilibili",
+                "source_url": "https://www.bilibili.com/video/BV1xx",
+                "video_uid": "BV1xx",
+                "media_path": str(media_path.resolve()),
+                "metadata": {
+                    "duration": 5400,
+                    "title": "中文长视频课程",
+                    "description": "系统设计深入讲解",
+                    "language": "zh",
+                },
+            },
+            run_command=_run_command,
+            fetch_youtube_transcript_text_fn=lambda _video_id: "",
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert execution.degraded is False
+    assert execution.output["transcript_provider"] == "asr_fallback"
+    assert execution.output["asr_model_size"] in {"small", "medium"}
+    assert execution.output["asr_quality"]["status"] == "passed"
+    assert len(seen_models) >= 2
+    assert seen_models[0] in {"base", "small"}
+
+
+def test_step_collect_subtitles_marks_asr_quality_insufficient_when_escalation_exhausted(
+    tmp_path: Path,
+) -> None:
+    ctx = _make_ctx(
+        tmp_path,
+        youtube_transcript_fallback_enabled=False,
+        asr_fallback_enabled=True,
+        asr_model_size="tiny",
+    )
+    media_path = ctx.download_dir / "sample.mp4"
+    media_path.write_bytes(b"video")
+    seen_models: list[str] = []
+
+    async def _run_command(current_ctx: PipelineContext, cmd: list[str]) -> CommandResult:
+        model = cmd[cmd.index("--model") + 1]
+        seen_models.append(model)
+        (current_ctx.download_dir / "sample.txt").write_text("你好", encoding="utf-8")
+        return CommandResult(ok=True)
+
+    execution = asyncio.run(
+        subtitles.step_collect_subtitles(
+            ctx,
+            {
+                "platform": "bilibili",
+                "source_url": "https://www.bilibili.com/video/BV1xx",
+                "video_uid": "BV1xx",
+                "media_path": str(media_path.resolve()),
+                "metadata": {
+                    "duration": 7200,
+                    "title": "中文长视频课程",
+                    "description": "系统设计深入讲解",
+                    "language": "zh",
+                },
+            },
+            run_command=_run_command,
+            fetch_youtube_transcript_text_fn=lambda _video_id: "",
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert execution.degraded is True
+    assert execution.reason == "asr_quality_insufficient"
+    assert execution.output["asr_quality"]["status"] == "review"
+    assert len(seen_models) >= 2
+
+
 def test_step_collect_subtitles_reports_missing_media_path_for_asr(tmp_path: Path) -> None:
     ctx = _make_ctx(
         tmp_path,

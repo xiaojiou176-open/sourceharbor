@@ -234,6 +234,7 @@ async def run_pipeline(
         "outline": {},
         "digest": {},
         "artifacts": {},
+        "danmaku": {},
         "degradations": [],
         "steps": {},
         "resume": {

@@ -146,18 +146,38 @@ def test_full_stack_uses_runtime_snapshot_for_data_plane_and_worker_signature() 
     assert "Service-specific regex plus the expected port" in script
 
 
-def test_live_smoke_bilibili_uses_subtitle_override_and_longer_timeout() -> None:
+def test_live_smoke_bilibili_uses_default_product_subtitle_strategy() -> None:
     script = (_repo_root() / "scripts" / "ci" / "e2e_live_smoke.sh").read_text(encoding="utf-8")
 
-    assert 'SUBTITLE_ASR_ENABLED="$subtitle_asr_enabled"' in script
-    assert 'SUBTITLE_ASR_MODEL="$subtitle_asr_model"' in script
+    assert 'SUBTITLE_ASR_ENABLED="$subtitle_asr_enabled"' not in script
+    assert 'SUBTITLE_ASR_MODEL="$subtitle_asr_model"' not in script
+    assert 'SUBTITLE_TIMEOUT_SECONDS="$subtitle_timeout_seconds"' not in script
+    assert 'subtitles = {"asr_fallback_enabled": True}' not in script
     assert (
-        'bilibili_job_id="$(process_video "bilibili" "$BILIBILI_SMOKE_URL" "full" "bilibili_full" "1" "tiny" "420")"'
+        'bilibili_job_id="$(process_video "bilibili" "$BILIBILI_SMOKE_URL" "full" "bilibili_full")"'
         in script
     )
     assert (
         'wait_for_terminal_status "$bilibili_job_id" "video_process:bilibili_full" "420"' in script
     )
+
+
+def test_live_smoke_supports_bilibili_canary_matrix_and_reader_boundary_receipt() -> None:
+    script = (_repo_root() / "scripts" / "ci" / "e2e_live_smoke.sh").read_text(encoding="utf-8")
+    wrapper = (_repo_root() / "scripts" / "ci" / "smoke_full_stack.sh").read_text(encoding="utf-8")
+
+    assert "--bilibili-canary-matrix <path>" in script
+    assert "--bilibili-canary-tier <name>" in script
+    assert "--bilibili-canary-limit <n>" in script
+    assert "--bilibili-reader-receipt-sample <slug>" in script
+    assert '"bilibili_canary_matrix"' in script
+    assert '"bilibili_reader_receipt"' in script
+    assert 'record_scenario "bilibili_reader_boundary"' in script
+    assert '"published_document_ids"' in script
+    assert 'reader public boundary missing current batch document' in script
+    assert 'reader navigation boundary missing current batch document' in script
+    assert "--live-smoke-bilibili-canary-matrix" in wrapper
+    assert "--live-smoke-bilibili-reader-receipt-sample" in wrapper
 
 
 def test_full_stack_only_falls_back_to_local_dev_tokens_outside_ci() -> None:

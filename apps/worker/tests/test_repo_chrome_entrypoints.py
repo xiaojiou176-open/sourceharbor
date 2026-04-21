@@ -345,6 +345,103 @@ def test_open_repo_chrome_tabs_opens_login_site_set(
     ]
 
 
+def test_open_repo_chrome_tabs_reports_bilibili_login_state(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = _load_module(
+        "scripts/runtime/open_repo_chrome_tabs.py",
+        "open_repo_chrome_tabs_bilibili_login_state",
+    )
+    payload = {
+        "chrome_channel": "chrome",
+        "user_data_dir": str(tmp_path / "chrome-user-data"),
+        "profile_dir": "Profile 1",
+        "profile_path": str(tmp_path / "chrome-user-data" / "Profile 1"),
+        "profile_name": "sourceharbor",
+        "cdp_port": 9339,
+        "cdp_url": "http://127.0.0.1:9339",
+    }
+    (tmp_path / "chrome-user-data" / "Profile 1").mkdir(parents=True)
+    page_target_calls = iter(
+        [
+            [{"id": "blank-a", "type": "page"}],
+            [
+                {
+                    "id": "id-1",
+                    "type": "page",
+                    "url": "https://myaccount.google.com/",
+                    "title": "Google Account",
+                },
+                {
+                    "id": "id-2",
+                    "type": "page",
+                    "url": "https://www.youtube.com/",
+                    "title": "YouTube",
+                },
+                {
+                    "id": "id-3",
+                    "type": "page",
+                    "url": "https://account.bilibili.com/account/home",
+                    "title": "Bilibili Account",
+                },
+                {
+                    "id": "id-4",
+                    "type": "page",
+                    "url": "https://resend.com/login",
+                    "title": "Resend Login",
+                },
+            ],
+        ]
+    )
+
+    monkeypatch.setattr(module, "resolve_repo_runtime", lambda **_: payload)
+    monkeypatch.setattr(module, "is_cdp_alive", lambda port: True)
+    monkeypatch.setattr(
+        module,
+        "list_repo_chrome_processes",
+        lambda user_data_dir: [{"pid": "456", "command": f"--user-data-dir={user_data_dir}"}],
+    )
+    monkeypatch.setattr(module, "list_page_targets", lambda port: next(page_target_calls))
+    monkeypatch.setattr(module, "close_page_target", lambda port, target_id: None)
+    monkeypatch.setattr(
+        module,
+        "open_page_target",
+        lambda port, url: {
+            "id": {
+                "https://myaccount.google.com/": "id-1",
+                "https://www.youtube.com/": "id-2",
+                "https://account.bilibili.com/account/home": "id-3",
+                "https://resend.com/login": "id-4",
+            }[url],
+            "url": url,
+        },
+    )
+    monkeypatch.setattr(module, "write_json_artifact", lambda *args, **kwargs: None)
+    monkeypatch.setattr(module.time, "sleep", lambda _: None)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "open_repo_chrome_tabs.py",
+            "--user-data-dir",
+            str(tmp_path / "chrome-user-data"),
+            "--json",
+        ],
+    )
+
+    exit_code = module.main()
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    response = json.loads(captured.out)
+    bilibili_result = response["site_results"]["bilibili_account"]
+    assert bilibili_result["login_state"] == "authenticated"
+    assert bilibili_result["proof_kind"] == "url_page_state"
+    assert bilibili_result["final_url"] == "https://account.bilibili.com/account/home"
+
+
 def test_open_repo_chrome_tabs_fails_when_repo_owned_process_is_missing(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

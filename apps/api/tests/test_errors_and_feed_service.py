@@ -293,7 +293,8 @@ def test_feed_service_build_reader_bridge_index_maps_source_item_and_job_ids() -
         "/reader/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
     )
     assert by_job_id["job-2"]["title"] == "Reader Doc 1"
-    assert by_source_item["source-item-3"]["publish_status"] == "published_with_gap"
+    assert "source-item-3" not in by_source_item
+    assert "job-3" not in by_job_id
 
 
 def test_feed_service_build_reader_bridge_index_handles_reader_repo_failure() -> None:

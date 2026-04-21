@@ -975,15 +975,23 @@ def test_get_reader_bridge_for_job_returns_current_reader_document() -> None:
                 types.SimpleNamespace(
                     id=uuid.uuid4(),
                     title="Ignored",
-                    published_with_gap=False,
+                    published_with_gap=True,
                     source_refs_json=["not-a-dict"],
                 ),
                 types.SimpleNamespace(
                     id=uuid.uuid4(),
-                    title="Reader edition",
+                    title="Gap reader edition",
                     published_with_gap=True,
                     source_refs_json=[
                         {"job_id": "different-job"},
+                        {"job_id": "job-reader-match"},
+                    ],
+                ),
+                types.SimpleNamespace(
+                    id=uuid.uuid4(),
+                    title="Reader edition",
+                    published_with_gap=False,
+                    source_refs_json=[
                         {"job_id": "job-reader-match"},
                     ],
                 ),
@@ -999,9 +1007,9 @@ def test_get_reader_bridge_for_job_returns_current_reader_document() -> None:
     assert result == {
         "id": result["id"],
         "title": "Reader edition",
-        "publish_status": "published_with_gap",
+        "publish_status": "published",
         "reader_route": f"/reader/{result['id']}",
-        "published_with_gap": True,
+        "published_with_gap": False,
     }
 
 

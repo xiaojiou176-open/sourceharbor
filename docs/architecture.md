@@ -5,7 +5,7 @@ SourceHarbor is easiest to understand as a single knowledge pipeline with four o
 <p>
   <img
     src="./assets/sourceharbor-architecture.svg"
-    alt="SourceHarbor architecture showing source intake, API and worker pipeline, artifact generation, retrieval and MCP surfaces, and the web command center."
+    alt="SourceHarbor architecture showing source intake, API and worker pipeline, artifact generation, retrieval and MCP surfaces, plus the reader-first web surfaces."
     width="100%"
   />
 </p>
@@ -30,12 +30,12 @@ Everything else in the repository exists to make that loop reliable, inspectable
 - subscription template catalog shared by API, MCP, and the `/subscriptions` intake form
 - ingestion
 - videos and jobs
-- digest feed
+- timeline feed
 - artifacts
 - retrieval
 - notifications
 - watchlists, briefing, and merged-story trend views
-- reader pipeline endpoints for cluster verdict manifests, published reader documents, repair, and navigation brief
+- reader pipeline endpoints for cluster verdict manifests, published reader documents, repair, and navigation brief, with gap-bearing documents kept off the public published shelf until coverage and traceability pass
 - operator-facing controls
 
 ### Worker
@@ -45,7 +45,7 @@ Everything else in the repository exists to make that loop reliable, inspectable
 - poll feeds into the pending-consume pool
 - route entries into the video lane or article/text lane
 - freeze consumption batches and process queued jobs
-- judge batch clusters, materialize published reader documents, and carry yellow-warning / traceability companion payloads forward
+- judge batch clusters, materialize reader-stage documents, keep gap-bearing outputs available for repair/internal audit, and publish only fully sealed reader documents to public reader routes
 - write artifacts
 - send video digests
 - send daily digests
@@ -67,20 +67,20 @@ Everything else in the repository exists to make that loop reliable, inspectable
 
 ### Web
 
-`apps/web` is the operator command center:
+`apps/web` is the reader-first operator surface:
 
-- command overview
 - reader frontstage for published reader documents
+- timeline and calm reading flow
 - proof boundary
 - ops inbox / diagnostics
 - watchlists, merged stories, trends, and unified briefings
 - search plus story-aware, briefing-backed Ask front door that carries selected story context into answer, change, and evidence layers through a server-owned story page payload shared with `/briefings`, with one canonical selected-story object instead of front-end stitching or duplicate page aliases
-- digest reading flow
+- timeline reading flow
 - source contribution drawer and yellow-warning doc detail view
 - ingest run ledger
 - knowledge layer
 - subscription management with strong-supported templates and generalized RSSHub/RSS intake, now driven by the shared subscription template catalog
-- job trace
+- job evidence and drill-down
 - notification settings
 - sample playground
 - use-case landing pages

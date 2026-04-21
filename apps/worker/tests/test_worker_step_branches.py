@@ -5,8 +5,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+from worker.config import Settings
 from worker.pipeline.steps.comments import step_collect_comments
 from worker.pipeline.steps.frames import step_extract_frames
+from worker.pipeline.steps.subtitles import step_collect_subtitles
 from worker.pipeline.types import CommandResult
 
 
@@ -23,6 +25,18 @@ def _build_ctx(tmp_path: Path, *, youtube_api_key: str | None = "test-key") -> A
         pipeline_max_frames=8,
     )
     return SimpleNamespace(settings=settings, frames_dir=tmp_path)
+
+
+def _build_subtitle_ctx(tmp_path: Path, *, settings: Settings | None = None) -> Any:
+    work_dir = tmp_path / "work"
+    download_dir = work_dir / "downloads"
+    work_dir.mkdir(parents=True, exist_ok=True)
+    download_dir.mkdir(parents=True, exist_ok=True)
+    current_settings = settings or Settings(
+        pipeline_workspace_dir=str((tmp_path / "workspace").resolve()),
+        pipeline_artifact_root=str((tmp_path / "artifact-root").resolve()),
+    )
+    return SimpleNamespace(settings=current_settings, download_dir=download_dir)
 
 
 class _FailingCollector:
@@ -91,6 +105,45 @@ def test_step_collect_comments_unsupported_platform_is_skipped(tmp_path: Path) -
     assert execution.status == "skipped"
     assert execution.degraded is True
     assert execution.reason == "comments_collection_skipped_platform_unsupported"
+
+
+def test_step_collect_subtitles_bilibili_supported_defaults_to_asr_fallback(
+    tmp_path: Path,
+) -> None:
+    ctx = _build_subtitle_ctx(tmp_path)
+    media_path = ctx.download_dir / "sample.mp4"
+    media_path.write_bytes(b"video")
+    seen_commands: list[list[str]] = []
+
+    async def _run_command(current_ctx: Any, cmd: list[str]) -> CommandResult:
+        seen_commands.append(cmd)
+        (current_ctx.download_dir / "sample.txt").write_text(
+            "default asr transcript",
+            encoding="utf-8",
+        )
+        return CommandResult(ok=True)
+
+    execution = asyncio.run(
+        step_collect_subtitles(
+            ctx,
+            {
+                "platform": "bilibili",
+                "source_url": "https://www.bilibili.com/video/BV1xx411c7mD",
+                "video_uid": "BV1xx411c7mD",
+                "media_path": str(media_path.resolve()),
+            },
+            run_command=_run_command,
+            fetch_youtube_transcript_text_fn=lambda _video_id: "",
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert execution.degraded is False
+    assert execution.output["transcript_provider"] == "asr_fallback"
+    assert execution.output["asr_model_size"] == "tiny"
+    assert execution.output["subprocess_timeout_seconds"] == 420
+    assert execution.state_updates["transcript"] == "default asr transcript"
+    assert seen_commands
 
 
 def test_step_extract_frames_media_missing_skips() -> None:

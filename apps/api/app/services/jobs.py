@@ -20,6 +20,7 @@ from ..repositories import JobsRepository
 _ARTIFACT_ALIAS_TO_FILE = {
     "meta": "meta.json",
     "comments": "comments.json",
+    "danmaku": "danmaku.json",
     "outline": "outline.json",
     "transcript": "transcript.txt",
     "digest": "digest.md",
@@ -409,6 +410,7 @@ class JobsService:
             known_files = {
                 "meta": "meta.json",
                 "comments": "comments.json",
+                "danmaku": "danmaku.json",
                 "transcript": "transcript.txt",
                 "outline": "outline.json",
                 "digest": "digest.md",
@@ -548,6 +550,11 @@ class JobsService:
         comparison = self.compare_with_previous(job_id=job_id)
         knowledge_cards = self.get_knowledge_cards(job_id=job_id) or []
         digest_payload = self.get_artifact_payload(job_id=job_id, video_url=None) or {}
+        artifact_meta = (
+            dict(digest_payload.get("meta") or {}) if isinstance(digest_payload.get("meta"), dict) else {}
+        )
+        digest_meta = self._flatten_digest_meta(artifact_meta)
+        rich_evidence = self._build_rich_evidence(artifact_meta, digest_meta)
 
         llm_required, llm_gate_passed, hard_fail_reason = self.resolve_llm_gate_fields(
             llm_required=getattr(row, "llm_required", None),
@@ -595,12 +602,75 @@ class JobsService:
                 "hard_fail_reason": hard_fail_reason,
             },
             "digest": digest_payload.get("markdown"),
-            "digest_meta": digest_payload.get("meta"),
+            "digest_meta": digest_meta or None,
+            "rich_evidence": rich_evidence or None,
             "comparison": comparison,
             "knowledge_cards": knowledge_cards,
             "artifact_manifest": artifacts_index,
             "step_summary": step_summary,
         }
+
+    def _flatten_digest_meta(self, artifact_meta: dict[str, Any]) -> dict[str, Any]:
+        metadata = artifact_meta.get("metadata")
+        flattened = dict(metadata or {}) if isinstance(metadata, dict) else dict(artifact_meta)
+        raw_stage_contract = artifact_meta.get("raw_stage_contract")
+        if isinstance(raw_stage_contract, dict):
+            flattened["raw_stage_contract"] = raw_stage_contract
+        for key in ("download_mode", "media_path", "subtitle_files", "frame_files", "generated_at"):
+            if key in artifact_meta:
+                flattened[key] = artifact_meta.get(key)
+        return flattened
+
+    def _build_rich_evidence(
+        self, artifact_meta: dict[str, Any], digest_meta: dict[str, Any]
+    ) -> dict[str, Any]:
+        def _present(value: Any) -> bool:
+            if value is None:
+                return False
+            if isinstance(value, str):
+                return bool(value.strip())
+            if isinstance(value, (list, dict, tuple, set)):
+                return bool(value)
+            return True
+
+        payload: dict[str, Any] = {}
+        danmaku = artifact_meta.get("danmaku")
+        if isinstance(danmaku, dict) and danmaku:
+            payload["danmaku"] = danmaku
+        site_objects = digest_meta.get("site_objects")
+        if isinstance(site_objects, dict) and site_objects:
+            payload["site_objects"] = site_objects
+
+        creator_metadata = {
+            key: digest_meta.get(key)
+            for key in ("uploader", "uploader_mid", "uploader_url", "uploader_avatar")
+            if _present(digest_meta.get(key))
+        }
+        if creator_metadata:
+            payload["creator_metadata"] = creator_metadata
+
+        video_metadata = {
+            key: digest_meta.get(key)
+            for key in (
+                "view_count",
+                "like_count",
+                "comment_count",
+                "danmaku_count",
+                "coin_count",
+                "favorite_count",
+                "share_count",
+                "category",
+                "category_id",
+                "bilibili_aid",
+                "bilibili_bvid",
+                "bilibili_cid",
+                "chapters",
+            )
+            if _present(digest_meta.get(key))
+        }
+        if video_metadata:
+            payload["video_metadata"] = video_metadata
+        return payload
 
     def _read_digest_text(self, digest_path: str | None) -> str | None:
         if not isinstance(digest_path, str) or not digest_path.strip():

@@ -47,7 +47,7 @@ class ReaderPipelineService:
 
     def get_document_by_slug(self, *, slug: str) -> dict[str, Any] | None:
         document = self.document_repo.get_by_slug(slug=slug)
-        if document is None:
+        if document is None or not self._is_publicly_published_document(document):
             return None
         return self._to_document_payload(document)
 
@@ -311,7 +311,11 @@ class ReaderPipelineService:
             "cluster_verdict_manifest_id": str(manifest_instance.id),
             "window_id": batch.window_id,
             "document_count": len(documents),
-            "published_document_count": len(documents),
+            "published_document_count": sum(
+                1
+                for item in document_payloads
+                if self._is_public_publish_status(item.get("publish_status"))
+            ),
             "published_with_gap_count": sum(
                 1 for item in document_payloads if bool(item.get("published_with_gap"))
             ),
@@ -322,12 +326,18 @@ class ReaderPipelineService:
     def list_published_documents(
         self, *, limit: int = 20, window_id: str | None = None
     ) -> list[dict[str, Any]]:
-        documents = self.document_repo.list_current(limit=limit, window_id=window_id)
-        return [self._to_document_payload(item) for item in documents]
+        # Public reader routes are capped to a small window, so fetch that full window
+        # before filtering out gap-bearing versions.
+        fetch_limit = max(int(limit or 0), 100)
+        documents = self.document_repo.list_current(limit=fetch_limit, window_id=window_id)
+        public_documents = [
+            item for item in documents if self._is_publicly_published_document(item)
+        ]
+        return [self._to_document_payload(item) for item in public_documents[:limit]]
 
     def get_published_document(self, *, document_id: uuid.UUID) -> dict[str, Any] | None:
         document = self.document_repo.get(document_id=document_id)
-        if document is None:
+        if document is None or not self._is_publicly_published_document(document):
             return None
         return self._to_document_payload(document)
 
@@ -1710,6 +1720,19 @@ class ReaderPipelineService:
         if not is_current:
             return "superseded"
         return "published_with_gap" if published_with_gap else "published"
+
+    @classmethod
+    def _is_public_publish_status(cls, publish_status: Any) -> bool:
+        return str(publish_status or "").strip() == "published"
+
+    @classmethod
+    def _is_publicly_published_document(cls, instance: Any) -> bool:
+        return cls._is_public_publish_status(
+            cls._derive_publish_status(
+                is_current=bool(getattr(instance, "is_current", False)),
+                published_with_gap=bool(getattr(instance, "published_with_gap", False)),
+            )
+        )
 
     def _judge_input_list(
         self,

@@ -360,17 +360,16 @@ class FeedService:
         by_source_item: dict[str, dict[str, Any]] = {}
         by_job_id: dict[str, dict[str, Any]] = {}
         for document in current_documents:
-            publish_status = (
-                "published_with_gap"
-                if bool(getattr(document, "published_with_gap", False))
-                else "published"
-            )
+            published_with_gap = bool(getattr(document, "published_with_gap", False))
+            if published_with_gap:
+                continue
+            publish_status = "published"
             payload = {
                 "id": str(document.id),
                 "slug": str(document.slug),
                 "title": str(document.title),
                 "publish_status": publish_status,
-                "published_with_gap": bool(getattr(document, "published_with_gap", False)),
+                "published_with_gap": published_with_gap,
                 "reader_route": f"/reader/{document.id}",
             }
             for source_ref in list(getattr(document, "source_refs_json", None) or []):

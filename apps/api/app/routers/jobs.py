@@ -106,6 +106,7 @@ class JobEvidenceBundleResponse(BaseModel):
     trace_summary: dict[str, Any]
     digest: str | None = None
     digest_meta: dict[str, Any] | None = None
+    rich_evidence: dict[str, Any] | None = None
     comparison: dict[str, Any] | None = None
     knowledge_cards: list[dict[str, Any]]
     artifact_manifest: dict[str, str]

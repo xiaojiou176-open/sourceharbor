@@ -28,13 +28,14 @@ PIPELINE_STEPS: list[str] = [
 ]
 
 STEP_VERSIONS: dict[str, str] = dict.fromkeys(PIPELINE_STEPS, "v1")
-STEP_VERSIONS["download_media"] = "v2"
-STEP_VERSIONS["collect_subtitles"] = "v2"
-STEP_VERSIONS["collect_comments"] = "v4"
+STEP_VERSIONS["fetch_metadata"] = "v2"
+STEP_VERSIONS["download_media"] = "v4"
+STEP_VERSIONS["collect_subtitles"] = "v3"
+STEP_VERSIONS["collect_comments"] = "v5"
 STEP_VERSIONS["llm_outline"] = "v6"
 STEP_VERSIONS["llm_digest"] = "v7"
 STEP_VERSIONS["build_embeddings"] = "v1"
-STEP_VERSIONS["write_artifacts"] = "v3"
+STEP_VERSIONS["write_artifacts"] = "v4"
 
 ARTICLE_PIPELINE_STEPS: list[str] = [
     "fetch_article_content",
@@ -97,8 +98,8 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
         "overrides",
     ),
     "fetch_metadata": ("source_url", "title", "platform", "video_uid", "published_at"),
-    "download_media": ("source_url",),
-    "collect_subtitles": ("media_path", "download_mode", "source_url", "platform", "video_uid"),
+    "download_media": ("source_url", "metadata"),
+    "collect_subtitles": ("media_path", "download_mode", "source_url", "platform", "video_uid", "metadata"),
     "collect_comments": ("source_url", "platform", "video_uid", "comments_policy"),
     "extract_frames": ("media_path", "frame_policy"),
     "llm_outline": (
@@ -143,14 +144,19 @@ STEP_INPUT_KEYS: dict[str, tuple[str, ...]] = {
         "transcript",
         "degradations",
         "frames",
+        "danmaku",
         "raw_stage_contract",
     ),
 }
 
 STEP_SETTING_KEYS: dict[str, tuple[str, ...]] = {
     "fetch_article_content": ("request_retry_attempts", "request_retry_backoff_seconds"),
-    "fetch_metadata": ("pipeline_subprocess_timeout_seconds",),
-    "download_media": ("pipeline_subprocess_timeout_seconds", "bilibili_downloader"),
+    "fetch_metadata": ("pipeline_subprocess_timeout_seconds", "bilibili_cookie"),
+    "download_media": (
+        "pipeline_subprocess_timeout_seconds",
+        "bilibili_downloader",
+        "bilibili_cookie",
+    ),
     "collect_subtitles": (
         "pipeline_subprocess_timeout_seconds",
         "youtube_transcript_fallback_enabled",
@@ -163,6 +169,7 @@ STEP_SETTING_KEYS: dict[str, tuple[str, ...]] = {
         "comments_request_timeout_seconds",
         "request_retry_attempts",
         "request_retry_backoff_seconds",
+        "bilibili_cookie",
     ),
     "extract_frames": (
         "pipeline_subprocess_timeout_seconds",

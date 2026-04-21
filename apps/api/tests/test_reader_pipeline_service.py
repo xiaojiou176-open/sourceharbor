@@ -477,12 +477,22 @@ def test_materialize_batch_marks_document_with_gap_when_digest_is_missing() -> N
     payload = service.materialize_batch(batch_id=batch_id)
 
     document = payload["documents"][0]
+    public_documents = service.list_published_documents(limit=5, window_id=batch.window_id)
+    navigation = service.build_navigation_brief(window_id=batch.window_id, limit=5)
+
+    assert document["publish_status"] == "published_with_gap"
     assert document["published_with_gap"] is True
     assert document["warning"]["warning_kind"] == "coverage_gap"
     assert document["warning"]["published_with_gap"] is True
     assert document["warning"]["missing_digest_count"] == 1
     assert document["source_refs"][0]["relation_kind"] == "manual_one_off"
     assert document["coverage_ledger"]["status"] == "gap_detected"
+    assert payload["published_document_count"] == 0
+    assert public_documents == []
+    assert service.get_published_document(document_id=uuid.UUID(document["id"])) is None
+    assert service.get_published_document_by_slug(slug=document["slug"]) is None
+    assert navigation["document_count"] == 0
+    assert navigation["items"] == []
 
 
 def test_repair_document_creates_new_version_with_history() -> None:
@@ -518,11 +528,23 @@ def test_materialize_batch_marks_published_with_gap_when_digest_is_missing() -> 
     merge_doc = next(
         item for item in payload["documents"] if item["materialization_mode"] == "merge_then_polish"
     )
+    public_documents = service.list_published_documents(limit=5, window_id=batch.window_id)
+    navigation = service.build_navigation_brief(window_id=batch.window_id, limit=5)
+
+    assert merge_doc["publish_status"] == "published_with_gap"
     assert merge_doc["published_with_gap"] is True
     assert merge_doc["warning"]["warning_kind"] == "coverage_gap"
     assert merge_doc["warning"]["missing_digest_count"] == 1
     assert "missing digest" in " ".join(merge_doc["warning"]["reasons"])
+    assert payload["published_document_count"] == 1
     assert payload["published_with_gap_count"] >= 1
+    assert len(public_documents) == 1
+    assert public_documents[0]["publish_status"] == "published"
+    assert public_documents[0]["materialization_mode"] == "polish_only"
+    assert service.get_published_document(document_id=uuid.UUID(merge_doc["id"])) is None
+    assert service.get_published_document_by_slug(slug=merge_doc["slug"]) is None
+    assert navigation["document_count"] == 1
+    assert navigation["items"][0]["document_id"] == public_documents[0]["id"]
 
 
 def test_coverage_ledger_flags_missing_claim_kinds_per_source() -> None:

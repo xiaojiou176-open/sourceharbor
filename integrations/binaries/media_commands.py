@@ -20,18 +20,40 @@ def build_download_provider_chain(platform: str, bilibili_downloader: Any) -> li
     return [selected]
 
 
-def yt_dlp_metadata_command(source_url: str) -> list[str]:
-    return [
+def _apply_headers(cmd: list[str], headers: dict[str, str] | None) -> list[str]:
+    if not headers:
+        return cmd
+    for key, value in headers.items():
+        normalized = str(value or "").strip()
+        if not normalized:
+            continue
+        cmd.extend(["--add-header", f"{key}: {normalized}"])
+    return cmd
+
+
+def yt_dlp_metadata_command(
+    source_url: str,
+    *,
+    headers: dict[str, str] | None = None,
+) -> list[str]:
+    cmd = [
         "yt-dlp",
         "--dump-single-json",
         "--skip-download",
         "--no-warnings",
-        source_url,
     ]
+    _apply_headers(cmd, headers)
+    cmd.append(source_url)
+    return cmd
 
 
-def yt_dlp_download_command(source_url: str, output_tmpl: str) -> list[str]:
-    return [
+def yt_dlp_download_command(
+    source_url: str,
+    output_tmpl: str,
+    *,
+    headers: dict[str, str] | None = None,
+) -> list[str]:
+    cmd = [
         "yt-dlp",
         "--no-progress",
         "--no-warnings",
@@ -43,8 +65,10 @@ def yt_dlp_download_command(source_url: str, output_tmpl: str) -> list[str]:
         output_tmpl,
         "--print",
         "after_move:filepath",
-        source_url,
     ]
+    _apply_headers(cmd, headers)
+    cmd.append(source_url)
+    return cmd
 
 
 def bbdown_commands(source_url: str, download_dir: Path) -> list[list[str]]:

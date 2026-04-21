@@ -1,0 +1,69 @@
+{
+  "matrix_kind": "sourceharbor_bilibili_live_canary_matrix_v1",
+  "notes": "Repo-curated public Bilibili samples for current-head live canary runs. Some sources may drift; keep taxonomy honest instead of silently replacing failures.",
+  "samples": [
+    {
+      "slug": "science-interview-short",
+      "tier": "core",
+      "reader_boundary_candidate": true,
+      "mode": "full",
+      "job_timeout_seconds": 420,
+      "url": "https://www.bilibili.com/video/BV1vybjzbEL9/",
+      "coverage_tags": ["interview", "speech-heavy", "short", "official-media"]
+    },
+    {
+      "slug": "tech-talk-medium",
+      "tier": "core",
+      "reader_boundary_candidate": false,
+      "mode": "full",
+      "job_timeout_seconds": 420,
+      "url": "https://www.bilibili.com/video/BV1SPcBemEux/",
+      "coverage_tags": ["tech-talk", "speech-heavy", "midform"]
+    },
+    {
+      "slug": "ai-roundtable-medium",
+      "tier": "core",
+      "reader_boundary_candidate": false,
+      "mode": "full",
+      "job_timeout_seconds": 540,
+      "url": "https://www.bilibili.com/video/BV13MTWzDEpQ/",
+      "coverage_tags": ["roundtable", "speech-heavy", "midform", "cjk-mixed"]
+    },
+    {
+      "slug": "ai-interview-openai",
+      "tier": "extended",
+      "reader_boundary_candidate": false,
+      "mode": "full",
+      "job_timeout_seconds": 900,
+      "url": "https://www.bilibili.com/video/BV1A5DBY1ET9/",
+      "coverage_tags": ["interview", "speech-heavy", "midform", "cjk-mixed", "long-asr"]
+    },
+    {
+      "slug": "entrepreneur-interview-long",
+      "tier": "extended",
+      "reader_boundary_candidate": false,
+      "mode": "full",
+      "job_timeout_seconds": 600,
+      "url": "https://www.bilibili.com/video/BV1fi421179E/",
+      "coverage_tags": ["interview", "longform", "speech-heavy"]
+    },
+    {
+      "slug": "python-longform-course",
+      "tier": "extended",
+      "reader_boundary_candidate": false,
+      "mode": "full",
+      "job_timeout_seconds": 900,
+      "url": "https://www.bilibili.com/video/BV1wA411L7nh/",
+      "coverage_tags": ["tutorial", "longform", "screen-heavy", "asr-stress"]
+    },
+    {
+      "slug": "history-documentary",
+      "tier": "extended",
+      "reader_boundary_candidate": false,
+      "mode": "full",
+      "job_timeout_seconds": 600,
+      "url": "https://www.bilibili.com/video/BV131421d7ge/",
+      "coverage_tags": ["documentary", "archive", "narration-heavy"]
+    }
+  ]
+}

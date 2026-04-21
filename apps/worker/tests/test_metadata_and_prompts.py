@@ -35,7 +35,7 @@ def test_step_fetch_metadata_parses_yt_dlp_json_payload() -> None:
             ok=True,
             stdout=(
                 '{"extractor":"youtube","extractor_key":"Youtube","uploader":"demo",'
-                '"duration":120,"description":"desc","tags":["a"],"thumbnail":"thumb",'
+                '"duration":120,"language":"zh","description":"desc","tags":["a"],"thumbnail":"thumb",'
                 '"webpage_url":"https://video"}'
             ),
         )
@@ -54,8 +54,91 @@ def test_step_fetch_metadata_parses_yt_dlp_json_payload() -> None:
     metadata = execution.state_updates["metadata"]
     assert metadata["extractor"] == "youtube"
     assert metadata["uploader"] == "demo"
+    assert metadata["language"] == "zh"
     assert metadata["webpage_url"] == "https://video"
     assert isinstance(metadata["fetched_at"], str)
+
+
+def test_step_fetch_metadata_enriches_bilibili_metadata_and_danmaku() -> None:
+    async def _ok(_ctx: Any, cmd: list[str]) -> CommandResult:
+        assert "--add-header" in cmd
+        assert "Cookie: SESSDATA=demo" in cmd
+        return CommandResult(
+            ok=True,
+            stdout=(
+                '{"extractor":"bilibili","extractor_key":"BiliBili","uploader":"demo-up",'
+                '"duration":120,"language":"zh","description":"desc","tags":["a"],'
+                '"thumbnail":"thumb","webpage_url":"https://www.bilibili.com/video/BV1demo"}'
+            ),
+        )
+
+    async def _fake_bilibili_rich_evidence(
+        *,
+        source_url: str,
+        video_uid: str,
+        request_timeout_seconds: float,
+        cookie: str | None,
+    ) -> dict[str, Any]:
+        assert source_url == "https://www.bilibili.com/video/BV1demo"
+        assert video_uid == "BV1demo"
+        assert request_timeout_seconds == 13.0
+        assert cookie == "SESSDATA=demo"
+        return {
+            "metadata": {
+                "uploader_mid": "12345",
+                "uploader_url": "https://space.bilibili.com/12345",
+                "view_count": 999,
+                "like_count": 88,
+                "comment_count": 12,
+                "category": "Science",
+                "chapters": [{"cid": 11, "title": "Part 1", "duration": 30}],
+                "site_objects": {"owner": {"mid": "12345"}, "stat": {"view": 999}},
+            },
+            "danmaku": {
+                "status": "available",
+                "cid": 11,
+                "entry_count": 1,
+                "entries": [{"progress_s": 12.3, "content": "hello"}],
+            },
+        }
+
+    state = {
+        "source_url": "https://www.bilibili.com/video/BV1demo",
+        "title": "Demo",
+        "platform": "bilibili",
+        "video_uid": "BV1demo",
+    }
+    ctx = SimpleNamespace(
+        settings=SimpleNamespace(
+            bilibili_cookie="SESSDATA=demo",
+            request_timeout_seconds=13.0,
+        )
+    )
+
+    execution = asyncio.run(
+        step_fetch_metadata(
+            ctx,
+            state,
+            run_command=_ok,
+            fetch_bilibili_rich_evidence=_fake_bilibili_rich_evidence,
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert execution.degraded is False
+    metadata = execution.state_updates["metadata"]
+    assert metadata["uploader_mid"] == "12345"
+    assert metadata["uploader_url"] == "https://space.bilibili.com/12345"
+    assert metadata["view_count"] == 999
+    assert metadata["like_count"] == 88
+    assert metadata["comment_count"] == 12
+    assert metadata["category"] == "Science"
+    assert metadata["chapters"][0]["title"] == "Part 1"
+    assert metadata["site_objects"]["owner"]["mid"] == "12345"
+    danmaku = execution.state_updates["danmaku"]
+    assert danmaku["status"] == "available"
+    assert danmaku["entry_count"] == 1
+    assert danmaku["entries"][0]["content"] == "hello"
 
 
 def test_step_fetch_metadata_falls_back_on_invalid_json_and_command_failure() -> None:

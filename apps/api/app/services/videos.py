@@ -654,11 +654,10 @@ class VideosService:
             return None
 
         for document in current_documents:
-            publish_status = (
-                "published_with_gap"
-                if bool(getattr(document, "published_with_gap", False))
-                else "published"
-            )
+            published_with_gap = bool(getattr(document, "published_with_gap", False))
+            if published_with_gap:
+                continue
+            publish_status = "published"
             for source_ref in list(getattr(document, "source_refs_json", None) or []):
                 if not isinstance(source_ref, dict):
                     continue
@@ -669,6 +668,6 @@ class VideosService:
                     "title": str(document.title),
                     "publish_status": publish_status,
                     "reader_route": f"/reader/{document.id}",
-                    "published_with_gap": bool(getattr(document, "published_with_gap", False)),
+                    "published_with_gap": published_with_gap,
                 }
         return None

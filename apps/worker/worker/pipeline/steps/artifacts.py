@@ -313,6 +313,9 @@ async def step_write_artifacts(ctx: PipelineContext, state: dict[str, Any]) -> S
         digest_state["outline"] = outline
         digest = normalize_digest_payload(dict(state.get("digest") or {}), digest_state)
         comments = dict(state.get("comments") or empty_comments_payload())
+        danmaku = dict(state.get("danmaku") or {})
+        if not danmaku:
+            danmaku = {"status": "not_collected", "entry_count": 0, "entries": []}
         transcript = str(state.get("transcript") or "")
         degradations = list(state.get("degradations") or [])
         raw_frames = list(state.get("frames") or [])
@@ -379,12 +382,14 @@ async def step_write_artifacts(ctx: PipelineContext, state: dict[str, Any]) -> S
             "media_path": state.get("media_path"),
             "subtitle_files": state.get("subtitle_files") or [],
             "frame_files": frame_files,
+            "danmaku": danmaku,
             "degradations": degradations,
             "generated_at": utc_now_iso(),
         }
 
         meta_path = ctx.artifacts_dir / "meta.json"
         comments_path = ctx.artifacts_dir / "comments.json"
+        danmaku_path = ctx.artifacts_dir / "danmaku.json"
         transcript_path = ctx.artifacts_dir / "transcript.txt"
         outline_path = ctx.artifacts_dir / "outline.json"
         digest_path = ctx.artifacts_dir / "digest.md"
@@ -403,6 +408,7 @@ async def step_write_artifacts(ctx: PipelineContext, state: dict[str, Any]) -> S
 
         write_json(meta_path, meta_payload)
         write_json(comments_path, comments)
+        write_json(danmaku_path, danmaku)
         transcript_path.write_text(transcript, encoding="utf-8")
         write_json(outline_path, outline)
         digest_path.write_text(rendered_digest, encoding="utf-8")
@@ -433,6 +439,7 @@ async def step_write_artifacts(ctx: PipelineContext, state: dict[str, Any]) -> S
                 "files": {
                     "meta": str(meta_path.resolve()),
                     "comments": str(comments_path.resolve()),
+                    "danmaku": str(danmaku_path.resolve()),
                     "transcript": str(transcript_path.resolve()),
                     "outline": str(outline_path.resolve()),
                     "digest": str(digest_path.resolve()),
@@ -444,6 +451,7 @@ async def step_write_artifacts(ctx: PipelineContext, state: dict[str, Any]) -> S
                 "artifacts": {
                     "meta": str(meta_path.resolve()),
                     "comments": str(comments_path.resolve()),
+                    "danmaku": str(danmaku_path.resolve()),
                     "transcript": str(transcript_path.resolve()),
                     "outline": str(outline_path.resolve()),
                     "digest": str(digest_path.resolve()),

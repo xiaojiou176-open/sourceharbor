@@ -33,6 +33,10 @@ LIVE_SMOKE_COMPUTER_USE_STRICT="1"
 LIVE_SMOKE_COMPUTER_USE_SKIP="0"
 LIVE_SMOKE_COMPUTER_USE_SKIP_REASON=""
 YOUTUBE_SMOKE_URL="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+LIVE_SMOKE_BILIBILI_CANARY_MATRIX=""
+LIVE_SMOKE_BILIBILI_CANARY_TIER=""
+LIVE_SMOKE_BILIBILI_CANARY_LIMIT="0"
+LIVE_SMOKE_BILIBILI_READER_RECEIPT_SAMPLE=""
 inherited_api_base="${SOURCE_HARBOR_API_BASE_URL-}"
 inherited_web_port="${WEB_PORT-}"
 
@@ -63,6 +67,14 @@ Options:
   --live-smoke-computer-use-skip-reason <text>
                                        e2e live smoke skip reason when skip=1
   --youtube-smoke-url <url>           e2e live smoke YouTube URL
+  --live-smoke-bilibili-canary-matrix <path>
+                                      e2e live smoke Bilibili canary matrix JSON
+  --live-smoke-bilibili-canary-tier <name>
+                                      e2e live smoke Bilibili canary tier filter
+  --live-smoke-bilibili-canary-limit <n>
+                                      e2e live smoke Bilibili canary sample limit
+  --live-smoke-bilibili-reader-receipt-sample <slug>
+                                      e2e live smoke matrix sample used for manual-intake -> reader receipt
   --live-diagnostics-json <path>      e2e live smoke diagnostics output path
   -h, --help                          Show this help
 EOF
@@ -134,6 +146,22 @@ while [[ $# -gt 0 ]]; do
       ;;
     --youtube-smoke-url)
       YOUTUBE_SMOKE_URL="${2:-}"
+      shift 2
+      ;;
+    --live-smoke-bilibili-canary-matrix)
+      LIVE_SMOKE_BILIBILI_CANARY_MATRIX="${2:-}"
+      shift 2
+      ;;
+    --live-smoke-bilibili-canary-tier)
+      LIVE_SMOKE_BILIBILI_CANARY_TIER="${2:-}"
+      shift 2
+      ;;
+    --live-smoke-bilibili-canary-limit)
+      LIVE_SMOKE_BILIBILI_CANARY_LIMIT="${2:-}"
+      shift 2
+      ;;
+    --live-smoke-bilibili-reader-receipt-sample)
+      LIVE_SMOKE_BILIBILI_READER_RECEIPT_SAMPLE="${2:-}"
       shift 2
       ;;
     --live-diagnostics-json)
@@ -284,6 +312,19 @@ log "phase=short_tests status=passed"
 log "phase=long_tests status=start"
 log "Running built-in e2e live smoke"
 start_heartbeat "e2e_live_smoke"
+live_smoke_extra_args=()
+if [[ -n "$LIVE_SMOKE_BILIBILI_CANARY_MATRIX" ]]; then
+  live_smoke_extra_args+=(--bilibili-canary-matrix "$LIVE_SMOKE_BILIBILI_CANARY_MATRIX")
+fi
+if [[ -n "$LIVE_SMOKE_BILIBILI_CANARY_TIER" ]]; then
+  live_smoke_extra_args+=(--bilibili-canary-tier "$LIVE_SMOKE_BILIBILI_CANARY_TIER")
+fi
+if [[ -n "$LIVE_SMOKE_BILIBILI_CANARY_LIMIT" ]]; then
+  live_smoke_extra_args+=(--bilibili-canary-limit "$LIVE_SMOKE_BILIBILI_CANARY_LIMIT")
+fi
+if [[ -n "$LIVE_SMOKE_BILIBILI_READER_RECEIPT_SAMPLE" ]]; then
+  live_smoke_extra_args+=(--bilibili-reader-receipt-sample "$LIVE_SMOKE_BILIBILI_READER_RECEIPT_SAMPLE")
+fi
 if ! (cd "$ROOT_DIR" && ./scripts/ci/e2e_live_smoke.sh \
   --profile "$ENV_PROFILE" \
   --api-base-url "$LIVE_SMOKE_API_BASE_URL" \
@@ -294,7 +335,8 @@ if ! (cd "$ROOT_DIR" && ./scripts/ci/e2e_live_smoke.sh \
   --computer-use-skip "$LIVE_SMOKE_COMPUTER_USE_SKIP" \
   --computer-use-skip-reason "$LIVE_SMOKE_COMPUTER_USE_SKIP_REASON" \
   --youtube-url "$YOUTUBE_SMOKE_URL" \
-  --diagnostics-json "$LIVE_DIAGNOSTICS_JSON"); then
+  --diagnostics-json "$LIVE_DIAGNOSTICS_JSON" \
+  "${live_smoke_extra_args[@]}"); then
   stop_heartbeat
   live_diag_path="$ROOT_DIR/$LIVE_DIAGNOSTICS_JSON"
   if [[ -f "$live_diag_path" ]]; then

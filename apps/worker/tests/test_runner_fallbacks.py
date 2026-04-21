@@ -108,6 +108,133 @@ def test_step_download_media_bilibili_force_ytdlp_no_fallback(
     assert execution.state_updates["download_mode"] == "text_only"
 
 
+def test_step_download_media_bilibili_extends_timeout_for_long_video(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    settings = Settings(
+        pipeline_workspace_dir=str((tmp_path / "workspace").resolve()),
+        pipeline_artifact_root=str((tmp_path / "artifact-root").resolve()),
+        bilibili_downloader="yt-dlp",
+        pipeline_subprocess_timeout_seconds=180,
+    )
+    ctx = _build_ctx(tmp_path, settings=settings)
+    seen_timeouts: list[int] = []
+
+    async def _fake_run_command(
+        current_ctx: runner.PipelineContext, __: list[str]
+    ) -> runner.CommandResult:
+        seen_timeouts.append(current_ctx.settings.pipeline_subprocess_timeout_seconds)
+        media_path = current_ctx.download_dir / "bili_video.mp4"
+        media_path.write_bytes(b"fake-video")
+        return runner.CommandResult(
+            ok=True, returncode=0, stdout=str(media_path.resolve()), stderr=""
+        )
+
+    monkeypatch.setattr(runner, "_run_command", _fake_run_command)
+
+    execution = asyncio.run(
+        runner._step_download_media(
+            ctx,
+            {
+                "platform": "bilibili",
+                "source_url": "https://www.bilibili.com/video/BV1xx411c7mD",
+                "metadata": {
+                    "duration": 2811,
+                    "title": "中文长视频访谈",
+                    "language": "zh",
+                },
+            },
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert seen_timeouts
+    assert seen_timeouts[0] >= 600
+
+
+def test_step_download_media_bilibili_passes_cookie_header_to_ytdlp(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    settings = Settings(
+        pipeline_workspace_dir=str((tmp_path / "workspace").resolve()),
+        pipeline_artifact_root=str((tmp_path / "artifact-root").resolve()),
+        bilibili_downloader="yt-dlp",
+        bilibili_cookie="SESSDATA=demo",
+    )
+    ctx = _build_ctx(tmp_path, settings=settings)
+    seen_cmds: list[list[str]] = []
+
+    async def _fake_run_command(
+        current_ctx: runner.PipelineContext, cmd: list[str]
+    ) -> runner.CommandResult:
+        del current_ctx
+        seen_cmds.append(cmd)
+        media_path = ctx.download_dir / "bili_video.mp4"
+        media_path.write_bytes(b"fake-video")
+        return runner.CommandResult(
+            ok=True, returncode=0, stdout=str(media_path.resolve()), stderr=""
+        )
+
+    monkeypatch.setattr(runner, "_run_command", _fake_run_command)
+
+    execution = asyncio.run(
+        runner._step_download_media(
+            ctx,
+            {
+                "platform": "bilibili",
+                "source_url": "https://www.bilibili.com/video/BV1xx411c7mD",
+            },
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert seen_cmds
+    assert "--add-header" in seen_cmds[0]
+    assert "Cookie: SESSDATA=demo" in seen_cmds[0]
+
+
+def test_step_download_media_bilibili_keeps_primary_timeout_reason_when_fallback_missing(
+    monkeypatch: Any, tmp_path: Path
+) -> None:
+    settings = Settings(
+        pipeline_workspace_dir=str((tmp_path / "workspace").resolve()),
+        pipeline_artifact_root=str((tmp_path / "artifact-root").resolve()),
+        bilibili_downloader="auto",
+    )
+    ctx = _build_ctx(tmp_path, settings=settings)
+
+    async def _fake_run_command(
+        _: runner.PipelineContext, cmd: list[str]
+    ) -> runner.CommandResult:
+        if cmd and cmd[0] == "yt-dlp":
+            return runner.CommandResult(
+                ok=False, returncode=None, stderr="timed out", reason="timeout"
+            )
+        return runner.CommandResult(ok=False, returncode=None, stderr="missing", reason="binary_not_found")
+
+    monkeypatch.setattr(runner, "_run_command", _fake_run_command)
+
+    execution = asyncio.run(
+        runner._step_download_media(
+            ctx,
+            {
+                "platform": "bilibili",
+                "source_url": "https://www.bilibili.com/video/BV1xx411c7mD",
+                "metadata": {
+                    "duration": 2811,
+                    "title": "中文长视频访谈",
+                    "language": "zh",
+                },
+            },
+        )
+    )
+
+    assert execution.status == "failed"
+    assert execution.reason == "timeout"
+    assert execution.output["attempts"][0]["reason"] == "timeout"
+    assert execution.output["attempts"][1]["reason"] == "binary_not_found"
+
+
 def test_step_collect_subtitles_uses_youtube_transcript_fallback(
     monkeypatch: Any, tmp_path: Path
 ) -> None:
@@ -397,3 +524,45 @@ def test_step_write_artifacts_persists_knowledge_cards_to_pg_store(tmp_path: Pat
     )
     assert knowledge_cards[0]["metadata"]["claim_kind"] == "summary"
     assert knowledge_cards[1]["metadata"]["source_anchor"] == "highlights[1]"
+
+
+def test_step_write_artifacts_persists_danmaku_artifact(tmp_path: Path) -> None:
+    settings = Settings(
+        pipeline_workspace_dir=str((tmp_path / "workspace").resolve()),
+        pipeline_artifact_root=str((tmp_path / "artifact-root").resolve()),
+    )
+    ctx = _build_ctx(tmp_path, settings=settings)
+
+    execution = asyncio.run(
+        runner._step_write_artifacts(
+            ctx,
+            {
+                "title": "Demo",
+                "source_url": "https://www.bilibili.com/video/BV1demo",
+                "platform": "bilibili",
+                "video_uid": "BV1demo",
+                "metadata": {"title": "Demo", "uploader_mid": "12345"},
+                "outline": {},
+                "digest": {"summary": "summary"},
+                "comments": {},
+                "transcript": "This transcript is long enough to satisfy the evidence guard for artifacts.",
+                "degradations": [],
+                "frames": [],
+                "danmaku": {
+                    "status": "available",
+                    "cid": 11,
+                    "entry_count": 1,
+                    "entries": [{"progress_s": 3.5, "content": "hello"}],
+                },
+            },
+        )
+    )
+
+    assert execution.status == "succeeded"
+    assert (ctx.artifacts_dir / "danmaku.json").is_file()
+    danmaku_payload = json.loads((ctx.artifacts_dir / "danmaku.json").read_text(encoding="utf-8"))
+    assert danmaku_payload["status"] == "available"
+    assert danmaku_payload["entries"][0]["content"] == "hello"
+    meta_payload = json.loads((ctx.artifacts_dir / "meta.json").read_text(encoding="utf-8"))
+    assert meta_payload["danmaku"]["entry_count"] == 1
+    assert execution.output["files"]["danmaku"].endswith("danmaku.json")

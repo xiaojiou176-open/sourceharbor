@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from dataclasses import is_dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,8 @@ from integrations.binaries.media_commands import (
     build_download_provider_chain,
     yt_dlp_download_command,
 )
+from integrations.providers.bilibili_comments import build_bilibili_headers
+from integrations.providers.bilibili_support import build_bilibili_download_plan
 from worker.pipeline.types import CommandResult, PipelineContext, StepExecution, StepStatus
 
 
@@ -37,6 +40,19 @@ def extract_media_file(download_dir: Path, command_stdout: str) -> str | None:
     return None
 
 
+def _with_subprocess_timeout(ctx: PipelineContext, timeout_seconds: int) -> PipelineContext:
+    updated_settings = replace(
+        ctx.settings,
+        pipeline_subprocess_timeout_seconds=timeout_seconds,
+    )
+    if is_dataclass(ctx):
+        return replace(ctx, settings=updated_settings)
+
+    state = dict(getattr(ctx, "__dict__", {}))
+    state["settings"] = updated_settings
+    return type(ctx)(**state)
+
+
 async def step_download_media(
     ctx: PipelineContext,
     state: dict[str, Any],
@@ -56,18 +72,31 @@ async def step_download_media(
     providers = build_download_provider_chain(
         platform, getattr(ctx.settings, "bilibili_downloader", "auto")
     )
+    metadata = dict(state.get("metadata") or {})
+    run_ctx = ctx
+    if platform == "bilibili":
+        download_plan = build_bilibili_download_plan(metadata)
+        download_timeout = int(download_plan.get("subprocess_timeout_seconds") or 0)
+        if download_timeout > int(getattr(ctx.settings, "pipeline_subprocess_timeout_seconds", 180) or 180):
+            run_ctx = _with_subprocess_timeout(ctx, download_timeout)
     output_tmpl = str((ctx.download_dir / "media.%(ext)s").resolve())
     attempts: list[dict[str, Any]] = []
 
     for provider in providers:
         provider_result: CommandResult | None = None
         if provider == "yt-dlp":
+            ytdlp_headers = (
+                build_bilibili_headers(cookie=getattr(ctx.settings, "bilibili_cookie", None))
+                if platform == "bilibili"
+                else None
+            )
             provider_result = await run_command(
-                ctx, yt_dlp_download_command(source_url, output_tmpl)
+                run_ctx,
+                yt_dlp_download_command(source_url, output_tmpl, headers=ytdlp_headers),
             )
         elif provider == "bbdown":
             for cmd in bbdown_commands(source_url, ctx.download_dir):
-                provider_result = await run_command(ctx, cmd)
+                provider_result = await run_command(run_ctx, cmd)
                 if provider_result.ok:
                     break
                 if provider_result.reason != "binary_not_found":
@@ -102,6 +131,11 @@ async def step_download_media(
     )
     status: StepStatus = "skipped" if only_binary_missing else "failed"
     last_attempt = attempts[-1] if attempts else {}
+    if not only_binary_missing:
+        for candidate in attempts:
+            if str(candidate.get("reason")) != "binary_not_found":
+                last_attempt = candidate
+                break
     return StepExecution(
         status=status,
         output={"mode": "text_only", "providers_tried": providers, "attempts": attempts},

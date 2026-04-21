@@ -150,7 +150,7 @@ The runtime model is now:
 Hosted CI stays login-free. Real-profile browser proof is a local-only lane.
 
 When you intentionally keep browser proof sessions in local env files, treat
-`GITHUB_COOKIE`, `GOOGLE_COOKIE`, `RESEND_COOKIE`, and `YOUTUBE_COOKIE` as
+`BILIBILI_COOKIE`, `GITHUB_COOKIE`, `GOOGLE_COOKIE`, `RESEND_COOKIE`, and `YOUTUBE_COOKIE` as
 maintainer-local, read-only proof helpers only. They are not public repo
 contract requirements, and they must never be committed, synced to shared
 stores, or echoed into runtime artifacts.
@@ -164,7 +164,7 @@ site should become a deep integration target.
 | --- | --- | --- | --- | --- |
 | Google Account | proves repo-owned Chrome login persistence and restart sanity | DOM / page-state proof | local login state when you intentionally run real-profile checks | **already-covered** |
 | YouTube | proves the strongest current source + browser proof lane | hybrid: Data API + DOM / page-state proof | shared operator key persistence plus local login state when strict live proof is reopened | **already-covered** |
-| Bilibili account center | proves whether the repo-owned profile still has the Bilibili account session needed for stronger local checks | DOM today, hybrid later only if account-side automation becomes worth the maintenance cost | human login in the repo-owned profile | **external-blocked** |
+| Bilibili account center | proves whether the repo-owned profile still has the Bilibili account session needed for stronger local checks | URL / page-state proof today, hybrid later only if account-side automation becomes worth the maintenance cost | human login in the repo-owned profile; `open-repo-chrome-tabs --site-set login-strong-check --json` now classifies redirect-vs-account-home state for the repo-owned browser | **external-blocked** |
 | Resend dashboard | proves notification/admin readiness and sender-chain follow-through, not source ingestion | admin UI + provider configuration | human login plus `RESEND_FROM_EMAIL` / sender-domain setup | **external-blocked** |
 | RSSHub / RSS sources | source-universe intake coverage lives here, not in browser proof | HTTP / API | source availability and route/feed correctness | **already-covered** |
 

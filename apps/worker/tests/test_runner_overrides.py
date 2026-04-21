@@ -358,6 +358,22 @@ def test_cache_signature_includes_override_policies(tmp_path: Path) -> None:
     frame_sig_2 = runner._build_step_cache_info(ctx, changed_frames, "extract_frames")["signature"]
     assert frame_sig_1 != frame_sig_2
 
+    download_sig_1 = runner._build_step_cache_info(ctx, base_state, "download_media")["signature"]
+    changed_download = dict(base_state)
+    changed_download["metadata"] = {"duration": 3600, "language": "zh"}
+    download_sig_2 = runner._build_step_cache_info(ctx, changed_download, "download_media")[
+        "signature"
+    ]
+    assert download_sig_1 != download_sig_2
+
+    subtitle_sig_1 = runner._build_step_cache_info(ctx, base_state, "collect_subtitles")["signature"]
+    changed_subtitles = dict(base_state)
+    changed_subtitles["metadata"] = {"duration": 5400, "language": "zh"}
+    subtitle_sig_2 = runner._build_step_cache_info(ctx, changed_subtitles, "collect_subtitles")[
+        "signature"
+    ]
+    assert subtitle_sig_1 != subtitle_sig_2
+
     llm_sig_1 = runner._build_step_cache_info(ctx, base_state, "llm_outline")["signature"]
     changed_llm = dict(base_state)
     changed_llm["llm_policy"] = {

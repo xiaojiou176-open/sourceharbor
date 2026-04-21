@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
@@ -38,6 +39,31 @@ LOGIN_SITE_SETS: dict[str, list[dict[str, str]]] = {
         {"label": "resend_login", "url": "https://resend.com/login"},
     ]
 }
+
+
+def _classify_site_result(*, label: str, requested_url: str, final_url: str, final_title: str) -> dict[str, str]:
+    normalized_url = final_url.lower().strip()
+    login_state = "unknown"
+    if label == "bilibili_account":
+        if "account.bilibili.com/account/home" in normalized_url:
+            login_state = "authenticated"
+        elif "passport.bilibili.com" in normalized_url or "login" in normalized_url:
+            login_state = "login_required"
+    elif label == "google_account":
+        login_state = "authenticated" if "myaccount.google.com" in normalized_url else "unknown"
+    elif label == "youtube_home":
+        login_state = "authenticated" if "youtube.com" in normalized_url else "unknown"
+    elif label == "resend_login":
+        login_state = "login_required" if "resend.com/login" in normalized_url else "authenticated"
+    proof_kind = "url_page_state" if final_url else "open_tab_only"
+    return {
+        "requested_url": requested_url,
+        "final_url": final_url,
+        "final_title": final_title,
+        "login_state": login_state,
+        "proof_kind": proof_kind,
+        "proof_boundary": "repo_owned_chrome_url_page_state",
+    }
 
 
 def _report_path(repo_root: Path) -> Path:
@@ -95,6 +121,7 @@ def main() -> int:
     parser.add_argument("--site-set", default="login-strong-check")
     parser.add_argument("--url", action="append", default=[])
     parser.add_argument("--keep-existing-pages", action="store_true")
+    parser.add_argument("--settle-seconds", type=float, default=2.0)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -139,6 +166,23 @@ def main() -> int:
                     "opened_url": target_payload.get("url"),
                 }
             )
+        site_results: dict[str, dict[str, str]] = {}
+        if opened_targets:
+            if args.settle_seconds > 0:
+                time.sleep(args.settle_seconds)
+            final_targets = {
+                str(target.get("id") or "").strip(): target for target in list_page_targets(port)
+            }
+            for item in opened_targets:
+                final_target = final_targets.get(str(item.get("target_id") or "").strip(), {})
+                final_url = str(final_target.get("url") or item.get("opened_url") or "").strip()
+                final_title = str(final_target.get("title") or "").strip()
+                site_results[str(item["label"])] = _classify_site_result(
+                    label=str(item["label"]),
+                    requested_url=str(item["requested_url"]),
+                    final_url=final_url,
+                    final_title=final_title,
+                )
     except RuntimeError as exc:
         print(f"[open-repo-chrome-tabs] FAIL\n  - {exc}", file=sys.stderr)
         return 1
@@ -156,6 +200,7 @@ def main() -> int:
         "site_set": args.site_set,
         "closed_targets": closed_targets,
         "opened_targets": opened_targets,
+        "site_results": site_results,
     }
     write_json_artifact(
         _report_path(repo_root),

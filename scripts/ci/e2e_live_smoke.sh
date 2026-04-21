@@ -25,6 +25,10 @@ LIVE_SMOKE_MAX_RETRIES="2"
 live_smoke_diagnostics_json=".runtime-cache/reports/tests/e2e-live-smoke-result.json"
 LIVE_SMOKE_COMPUTER_USE_CMD=""
 BILIBILI_SMOKE_URL="https://www.bilibili.com/video/BV1xx411c7mD"
+BILIBILI_CANARY_MATRIX=""
+BILIBILI_CANARY_TIER=""
+BILIBILI_CANARY_LIMIT="0"
+BILIBILI_READER_RECEIPT_SAMPLE=""
 NOTIFICATION_LANE_READY="1"
 NOTIFICATION_LANE_REASON=""
 
@@ -51,6 +55,10 @@ Options:
   --computer-use-cmd <cmd_or_path>            computer_use smoke command override
   --youtube-url <url>                         YouTube URL used in probes/process (default: dQw4w9WgXcQ)
   --bilibili-url <url>                        Bilibili URL used in probes/process (default: BV1xx411c7mD)
+  --bilibili-canary-matrix <path>             Repo-local JSON matrix with curated public Bilibili samples
+  --bilibili-canary-tier <name>               Optional matrix tier filter, e.g. core / extended
+  --bilibili-canary-limit <n>                 Limit selected matrix samples (default: 0 = no limit)
+  --bilibili-reader-receipt-sample <slug>     Matrix sample slug used for manual-intake -> reader boundary receipt
   -h, --help                                  Show this help
 EOF
 }
@@ -129,6 +137,22 @@ while [[ $# -gt 0 ]]; do
       BILIBILI_SMOKE_URL="${2:-}"
       shift 2
       ;;
+    --bilibili-canary-matrix)
+      BILIBILI_CANARY_MATRIX="${2:-}"
+      shift 2
+      ;;
+    --bilibili-canary-tier)
+      BILIBILI_CANARY_TIER="${2:-}"
+      shift 2
+      ;;
+    --bilibili-canary-limit)
+      BILIBILI_CANARY_LIMIT="${2:-}"
+      shift 2
+      ;;
+    --bilibili-reader-receipt-sample)
+      BILIBILI_READER_RECEIPT_SAMPLE="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -156,6 +180,8 @@ SCENARIO_TRACE=""
 WRITE_OP_TRACE=""
 TEARDOWN_TRACE=""
 YOUTUBE_KEY_RESOLUTION_TRACE=""
+BILIBILI_CANARY_TRACE=""
+BILIBILI_READER_RECEIPT_TRACE=""
 TEARDOWN_DONE=0
 LONG_PHASE_HEARTBEAT_PID=""
 WORKER_TMP_OUTPUTS=()
@@ -467,6 +493,42 @@ record_teardown_step() {
   TEARDOWN_TRACE+="${line}"$'\n'
 }
 
+resolve_local_data_path() {
+  local raw_path="$1"
+  local candidate
+  candidate="$(trim_whitespace "$raw_path")"
+  [[ -n "$candidate" ]] || fail "data path is empty"
+  if [[ "${candidate:0:1}" != "/" ]]; then
+    candidate="$ROOT_DIR/$candidate"
+  fi
+  local resolved
+  resolved="$(
+    DATA_PATH="$candidate" python3 - <<'PY'
+import os
+from pathlib import Path
+
+print(Path(os.environ["DATA_PATH"]).expanduser().resolve())
+PY
+  )"
+  case "$resolved" in
+    "$ROOT_DIR"/*) ;;
+    *)
+      fail "data path must stay under $ROOT_DIR: $resolved"
+      ;;
+  esac
+  printf '%s\n' "$resolved"
+}
+
+record_bilibili_canary_payload() {
+  local payload="$1"
+  BILIBILI_CANARY_TRACE+="${payload}"$'\n'
+}
+
+set_bilibili_reader_receipt_payload() {
+  local payload="$1"
+  BILIBILI_READER_RECEIPT_TRACE="$payload"
+}
+
 run_teardown() {
   if [[ "$TEARDOWN_DONE" == "1" ]]; then
     return 0
@@ -546,6 +608,12 @@ write_diagnostics() {
   WRITE_OP_TRACE="$WRITE_OP_TRACE" \
   TEARDOWN_TRACE="$TEARDOWN_TRACE" \
   YOUTUBE_KEY_RESOLUTION_TRACE="$YOUTUBE_KEY_RESOLUTION_TRACE" \
+  BILIBILI_CANARY_TRACE="$BILIBILI_CANARY_TRACE" \
+  BILIBILI_READER_RECEIPT_TRACE="$BILIBILI_READER_RECEIPT_TRACE" \
+  BILIBILI_CANARY_MATRIX="$BILIBILI_CANARY_MATRIX" \
+  BILIBILI_CANARY_TIER="$BILIBILI_CANARY_TIER" \
+  BILIBILI_CANARY_LIMIT="$BILIBILI_CANARY_LIMIT" \
+  BILIBILI_READER_RECEIPT_SAMPLE="$BILIBILI_READER_RECEIPT_SAMPLE" \
   MAX_RETRIES="$LIVE_SMOKE_MAX_RETRIES" \
   python3 - <<'PY'
 import json
@@ -613,6 +681,25 @@ for raw in (os.environ.get("YOUTUBE_KEY_RESOLUTION_TRACE", "") or "").splitlines
         }
     )
 
+bilibili_canary_entries = []
+for raw in (os.environ.get("BILIBILI_CANARY_TRACE", "") or "").splitlines():
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        continue
+    if isinstance(parsed, dict):
+        bilibili_canary_entries.append(parsed)
+
+bilibili_reader_receipt = {}
+raw_reader_receipt = os.environ.get("BILIBILI_READER_RECEIPT_TRACE", "") or ""
+if raw_reader_receipt:
+    try:
+        parsed = json.loads(raw_reader_receipt)
+    except Exception:
+        parsed = {}
+    if isinstance(parsed, dict):
+        bilibili_reader_receipt = parsed
+
 payload = {
     "status": os.environ.get("STATUS", "failed"),
     "failure_kind": os.environ.get("FAILURE_KIND", "unknown"),
@@ -631,6 +718,14 @@ payload = {
     "write_operations": write_ops,
     "teardown": {"steps": teardown_steps},
     "youtube_key_resolution": youtube_key_resolution,
+    "bilibili_canary_matrix": {
+        "matrix_path": os.environ.get("BILIBILI_CANARY_MATRIX", ""),
+        "tier": os.environ.get("BILIBILI_CANARY_TIER", ""),
+        "limit": int(os.environ.get("BILIBILI_CANARY_LIMIT", "0") or "0"),
+        "reader_receipt_sample": os.environ.get("BILIBILI_READER_RECEIPT_SAMPLE", ""),
+        "samples": bilibili_canary_entries,
+    },
+    "bilibili_reader_receipt": bilibili_reader_receipt,
     "diagnostics_path": os.environ.get("DIAGNOSTICS_PATH", ""),
 }
 
@@ -752,6 +847,453 @@ api_get() {
   body="$(cat "$tmp_body")"
   rm -f "$tmp_body"
   printf '%s\n%s' "$status" "$body"
+}
+
+load_bilibili_canary_samples() {
+  local matrix_path="$1"
+  local tier="$2"
+  local limit="$3"
+  MATRIX_PATH="$matrix_path" MATRIX_TIER="$tier" MATRIX_LIMIT="$limit" python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+payload = json.loads(Path(os.environ["MATRIX_PATH"]).read_text(encoding="utf-8"))
+samples = payload.get("samples") or []
+tier = str(os.environ.get("MATRIX_TIER", "") or "").strip()
+limit = int(os.environ.get("MATRIX_LIMIT", "0") or "0")
+
+selected = []
+for item in samples:
+    if not isinstance(item, dict):
+        continue
+    item_tier = str(item.get("tier") or "").strip()
+    if tier and item_tier != tier:
+        continue
+    selected.append(item)
+
+if limit > 0:
+    selected = selected[:limit]
+
+for item in selected:
+    print(
+        "\t".join(
+            [
+                str(item.get("slug") or "").strip(),
+                str(item.get("tier") or "").strip(),
+                str(item.get("mode") or "full").strip(),
+                str(int(item.get("job_timeout_seconds") or 420)),
+                "1" if bool(item.get("reader_boundary_candidate")) else "0",
+                str(item.get("url") or "").strip(),
+            ]
+        )
+    )
+PY
+}
+
+resolve_bilibili_reader_receipt_sample() {
+  local matrix_path="$1"
+  local explicit_sample="$2"
+  if [[ -n "$explicit_sample" ]]; then
+    printf '%s\n' "$explicit_sample"
+    return 0
+  fi
+  MATRIX_PATH="$matrix_path" python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+payload = json.loads(Path(os.environ["MATRIX_PATH"]).read_text(encoding="utf-8"))
+for item in payload.get("samples") or []:
+    if isinstance(item, dict) and bool(item.get("reader_boundary_candidate")):
+        print(str(item.get("slug") or "").strip())
+        raise SystemExit(0)
+print("")
+PY
+}
+
+resolve_bilibili_sample_by_slug() {
+  local matrix_path="$1"
+  local sample_slug="$2"
+  MATRIX_PATH="$matrix_path" SAMPLE_SLUG="$sample_slug" python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+payload = json.loads(Path(os.environ["MATRIX_PATH"]).read_text(encoding="utf-8"))
+target = str(os.environ["SAMPLE_SLUG"]).strip()
+for item in payload.get("samples") or []:
+    if not isinstance(item, dict):
+        continue
+    if str(item.get("slug") or "").strip() != target:
+        continue
+    print(
+        "\t".join(
+            [
+                str(item.get("slug") or "").strip(),
+                str(item.get("tier") or "").strip(),
+                str(item.get("mode") or "full").strip(),
+                str(int(item.get("job_timeout_seconds") or 420)),
+                str(item.get("url") or "").strip(),
+            ]
+        )
+    )
+    raise SystemExit(0)
+print("")
+PY
+}
+
+inspect_bilibili_job_receipt() {
+  local job_id="$1"
+  local sample_slug="$2"
+  local sample_tier="$3"
+  local sample_url="$4"
+  local response http_status body bundle_response bundle_status bundle_body
+  response="$(api_get "/api/v1/jobs/${job_id}")"
+  http_status="${response%%$'\n'*}"
+  body="${response#*$'\n'}"
+  [[ "$http_status" == "200" ]] || fail "bilibili canary job lookup failed: slug=${sample_slug} status=${http_status} body=${body}"
+  bundle_response="$(api_get "/api/v1/jobs/${job_id}/bundle")"
+  bundle_status="${bundle_response%%$'\n'*}"
+  bundle_body="${bundle_response#*$'\n'}"
+  [[ "$bundle_status" == "200" ]] || fail "bilibili canary bundle lookup failed: slug=${sample_slug} status=${bundle_status} body=${bundle_body}"
+
+  local summary_json parsed summary_status digest_present detail
+  summary_json="$(
+    ROOT_DIR="$ROOT_DIR" \
+    JOB_ID="$job_id" \
+    SAMPLE_SLUG="$sample_slug" \
+    SAMPLE_TIER="$sample_tier" \
+    SAMPLE_URL="$sample_url" \
+    JOB_BODY="$body" \
+    BUNDLE_BODY="$bundle_body" \
+    python3 - <<'PY'
+import json
+import os
+import sys
+
+sys.path.insert(0, os.environ["ROOT_DIR"])
+
+from integrations.providers.bilibili_support import collect_bilibili_failure_taxonomy
+
+job = json.loads(os.environ["JOB_BODY"])
+bundle = json.loads(os.environ["BUNDLE_BODY"])
+error_texts = []
+
+for value in (job.get("error_message"),):
+    if isinstance(value, str) and value.strip():
+        error_texts.append(value)
+
+for item in (job.get("degradations") or []):
+    if not isinstance(item, dict):
+        continue
+    for key in ("reason", "error", "error_kind"):
+        value = item.get(key)
+        if isinstance(value, str) and value.strip():
+            error_texts.append(value)
+
+for item in (job.get("steps") or []):
+    if not isinstance(item, dict):
+        continue
+    if str(item.get("status") or "").strip() not in {"failed", "skipped"}:
+        continue
+    error_value = item.get("error")
+    if isinstance(error_value, dict):
+        for key in ("reason", "error", "error_kind"):
+            nested = error_value.get(key)
+            if isinstance(nested, str) and nested.strip():
+                error_texts.append(nested)
+    elif isinstance(error_value, str) and error_value.strip():
+        error_texts.append(error_value)
+
+taxonomy = collect_bilibili_failure_taxonomy(error_texts=error_texts)
+artifacts_index = job.get("artifacts_index") or {}
+digest_present = bool(isinstance(artifacts_index, dict) and str(artifacts_index.get("digest") or "").strip())
+pipeline_status = str(job.get("pipeline_final_status") or job.get("status") or "").strip() or "unknown"
+summary = {
+    "sample_slug": str(os.environ["SAMPLE_SLUG"]),
+    "sample_tier": str(os.environ["SAMPLE_TIER"]),
+    "url": str(os.environ["SAMPLE_URL"]),
+    "job_id": str(os.environ["JOB_ID"]),
+    "job_status": str(job.get("status") or ""),
+    "pipeline_final_status": pipeline_status,
+    "digest_present": digest_present,
+    "bundle_kind": str(bundle.get("bundle_kind") or ""),
+    "degradation_count": len(job.get("degradations") or []),
+    "taxonomy": taxonomy,
+    "status": "degraded" if taxonomy or pipeline_status == "degraded" else "passed",
+}
+print(json.dumps(summary, ensure_ascii=False))
+PY
+  )"
+  parsed="$(
+    SUMMARY_JSON="$summary_json" python3 - <<'PY'
+import json
+import os
+
+payload = json.loads(os.environ["SUMMARY_JSON"])
+taxonomy = ",".join(payload.get("taxonomy") or [])
+detail = (
+    f"job_id={payload.get('job_id')} "
+    f"pipeline_final_status={payload.get('pipeline_final_status')} "
+    f"taxonomy={taxonomy or 'none'} "
+    f"digest_present={payload.get('digest_present')}"
+)
+print(
+    "\t".join(
+        [
+            str(payload.get("status") or "passed"),
+            "1" if bool(payload.get("digest_present")) else "0",
+            detail,
+        ]
+    )
+)
+PY
+  )"
+  summary_status="${parsed%%$'\t'*}"
+  parsed="${parsed#*$'\t'}"
+  digest_present="${parsed%%$'\t'*}"
+  detail="${parsed#*$'\t'}"
+  [[ "$digest_present" == "1" ]] || fail "bilibili canary artifact digest missing: slug=${sample_slug} job_id=${job_id}"
+  record_bilibili_canary_payload "$summary_json"
+  record_scenario "bilibili_canary:${sample_slug}" "$summary_status" "$detail"
+}
+
+run_bilibili_canary_matrix() {
+  local matrix_path="$1"
+  local tier="$2"
+  local limit="$3"
+  local sample_lines count
+  sample_lines="$(load_bilibili_canary_samples "$matrix_path" "$tier" "$limit")"
+  [[ -n "$sample_lines" ]] || fail "bilibili canary matrix produced no samples: matrix_path=${matrix_path} tier=${tier:-all}"
+  count=0
+  while IFS=$'\t' read -r sample_slug sample_tier sample_mode timeout_seconds reader_candidate sample_url; do
+    [[ -n "$sample_slug" ]] || continue
+    log "Scenario: Bilibili canary ${sample_slug} tier=${sample_tier:-unknown}"
+    local job_id
+    job_id="$(process_video "bilibili" "$sample_url" "$sample_mode" "bilibili_canary:${sample_slug}")"
+    wait_for_terminal_status "$job_id" "video_process:bilibili_canary:${sample_slug}" "$timeout_seconds"
+    inspect_bilibili_job_receipt "$job_id" "$sample_slug" "$sample_tier" "$sample_url"
+    count=$((count + 1))
+  done <<< "$sample_lines"
+  record_scenario "bilibili_canary_matrix" "passed" "samples=${count} matrix_path=${matrix_path} tier=${tier:-all}"
+}
+
+wait_for_consumption_batch_closed() {
+  local batch_id="$1"
+  local label="$2"
+  local timeout_seconds="${3:-$LIVE_SMOKE_TIMEOUT_SECONDS}"
+  local deadline=$((SECONDS + timeout_seconds))
+  local status=""
+  local error_message=""
+  local next_heartbeat=$((SECONDS + LIVE_SMOKE_HEARTBEAT_SECONDS))
+
+  while (( SECONDS < deadline )); do
+    local response http_status body parsed
+    response="$(api_get "/api/v1/ingest/batches/${batch_id}")"
+    http_status="${response%%$'\n'*}"
+    body="${response#*$'\n'}"
+    [[ "$http_status" == "200" ]] || fail "${label}: query failed for batch_id=${batch_id}, status=${http_status}, body=${body}"
+    parsed="$(
+      BODY="$body" python3 - <<'PY'
+import json
+import os
+
+obj = json.loads(os.environ["BODY"])
+print("\t".join((str(obj.get("status") or ""), str(obj.get("error_message") or ""))))
+PY
+    )"
+    status="${parsed%%$'\t'*}"
+    error_message="${parsed#*$'\t'}"
+    if [[ "$status" == "closed" ]]; then
+      record_scenario "$label" "passed" "batch_id=${batch_id} status=${status}"
+      return 0
+    fi
+    if [[ "$status" == "failed" ]]; then
+      fail "${label}: batch failed for batch_id=${batch_id}, error=${error_message:-null}"
+    fi
+    if (( SECONDS >= next_heartbeat )); then
+      record_scenario "$label" "running" "batch_id=${batch_id} status=${status:-unknown}"
+      next_heartbeat=$((SECONDS + LIVE_SMOKE_HEARTBEAT_SECONDS))
+    fi
+    sleep "$LIVE_SMOKE_POLL_INTERVAL_SECONDS"
+  done
+  fail "${label}: timeout waiting batch close for batch_id=${batch_id}, last_status=${status:-unknown}"
+}
+
+run_bilibili_reader_receipt() {
+  local matrix_path="$1"
+  local sample_slug="$2"
+  local sample_line
+  sample_line="$(resolve_bilibili_sample_by_slug "$matrix_path" "$sample_slug")"
+  [[ -n "$sample_line" ]] || fail "reader receipt sample not found in bilibili matrix: ${sample_slug}"
+  local resolved_slug sample_tier sample_mode timeout_seconds sample_url receipt_timeout_seconds
+  IFS=$'\t' read -r resolved_slug sample_tier sample_mode timeout_seconds sample_url <<< "$sample_line"
+  receipt_timeout_seconds="$timeout_seconds"
+  if (( receipt_timeout_seconds < 900 )); then
+    receipt_timeout_seconds=900
+  fi
+
+  local manual_payload manual_response manual_status manual_body
+  manual_payload="$(
+    SAMPLE_URL="$sample_url" python3 - <<'PY'
+import json
+import os
+
+print(
+    json.dumps(
+        {
+            "raw_input": os.environ["SAMPLE_URL"],
+            "category": "bilibili-live-receipt",
+            "tags": ["bilibili", "live-receipt"],
+            "priority": 80,
+            "enabled": True,
+        }
+    )
+)
+PY
+  )"
+  manual_response="$(api_post "/api/v1/subscriptions/manual-intake" "$manual_payload")"
+  manual_status="${manual_response%%$'\n'*}"
+  manual_body="${manual_response#*$'\n'}"
+  [[ "$manual_status" == "200" ]] || fail "manual intake failed for reader receipt sample=${sample_slug}, status=${manual_status}, body=${manual_body}"
+  local job_id
+  job_id="$(
+    BODY="$manual_body" python3 - <<'PY'
+import json
+import os
+
+payload = json.loads(os.environ["BODY"])
+for item in payload.get("results") or []:
+    if isinstance(item, dict) and str(item.get("job_id") or "").strip():
+        print(str(item.get("job_id") or "").strip())
+        raise SystemExit(0)
+print("")
+PY
+  )"
+  [[ -n "$job_id" ]] || fail "manual intake did not yield job_id for reader receipt sample=${sample_slug}: body=${manual_body}"
+  wait_for_terminal_status "$job_id" "video_process:bilibili_reader_receipt:${sample_slug}" "$receipt_timeout_seconds"
+  inspect_bilibili_job_receipt "$job_id" "${sample_slug}:reader_receipt" "$sample_tier" "$sample_url"
+
+  local consume_response consume_status consume_body batch_id
+  consume_response="$(api_post "/api/v1/ingest/consume" '{"trigger_mode":"manual","platform":"bilibili"}')"
+  consume_status="${consume_response%%$'\n'*}"
+  consume_body="${consume_response#*$'\n'}"
+  [[ "$consume_status" == "202" ]] || fail "bilibili reader consume failed: status=${consume_status} body=${consume_body}"
+  batch_id="$(
+    BODY="$consume_body" python3 - <<'PY'
+import json
+import os
+
+payload = json.loads(os.environ["BODY"])
+print(str(payload.get("consumption_batch_id") or "").strip())
+PY
+  )"
+  [[ -n "$batch_id" ]] || fail "bilibili reader consume missing consumption_batch_id: body=${consume_body}"
+  wait_for_consumption_batch_closed "$batch_id" "bilibili_reader_receipt:consume_batch" "$LIVE_SMOKE_TIMEOUT_SECONDS"
+
+  local batch_response batch_http batch_body docs_response docs_http docs_body nav_response nav_http nav_body
+  batch_response="$(api_get "/api/v1/ingest/batches/${batch_id}")"
+  batch_http="${batch_response%%$'\n'*}"
+  batch_body="${batch_response#*$'\n'}"
+  [[ "$batch_http" == "200" ]] || fail "reader receipt batch lookup failed: batch_id=${batch_id} status=${batch_http} body=${batch_body}"
+  local window_id
+  window_id="$(
+    BODY="$batch_body" python3 - <<'PY'
+import json
+import os
+
+payload = json.loads(os.environ["BODY"])
+print(str(payload.get("window_id") or "").strip())
+PY
+  )"
+  [[ -n "$window_id" ]] || fail "reader receipt batch missing window_id: batch_id=${batch_id}"
+  docs_response="$(api_get "/api/v1/reader/documents?window_id=${window_id}&limit=20")"
+  docs_http="${docs_response%%$'\n'*}"
+  docs_body="${docs_response#*$'\n'}"
+  [[ "$docs_http" == "200" ]] || fail "reader documents lookup failed: window_id=${window_id} status=${docs_http} body=${docs_body}"
+  nav_response="$(api_get "/api/v1/reader/navigation-brief?window_id=${window_id}&limit=20")"
+  nav_http="${nav_response%%$'\n'*}"
+  nav_body="${nav_response#*$'\n'}"
+  [[ "$nav_http" == "200" ]] || fail "reader navigation brief lookup failed: window_id=${window_id} status=${nav_http} body=${nav_body}"
+
+  local receipt_json receipt_parsed boundary_mode published_count gap_count public_docs_count nav_count nav_gap_count
+  receipt_json="$(
+    BATCH_BODY="$batch_body" DOCS_BODY="$docs_body" NAV_BODY="$nav_body" SAMPLE_SLUG="$sample_slug" JOB_ID="$job_id" BATCH_ID="$batch_id" WINDOW_ID="$window_id" python3 - <<'PY'
+import json
+import os
+
+batch = json.loads(os.environ["BATCH_BODY"])
+docs = json.loads(os.environ["DOCS_BODY"])
+nav = json.loads(os.environ["NAV_BODY"])
+summary = dict(batch.get("process_summary_json") or {})
+published_count = int(summary.get("published_document_count") or 0)
+gap_count = int(summary.get("published_with_gap_count") or 0)
+public_docs_count = len(docs) if isinstance(docs, list) else 0
+nav_count = int(nav.get("document_count") or 0) if isinstance(nav, dict) else 0
+nav_gap_count = int(nav.get("published_with_gap_count") or 0) if isinstance(nav, dict) else 0
+if published_count > 0:
+    boundary_mode = "published"
+elif gap_count > 0:
+    boundary_mode = "withheld_gap"
+else:
+    boundary_mode = "no_materialized_documents"
+payload = {
+    "sample_slug": os.environ["SAMPLE_SLUG"],
+    "job_id": os.environ["JOB_ID"],
+    "batch_id": os.environ["BATCH_ID"],
+    "window_id": os.environ["WINDOW_ID"],
+    "boundary_mode": boundary_mode,
+    "published_document_count": published_count,
+    "published_document_ids": list(summary.get("published_document_ids") or []),
+    "published_with_gap_count": gap_count,
+    "public_documents_count": public_docs_count,
+    "public_document_ids": [str(item.get("id") or "").strip() for item in docs if isinstance(item, dict)],
+    "navigation_document_count": nav_count,
+    "navigation_published_with_gap_count": nav_gap_count,
+    "navigation_document_ids": [
+        str(item.get("document_id") or "").strip()
+        for item in (nav.get("items") or [])
+        if isinstance(item, dict)
+    ],
+}
+print(json.dumps(payload, ensure_ascii=False))
+PY
+  )"
+  receipt_parsed="$(
+    RECEIPT_JSON="$receipt_json" python3 - <<'PY'
+import json
+import os
+
+payload = json.loads(os.environ["RECEIPT_JSON"])
+print(
+    "\t".join(
+        [
+            str(payload.get("boundary_mode") or ""),
+            str(int(payload.get("published_document_count") or 0)),
+            str(int(payload.get("published_with_gap_count") or 0)),
+            str(int(payload.get("public_documents_count") or 0)),
+            str(int(payload.get("navigation_document_count") or 0)),
+            str(int(payload.get("navigation_published_with_gap_count") or 0)),
+            ",".join(payload.get("published_document_ids") or []),
+            ",".join(payload.get("public_document_ids") or []),
+            ",".join(payload.get("navigation_document_ids") or []),
+        ]
+    )
+)
+PY
+  )"
+  IFS=$'\t' read -r boundary_mode published_count gap_count public_docs_count nav_count nav_gap_count published_ids_csv public_ids_csv nav_ids_csv <<< "$receipt_parsed"
+  [[ "$boundary_mode" != "no_materialized_documents" ]] || fail "reader receipt produced no materialized documents: sample=${sample_slug} batch_id=${batch_id}"
+  if [[ -n "$published_ids_csv" ]]; then
+    for published_id in ${published_ids_csv//,/ }; do
+      [[ " ${public_ids_csv//,/ } " == *" ${published_id} "* ]] || fail "reader public boundary missing current batch document: sample=${sample_slug} document_id=${published_id}"
+      [[ " ${nav_ids_csv//,/ } " == *" ${published_id} "* ]] || fail "reader navigation boundary missing current batch document: sample=${sample_slug} document_id=${published_id}"
+    done
+  fi
+  [[ "$nav_gap_count" == "0" ]] || fail "reader navigation should not expose published_with_gap docs: sample=${sample_slug} nav_gap_count=${nav_gap_count}"
+  set_bilibili_reader_receipt_payload "$receipt_json"
+  record_scenario "bilibili_reader_boundary" "passed" "sample=${sample_slug} boundary=${boundary_mode} published=${published_count} published_with_gap=${gap_count} public_docs=${public_docs_count}"
 }
 
 check_prerequisites() {
@@ -955,24 +1497,12 @@ process_video() {
   local url="$2"
   local mode="$3"
   local label="$4"
-  local subtitle_asr_enabled="${5:-0}"
-  local subtitle_asr_model="${6:-}"
-  local subtitle_timeout_seconds="${7:-}"
   local idempotency_key
   idempotency_key="$(
-    PLATFORM="$platform" URL="$url" MODE="$mode" SUBTITLE_ASR_ENABLED="$subtitle_asr_enabled" SUBTITLE_ASR_MODEL="$subtitle_asr_model" SUBTITLE_TIMEOUT_SECONDS="$subtitle_timeout_seconds" python3 - <<'PY'
+    PLATFORM="$platform" URL="$url" MODE="$mode" python3 - <<'PY'
 import hashlib
 import json
 import os
-
-overrides = {}
-if os.environ.get("SUBTITLE_ASR_ENABLED") == "1":
-    subtitles = {"asr_fallback_enabled": True}
-    if os.environ.get("SUBTITLE_ASR_MODEL"):
-        subtitles["asr_model_size"] = os.environ["SUBTITLE_ASR_MODEL"]
-    if os.environ.get("SUBTITLE_TIMEOUT_SECONDS"):
-        subtitles["subprocess_timeout_seconds"] = int(os.environ["SUBTITLE_TIMEOUT_SECONDS"])
-    overrides["subtitles"] = subtitles
 
 raw = "|".join(
     (
@@ -980,7 +1510,7 @@ raw = "|".join(
         os.environ["PLATFORM"],
         os.environ["URL"],
         os.environ["MODE"],
-        json.dumps(overrides, ensure_ascii=False, sort_keys=True),
+        json.dumps({}, ensure_ascii=False, sort_keys=True),
         "force=true",
     )
 )
@@ -990,21 +1520,13 @@ PY
 
   local payload
   payload="$(
-    PLATFORM="$platform" URL="$url" MODE="$mode" SUBTITLE_ASR_ENABLED="$subtitle_asr_enabled" SUBTITLE_ASR_MODEL="$subtitle_asr_model" SUBTITLE_TIMEOUT_SECONDS="$subtitle_timeout_seconds" python3 - <<'PY'
+    PLATFORM="$platform" URL="$url" MODE="$mode" python3 - <<'PY'
 import json
 import os
-overrides = {}
-if os.environ.get("SUBTITLE_ASR_ENABLED") == "1":
-    subtitles = {"asr_fallback_enabled": True}
-    if os.environ.get("SUBTITLE_ASR_MODEL"):
-        subtitles["asr_model_size"] = os.environ["SUBTITLE_ASR_MODEL"]
-    if os.environ.get("SUBTITLE_TIMEOUT_SECONDS"):
-        subtitles["subprocess_timeout_seconds"] = int(os.environ["SUBTITLE_TIMEOUT_SECONDS"])
-    overrides["subtitles"] = subtitles
 print(json.dumps({
   "video": {"platform": os.environ["PLATFORM"], "url": os.environ["URL"]},
   "mode": os.environ["MODE"],
-  "overrides": overrides,
+  "overrides": {},
   "force": True,
 }))
 PY
@@ -1342,11 +1864,27 @@ main() {
   local youtube_job_id
   youtube_job_id="$(process_video "youtube" "$YOUTUBE_SMOKE_URL" "full" "youtube_full")"
   wait_for_terminal_status "$youtube_job_id" "video_process:youtube_full"
-
-  log "Scenario: Bilibili full"
-  local bilibili_job_id
-  bilibili_job_id="$(process_video "bilibili" "$BILIBILI_SMOKE_URL" "full" "bilibili_full" "1" "tiny" "420")"
-  wait_for_terminal_status "$bilibili_job_id" "video_process:bilibili_full" "420"
+  local effective_bilibili_matrix=""
+  if [[ -n "$BILIBILI_CANARY_MATRIX" || -n "$BILIBILI_READER_RECEIPT_SAMPLE" ]]; then
+    effective_bilibili_matrix="$(resolve_local_data_path "${BILIBILI_CANARY_MATRIX:-config/runtime/bilibili-live-canary-matrix.json}")"
+    BILIBILI_CANARY_MATRIX="$effective_bilibili_matrix"
+  fi
+  if [[ -n "$effective_bilibili_matrix" ]]; then
+    run_bilibili_canary_matrix "$effective_bilibili_matrix" "$BILIBILI_CANARY_TIER" "$BILIBILI_CANARY_LIMIT"
+    local effective_reader_sample
+    effective_reader_sample="$(
+      resolve_bilibili_reader_receipt_sample "$effective_bilibili_matrix" "$BILIBILI_READER_RECEIPT_SAMPLE"
+    )"
+    if [[ -n "$effective_reader_sample" ]]; then
+      BILIBILI_READER_RECEIPT_SAMPLE="$effective_reader_sample"
+      run_bilibili_reader_receipt "$effective_bilibili_matrix" "$effective_reader_sample"
+    fi
+  else
+    log "Scenario: Bilibili full"
+    local bilibili_job_id
+    bilibili_job_id="$(process_video "bilibili" "$BILIBILI_SMOKE_URL" "full" "bilibili_full")"
+    wait_for_terminal_status "$bilibili_job_id" "video_process:bilibili_full" "420"
+  fi
 
   log "Scenario: Gemini degrade(text_only fallback path)"
   local degrade_job_id
