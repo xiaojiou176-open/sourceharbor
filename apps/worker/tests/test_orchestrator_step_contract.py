@@ -990,6 +990,7 @@ def test_run_pipeline_initial_state_contract_strict_keys_and_defaults(
         "subtitle_files",
         "transcript",
         "comments",
+        "danmaku",
         "frames",
         "llm_input_mode",
         "llm_media_input",
@@ -1013,6 +1014,7 @@ def test_run_pipeline_initial_state_contract_strict_keys_and_defaults(
     assert state["llm_media_input"] == {"video_available": False, "frame_count": 0}
     assert state["download_mode"] == "text_only"
     assert state["transcript"] == ""
+    assert state["danmaku"] == {}
     assert state["resume"] == {
         "checkpoint_step": "download_media",
         "checkpoint_payload": {"from_checkpoint": True},

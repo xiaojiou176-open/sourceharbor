@@ -174,8 +174,8 @@ def test_live_smoke_supports_bilibili_canary_matrix_and_reader_boundary_receipt(
     assert '"bilibili_reader_receipt"' in script
     assert 'record_scenario "bilibili_reader_boundary"' in script
     assert '"published_document_ids"' in script
-    assert 'reader public boundary missing current batch document' in script
-    assert 'reader navigation boundary missing current batch document' in script
+    assert "reader public boundary missing current batch document" in script
+    assert "reader navigation boundary missing current batch document" in script
     assert "--live-smoke-bilibili-canary-matrix" in wrapper
     assert "--live-smoke-bilibili-reader-receipt-sample" in wrapper
 

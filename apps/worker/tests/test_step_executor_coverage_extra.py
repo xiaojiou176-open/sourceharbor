@@ -216,7 +216,10 @@ def test_signature_and_state_update_helpers_cover_small_branches(tmp_path: Path)
     assert normalized["items"] == ["a", {"nested": "b"}]
     assert subset["missing_key"] is None
     assert payload["state"]["source_url"] == "https://example.com/watch?v=demo"
-    assert payload["settings"] == {"pipeline_subprocess_timeout_seconds": 1}
+    assert payload["settings"] == {
+        "pipeline_subprocess_timeout_seconds": 1,
+        "bilibili_cookie": None,
+    }
     assert target_state["done"] is True
     degradation = target_state["degradations"][0]
     assert degradation["step"] == "fetch_metadata"
@@ -254,8 +257,8 @@ def test_cache_helpers_and_skip_builder(tmp_path: Path) -> None:
 
     cache_info["cache_path"].unlink()
     loaded_legacy, legacy_reason = step_executor._load_step_execution_from_cache(cache_info)
-    assert loaded_legacy is not None
-    assert legacy_reason == "legacy_cache_hit"
+    assert loaded_legacy is None
+    assert legacy_reason is None
 
     cache_info_v2 = dict(cache_info)
     cache_info_v2["version"] = "v2"
