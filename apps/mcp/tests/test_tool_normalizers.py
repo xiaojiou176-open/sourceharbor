@@ -223,8 +223,7 @@ def test_subscriptions_manage_supports_list_upsert_remove() -> None:
         is True
     )
     assert (
-        mcp.tools["sourceharbor.subscriptions.manage"](action="list_vendor_signals")["ok"]
-        is True
+        mcp.tools["sourceharbor.subscriptions.manage"](action="list_vendor_signals")["ok"] is True
     )
     assert (
         mcp.tools["sourceharbor.subscriptions.manage"](
