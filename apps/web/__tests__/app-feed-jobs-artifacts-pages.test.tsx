@@ -16,6 +16,7 @@ const mockGetFeedFeedback = vi.fn();
 const mockListSubscriptions = vi.fn();
 const mockGetJob = vi.fn();
 const mockGetJobCompare = vi.fn();
+const mockGetJobEvidenceBundle = vi.fn();
 const mockGetJobKnowledgeCards = vi.fn();
 const mockGetArtifactMarkdown = vi.fn();
 const mockGetIngestRun = vi.fn();
@@ -60,6 +61,8 @@ vi.mock("@/lib/api/client", () => ({
 		listSubscriptions: (...args: unknown[]) => mockListSubscriptions(...args),
 		getJob: (...args: unknown[]) => mockGetJob(...args),
 		getJobCompare: (...args: unknown[]) => mockGetJobCompare(...args),
+		getJobEvidenceBundle: (...args: unknown[]) =>
+			mockGetJobEvidenceBundle(...args),
 		getJobKnowledgeCards: (...args: unknown[]) =>
 			mockGetJobKnowledgeCards(...args),
 		getIngestRun: (...args: unknown[]) => mockGetIngestRun(...args),
@@ -76,6 +79,22 @@ describe("feed/jobs/artifacts pages", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mockListSubscriptions.mockResolvedValue([]);
+		mockGetJobEvidenceBundle.mockResolvedValue({
+			bundle_kind: "sourceharbor_job_evidence_bundle_v1",
+			sharing_scope: "internal",
+			sample: false,
+			generated_at: "2026-04-21T10:00:00Z",
+			proof_boundary: "Internal evidence bundle only.",
+			job: {},
+			trace_summary: {},
+			digest: null,
+			digest_meta: null,
+			rich_evidence: null,
+			comparison: null,
+			knowledge_cards: [],
+			artifact_manifest: {},
+			step_summary: [],
+		});
 		mockGetArtifactMarkdown.mockResolvedValue({
 			markdown: "# Preview",
 			source_title: "Preview",
@@ -373,17 +392,17 @@ describe("feed/jobs/artifacts pages", () => {
 	);
 
 	it(
-		"renders main reading flow when feed item is selected",
+		"renders main reading flow with Bilibili source facts when feed item is selected",
 		async () => {
 			mockGetDigestFeed.mockResolvedValue({
 				items: [
 					{
 						feed_id: "feed-reading-1",
 						job_id: "job-reading-1",
-						video_url: "https://www.youtube.com/watch?v=reading1",
-						title: "Digest One",
-						source: "youtube",
-						source_name: "Creator One",
+						video_url: "https://www.bilibili.com/video/BV1demo",
+						title: "BV1demo",
+						source: "bilibili",
+						source_name: "Archive Reader",
 						subscription_id: "sub-reader-1",
 						category: "creator",
 						published_at: "2026-02-10T00:00:00Z",
@@ -410,8 +429,41 @@ describe("feed/jobs/artifacts pages", () => {
 				next_cursor: null,
 			});
 			mockGetArtifactMarkdown.mockResolvedValue({
-				markdown: "# Digest One\n\nMain reading body",
+				markdown: "# Archive Reader Field Note\n\nMain reading body",
 				meta: { job: { id: "job-reading-1" }, frame_files: [] },
+			});
+			mockGetJobEvidenceBundle.mockResolvedValue({
+				bundle_kind: "sourceharbor_job_evidence_bundle_v1",
+				sharing_scope: "internal",
+				sample: false,
+				generated_at: "2026-04-21T10:00:00Z",
+				proof_boundary: "Internal evidence bundle only.",
+				job: {},
+				trace_summary: {},
+				digest: null,
+				digest_meta: null,
+				rich_evidence: {
+					creator_metadata: {
+						uploader: "Archive Reader",
+						uploader_mid: "12345",
+						uploader_url: "https://space.bilibili.com/12345",
+					},
+					video_metadata: {
+						view_count: 999,
+						comment_count: 18,
+						danmaku_count: 80,
+						category: "History",
+					},
+					danmaku: {
+						status: "available",
+						entry_count: 80,
+						total_count: 120,
+					},
+				},
+				comparison: null,
+				knowledge_cards: [],
+				artifact_manifest: { danmaku: "danmaku.json" },
+				step_summary: [],
 			});
 			mockGetFeedFeedback.mockResolvedValue({
 				job_id: "job-reading-1",
@@ -427,7 +479,7 @@ describe("feed/jobs/artifacts pages", () => {
 			expect(
 				screen.getByRole("complementary", { name: "Entry list" }),
 			).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: /Digest One/ })).toHaveAttribute(
+			expect(screen.getByRole("link", { name: /BV1demo/ })).toHaveAttribute(
 				"aria-current",
 				"true",
 			);
@@ -441,6 +493,9 @@ describe("feed/jobs/artifacts pages", () => {
 					job_id: "job-reading-1",
 					include_meta: true,
 				});
+			});
+			await waitFor(() => {
+				expect(mockGetJobEvidenceBundle).toHaveBeenCalledWith("job-reading-1");
 			});
 
 			expect(await screen.findByTestId("markdown-preview")).toHaveTextContent(
@@ -461,7 +516,7 @@ describe("feed/jobs/artifacts pages", () => {
 			).toHaveAttribute("href", "/jobs?job_id=job-reading-1");
 			expect(
 				screen.getByRole("link", { name: /Open original/ }),
-			).toHaveAttribute("href", "https://www.youtube.com/watch?v=reading1");
+			).toHaveAttribute("href", "https://www.bilibili.com/video/BV1demo");
 			expect(
 				screen.getByRole("link", { name: "Open reader edition" }),
 			).toHaveAttribute("href", "/reader/doc-1");
@@ -473,6 +528,10 @@ describe("feed/jobs/artifacts pages", () => {
 					"Finished reader ready · Reader edition one · published",
 				),
 			).toBeInTheDocument();
+			expect(screen.getByText("Source facts")).toBeInTheDocument();
+			expect(screen.getByText("999 views")).toBeInTheDocument();
+			expect(screen.getByText("80 danmaku")).toBeInTheDocument();
+			expect(screen.getByText("History")).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);
@@ -800,6 +859,49 @@ describe("feed/jobs/artifacts pages", () => {
 					order_index: 1,
 				},
 			]);
+			mockGetJobEvidenceBundle.mockResolvedValue({
+				bundle_kind: "sourceharbor_job_evidence_bundle_v1",
+				sharing_scope: "internal",
+				sample: false,
+				generated_at: "2026-04-21T10:00:00Z",
+				proof_boundary: "Internal evidence bundle only.",
+				job: {},
+				trace_summary: {},
+				digest: null,
+				digest_meta: {
+					uploader_mid: "12345",
+					uploader_url: "https://space.bilibili.com/12345",
+					view_count: 999,
+					danmaku_count: 80,
+					category: "History",
+				},
+				rich_evidence: {
+					creator_metadata: {
+						uploader: "Archive Reader",
+						uploader_mid: "12345",
+						uploader_url: "https://space.bilibili.com/12345",
+					},
+					video_metadata: {
+						view_count: 999,
+						comment_count: 18,
+						danmaku_count: 80,
+						category: "History",
+					},
+					danmaku: {
+						status: "available",
+						entry_count: 80,
+						total_count: 120,
+					},
+					site_objects: {
+						owner: { name: "Archive Reader", mid: "12345" },
+						stat: { view: 999, danmaku: 80 },
+					},
+				},
+				comparison: null,
+				knowledge_cards: [],
+				artifact_manifest: { danmaku: "danmaku.json", digest: "digest.md" },
+				step_summary: [],
+			});
 
 			const { container } = render(
 				await JobsPage({ searchParams: { job_id: "job-1" } }),
@@ -807,6 +909,7 @@ describe("feed/jobs/artifacts pages", () => {
 
 			expect(mockGetJob).toHaveBeenCalledWith("job-1");
 			expect(mockGetJobCompare).toHaveBeenCalledWith("job-1");
+			expect(mockGetJobEvidenceBundle).toHaveBeenCalledWith("job-1");
 			expect(mockGetJobKnowledgeCards).toHaveBeenCalledWith("job-1");
 			expect(container.querySelector(".folo-page-shell")).not.toBeNull();
 			expect(
@@ -898,6 +1001,11 @@ describe("feed/jobs/artifacts pages", () => {
 				"href",
 				"http://127.0.0.1:9000/api/v1/artifacts/assets?job_id=job-1&path=digest.md",
 			);
+			expect(screen.getByText("Richer evidence")).toBeInTheDocument();
+			expect(screen.getByText("Archive Reader")).toBeInTheDocument();
+			expect(screen.getByText("999")).toBeInTheDocument();
+			expect(screen.getByText("80")).toBeInTheDocument();
+			expect(screen.getByText("danmaku.json")).toBeInTheDocument();
 		},
 		PAGE_TEST_TIMEOUT_MS,
 	);

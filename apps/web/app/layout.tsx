@@ -45,7 +45,18 @@ export default async function RootLayout({
 					<div className="flex h-screen overflow-hidden bg-background">
 						<Suspense
 							fallback={
-								<aside className="w-[240px] shrink-0 border-r border-border bg-sidebar" />
+								<>
+									<div className="pointer-events-none fixed left-2.5 top-2.5 z-40 md:hidden">
+										<div
+											aria-hidden="true"
+											className="size-9 rounded-full border border-border/45 bg-background/72 backdrop-blur-sm"
+										/>
+									</div>
+									<aside
+										aria-hidden="true"
+										className="hidden w-[72px] shrink-0 border-r border-border/40 bg-background md:flex"
+									/>
+								</>
 							}
 						>
 							<SidebarWrapper

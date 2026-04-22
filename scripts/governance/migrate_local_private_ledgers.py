@@ -4,9 +4,18 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+sys.dont_write_bytecode = True
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT / "scripts" / "governance") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts" / "governance"))
+
+from common import current_git_commit, write_runtime_metadata
 
 
 def _repo_root() -> Path:
@@ -71,6 +80,8 @@ def migrate_ledgers(root: Path) -> dict[str, Any]:
 
     actions: list[dict[str, Any]] = []
     generated_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    source_commit = current_git_commit()
+    run_id = "local-private-ledger-migration"
 
     for source in discovered_sources:
         signature = _source_signature(source)
@@ -84,6 +95,19 @@ def migrate_ledgers(root: Path) -> dict[str, Any]:
             and receipt.get("source_size_bytes") == signature["source_size_bytes"]
             and receipt.get("source_mtime_ns") == signature["source_mtime_ns"]
         ):
+            write_runtime_metadata(
+                target,
+                source_entrypoint="scripts/governance/migrate_local_private_ledgers.py",
+                verification_scope="local-private-ledger-migration",
+                source_run_id=run_id,
+                source_commit=source_commit,
+                freshness_window_hours=24,
+                created_at=generated_at,
+                extra={
+                    "report_kind": "ai-ledger-authoritative-copy",
+                    "source_path": source_key,
+                },
+            )
             actions.append(
                 {
                     "source_path": source_key,
@@ -99,6 +123,19 @@ def migrate_ledgers(root: Path) -> dict[str, Any]:
             **signature,
             "copied_at": generated_at,
         }
+        write_runtime_metadata(
+            target,
+            source_entrypoint="scripts/governance/migrate_local_private_ledgers.py",
+            verification_scope="local-private-ledger-migration",
+            source_run_id=run_id,
+            source_commit=source_commit,
+            freshness_window_hours=24,
+            created_at=generated_at,
+            extra={
+                "report_kind": "ai-ledger-authoritative-copy",
+                "source_path": source_key,
+            },
+        )
         actions.append(
             {
                 "source_path": source_key,
@@ -110,6 +147,16 @@ def migrate_ledgers(root: Path) -> dict[str, Any]:
     receipts["entries"] = receipt_entries
     receipt_path.write_text(
         json.dumps(receipts, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    write_runtime_metadata(
+        receipt_path,
+        source_entrypoint="scripts/governance/migrate_local_private_ledgers.py",
+        verification_scope="local-private-ledger-migration",
+        source_run_id=run_id,
+        source_commit=source_commit,
+        freshness_window_hours=24,
+        created_at=generated_at,
+        extra={"report_kind": "local-private-ledger-migration-receipts"},
     )
 
     copied = sum(1 for item in actions if item["status"] == "copied")

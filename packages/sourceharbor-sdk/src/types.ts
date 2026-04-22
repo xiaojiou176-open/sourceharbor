@@ -715,6 +715,19 @@ export type OpsInboxResponse = {
 		disk_governance: OpsGate;
 		ui_audit: OpsGate;
 		computer_use: OpsGate;
+		bilibili_account_ops: OpsGate;
+	};
+	repo_browser_proof?: {
+		status: string;
+		summary: string;
+		artifact_path: string;
+		generated_at: string | null;
+		sites: Array<{
+			label: string;
+			login_state: string;
+			final_url: string;
+			proof_kind: string;
+		}>;
 	};
 	inbox_items: OpsInboxItem[];
 };
@@ -1124,6 +1137,7 @@ export type JobEvidenceBundle = {
 	trace_summary: Record<string, unknown>;
 	digest: string | null;
 	digest_meta: Record<string, unknown> | null;
+	rich_evidence: Record<string, unknown> | null;
 	comparison: Record<string, unknown> | null;
 	knowledge_cards: Record<string, unknown>[];
 	artifact_manifest: Record<string, string>;

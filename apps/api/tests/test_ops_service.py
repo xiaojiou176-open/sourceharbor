@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import os
 from datetime import UTC, datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 from sqlalchemy.exc import DBAPIError
@@ -195,6 +196,63 @@ def test_build_computer_use_gate_ready_with_provider_secret() -> None:
     assert payload["details"]["provider"] == "gemini"
 
 
+def test_load_repo_browser_proof_handles_missing_invalid_and_empty_site_payloads(
+    tmp_path, monkeypatch
+) -> None:
+    module = _load_ops_module()
+    proof_path = tmp_path / "repo-chrome-open-tabs.json"
+
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path, raising=False)
+    monkeypatch.setattr(module, "REPO_BROWSER_PROOF_PATH", proof_path, raising=False)
+
+    missing = module._load_repo_browser_proof()
+    assert missing["status"] == "blocked"
+    assert missing["artifact_path"] == Path("repo-chrome-open-tabs.json").as_posix()
+
+    proof_path.write_text("{bad-json", encoding="utf-8")
+    invalid = module._load_repo_browser_proof()
+    assert invalid["status"] == "warn"
+    assert invalid["sites"] == []
+
+    proof_path.write_text(
+        """
+        {
+          "generated_at": "2026-04-21T19:40:05Z",
+          "site_results": {
+            "bilibili_account": "skip-me"
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+    empty = module._load_repo_browser_proof()
+    assert empty["status"] == "warn"
+    assert empty["generated_at"] == "2026-04-21T19:40:05Z"
+    assert empty["sites"] == []
+
+
+def test_build_bilibili_account_ops_gate_blocks_when_browser_proof_is_not_authenticated() -> None:
+    module = _load_ops_module()
+
+    payload = module.build_bilibili_account_ops_gate(
+        repo_browser_proof={
+            "artifact_path": ".runtime-cache/reports/runtime/repo-chrome-open-tabs.json",
+            "sites": [
+                {
+                    "label": "bilibili_account",
+                    "login_state": "logged_out",
+                    "final_url": "https://account.bilibili.com/account/home",
+                }
+            ],
+        },
+        bilibili_cookie_present=True,
+    )
+
+    assert payload["status"] == "blocked"
+    assert payload["details"]["login_state"] == "logged_out"
+    assert payload["details"]["cookie_present"] is True
+
+
 def test_build_disk_governance_gate_ready_when_runtime_and_duplicate_envs_are_clear() -> None:
     module = _load_ops_module()
     payload = module.build_disk_governance_gate(
@@ -373,8 +431,8 @@ def test_get_inbox_aggregates_sections_and_orders_items(monkeypatch) -> None:
 
     payload = service.get_inbox(limit=5, window_hours=24)
 
-    assert payload["overview"]["attention_items"] == 4
-    assert payload["overview"]["notification_or_gate_issues"] == 2
+    assert payload["overview"]["attention_items"] == 5
+    assert payload["overview"]["notification_or_gate_issues"] == 3
     assert payload["gates"]["notifications"]["status"] == "ready"
     assert payload["gates"]["disk_governance"]["status"] == "ready"
     assert payload["gates"]["computer_use"]["status"] == "ready"
@@ -385,6 +443,7 @@ def test_get_inbox_aggregates_sections_and_orders_items(monkeypatch) -> None:
         "ingest_failed",
         "notification_delivery",
         "provider_health",
+        "hardening_gate",
     }
 
 
@@ -464,7 +523,7 @@ def test_get_inbox_emits_gate_items_with_settings_shortcut(monkeypatch) -> None:
     payload = service.get_inbox(limit=5, window_hours=24)
     gate_items = [item for item in payload["inbox_items"] if item["kind"] == "hardening_gate"]
 
-    assert len(gate_items) == 3
+    assert len(gate_items) == 4
     assert any(
         item["href"] == "/settings" and item["action_label"] == "Open settings"
         for item in gate_items
@@ -473,6 +532,109 @@ def test_get_inbox_emits_gate_items_with_settings_shortcut(monkeypatch) -> None:
         item["href"] == "#hardening-gates" and item["action_label"] == "Open gate"
         for item in gate_items
     )
+
+
+def test_get_inbox_surfaces_repo_browser_proof_and_bilibili_account_ops_gate(
+    monkeypatch,
+) -> None:
+    module = _load_ops_module()
+    service = module.OpsService(SimpleNamespace())
+
+    monkeypatch.setattr(
+        module.Settings,
+        "from_env",
+        staticmethod(
+            lambda: SimpleNamespace(
+                notification_enabled=False,
+                resend_api_key="",
+                resend_from_email="",
+                gemini_api_key="",
+                gemini_computer_use_model="gemini-2.5-computer-use-preview-10-2025",
+                ui_audit_gemini_enabled=True,
+                bilibili_cookie="SESSDATA=demo",
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        service,
+        "_load_failed_jobs",
+        lambda limit: {"status": "ok", "total": 0, "error": None, "items": []},
+    )
+    monkeypatch.setattr(
+        service,
+        "_load_failed_ingest_runs",
+        lambda limit: {"status": "ok", "total": 0, "error": None, "items": []},
+    )
+    monkeypatch.setattr(
+        service,
+        "_load_notification_deliveries",
+        lambda limit: {"status": "ok", "total": 0, "error": None, "items": []},
+    )
+    monkeypatch.setattr(
+        service,
+        "_load_retrieval_counts",
+        lambda: {
+            "videos": 2,
+            "jobs_with_artifacts": 2,
+            "knowledge_cards": 2,
+            "video_embeddings": 1,
+        },
+    )
+    monkeypatch.setattr(
+        service,
+        "_load_notification_config",
+        lambda: {
+            "to_email": None,
+            "enabled": False,
+            "failure_alert_enabled": False,
+            "ui_audit_artifact_base_root": "/tmp/sourceharbor-artifacts",
+            "ui_audit_gemini_enabled": False,
+        },
+    )
+    monkeypatch.setattr(
+        module.HealthService,
+        "get_provider_health",
+        lambda self, window_hours: {"window_hours": window_hours, "providers": []},
+    )
+    monkeypatch.setattr(
+        module,
+        "_load_disk_governance_helpers",
+        lambda: (
+            lambda *_args, **_kwargs: {"version": 1},
+            lambda *_args, **_kwargs: {
+                "status": "ready",
+                "summary": "Repo-side duplicate runtime and known duplicate project envs are currently within the expected bounds.",
+                "next_step": "None.",
+                "details": {"repo_tmp_cleanup_ready": False, "duplicate_envs": []},
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "_load_repo_browser_proof",
+        lambda: {
+            "status": "ready",
+            "summary": "Repo-owned browser proof is current.",
+            "artifact_path": ".runtime-cache/reports/runtime/repo-chrome-open-tabs.json",
+            "generated_at": "2026-04-21T19:40:05Z",
+            "sites": [
+                {
+                    "label": "bilibili_account",
+                    "login_state": "authenticated",
+                    "final_url": "https://account.bilibili.com/account/home",
+                    "proof_kind": "url_page_state",
+                }
+            ],
+        },
+        raising=False,
+    )
+
+    payload = service.get_inbox(limit=5, window_hours=24)
+
+    assert payload["repo_browser_proof"]["status"] == "ready"
+    assert payload["repo_browser_proof"]["sites"][0]["label"] == "bilibili_account"
+    assert payload["gates"]["bilibili_account_ops"]["status"] == "ready"
+    assert payload["gates"]["bilibili_account_ops"]["details"]["cookie_present"] is True
 
 
 def test_get_inbox_keeps_disk_governance_gate_warn_when_summary_loading_fails(

@@ -20,7 +20,7 @@ These prove that the public narrative maps to visible product surfaces:
 - [docs/architecture.md](./architecture.md)
 - [docs/mcp-quickstart.md](./mcp-quickstart.md)
 - `./bin/sourceharbor help`
-- the web command center routes, including the reader frontstage at `/reader`
+- the web reader routes, including the reader frontstage at `/reader`
 - the API route map
 - the MCP tool map
 
@@ -75,6 +75,7 @@ core stack.
 These prove that a pipeline run leaves inspectable evidence behind:
 
 - `GET /api/v1/jobs/{job_id}`
+- `GET /api/v1/jobs/{job_id}/bundle` with `rich_evidence` for danmaku, creator/video metadata, and commentary summaries
 - `GET /api/v1/feed/digests`
 - `POST /api/v1/reader/batches/{batch_id}/materialize`
 - `GET /api/v1/reader/documents`
@@ -88,6 +89,7 @@ What this layer answers:
 
 - What happened in a run?
 - Where did a digest come from?
+- Which richer source facts were captured beyond the base digest body?
 - Which frozen batch became which published reader document?
 - Can an operator inspect failure, degradation, and retry state?
 

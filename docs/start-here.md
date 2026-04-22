@@ -33,10 +33,10 @@ sourceharbor help
 
 ## What You Should See By The End
 
-- the web command center at the route recorded in `.runtime-cache/run/full-stack/resolved.env`
+- the web reader surfaces at the route recorded in `.runtime-cache/run/full-stack/resolved.env`
 - the API health endpoint recorded in `.runtime-cache/run/full-stack/resolved.env`, with the canonical default local health URL remaining `http://127.0.0.1:9000/healthz` only when that port is still free
 - at least one queued or completed processing job
-- a digest feed entry or an inspectable job payload
+- a timeline entry or an inspectable job payload
 - at least one published reader document or a truthful “no reader documents yet” frontstage at `/reader`
 - a local supervisor check you can rerun before you decide whether to open the long live-smoke lane
 
@@ -114,7 +114,7 @@ sourceharbor full-stack up
 
 Open:
 
-- web command center: `http://127.0.0.1:${WEB_PORT}`
+- web reader surfaces: `http://127.0.0.1:${WEB_PORT}`
 - API health: `${SOURCE_HARBOR_API_BASE_URL}/healthz`
 - canonical local fallback before any port re-home: `http://127.0.0.1:9000/healthz`
 

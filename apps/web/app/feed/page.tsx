@@ -52,6 +52,13 @@ const SORT_KEYS = ["recent", "curated"] as const;
 
 type FeedSortMode = (typeof SORT_KEYS)[number];
 
+type FeedUiItem = Awaited<
+	ReturnType<typeof apiClient.getDigestFeed>
+>["items"][number] & {
+	uiDisplayTitle?: string | null;
+	uiDisplaySourceName?: string | null;
+};
+
 function toSourceSelectValue(
 	source: string,
 ): "" | (typeof SOURCE_KEYS)[number] {
@@ -89,6 +96,36 @@ function formatPublishedDateLabel(
 		day: "numeric",
 		timeZone: "UTC",
 	}).format(parsed);
+}
+
+function looksLikeOpaqueVideoId(
+	value: string | null | undefined,
+	source: string | null | undefined,
+): boolean {
+	const text = String(value || "").trim();
+	const normalizedSource = String(source || "")
+		.trim()
+		.toLowerCase();
+	if (!text) return false;
+	if (normalizedSource === "youtube") {
+		return /^[A-Za-z0-9_-]{11}$/.test(text);
+	}
+	if (normalizedSource === "bilibili") {
+		return /^BV[0-9A-Za-z]{10,}$/i.test(text) || /^av\d+$/i.test(text);
+	}
+	return false;
+}
+
+function extractMeaningfulHeading(markdown: string): string | null {
+	const lines = markdown.split("\n");
+	for (const line of lines) {
+		const match = line.match(/^(#{1,2})\s+(.+)$/);
+		if (!match) continue;
+		const text = match[2].trim();
+		if (!text || /^https?:\/\//i.test(text)) continue;
+		return text;
+	}
+	return null;
 }
 
 export default async function FeedPage({ searchParams }: FeedPageProps) {
@@ -274,7 +311,39 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 	const selectedItem = requestedJobId
 		? items.find((feedItem) => feedItem.job_id === requestedJobId)
 		: null;
-	const effectiveSelectedItem = selectedItem ?? items[0] ?? null;
+	const itemsNeedingTitleHelp = items
+		.filter(
+			(item) =>
+				looksLikeOpaqueVideoId(item.title, item.source) &&
+				!item.published_document_title,
+		)
+		.slice(0, 8);
+	const titleOverrides = new Map<string, string>();
+	await Promise.all(
+		itemsNeedingTitleHelp.map(async (item) => {
+			try {
+				const payload = await apiClient.getArtifactMarkdown({
+					job_id: item.job_id,
+					include_meta: true,
+				});
+				const title = extractMeaningfulHeading(payload.markdown);
+				if (title) {
+					titleOverrides.set(item.job_id, title);
+				}
+			} catch {
+				// Keep the fallback title path if the artifact fetch fails.
+			}
+		}),
+	);
+	const enhancedItems: FeedUiItem[] = items.map((item) => ({
+		...item,
+		uiDisplayTitle: titleOverrides.get(item.job_id) ?? null,
+		uiDisplaySourceName: item.canonical_source_name ?? item.source_name ?? null,
+	}));
+	const effectiveSelectedItem = selectedItem
+		? (enhancedItems.find((item) => item.job_id === selectedItem.job_id) ??
+			selectedItem)
+		: (enhancedItems[0] ?? null);
 	const effectiveSelectedJobId = effectiveSelectedItem?.job_id ?? null;
 	const effectiveSelectedTitle = effectiveSelectedItem
 		? resolveFeedDisplayTitle(effectiveSelectedItem)
@@ -385,7 +454,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 			) : (
 				<div className="feed-main-flow">
 					<EntryList
-						items={items.map((feedItem) => ({
+						items={enhancedItems.map((feedItem) => ({
 							...feedItem,
 							href: buildItemUrl({ item: feedItem.job_id }),
 						}))}

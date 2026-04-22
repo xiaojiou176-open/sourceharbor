@@ -223,6 +223,27 @@ describe("Sidebar + Sheet contract", () => {
 	);
 
 	it(
+		"shows the followed-sources recovery link when subscriptions fail away from the frontstage",
+		() => {
+			usePathnameMock.mockReturnValue("/jobs/details");
+			render(
+				<Sidebar
+					subscriptions={[]}
+					subscriptionsLoadError
+					apiHealthState="healthy"
+					apiHealthUrl="http://127.0.0.1:9000/healthz"
+					apiHealthLabel="Healthy"
+				/>,
+			);
+
+			expect(
+				screen.getByRole("link", { name: "Open Following" }),
+			).toHaveAttribute("href", "/subscriptions");
+		},
+		SIDEBAR_TIMEOUT_MS,
+	);
+
+	it(
 		"wires the real mobile sheet trigger in Sidebar when viewport is collapsed",
 		() => {
 			mockMatchMedia(true);
@@ -264,10 +285,10 @@ describe("Sidebar + Sheet contract", () => {
 				/>,
 			);
 
-			const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
+			const toggle = screen.getByRole("button", { name: "Expand sidebar" });
 			fireEvent.click(toggle);
 			expect(
-				screen.getByRole("button", { name: "Open navigation panel" }),
+				screen.getByRole("button", { name: "Collapse sidebar" }),
 			).toBeInTheDocument();
 		},
 		SIDEBAR_TIMEOUT_MS,

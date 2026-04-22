@@ -155,6 +155,23 @@ type ReadingPaneProps = {
 	>;
 };
 
+type ReadingEvidenceBundle = Awaited<
+	ReturnType<typeof apiClient.getJobEvidenceBundle>
+>;
+
+function readRichEvidence(
+	bundle: ReadingEvidenceBundle | null,
+): Record<string, unknown> | null {
+	if (
+		!bundle ||
+		typeof bundle.rich_evidence !== "object" ||
+		!bundle.rich_evidence
+	) {
+		return null;
+	}
+	return bundle.rich_evidence;
+}
+
 export function ReadingPane({
 	jobId,
 	title,
@@ -168,14 +185,20 @@ export function ReadingPane({
 	const [markdown, setMarkdown] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(false);
+	const [bundle, setBundle] = useState<ReadingEvidenceBundle | null>(null);
 	const [reloadNonce, setReloadNonce] = useState(0);
 	const [outlineOpen, setOutlineOpen] = useState(true);
+	const getJobEvidenceBundle =
+		typeof apiClient.getJobEvidenceBundle === "function"
+			? apiClient.getJobEvidenceBundle
+			: null;
 
 	useEffect(() => {
 		if (!jobId) {
 			queueMicrotask(() => {
 				setMarkdown(null);
 				setError(false);
+				setBundle(null);
 			});
 			return;
 		}
@@ -190,21 +213,26 @@ export function ReadingPane({
 		});
 		apiClient
 			.getArtifactMarkdown({ job_id: jobId, include_meta: true })
-			.then((payload) => {
+			.then(async (payload) => {
+				const evidenceBundle = getJobEvidenceBundle
+					? await getJobEvidenceBundle(jobId).catch(() => null)
+					: null;
 				if (cancelled) return;
 				setMarkdown(payload.markdown);
+				setBundle(evidenceBundle);
 				setLoading(false);
 			})
 			.catch(() => {
 				if (cancelled) return;
 				setError(true);
 				setMarkdown(null);
+				setBundle(null);
 				setLoading(false);
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, [jobId, reloadNonce]);
+	}, [getJobEvidenceBundle, jobId, reloadNonce]);
 
 	if (!jobId) {
 		return (
@@ -325,6 +353,13 @@ export function ReadingPane({
 		? `/feed?sub=${encodeURIComponent(identity.subscription_id.trim())}`
 		: null;
 	const sourceLabel = source ? toSourceLabel(source) : null;
+	const normalizedSourceName = String(sourceName || "").trim();
+	const displaySourceName =
+		sourceLabel &&
+		normalizedSourceName &&
+		normalizedSourceName.toLowerCase() !== sourceLabel.toLowerCase()
+			? normalizedSourceName
+			: null;
 	const identityModel = identity
 		? resolveFeedIdentity({
 				...identity,
@@ -337,6 +372,43 @@ export function ReadingPane({
 		: null;
 	const previewMarkdown = markdown ? buildPreviewMarkdown(markdown) : null;
 	const truncatePreview = Boolean(markdown && markdown.length > 1400);
+	const richEvidence = readRichEvidence(bundle);
+	const creatorMetadata =
+		richEvidence &&
+		typeof richEvidence.creator_metadata === "object" &&
+		richEvidence.creator_metadata
+			? richEvidence.creator_metadata
+			: null;
+	const videoMetadata =
+		richEvidence &&
+		typeof richEvidence.video_metadata === "object" &&
+		richEvidence.video_metadata
+			? richEvidence.video_metadata
+			: null;
+	const commentary =
+		richEvidence &&
+		typeof richEvidence.commentary === "object" &&
+		richEvidence.commentary
+			? richEvidence.commentary
+			: null;
+	const sourceFacts = [
+		videoMetadata?.view_count
+			? `${String(videoMetadata.view_count)} views`
+			: null,
+		videoMetadata?.danmaku_count
+			? `${String(videoMetadata.danmaku_count)} danmaku`
+			: null,
+		videoMetadata?.comment_count
+			? `${String(videoMetadata.comment_count)} comments`
+			: null,
+		videoMetadata?.category ? String(videoMetadata.category) : null,
+	].filter(Boolean);
+	const readingStatePills = [
+		identity?.published_document_title
+			? "Reader edition ready"
+			: "Preview first",
+		"Proof stays nearby",
+	];
 
 	return (
 		<div
@@ -352,7 +424,9 @@ export function ReadingPane({
 						<div className="feed-reading-meta">
 							{sourceLabel ? (
 								<span>
-									{sourceName ? `${sourceLabel} · ${sourceName}` : sourceLabel}
+									{displaySourceName
+										? `${sourceLabel} · ${displaySourceName}`
+										: sourceLabel}
 								</span>
 							) : null}
 							{publishedAt ? (
@@ -360,6 +434,30 @@ export function ReadingPane({
 									{publishedDateLabel ?? publishedAt}
 								</time>
 							) : null}
+						</div>
+						<div className="feed-reading-toolbar">
+							<div className="feed-reading-status-row">
+								{readingStatePills.map((label) => (
+									<span
+										key={label}
+										className={`feed-reading-status-pill ${editorialMono.className}`}
+									>
+										{label}
+									</span>
+								))}
+							</div>
+							<div className="feed-reading-actions">
+								{safeReaderRoute ? (
+									<Button asChild size="sm">
+										<Link href={safeReaderRoute}>Open reader edition</Link>
+									</Button>
+								) : null}
+								<Button asChild variant="outline" size="sm">
+									<Link href={`/jobs?job_id=${encodeURIComponent(jobId)}`}>
+										Inspect job trace
+									</Link>
+								</Button>
+							</div>
 						</div>
 					</header>
 
@@ -392,13 +490,6 @@ export function ReadingPane({
 								Story notes
 							</summary>
 							<div className="mt-4 space-y-4">
-								{safeReaderRoute ? (
-									<div className="flex flex-wrap items-center gap-3">
-										<Button asChild size="sm">
-											<Link href={safeReaderRoute}>Open reader edition</Link>
-										</Button>
-									</div>
-								) : null}
 								{identity?.published_document_title ? (
 									<p className={`feed-reading-link ${editorialMono.className}`}>
 										Finished reader ready · {identity.published_document_title}
@@ -435,17 +526,39 @@ export function ReadingPane({
 											Open source desk
 										</Link>
 									) : null}
-									<Link
-										href={`/jobs?job_id=${encodeURIComponent(jobId)}`}
-										className={`feed-reading-link ${editorialMono.className}`}
-										data-interaction="link-muted"
-									>
-										Inspect job trace
-									</Link>
 								</div>
 								{identityModel ? (
 									<div>
 										<SourceIdentityCard identity={identityModel} compact />
+									</div>
+								) : null}
+								{richEvidence ? (
+									<div className="rounded-2xl border border-border/60 bg-background/72 p-4">
+										<p className="text-sm font-medium text-foreground">
+											Source facts
+										</p>
+										{creatorMetadata?.uploader ? (
+											<p className="mt-2 text-sm text-muted-foreground">
+												{String(creatorMetadata.uploader)}
+											</p>
+										) : null}
+										<div className="mt-3 flex flex-wrap gap-2">
+											{sourceFacts.map((item) => (
+												<span
+													key={item}
+													className={`rounded-full border border-border/60 bg-background/75 px-2.5 py-1 text-[11px] text-muted-foreground ${editorialMono.className}`}
+												>
+													{item}
+												</span>
+											))}
+										</div>
+										{commentary ? (
+											<p className="mt-3 text-sm text-muted-foreground">
+												{String(commentary.top_comment_count ?? 0)} top comments
+												· {String(commentary.reply_bucket_count ?? 0)} reply
+												buckets
+											</p>
+										) : null}
 									</div>
 								) : null}
 								{headings.length > 0 ? (

@@ -100,6 +100,12 @@ describe("RootLayout", () => {
 		expect(html).toContain("Skip to main content");
 		expect(html).toContain('id="main-content"');
 		expect(html).toContain("pl-14");
+		expect(html).toContain(
+			"pointer-events-none fixed left-2.5 top-2.5 z-40 md:hidden",
+		);
+		expect(html).toContain(
+			"hidden w-[72px] shrink-0 border-r border-border/40 bg-background md:flex",
+		);
 		expect(html).toContain('tabindex="-1"');
 	});
 

@@ -557,6 +557,13 @@ class JobsService:
         )
         digest_meta = self._flatten_digest_meta(artifact_meta)
         rich_evidence = self._build_rich_evidence(artifact_meta, digest_meta)
+        commentary = self._build_commentary_evidence(
+            artifact_root=getattr(row, "artifact_root", None),
+            digest_path=getattr(row, "artifact_digest_md", None),
+        )
+        if commentary:
+            rich_evidence = dict(rich_evidence or {})
+            rich_evidence["commentary"] = commentary
 
         llm_required, llm_gate_passed, hard_fail_reason = self.resolve_llm_gate_fields(
             llm_required=getattr(row, "llm_required", None),
@@ -673,6 +680,81 @@ class JobsService:
         if video_metadata:
             payload["video_metadata"] = video_metadata
         return payload
+
+    def _build_commentary_evidence(
+        self, artifact_root: str | None, digest_path: str | None
+    ) -> dict[str, Any] | None:
+        comments_payload = self._read_artifact_json(
+            artifact_root=artifact_root,
+            digest_path=digest_path,
+            filename="comments.json",
+        )
+        if not isinstance(comments_payload, dict):
+            return None
+
+        top_comments = (
+            comments_payload.get("top_comments")
+            if isinstance(comments_payload.get("top_comments"), list)
+            else []
+        )
+        replies = (
+            comments_payload.get("replies")
+            if isinstance(comments_payload.get("replies"), dict)
+            else {}
+        )
+        summary: dict[str, Any] = {
+            "sort": str(comments_payload.get("sort") or "").strip() or None,
+            "top_comment_count": len(top_comments),
+            "reply_bucket_count": len(replies),
+            "top_threads": [],
+        }
+
+        for item in top_comments[:3]:
+            if not isinstance(item, dict):
+                continue
+            nested_replies = item.get("replies") if isinstance(item.get("replies"), list) else []
+            reply_count = len(nested_replies)
+            if not reply_count:
+                reply_bucket = replies.get(str(item.get("comment_id") or ""))
+                if isinstance(reply_bucket, list):
+                    reply_count = len(reply_bucket)
+            summary["top_threads"].append(
+                {
+                    "author": str(item.get("author") or "").strip() or "unknown",
+                    "content": str(item.get("content") or "").strip(),
+                    "like_count": int(item.get("like_count") or 0),
+                    "reply_count": reply_count,
+                }
+            )
+        return summary
+
+    def _read_artifact_json(
+        self,
+        *,
+        artifact_root: str | None,
+        digest_path: str | None,
+        filename: str,
+    ) -> dict[str, Any] | list[Any] | None:
+        candidates: list[Path] = []
+        resolved_root = self._resolve_artifact_root(
+            artifact_root=artifact_root,
+            digest_path=digest_path,
+        )
+        if resolved_root is not None:
+            candidates.append(resolved_root / filename)
+        if digest_path:
+            candidates.append(Path(digest_path).expanduser().parent / filename)
+
+        for candidate in candidates:
+            if not candidate.exists() or not candidate.is_file():
+                continue
+            try:
+                payload = json.loads(candidate.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+                continue
+            if isinstance(payload, (dict, list)):
+                return payload
+        return None
 
     def _read_digest_text(self, digest_path: str | None) -> str | None:
         if not isinstance(digest_path, str) or not digest_path.strip():

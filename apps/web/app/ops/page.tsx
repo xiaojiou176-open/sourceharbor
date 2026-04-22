@@ -243,6 +243,12 @@ function buildNextSteps(
 			href: "/ops#hardening-gates",
 			actionLabel: copy.nextSteps.openAction,
 		},
+		{
+			key: "bilibili_account_ops",
+			title: "Bilibili account ops",
+			href: "#repo-browser-proof",
+			actionLabel: copy.nextSteps.openAction,
+		},
 	];
 
 	for (const gateAction of gateActions) {
@@ -424,6 +430,10 @@ export default async function OpsPage() {
 				/>
 				<GateCard title="UI audit" gate={payload.gates.ui_audit} />
 				<GateCard title="Computer use" gate={payload.gates.computer_use} />
+				<GateCard
+					title="Bilibili account ops"
+					gate={payload.gates.bilibili_account_ops}
+				/>
 			</section>
 
 			<section>
@@ -492,6 +502,46 @@ export default async function OpsPage() {
 								</CardContent>
 							</Card>
 						))}
+					</CardContent>
+				</Card>
+			</section>
+
+			<section id="repo-browser-proof">
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<CardTitle>Repo-owned browser proof</CardTitle>
+						<CardDescription>
+							This is the repo-scoped login-state readback for stronger account
+							proof, not a promise of full browser automation.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-3 text-sm text-muted-foreground">
+						<p>
+							{payload.repo_browser_proof?.summary ??
+								"No repo-owned browser proof is available right now."}
+						</p>
+						{payload.repo_browser_proof?.sites?.length ? (
+							<ul className="space-y-3">
+								{payload.repo_browser_proof.sites.map((site) => (
+									<li
+										key={site.label}
+										className="rounded-lg border border-border/60 bg-muted/20 p-3"
+									>
+										<div className="flex items-center justify-between gap-3">
+											<p className="font-medium text-foreground">
+												{site.label}
+											</p>
+											<ReadinessBadge
+												label={site.login_state}
+												status={site.login_state}
+											/>
+										</div>
+										<p>{site.final_url}</p>
+										<p>{site.proof_kind}</p>
+									</li>
+								))}
+							</ul>
+						) : null}
 					</CardContent>
 				</Card>
 			</section>

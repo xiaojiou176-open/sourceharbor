@@ -36,6 +36,7 @@ They should not assume:
 - a generated required-check ledger remains current after GitHub branch protection adds or removes required checks
 - a duplicated README, builder-guide, or status-page sentence about package versions or directory visibility carries fresher provenance than the canonical `docs/public-distribution.md` ledger
 - a repo-managed web runtime copy or a local mutation receipt automatically upgrades into public proof of hosted, packaged, or registry-listed distribution
+- a richer Bilibili evidence summary in a job bundle or feed reading pane grants any redistribution right over the raw danmaku, comments, replies, or third-party media behind it
 - a registry starter packet, package metadata template, or older repo ledger automatically proves a current Official MCP Registry listing without a fresh anonymous read-back
 - a lowercase GitHub Pages URL variant carries the same public provenance as the live deployed homepage path when the actual Pages host only serves the case-correct route
 - a repo-managed web runtime `.env.local` file or local write-session fallback token carries any public redistribution rights; it remains maintainer-local runtime state only
@@ -46,6 +47,7 @@ They should not assume:
   during a clean local reset also stays inside maintainer-local verification
   behavior; it does not widen any public runtime or redistribution claim
 - a maintainer-local proxy-video artifact used only to make Gemini video ingestion behave honestly under current API constraints changes the public rights boundary; it is still just local verification substrate
+- a discovery shortcut on `/subscriptions` or a repo-owned browser proof row on `/ops` changes the provenance boundary of SourceHarbor into a full third-party platform client; those surfaces stay thin product affordances over external sites and local proof
 - a donor or reference mirror kept in the internal `.agents` reference tree becomes part of SourceHarbor's public provenance; those inputs remain internal study material and do not widen the rights boundary of the public repo
 - a thin public blueprint stub means the internal working contract is public; the stub is the public pointer, while the full contract still stays in the internal planning ledger
 - a thin public submission-packet or UI-spec stub means the working packet/spec is public; those stubs are only pointers, while the maintainer-ready submission and design handoffs stay in the internal planning ledger

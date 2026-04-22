@@ -28,6 +28,21 @@ export type SourceIdentityModel = {
 	meta: string[];
 };
 
+type FeedDisplayInput = Pick<
+	DigestFeedItem,
+	| "source"
+	| "source_name"
+	| "canonical_source_name"
+	| "canonical_author_name"
+	| "published_document_title"
+	| "title"
+	| "video_url"
+	| "affiliation_label"
+> & {
+	uiDisplayTitle?: string | null;
+	uiDisplaySourceName?: string | null;
+};
+
 const PLATFORM_META: Record<
 	string,
 	{ label: string; accent: string; wash: string }
@@ -396,7 +411,11 @@ export function resolveFeedIdentity(item: DigestFeedItem): SourceIdentityModel {
 	};
 }
 
-export function resolveFeedDisplayTitle(item: DigestFeedItem): string {
+export function resolveFeedDisplayTitle(item: FeedDisplayInput): string {
+	const explicitTitle = cleanDisplayText(item.uiDisplayTitle);
+	if (explicitTitle) {
+		return explicitTitle;
+	}
 	const platform = normalizePlatform(item.source);
 	return (
 		(!looksLikeOpaqueVideoId(item.title, platform)
@@ -414,7 +433,11 @@ export function resolveFeedDisplayTitle(item: DigestFeedItem): string {
 	);
 }
 
-export function resolveFeedDisplaySourceName(item: DigestFeedItem): string {
+export function resolveFeedDisplaySourceName(item: FeedDisplayInput): string {
+	const explicitSourceName = cleanDisplayText(item.uiDisplaySourceName);
+	if (explicitSourceName) {
+		return explicitSourceName;
+	}
 	const platform = normalizePlatform(item.source);
 	const title = resolveFeedDisplayTitle(item);
 	const candidates = [

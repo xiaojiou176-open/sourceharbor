@@ -42,8 +42,9 @@ Current truth:
 | `docs/assets/sourceharbor-square-icon.png` | square icon for MCP directory submissions and listing tiles | directory-friendly public icon asset |
 | `docs/assets/sourceharbor-square-icon.svg` | tracked source illustration for the square icon | editable source file |
 | `docs/assets/sourceharbor-mcp-directory-shot-01.png` | MCP directory and listing screenshot asset | submission-friendly product shot derived from the tracked studio preview |
-| `docs/assets/sourceharbor-hero.svg` | README/front-door hero | public product-shape asset |
-| `docs/assets/sourceharbor-studio-preview.svg` | README studio preview | public front-door asset |
+| `docs/assets/sourceharbor-hero.svg` | supporting front-door poster | public poster-style asset kept in the media kit family |
+| `docs/assets/sourceharbor-studio-preview.svg` | README + no-boot front-door preview | current primary front-door asset |
+| `docs/assets/sourceharbor-builder-loop.svg` | supporting builder-facing visual | optional builder/distribution illustration kept out of the main front door |
 | `docs/assets/sourceharbor-developer-flywheel.svg` | builder/product loop visual | README/docs narrative support |
 | `docs/assets/sourceharbor-architecture.svg` | system map | architecture/docs proof support |
 
@@ -52,7 +53,7 @@ Current truth:
 These are the strongest honest hooks for listings, marketplace blurbs, and short
 promo copy:
 
-- `AI knowledge control tower`
+- `reader-first knowledge system`
 - `source-first`
 - `proof-first`
 - `YouTube / Bilibili / RSSHub / RSS`

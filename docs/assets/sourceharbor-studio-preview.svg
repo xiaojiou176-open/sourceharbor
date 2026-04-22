@@ -1,33 +1,37 @@
 <svg width="1280" height="420" viewBox="0 0 1280 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">SourceHarbor preview</title>
-  <desc id="desc">Preview card for SourceHarbor showing source intake, digest generation, and searchable artifacts.</desc>
-  <defs>
-    <linearGradient id="bg" x1="78" y1="30" x2="1194" y2="390" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0F172A"/>
-      <stop offset="0.48" stop-color="#111827"/>
-      <stop offset="1" stop-color="#134E4A"/>
-    </linearGradient>
-    <linearGradient id="orbA" x1="896" y1="42" x2="1188" y2="232" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2DD4BF"/>
-      <stop offset="1" stop-color="#0F766E"/>
-    </linearGradient>
-    <linearGradient id="orbB" x1="880" y1="148" x2="1152" y2="334" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F59E0B"/>
-      <stop offset="1" stop-color="#D97706"/>
-    </linearGradient>
-  </defs>
-  <rect x="24" y="24" width="1232" height="372" rx="32" fill="url(#bg)"/>
-  <circle cx="1038" cy="118" r="122" fill="url(#orbA)" fill-opacity="0.22"/>
-  <circle cx="1120" cy="244" r="92" fill="url(#orbB)" fill-opacity="0.18"/>
-  <rect x="86" y="72" width="246" height="34" rx="17" fill="#0B1220" stroke="#334155"/>
-  <text x="108" y="94" fill="#E2E8F0" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="700">xiaojiou176 studio system</text>
-  <text x="86" y="164" fill="#F8FAFC" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="800">SourceHarbor</text>
-  <text x="86" y="212" fill="#CBD5E1" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="600">Subscribe to source streams, generate readable digests,</text>
-  <text x="86" y="246" fill="#CBD5E1" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="600">and reuse artifacts through API and MCP.</text>
-  <rect x="86" y="292" width="156" height="30" rx="15" fill="#111827" stroke="#1F2937"/>
-  <rect x="256" y="292" width="170" height="30" rx="15" fill="#111827" stroke="#1F2937"/>
-  <rect x="440" y="292" width="174" height="30" rx="15" fill="#111827" stroke="#1F2937"/>
-  <text x="110" y="312" fill="#99F6E4" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">PULL SOURCES</text>
-  <text x="280" y="312" fill="#FCD34D" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">PRODUCE DIGESTS</text>
-  <text x="464" y="312" fill="#BFDBFE" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">SEARCH ARTIFACTS</text>
+  <title id="title">SourceHarbor studio preview</title>
+  <desc id="desc">A reader-first SourceHarbor preview showing one finished reading surface, proof nearby, and builders later.</desc>
+  <rect width="1280" height="420" rx="32" fill="#F4EEE4"/>
+  <rect x="24" y="24" width="1232" height="372" rx="28" fill="#103734"/>
+  <circle cx="1096" cy="114" r="138" fill="#F4B65D" fill-opacity="0.16"/>
+  <circle cx="252" cy="334" r="128" fill="#2D8A76" fill-opacity="0.16"/>
+
+  <rect x="74" y="74" width="184" height="38" rx="19" fill="#1A5C52"/>
+  <text x="104" y="99" fill="#EAF6F1" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">SourceHarbor</text>
+
+  <text x="74" y="170" fill="#FFF7EE" font-family="Georgia, 'Times New Roman', serif" font-size="60" font-weight="700">Start with one</text>
+  <text x="74" y="232" fill="#FFF7EE" font-family="Georgia, 'Times New Roman', serif" font-size="60" font-weight="700">finished reading</text>
+  <text x="74" y="294" fill="#FFF7EE" font-family="Georgia, 'Times New Roman', serif" font-size="60" font-weight="700">surface</text>
+  <text x="74" y="340" fill="#D2E7E0" font-family="Arial, Helvetica, sans-serif" font-size="24">Then inspect proof, search, and builder tools</text>
+  <text x="74" y="372" fill="#D2E7E0" font-family="Arial, Helvetica, sans-serif" font-size="24">only when the reading path asks for them.</text>
+
+  <rect x="656" y="66" width="542" height="288" rx="30" fill="#FFF9F2"/>
+  <rect x="688" y="96" width="182" height="34" rx="17" fill="#E6F2EE"/>
+  <text x="716" y="119" fill="#1A514A" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Reading specimen</text>
+
+  <rect x="688" y="152" width="478" height="154" rx="24" fill="#FFFFFF"/>
+  <text x="718" y="186" fill="#6D7B78" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="2">FINISHED READER</text>
+  <text x="718" y="230" fill="#153632" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">Bilibili history milestone:</text>
+  <text x="718" y="270" fill="#153632" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">the earliest surviving AV2.</text>
+  <text x="718" y="304" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="20">Readable title first. Proof one click away.</text>
+
+  <rect x="718" y="320" width="126" height="30" rx="15" fill="#113833"/>
+  <text x="746" y="340" fill="#EAF6F1" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Reader first</text>
+  <rect x="856" y="320" width="126" height="30" rx="15" fill="#E6F2EE"/>
+  <text x="885" y="340" fill="#1A514A" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Proof nearby</text>
+  <rect x="994" y="320" width="130" height="30" rx="15" fill="#F4E7CC"/>
+  <text x="1018" y="340" fill="#7A5A17" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Builders later</text>
+
+  <rect x="688" y="362" width="478" height="44" rx="22" fill="#F2EBDD"/>
+  <text x="718" y="388" fill="#5E706D" font-family="Arial, Helvetica, sans-serif" font-size="15">Search, Ask, and builder lanes stay ready without stealing the first read.</text>
 </svg>

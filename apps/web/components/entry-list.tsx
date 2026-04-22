@@ -43,6 +43,62 @@ function renderSourceName(source: string, sourceName: string): string {
 	return `${fallback} · ${name}`;
 }
 
+function truncateText(text: string, maxLength: number): string {
+	if (text.length <= maxLength) return text;
+	return `${text.slice(0, maxLength).trimEnd()}…`;
+}
+
+function stripMarkdownLine(line: string): string {
+	return line
+		.replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+		.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+		.replace(/`([^`]*)`/g, "$1")
+		.replace(/^#{1,6}\s+/g, "")
+		.replace(/^>\s*/g, "")
+		.replace(/^[-*+]\s+/g, "")
+		.replace(/^\d+\.\s+/g, "")
+		.replace(/\*\*([^*]+)\*\*/g, "$1")
+		.replace(/\*([^*]+)\*/g, "$1")
+		.replace(/_{1,2}([^_]+)_{1,2}/g, "$1")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function resolveFeedTeaser(item: EntryListItem): string {
+	const candidates = item.summary_md
+		.split("\n")
+		.map(stripMarkdownLine)
+		.filter(Boolean)
+		.filter(
+			(line) =>
+				!/^(one-minute summary|what this covers|key takeaways|story notes)$/i.test(
+					line,
+				),
+		)
+		.filter((line) => !/^source:/i.test(line))
+		.filter((line) => !/^platform:/i.test(line));
+
+	const preferred =
+		candidates.find((line) => line.length >= 48) ?? candidates[0] ?? "";
+	if (preferred) {
+		return truncateText(preferred, 132);
+	}
+	if (item.published_document_title) {
+		return `Reader edition ready · ${item.published_document_title}`;
+	}
+	return "Open the preview first. Notes and source tools can wait.";
+}
+
+function resolveFeedStatus(item: EntryListItem): string {
+	if (item.published_document_title) {
+		return `Finished reader ready · ${item.published_document_title}`;
+	}
+	if (item.subscription_id) {
+		return "Source desk stays nearby if this belongs in the reading loop.";
+	}
+	return "Preview first. Open the source desk or finished reader only after it earns a second read.";
+}
+
 type EntryListItem = DigestFeedItem & { href: string };
 
 type EntryListProps = {
@@ -64,6 +120,8 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 						const isSelected = selectedJobId === item.job_id;
 						const displayTitle = resolveFeedDisplayTitle(item);
 						const displaySourceName = resolveFeedDisplaySourceName(item);
+						const teaser = resolveFeedTeaser(item);
+						const statusLine = resolveFeedStatus(item);
 						const staggerStyle = {
 							"--feed-stagger-index": index,
 						} as CSSProperties;
@@ -118,21 +176,15 @@ export function EntryList({ items, selectedJobId }: EntryListProps) {
 											>
 												{displayTitle}
 											</h3>
-											<p className="feed-entry-support">
-												{item.published_document_title
-													? `Finished reader ready · ${item.published_document_title}`
-													: "Open the preview first. Notes and source tools can wait."}
-											</p>
+											<p className="feed-entry-support">{teaser}</p>
 										</div>
 										<p
 											className={cn(
-												"text-xs text-muted-foreground",
-												isSelected && "text-foreground/78",
+												"feed-entry-status",
+												isSelected && "is-selected",
 											)}
 										>
-											{item.subscription_id
-												? "Preview first. Open the source desk only after you know this belongs in the reading loop."
-												: "Preview first. If it earns a second read, open the source desk or the finished reader later."}
+											{statusLine}
 										</p>
 									</div>
 								</Link>

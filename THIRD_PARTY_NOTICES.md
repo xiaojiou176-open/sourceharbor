@@ -158,7 +158,7 @@ APACHE LICENSE, VERSION 2.0
 
 http://www.apache.org/licenses/LICENSE-2.0` | `license-field` |
 | `linkify-it-py` | `2.0.3` | `MIT` | `license-field` |
-| `lxml` | `6.0.2` | `BSD-3-Clause` | `license-field` |
+| `lxml` | `6.1.0` | `BSD-3-Clause` | `license-field` |
 | `lxml_html_clean` | `0.4.4` | `BSD-3-Clause` | `license-field` |
 | `Markdown` | `3.10.2` | `BSD-3-Clause` | `license-expression` |
 | `markdown-it-py` | `4.0.0` | `MIT License` | `classifier` |
@@ -188,7 +188,7 @@ http://www.apache.org/licenses/LICENSE-2.0` | `license-field` |
 | `pytest-rerunfailures` | `15.1` | `MPL-2.0` | `license-field` |
 | `pytest-xdist` | `3.8.0` | `MIT` | `license-expression` |
 | `python-dateutil` | `2.9.0.post0` | `Dual License` | `license-field` |
-| `python-dotenv` | `1.2.1` | `BSD-3-Clause` | `license-expression` |
+| `python-dotenv` | `1.2.2` | `BSD-3-Clause` | `license-field` |
 | `python-multipart` | `0.0.26` | `Apache-2.0` | `license-expression` |
 | `pytz` | `2026.1.post1` | `MIT` | `license-field` |
 | `PyYAML` | `6.0.3` | `MIT` | `license-field` |

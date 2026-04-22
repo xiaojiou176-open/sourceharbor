@@ -139,7 +139,9 @@ export function SyncNowButton({
 						className={cn(
 							"rounded-full px-1.5 py-0 text-[10px] font-semibold",
 							state === "idle" &&
-								"border-white/30 bg-white/12 text-white dark:border-white/20 dark:bg-white/10",
+								(prominence === "secondary"
+									? "border-border/70 bg-background/92 text-foreground/80"
+									: "border-white/30 bg-white/12 text-white dark:border-white/20 dark:bg-white/10"),
 						)}
 						data-part="state-badge"
 						data-state={state}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getActionSessionTokenForForm } from "@/app/action-security";
 import { getFlashMessage } from "@/app/flash-message";
 import { upsertSubscriptionAction } from "@/app/subscriptions/actions";
+import { BilibiliDiscoveryDesk } from "@/components/bilibili-discovery-desk";
 import {
 	FormCheckboxField,
 	FormInputField,
@@ -277,6 +278,27 @@ export default async function SubscriptionsPage({
 		subscriptionsResult.errorCode ?? templateCatalogResult.errorCode;
 	const highlightedSubscriptions = subscriptions.slice(0, 6);
 	const hasTrackedSources = highlightedSubscriptions.length > 0;
+	const bilibiliTrackedCreators = subscriptions
+		.filter(
+			(subscription) =>
+				String(subscription.platform || "")
+					.trim()
+					.toLowerCase() === "bilibili",
+		)
+		.map((subscription) => {
+			const uid = String(subscription.source_value || "").trim();
+			const sourceUrl =
+				String(subscription.source_url || "").trim() ||
+				(uid
+					? `https://space.bilibili.com/${uid}`
+					: "https://space.bilibili.com/");
+			return {
+				name:
+					String(subscription.source_name || "").trim() || "Bilibili creator",
+				uid,
+				url: sourceUrl,
+			};
+		});
 	return (
 		<div
 			className={`folo-page-shell folo-unified-shell ${editorialSans.className}`}
@@ -404,6 +426,7 @@ export default async function SubscriptionsPage({
 							)}
 						</div>
 					</details>
+					<BilibiliDiscoveryDesk trackedCreators={bilibiliTrackedCreators} />
 				</section>
 			</section>
 

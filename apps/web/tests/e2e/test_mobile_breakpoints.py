@@ -1,12 +1,8 @@
-"""Mobile profile regression checks.
+"""Mobile profile regression checks for the reader-first front door."""
 
-Recommended run args:
-- --web-e2e-device-profile=mobile
-- -k "mobile"
-"""
+from __future__ import annotations
 
 import re
-from collections.abc import Callable
 
 import pytest
 from playwright.sync_api import Page, expect
@@ -14,52 +10,31 @@ from playwright.sync_api import Page, expect
 pytestmark = pytest.mark.web_e2e_device("mobile")
 
 
-def _goto_dashboard(page: Page) -> None:
-    page.goto("/", wait_until="domcontentloaded")
-    expect(page.get_by_role("heading", name="拉取采集")).to_be_visible()
-
-
-def _select_option(page: Page, label: str, option_name: str) -> None:
-    page.get_by_role("combobox", name=label).click()
-    page.get_by_role("option", name=option_name).click()
-
-
-def _expect_action_result(page: Page, success_code: str, success_message: str) -> None:
-    expect(page).to_have_url(
-        re.compile(rf".*status=(success|error).*(code={success_code}|code=ERR_REQUEST_FAILED)"),
-        timeout=12_000,
-    )
-    if success_code in page.url:
-        expect(page.locator("p.alert.success")).to_contain_text(success_message)
-        return
-    expect(page.locator("p.alert.error")).to_contain_text("请求失败，请稍后重试。")
-
-
-def _click_dashboard_action(
-    page: Page,
-    *,
-    button_name: str,
-    success_code: str,
-    success_message: str,
-    prepare: Callable[[], object] | None = None,
-) -> None:
-    for attempt in range(2):
-        _goto_dashboard(page)
-        if prepare is not None:
-            prepare()
-        button = page.get_by_role("button", name=button_name)
-        expect(button).to_be_visible()
-        expect(button).to_be_enabled()
-        button.click()
+def _goto_home_ready(page: Page) -> None:
+    for attempt in range(3):
+        page.goto("/", wait_until="domcontentloaded")
         try:
-            _expect_action_result(page, success_code, success_message)
+            expect(page.locator("[data-route-heading]")).to_be_visible(timeout=12_000)
+            expect(page.get_by_role("link", name="Open Reader")).to_be_visible()
             return
         except AssertionError:
             body_text = page.locator("body").inner_text()
-            has_transient_error = (
-                "Internal Server Error" in body_text or "code=ERR_REQUEST_FAILED" in page.url
-            )
-            if attempt == 0 and has_transient_error:
+            if attempt < 2 and "Internal Server Error" in body_text:
+                continue
+            raise
+
+
+def _goto_feed_ready(page: Page) -> None:
+    for attempt in range(3):
+        page.goto("/feed", wait_until="domcontentloaded")
+        try:
+            expect(
+                page.get_by_role("heading", name=re.compile(r"Timeline|Main reading flow"))
+            ).to_be_visible(timeout=12_000)
+            return
+        except AssertionError:
+            body_text = page.locator("body").inner_text()
+            if attempt < 2 and "Internal Server Error" in body_text:
                 continue
             raise
 
@@ -104,8 +79,57 @@ def _assert_no_horizontal_overflow(page: Page, route: str) -> None:
     )
 
 
-def test_mobile_profile_layout_and_cta_visibility(page: Page) -> None:
-    _goto_dashboard(page)
+def _assert_mobile_shell_keeps_reader_stage_primary(page: Page, route: str) -> None:
+    metrics = page.evaluate(
+        """
+        () => {
+            const main = document.getElementById("main-content");
+            const mainRect = main ? main.getBoundingClientRect() : null;
+            const visibleSidebars = Array.from(
+                document.querySelectorAll('aside[aria-label="Sidebar navigation"]')
+            )
+                .map((el) => {
+                    const rect = el.getBoundingClientRect();
+                    const style = window.getComputedStyle(el);
+                    const visible =
+                        style.display !== "none" &&
+                        style.visibility !== "hidden" &&
+                        rect.width > 0 &&
+                        rect.height > 0;
+                    return {
+                        visible,
+                        width: rect.width,
+                        position: style.position,
+                    };
+                })
+                .filter((item) => item.visible);
+            return {
+                mainLeft: mainRect ? mainRect.left : null,
+                mainTop: mainRect ? mainRect.top : null,
+                visibleSidebars,
+            };
+        }
+        """
+    )
+    assert metrics["mainLeft"] is not None and metrics["mainLeft"] <= 72, (
+        f"{route} main stage is pushed too far right on mobile: {metrics}"
+    )
+    assert metrics["mainTop"] is not None and metrics["mainTop"] <= 72, (
+        f"{route} main stage starts too low on mobile: {metrics}"
+    )
+    blocking_sidebars = [
+        item
+        for item in metrics["visibleSidebars"]
+        if item["width"] > 96 and item["position"] != "fixed"
+    ]
+    assert not blocking_sidebars, (
+        f"{route} is still showing a desktop-width sidebar before the mobile sheet opens: "
+        f"{blocking_sidebars}"
+    )
+
+
+def test_mobile_home_layout_and_primary_cta_visibility(page: Page) -> None:
+    _goto_home_ready(page)
 
     viewport = page.viewport_size
     assert viewport is not None
@@ -113,38 +137,70 @@ def test_mobile_profile_layout_and_cta_visibility(page: Page) -> None:
         "expected mobile viewport width <= 430; run with --web-e2e-device-profile=mobile"
     )
 
-    expect(page.get_by_role("heading", name="拉取采集")).to_be_visible()
-    expect(page.get_by_role("button", name="触发采集")).to_be_visible()
-    expect(page.get_by_role("button", name="开始处理")).to_be_visible()
-
-    _click_dashboard_action(
-        page,
-        button_name="触发采集",
-        success_code="POLL_INGEST_OK",
-        success_message="已触发采集任务。",
-    )
-    _click_dashboard_action(
-        page,
-        button_name="开始处理",
-        success_code="PROCESS_VIDEO_OK",
-        success_message="已创建处理任务。",
-        prepare=lambda: (
-            page.get_by_label("视频链接 *").fill("https://www.youtube.com/watch?v=e2emobile001"),
-            _select_option(page, "模式 *", "纯文本"),
-            page.get_by_role("checkbox", name="强制执行").check(),
-        ),
-    )
-
     _assert_no_horizontal_overflow(page, "/")
-    page.get_by_role("link", name=re.compile(r"设置|任务")).first.click()
-    expect(page).to_have_url(re.compile(r"/(settings|jobs)$"))
-    _assert_no_horizontal_overflow(page, page.url)
+    _assert_mobile_shell_keeps_reader_stage_primary(page, "/")
+    expect(page.get_by_text("Reading specimen")).to_be_visible()
+    expect(page.get_by_role("link", name="Open Reader")).to_be_visible()
+
+
+def test_mobile_feed_layout_keeps_main_reading_flow_visible(page: Page) -> None:
+    _goto_feed_ready(page)
+
+    _assert_no_horizontal_overflow(page, "/feed")
+    _assert_mobile_shell_keeps_reader_stage_primary(page, "/feed")
+    expect(page.get_by_role("button", name="Open navigation panel")).to_be_visible()
+
+    empty_state = page.get_by_text("No AI digest entries yet")
+    if empty_state.count() > 0:
+        expect(empty_state).to_be_visible()
+        expect(page.get_by_role("link", name="Go to subscriptions")).to_be_visible()
+        return
+
+    expect(page.locator(".feed-main-flow")).to_be_visible()
+    expect(page.locator(".feed-entry-list")).to_be_visible()
 
 
 def test_mobile_sidebar_sheet_trigger_opens_navigation_dialog(page: Page) -> None:
-    page.goto("/", wait_until="domcontentloaded")
-    menu_trigger = page.get_by_role("button", name=re.compile(r"导航|菜单|打开侧边栏"))
+    _goto_home_ready(page)
+    menu_trigger = page.get_by_role("button", name="Open navigation panel")
     expect(menu_trigger).to_be_visible()
     menu_trigger.click()
     expect(page.get_by_role("dialog")).to_be_visible()
-    expect(page.get_by_role("complementary", name="侧边栏导航")).to_be_visible()
+    expect(page.get_by_role("complementary", name="Sidebar navigation")).to_be_visible()
+
+
+def test_mobile_internal_frontdoor_links_are_clickable(page: Page) -> None:
+    page.goto("/subscriptions", wait_until="domcontentloaded")
+    paste_source = page.get_by_role("link", name="Paste a source")
+    expect(paste_source).to_be_visible()
+    paste_source.click()
+
+    open_saved_sources_after = page.get_by_role(
+        "link", name="Open saved sources after you paste the first one"
+    )
+    if open_saved_sources_after.count():
+        open_saved_sources_after.click()
+
+    follow_first_source = page.get_by_role("link", name="Follow the first source")
+    if follow_first_source.count():
+        follow_first_source.click()
+
+    menu_trigger = page.get_by_role("button", name="Open navigation panel")
+    if menu_trigger.count():
+        menu_trigger.click()
+        open_following = page.get_by_role("link", name="Open Following")
+        if open_following.count():
+            open_following.click()
+
+    page.goto("/feed", wait_until="domcontentloaded")
+    start_with_story = page.get_by_role("link", name="Start with this story")
+    if start_with_story.count():
+        start_with_story.click()
+
+    inspect_job_trace = page.get_by_role("link", name="Inspect job trace")
+    if inspect_job_trace.count():
+        inspect_job_trace.click()
+
+    open_source_desk = page.get_by_role("link", name="Open source desk")
+    if open_source_desk.count():
+        open_source_desk.click()

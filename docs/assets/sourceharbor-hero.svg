@@ -1,80 +1,46 @@
 <svg width="1600" height="920" viewBox="0 0 1600 920" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="heroTitle heroDesc">
   <title id="heroTitle">SourceHarbor first-look hero</title>
-  <desc id="heroDesc">A result-first product preview showing SourceHarbor's command center, digest feed, and job trace surfaces before setup.</desc>
+  <desc id="heroDesc">A reader-first product preview showing one finished reading sample, proof nearby, and builder tools later.</desc>
   <rect width="1600" height="920" rx="40" fill="#F7F1E8"/>
-  <rect x="32" y="32" width="1536" height="856" rx="32" fill="url(#bg)"/>
-  <circle cx="1410" cy="160" r="190" fill="#F4B65D" fill-opacity="0.20"/>
-  <circle cx="220" cy="760" r="250" fill="#3A8E7A" fill-opacity="0.16"/>
+  <rect x="32" y="32" width="1536" height="856" rx="32" fill="#103734"/>
+  <circle cx="1406" cy="160" r="190" fill="#F4B65D" fill-opacity="0.20"/>
+  <circle cx="230" cy="756" r="248" fill="#2D8A76" fill-opacity="0.16"/>
 
-  <rect x="86" y="88" width="472" height="748" rx="30" fill="#0E2D2B"/>
-  <rect x="122" y="124" width="188" height="40" rx="20" fill="#1E6F63"/>
-  <text x="156" y="151" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">SourceHarbor</text>
-  <text x="122" y="218" fill="#FFF7EE" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700">See the result</text>
-  <text x="122" y="286" fill="#FFF7EE" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700">before setup</text>
-  <text x="122" y="346" fill="#CFE2DB" font-family="Arial, Helvetica, sans-serif" font-size="24">Command center, digest feed, and</text>
-  <text x="122" y="380" fill="#CFE2DB" font-family="Arial, Helvetica, sans-serif" font-size="24">job trace explain the product fast.</text>
+  <rect x="92" y="96" width="210" height="40" rx="20" fill="#1A5C52"/>
+  <text x="126" y="122" fill="#EAF6F1" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">SourceHarbor</text>
 
-  <rect x="122" y="432" width="246" height="54" rx="27" fill="#F4B65D"/>
-  <text x="158" y="467" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">30-second first look</text>
-  <rect x="384" y="432" width="128" height="54" rx="27" fill="#163B37" stroke="#3A8E7A"/>
-  <text x="421" y="467" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Proof</text>
+  <text x="104" y="214" fill="#FFF7EE" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="700">Start with one</text>
+  <text x="104" y="288" fill="#FFF7EE" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="700">finished reading</text>
+  <text x="104" y="362" fill="#FFF7EE" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="700">surface</text>
 
-  <rect x="122" y="538" width="400" height="226" rx="24" fill="#143632"/>
-  <text x="154" y="588" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Why it feels worth starring</text>
-  <text x="154" y="630" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="19">• source intake becomes searchable output</text>
-  <text x="154" y="662" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="19">• operator UI and agent tools share one truth</text>
-  <text x="154" y="694" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="19">• jobs, retries, and artifacts stay inspectable</text>
-  <text x="154" y="726" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="19">• proof is visible before the full local run</text>
+  <text x="104" y="448" fill="#D2E7E0" font-family="Arial, Helvetica, sans-serif" font-size="28">See one story, one excerpt, and one proof trail</text>
+  <text x="104" y="488" fill="#D2E7E0" font-family="Arial, Helvetica, sans-serif" font-size="28">before filters, settings, or builder rails ask for attention.</text>
 
-  <text x="608" y="118" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">What newcomers should see first</text>
-  <text x="608" y="148" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="16">Representative UI surfaces with stable labels and public-facing proof cues.</text>
+  <rect x="104" y="546" width="246" height="56" rx="28" fill="#F4B65D"/>
+  <text x="142" y="582" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">See it fast</text>
+  <rect x="370" y="546" width="178" height="56" rx="28" fill="#163B37" stroke="#3A8E7A"/>
+  <text x="408" y="582" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Proof nearby</text>
 
-  <rect x="608" y="186" width="424" height="280" rx="28" fill="#FFF9F2" stroke="#DCCDBA"/>
-  <rect x="640" y="216" width="360" height="52" rx="18" fill="#F5EFE5"/>
-  <text x="668" y="250" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Command Center</text>
-  <rect x="640" y="292" width="116" height="90" rx="18" fill="#0E2D2B"/>
-  <text x="656" y="324" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="14">Subscriptions</text>
-  <text x="672" y="364" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">12</text>
-  <rect x="772" y="292" width="108" height="90" rx="18" fill="#1E6F63"/>
-  <text x="798" y="324" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="15">Queued</text>
-  <text x="796" y="364" fill="#F8FFFD" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">3</text>
-  <rect x="896" y="292" width="104" height="90" rx="18" fill="#F4B65D"/>
-  <text x="926" y="324" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="15">Alerts</text>
-  <text x="930" y="364" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">1</text>
-  <rect x="640" y="404" width="360" height="34" rx="12" fill="#F5EFE5"/>
-  <text x="664" y="426" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="15">Subscriptions, queues, and recent output in one place</text>
+  <rect x="738" y="92" width="760" height="704" rx="34" fill="#FFF9F2"/>
+  <rect x="778" y="130" width="208" height="38" rx="19" fill="#E6F2EE"/>
+  <text x="810" y="155" fill="#1A514A" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Reading specimen</text>
 
-  <rect x="1054" y="186" width="466" height="280" rx="28" fill="#FFF9F2" stroke="#DCCDBA"/>
-  <rect x="1086" y="216" width="402" height="52" rx="18" fill="#E8F5F0"/>
-  <text x="1114" y="250" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Timeline</text>
-  <rect x="1086" y="294" width="402" height="64" rx="18" fill="#FFFFFF"/>
-  <text x="1114" y="324" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700">AI Weekly</text>
-  <text x="1114" y="348" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="16">YouTube • Tech Channel • Tech</text>
-  <rect x="1086" y="376" width="402" height="72" rx="18" fill="#F5EFE5"/>
-  <text x="1114" y="408" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">One-minute summary</text>
-  <text x="1114" y="434" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="15">Operator visibility, agent workflows, and job trace</text>
+  <rect x="778" y="198" width="680" height="320" rx="28" fill="#FFFFFF"/>
+  <text x="824" y="246" fill="#6D7B78" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" letter-spacing="3">FINISHED READER</text>
+  <text x="824" y="320" fill="#153632" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">Bilibili history milestone:</text>
+  <text x="824" y="374" fill="#153632" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">the earliest surviving AV2.</text>
+  <text x="824" y="430" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="23">One note worth continuing, one short excerpt,</text>
+  <text x="824" y="464" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="23">and proof that stays nearby instead of</text>
+  <text x="824" y="498" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="23">taking over the page.</text>
 
-  <rect x="608" y="500" width="912" height="248" rx="28" fill="#FFF9F2" stroke="#DCCDBA"/>
-  <rect x="640" y="530" width="848" height="52" rx="18" fill="#F5EFE5"/>
-  <text x="668" y="564" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Job Trace</text>
-  <rect x="640" y="606" width="198" height="108" rx="18" fill="#FFFFFF"/>
-  <text x="664" y="638" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="15">job_id</text>
-  <text x="664" y="674" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">job-abcdef123</text>
-  <text x="664" y="700" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="14">video_digest_v1</text>
-  <rect x="856" y="606" width="242" height="108" rx="18" fill="#FFFFFF"/>
-  <text x="880" y="638" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="15">final status</text>
-  <rect x="880" y="656" width="112" height="30" rx="15" fill="#D8F0EA"/>
-  <text x="912" y="676" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">succeeded</text>
-  <text x="880" y="700" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="14">summary • artifacts • retries</text>
-  <rect x="1116" y="606" width="372" height="108" rx="18" fill="#0E2D2B"/>
-  <text x="1142" y="638" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="15">steps</text>
-  <text x="1142" y="672" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700">extract → summarize → write → notify</text>
-  <text x="1142" y="700" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="14">debug with receipts instead of guesswork</text>
+  <rect x="824" y="542" width="160" height="38" rx="19" fill="#113833"/>
+  <text x="860" y="567" fill="#EAF6F1" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">Finished reader</text>
+  <rect x="1000" y="542" width="156" height="38" rx="19" fill="#E6F2EE"/>
+  <text x="1033" y="567" fill="#1A514A" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">Readable title</text>
+  <rect x="1172" y="542" width="206" height="38" rx="19" fill="#F4E7CC"/>
+  <text x="1203" y="567" fill="#7A5A17" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">Proof one click away</text>
 
-  <defs>
-    <linearGradient id="bg" x1="65" y1="92" x2="1534" y2="842" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF7EE"/>
-      <stop offset="1" stop-color="#EFE4D5"/>
-    </linearGradient>
-  </defs>
+  <rect x="778" y="618" width="680" height="96" rx="24" fill="#F2EBDD"/>
+  <text x="824" y="662" fill="#5E706D" font-family="Arial, Helvetica, sans-serif" font-size="20">Open the timeline, search, or builder lane</text>
+  <text x="824" y="692" fill="#5E706D" font-family="Arial, Helvetica, sans-serif" font-size="20">only after the story earns a second read.</text>
 </svg>

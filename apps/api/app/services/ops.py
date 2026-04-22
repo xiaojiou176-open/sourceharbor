@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
 import sys
@@ -22,6 +23,9 @@ from .health import HealthService
 logger = logging.getLogger(__name__)
 OPS_SECTION_ERROR_MESSAGE = "diagnostic data temporarily unavailable"
 REPO_ROOT = get_runtime_root()
+REPO_BROWSER_PROOF_PATH = (
+    REPO_ROOT / ".runtime-cache" / "reports" / "runtime" / "repo-chrome-open-tabs.json"
+)
 
 
 @lru_cache(maxsize=1)
@@ -270,6 +274,112 @@ def build_computer_use_gate(
     }
 
 
+def _load_repo_browser_proof() -> dict[str, Any]:
+    artifact_path = REPO_BROWSER_PROOF_PATH.relative_to(REPO_ROOT).as_posix()
+    if not REPO_BROWSER_PROOF_PATH.is_file():
+        return {
+            "status": "blocked",
+            "summary": "Repo-owned browser proof has not been recorded yet.",
+            "artifact_path": artifact_path,
+            "generated_at": None,
+            "sites": [],
+        }
+    try:
+        payload = json.loads(REPO_BROWSER_PROOF_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return {
+            "status": "warn",
+            "summary": OPS_SECTION_ERROR_MESSAGE,
+            "artifact_path": artifact_path,
+            "generated_at": None,
+            "sites": [],
+        }
+
+    site_results = (
+        payload.get("site_results") if isinstance(payload.get("site_results"), dict) else {}
+    )
+    sites: list[dict[str, Any]] = []
+    for label, item in site_results.items():
+        if not isinstance(item, dict):
+            continue
+        sites.append(
+            {
+                "label": str(label),
+                "login_state": str(item.get("login_state") or "unknown"),
+                "final_url": str(item.get("final_url") or ""),
+                "proof_kind": str(item.get("proof_kind") or "unknown"),
+            }
+        )
+    status = "ready" if sites else "warn"
+    summary = (
+        "Repo-owned browser proof is current."
+        if sites
+        else "Repo-owned browser proof exists, but no site-level readback was captured."
+    )
+    return {
+        "status": status,
+        "summary": summary,
+        "artifact_path": artifact_path,
+        "generated_at": str(payload.get("generated_at") or "") or None,
+        "sites": sites,
+    }
+
+
+def build_bilibili_account_ops_gate(
+    *,
+    repo_browser_proof: dict[str, Any],
+    bilibili_cookie_present: bool,
+) -> dict[str, Any]:
+    sites = (
+        repo_browser_proof.get("sites") if isinstance(repo_browser_proof.get("sites"), list) else []
+    )
+    bilibili_site = next(
+        (
+            item
+            for item in sites
+            if isinstance(item, dict) and str(item.get("label") or "").strip() == "bilibili_account"
+        ),
+        {},
+    )
+    login_state = str(bilibili_site.get("login_state") or "unknown").strip().lower() or "unknown"
+    final_url = str(bilibili_site.get("final_url") or "").strip() or None
+    if login_state == "authenticated" and bilibili_cookie_present:
+        return {
+            "status": "ready",
+            "summary": "Repo-owned Chrome proof and cookie-driven richer read-only lanes are both available.",
+            "next_step": "Use the stronger read-only lanes when you want richer Bilibili evidence or stronger account-side proof.",
+            "details": {
+                "login_state": login_state,
+                "cookie_present": True,
+                "final_url": final_url,
+                "artifact_path": repo_browser_proof.get("artifact_path"),
+            },
+        }
+    if login_state == "authenticated":
+        return {
+            "status": "warn",
+            "summary": "Repo-owned Chrome proof is current, but cookie-driven richer read-only lanes are not enabled yet.",
+            "next_step": "Provide BILIBILI_COOKIE when you want richer read-only collection to match the repo-owned browser proof.",
+            "details": {
+                "login_state": login_state,
+                "cookie_present": False,
+                "final_url": final_url,
+                "artifact_path": repo_browser_proof.get("artifact_path"),
+            },
+        }
+    return {
+        "status": "blocked",
+        "summary": "Bilibili account proof is not currently authenticated in the repo-owned browser profile.",
+        "next_step": "Run ./bin/open-repo-chrome-tabs --site-set login-strong-check --json and re-check the repo-owned browser proof before treating richer Bilibili read-only lanes as ready.",
+        "details": {
+            "login_state": login_state,
+            "cookie_present": bilibili_cookie_present,
+            "final_url": final_url,
+            "artifact_path": repo_browser_proof.get("artifact_path"),
+        },
+    }
+
+
 class OpsService:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -282,6 +392,7 @@ class OpsService:
         retrieval_counts = self._load_retrieval_counts()
         notification_config = self._load_notification_config()
         provider_health = HealthService(self.db).get_provider_health(window_hours=window_hours)
+        repo_browser_proof = _load_repo_browser_proof()
         try:
             load_policy, build_disk_governance_operator_summary = _load_disk_governance_helpers()
             disk_governance_summary = build_disk_governance_operator_summary(
@@ -312,6 +423,10 @@ class OpsService:
             gemini_api_key_present=bool((settings.gemini_api_key or "").strip()),
             model=settings.gemini_computer_use_model,
         )
+        bilibili_account_ops_gate = build_bilibili_account_ops_gate(
+            repo_browser_proof=repo_browser_proof,
+            bilibili_cookie_present=bool((getattr(settings, "bilibili_cookie", "") or "").strip()),
+        )
         disk_governance_gate = build_disk_governance_gate(disk_governance_summary)
         gates = {
             "retrieval": retrieval_gate,
@@ -319,6 +434,7 @@ class OpsService:
             "disk_governance": disk_governance_gate,
             "ui_audit": ui_audit_gate,
             "computer_use": computer_use_gate,
+            "bilibili_account_ops": bilibili_account_ops_gate,
         }
 
         inbox_items = self._build_inbox_items(
@@ -356,6 +472,7 @@ class OpsService:
             "failed_ingest_runs": failed_ingest_runs,
             "notification_deliveries": notification_deliveries,
             "provider_health": provider_health,
+            "repo_browser_proof": repo_browser_proof,
             "gates": gates,
             "inbox_items": [
                 {key: value for key, value in item.items() if key != "timestamp_rank"}

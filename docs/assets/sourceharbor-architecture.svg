@@ -1,6 +1,6 @@
 <svg width="1400" height="820" viewBox="0 0 1400 820" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="archTitle archDesc">
   <title id="archTitle">SourceHarbor architecture overview</title>
-  <desc id="archDesc">An architecture overview showing source inputs, API and worker orchestration, artifact generation, retrieval, notification delivery, MCP tools, and the web command center.</desc>
+  <desc id="archDesc">An architecture overview showing source inputs, API and worker orchestration, artifact generation, retrieval, notification delivery, MCP tools, and the reader-first web surfaces.</desc>
   <rect width="1400" height="820" rx="32" fill="#F7F1E8"/>
 
   <rect x="68" y="76" width="228" height="176" rx="26" fill="#0E2D2B"/>
@@ -33,8 +33,8 @@
   <text x="404" y="468" fill="#506561" font-family="Arial, Helvetica, sans-serif" font-size="20">Degradation notes / notifications / retrieval records</text>
 
   <rect x="124" y="582" width="356" height="156" rx="26" fill="#0E2D2B"/>
-  <text x="232" y="640" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Web Console</text>
-  <text x="176" y="680" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="18">Overview / Feed / Jobs / Settings</text>
+  <text x="212" y="640" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Web Reader</text>
+  <text x="166" y="680" fill="#C5DDD7" font-family="Arial, Helvetica, sans-serif" font-size="18">Reader / Timeline / Search / Ask / Proof</text>
 
   <rect x="522" y="582" width="356" height="156" rx="26" fill="#1E6F63"/>
   <text x="626" y="640" fill="#F8FFFD" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Retrieval</text>

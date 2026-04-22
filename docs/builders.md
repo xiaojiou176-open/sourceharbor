@@ -1,6 +1,6 @@
 # Build With SourceHarbor
 
-SourceHarbor is the builder side of the same control tower.
+SourceHarbor is the builder side of the same reader-first knowledge system.
 
 It already exposes six real builder-facing layers:
 
@@ -17,7 +17,7 @@ It now also exposes a seventh adoption layer:
 
 The safest way to read this page is:
 
-- operators use the Web command center
+- operators use the reader-first web surfaces
 - builders reuse the same truth through HTTP, MCP, CLI, SDK, or starter packs
 - public skill/bundle lanes are adoption surfaces inside the repo, not the whole repo identity
 

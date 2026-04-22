@@ -121,6 +121,32 @@ describe("ops inbox page", () => {
 					next_step: "Provide GEMINI_API_KEY.",
 					details: {},
 				},
+				bilibili_account_ops: {
+					status: "ready",
+					summary:
+						"Repo-owned Chrome proof and cookie-driven richer read-only lanes are both available.",
+					next_step:
+						"Use the stronger read-only lanes when you need richer Bilibili evidence.",
+					details: {
+						login_state: "authenticated",
+						cookie_present: true,
+					},
+				},
+			},
+			repo_browser_proof: {
+				status: "ready",
+				summary: "Repo-owned browser proof is current.",
+				artifact_path:
+					".runtime-cache/reports/runtime/repo-chrome-open-tabs.json",
+				generated_at: "2026-04-21T19:40:05Z",
+				sites: [
+					{
+						label: "bilibili_account",
+						login_state: "authenticated",
+						final_url: "https://account.bilibili.com/account/home",
+						proof_kind: "url_page_state",
+					},
+				],
 			},
 			inbox_items: [
 				{
@@ -174,6 +200,19 @@ describe("ops inbox page", () => {
 		expect(screen.getByText("YouTube")).toBeInTheDocument();
 		expect(
 			screen.getByText("Hybrid: Data API + DOM proof"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", {
+				name: "Repo-owned browser proof",
+				level: 3,
+			}),
+		).toBeInTheDocument();
+		expect(screen.getByText("bilibili_account")).toBeInTheDocument();
+		expect(screen.getByText("authenticated")).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/Repo-owned Chrome proof and cookie-driven richer read-only lanes are both available/i,
+			),
 		).toBeInTheDocument();
 	});
 });

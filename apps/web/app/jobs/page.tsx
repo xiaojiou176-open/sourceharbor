@@ -57,6 +57,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 	let job: Awaited<ReturnType<typeof apiClient.getJob>> | null = null;
 	let jobCompare: Awaited<ReturnType<typeof apiClient.getJobCompare>> | null =
 		null;
+	let jobBundle: Awaited<
+		ReturnType<typeof apiClient.getJobEvidenceBundle>
+	> | null = null;
 	let knowledgeCards: Awaited<
 		ReturnType<typeof apiClient.getJobKnowledgeCards>
 	> = [];
@@ -73,6 +76,11 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 				jobCompare = null;
 			}
 			try {
+				jobBundle = await apiClient.getJobEvidenceBundle(jobId);
+			} catch {
+				jobBundle = null;
+			}
+			try {
 				knowledgeCards = await apiClient.getJobKnowledgeCards(jobId);
 			} catch {
 				knowledgeCards = [];
@@ -83,6 +91,44 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 	const pipelineStatus = job?.pipeline_final_status
 		? toDisplayStatus(job.pipeline_final_status)
 		: null;
+	const richEvidence =
+		jobBundle &&
+		typeof jobBundle.rich_evidence === "object" &&
+		jobBundle.rich_evidence
+			? jobBundle.rich_evidence
+			: null;
+	const creatorMetadata =
+		richEvidence &&
+		typeof richEvidence.creator_metadata === "object" &&
+		richEvidence.creator_metadata
+			? (richEvidence.creator_metadata as Record<string, unknown>)
+			: null;
+	const videoMetadata =
+		richEvidence &&
+		typeof richEvidence.video_metadata === "object" &&
+		richEvidence.video_metadata
+			? (richEvidence.video_metadata as Record<string, unknown>)
+			: null;
+	const commentary =
+		richEvidence &&
+		typeof richEvidence.commentary === "object" &&
+		richEvidence.commentary
+			? (richEvidence.commentary as Record<string, unknown>)
+			: null;
+	const danmakuEvidence =
+		richEvidence &&
+		typeof richEvidence.danmaku === "object" &&
+		richEvidence.danmaku
+			? (richEvidence.danmaku as Record<string, unknown>)
+			: null;
+	const supportingArtifacts =
+		jobBundle && typeof jobBundle.artifact_manifest === "object"
+			? Object.fromEntries(
+					Object.entries(jobBundle.artifact_manifest).filter(
+						([key]) => !(key in (job?.artifacts_index ?? {})),
+					),
+				)
+			: {};
 
 	return (
 		<div className="folo-page-shell folo-unified-shell">
@@ -434,6 +480,127 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 											);
 										})}
 									</ul>
+								)}
+							</CardContent>
+						</Card>
+
+						<Card className="folo-surface border-border/70">
+							<CardHeader>
+								<h2 className="text-xl font-semibold">Richer evidence</h2>
+								<CardDescription>
+									Bilibili-specific source facts, richer platform evidence, and
+									the artifacts that support them.
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-4 text-sm">
+								{!richEvidence ? (
+									<p className="text-muted-foreground">
+										Richer evidence is not available for this job yet.
+									</p>
+								) : (
+									<>
+										{creatorMetadata ? (
+											<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+												<p className="text-xs uppercase tracking-wide text-muted-foreground">
+													Creator
+												</p>
+												<p className="mt-2 font-medium">
+													{String(
+														creatorMetadata.uploader ??
+															creatorMetadata.uploader_mid ??
+															"-",
+													)}
+												</p>
+												{creatorMetadata.uploader_url ? (
+													<a
+														href={String(creatorMetadata.uploader_url)}
+														target="_blank"
+														rel="noreferrer"
+														className="mt-2 inline-flex text-primary underline-offset-4 hover:underline"
+													>
+														{String(creatorMetadata.uploader_url)}
+													</a>
+												) : null}
+											</div>
+										) : null}
+										{videoMetadata ? (
+											<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+												<p className="text-xs uppercase tracking-wide text-muted-foreground">
+													Video facts
+												</p>
+												<dl className="mt-3 grid gap-3 sm:grid-cols-2">
+													<div>
+														<dt className="text-muted-foreground">Views</dt>
+														<dd className="font-medium">
+															{String(videoMetadata.view_count ?? "-")}
+														</dd>
+													</div>
+													<div>
+														<dt className="text-muted-foreground">Danmaku</dt>
+														<dd className="font-medium">
+															{String(videoMetadata.danmaku_count ?? "-")}
+														</dd>
+													</div>
+													<div>
+														<dt className="text-muted-foreground">Comments</dt>
+														<dd className="font-medium">
+															{String(videoMetadata.comment_count ?? "-")}
+														</dd>
+													</div>
+													<div>
+														<dt className="text-muted-foreground">Category</dt>
+														<dd className="font-medium">
+															{String(videoMetadata.category ?? "-")}
+														</dd>
+													</div>
+												</dl>
+											</div>
+										) : null}
+										{commentary ? (
+											<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+												<p className="text-xs uppercase tracking-wide text-muted-foreground">
+													Commentary
+												</p>
+												<p className="mt-2 text-muted-foreground">
+													{String(commentary.top_comment_count ?? 0)} top
+													comments ·{" "}
+													{String(commentary.reply_bucket_count ?? 0)} reply
+													buckets
+												</p>
+											</div>
+										) : null}
+										{danmakuEvidence ? (
+											<div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+												<p className="text-xs uppercase tracking-wide text-muted-foreground">
+													Danmaku
+												</p>
+												<p className="mt-2 text-muted-foreground">
+													{String(danmakuEvidence.status ?? "unknown")} ·{" "}
+													{String(danmakuEvidence.entry_count ?? 0)} sampled
+													entries
+												</p>
+											</div>
+										) : null}
+										{Object.keys(supportingArtifacts).length > 0 ? (
+											<ul className="space-y-2 text-sm">
+												{Object.entries(supportingArtifacts).map(
+													([key, value]) => (
+														<li key={`supporting-${key}`}>
+															<strong>{key}</strong>:{" "}
+															<a
+																href={buildArtifactAssetUrl(job.id, value)}
+																target="_blank"
+																rel="noreferrer"
+																className="text-primary underline-offset-4 hover:underline"
+															>
+																<code>{value}</code>
+															</a>
+														</li>
+													),
+												)}
+											</ul>
+										) : null}
+									</>
 								)}
 							</CardContent>
 						</Card>

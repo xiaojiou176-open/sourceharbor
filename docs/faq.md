@@ -2,7 +2,7 @@
 
 ## What is SourceHarbor in one sentence?
 
-It is a productized pipeline for turning long-form sources into searchable digests, traceable job runs, and delivery-ready knowledge workflows.
+It is a reader-first system for turning long-form sources into searchable knowledge, traceable jobs, and reusable delivery workflows.
 
 ## Is this a hosted service?
 
@@ -12,7 +12,7 @@ No. SourceHarbor is a public, source-first repository. You can inspect it, run i
 
 Because SourceHarbor is designed as one system with multiple entry surfaces:
 
-- operators use the web command center
+- operators use the reader-first web surfaces
 - integrations use the API
 - assistants and automation use MCP
 - background orchestration runs in the worker

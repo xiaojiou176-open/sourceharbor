@@ -35,7 +35,13 @@ def test_build_bilibili_rich_metadata_extracts_creator_stats_and_pages() -> None
             "owner": {"mid": 456, "name": "demo-up", "face": "https://img.example/avatar.jpg"},
             "stat": {"view": 9, "like": 3, "reply": 2, "danmaku": 4, "coin": 5},
             "pages": [{"cid": 99, "page": 1, "part": "Part 1", "duration": 30}],
-        }
+        },
+        creator_profile={
+            "sign": "Archive reader",
+            "level": 6,
+            "official": {"title": "Science creator"},
+        },
+        creator_relation={"follower": 3200, "following": 12},
     )
 
     assert payload["uploader_mid"] == "456"
@@ -46,3 +52,7 @@ def test_build_bilibili_rich_metadata_extracts_creator_stats_and_pages() -> None
     assert payload["chapters"][0]["title"] == "Part 1"
     assert payload["site_objects"]["owner"]["name"] == "demo-up"
     assert payload["site_objects"]["stat"]["danmaku"] == 4
+    assert payload["uploader_sign"] == "Archive reader"
+    assert payload["uploader_follower_count"] == 3200
+    assert payload["site_objects"]["creator_relation"]["follower"] == 3200
+    assert payload["site_objects"]["creator_profile"]["official_title"] == "Science creator"

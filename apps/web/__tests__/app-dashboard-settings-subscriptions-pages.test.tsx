@@ -189,9 +189,7 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(
 				screen.getByRole("link", { name: "Open specimen detail" }),
 			).toHaveAttribute("href", "/reader/demo");
-			expect(
-				screen.getByText(/If you want a softer first step/i),
-			).toBeInTheDocument();
+			expect(screen.getByText(/Need a softer sample/i)).toBeInTheDocument();
 			expect(
 				screen.getByRole("link", { name: "Open Timeline" }),
 			).toHaveAttribute("href", "/feed");
@@ -205,7 +203,9 @@ describe("dashboard/settings/subscriptions pages", () => {
 				screen.queryByRole("link", { name: "Open Search" }),
 			).not.toBeInTheDocument();
 			expect(
-				screen.getByText(/You can follow new sources after the first click/i),
+				screen.getByText(
+					/If the sample earns a second read, open the timeline, search, or source desk on purpose instead of starting there\./i,
+				),
 			).toBeInTheDocument();
 			expect(
 				screen.queryByRole("link", { name: "Open saved topics" }),
@@ -301,6 +301,22 @@ describe("dashboard/settings/subscriptions pages", () => {
 					created_at: "2026-02-01T00:00:00Z",
 					updated_at: "2026-02-01T00:00:00Z",
 				},
+				{
+					id: "sub-bili-1",
+					source_name: "Archive Reader",
+					source_value: "12345",
+					rsshub_route: "/bilibili/user/video/12345",
+					platform: "bilibili",
+					source_type: "bilibili_uid",
+					adapter_type: "rsshub_route",
+					source_url: "https://space.bilibili.com/12345",
+					category: "creator",
+					tags: [],
+					priority: 40,
+					enabled: true,
+					created_at: "2026-02-01T00:00:00Z",
+					updated_at: "2026-02-01T00:00:00Z",
+				},
 			]);
 
 			render(
@@ -317,7 +333,7 @@ describe("dashboard/settings/subscriptions pages", () => {
 				"The input is invalid. Review the fields and try again.",
 			);
 			expect(screen.getByTestId("subscription-batch-panel")).toHaveTextContent(
-				"count:1",
+				"count:2",
 			);
 			expect(screen.getByText("Source types at a glance")).toBeInTheDocument();
 			expect(screen.getAllByText("Strong support").length).toBeGreaterThan(0);
@@ -335,6 +351,12 @@ describe("dashboard/settings/subscriptions pages", () => {
 				screen.getByRole("link", { name: "Paste a source" }),
 			).toHaveAttribute("href", "#manual-source-intake-input");
 			expect(
+				screen.getByRole("button", { name: "Search on Bilibili" }),
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "Open creator space" }),
+			).toBeInTheDocument();
+			expect(
 				screen.getByRole("button", { name: "Save subscription" }),
 			).toBeInTheDocument();
 			expect(
@@ -343,6 +365,29 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(
 				screen.getByRole("button", { name: "Add source" }),
 			).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", { name: "Bilibili discovery desk" }),
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "Open hot now" }),
+			).toHaveAttribute("href", "https://www.bilibili.com/v/popular/all");
+			expect(
+				screen.getByRole("link", { name: "Open rank now" }),
+			).toHaveAttribute("href", "https://www.bilibili.com/v/popular/rank/all");
+			expect(
+				screen.getByRole("link", { name: "Open home feed" }),
+			).toHaveAttribute("href", "https://www.bilibili.com/");
+			expect(
+				screen.getByRole("link", {
+					name: "Open tracked creator: Archive Reader",
+				}),
+			).toHaveAttribute("href", "https://space.bilibili.com/12345");
+			expect(
+				screen.getByRole("textbox", { name: "Search Bilibili" }),
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("textbox", { name: "Creator UID" }),
+			).toHaveAttribute("placeholder", "12345");
 			expect(
 				screen.getByLabelText("URLs / handles / pages"),
 			).toBeInTheDocument();
@@ -421,6 +466,14 @@ describe("dashboard/settings/subscriptions pages", () => {
 			expect(
 				screen.getByRole("combobox", { name: "Platform" }),
 			).toHaveTextContent("Generic");
+			expect(
+				screen.getByRole("link", {
+					name: "Open saved sources after you paste the first one",
+				}),
+			).toHaveAttribute("href", "#tracked-universes");
+			expect(
+				screen.getByRole("link", { name: "Follow the first source" }),
+			).toHaveAttribute("href", "#manual-source-intake-input");
 			expect(
 				screen.getByRole("combobox", { name: "Source type" }),
 			).toHaveTextContent("Source URL");

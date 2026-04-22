@@ -17,7 +17,7 @@ SourceHarbor has several layers, but the public entry should stay simple:
 <p>
   <img
     src="./assets/sourceharbor-developer-flywheel.svg"
-    alt="SourceHarbor developer flywheel showing source intake, job trace, Search and Ask, MCP and API reuse, and the operator loop."
+    alt="SourceHarbor developer flywheel showing source intake, proof-rich jobs, Search and Ask, MCP and API reuse, and the operator loop."
     width="100%"
   />
 </p>
@@ -38,7 +38,7 @@ This is the shortest honest explanation for why the repo feels more product-shap
 | If you want to... | Start here | What you get |
 | :-- | :-- | :-- |
 | **Understand the product in 3 minutes** | [README.md](../README.md) | The product story, quick value, and star-worthy reasons |
-| **Get the fastest no-boot preview** | [see-it-fast.md](./see-it-fast.md) | The command center, digest feed, and job trace path without setup |
+| **Get the fastest no-boot preview** | [see-it-fast.md](./see-it-fast.md) | The reader, timeline, and proof path without setup |
 | **Run the shortest truthful path** | [start-here.md](./start-here.md) | A result-first local flow ending in jobs, feed, and proof |
 | **Open the MCP front door** | [mcp-quickstart.md](./mcp-quickstart.md) | Startup, representative tools, and the relation between MCP, API, and Web |
 | **Build on top of SourceHarbor** | [builders.md](./builders.md) | How Codex, Claude Code, OpenClaw, generic MCP clients, API consumers, public packages, and starter packs fit the current repo truth |

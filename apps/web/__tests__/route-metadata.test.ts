@@ -162,8 +162,8 @@ describe("route metadata", () => {
 			]),
 		);
 
-		expect(feedMetadata.title).toBe("Reading Feed");
-		expect(feedMetadata.description).toMatch(/digest feed/i);
+		expect(feedMetadata.title).toBe("Timeline");
+		expect(feedMetadata.description).toMatch(/timeline|digest feed/i);
 		expect(toKeywordList(feedMetadata.keywords)).toEqual(
 			expect.arrayContaining([
 				"digest feed",

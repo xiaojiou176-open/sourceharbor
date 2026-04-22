@@ -202,8 +202,9 @@ export function FormSelectField({
 			<FormFieldLabel htmlFor={fieldId} className={labelClassName}>
 				{label}
 			</FormFieldLabel>
-			<input type="hidden" name={name} value={value} />
+			<input id={`${fieldId}-value`} type="hidden" name={name} value={value} />
 			<Select
+				name={name}
 				value={selectValue}
 				onValueChange={(nextValue) => {
 					setUncontrolledValue(

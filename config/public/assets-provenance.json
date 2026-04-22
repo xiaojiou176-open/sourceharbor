@@ -4,17 +4,16 @@
     {
       "path": "docs/assets/sourceharbor-hero.svg",
       "asset_kind": "svg",
-      "surface_role": "hero",
+      "surface_role": "supporting-front-door-poster",
       "public_surfaces": [
-        "README.md",
-        "docs/see-it-fast.md"
+        "docs/media-kit.md"
       ],
       "provenance_status": "repository-tracked-source-file",
       "rights_basis": "maintainer-assertion-required",
       "sanitization_status": "non-runtime-illustration",
       "public_distribution_status": "currently-published-in-repo",
       "follow_up_required": true,
-      "notes": "Public presentation asset for the README and the no-boot tour."
+      "notes": "Supporting front-door poster asset kept in the public asset family and media kit."
     },
     {
       "path": "docs/assets/sourceharbor-architecture.svg",
@@ -35,14 +34,15 @@
       "asset_kind": "svg",
       "surface_role": "readme-front-door-preview",
       "public_surfaces": [
-        "README.md"
+        "README.md",
+        "docs/see-it-fast.md"
       ],
       "provenance_status": "repository-tracked-source-file",
       "rights_basis": "maintainer-assertion-required",
       "sanitization_status": "non-runtime-illustration",
       "public_distribution_status": "currently-published-in-repo",
       "follow_up_required": true,
-      "notes": "Front-door preview card for README-first public evaluation."
+      "notes": "Current front-door preview card for the README and the no-boot evaluation page."
     },
     {
       "path": "docs/assets/sourceharbor-developer-flywheel.svg",
@@ -64,14 +64,14 @@
       "asset_kind": "svg",
       "surface_role": "builder-loop",
       "public_surfaces": [
-        "docs/see-it-fast.md"
+        "docs/media-kit.md"
       ],
       "provenance_status": "repository-tracked-source-file",
       "rights_basis": "maintainer-assertion-required",
       "sanitization_status": "non-runtime-illustration",
       "public_distribution_status": "currently-published-in-repo",
       "follow_up_required": true,
-      "notes": "No-boot tour illustration that explains the builder-facing loop across Codex, Claude Code, MCP, and shared proof surfaces."
+      "notes": "Builder-facing supporting illustration retained in the media-kit asset family after leaving the no-boot front door."
     },
     {
       "path": "docs/assets/sourceharbor-social-preview.svg",

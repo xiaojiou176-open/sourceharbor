@@ -3,27 +3,19 @@
 <p align="center">
   <img
     src="./docs/assets/sourceharbor-studio-preview.svg"
-    alt="SourceHarbor studio preview showing source intake, digest generation, and searchable artifacts"
+    alt="SourceHarbor studio preview showing the reader, timeline, and proof surfaces"
     width="100%"
   />
 </p>
 
 <p align="center">
-  <strong>Turn long-form sources into grounded search, reader-ready briefs, and inspectable agent workflows.</strong>
+  <strong>Read long-form sources first. Open proof, search, and builder tools only when you need them.</strong>
 </p>
 
 <p align="center">
-  <a href="#see-it-in-30-seconds">See It In 30 Seconds</a>
+  <a href="./docs/see-it-fast.md">See It Fast</a>
   ·
   <a href="./docs/start-here.md">Run Locally</a>
-  ·
-  <a href="./docs/proof.md">Proof</a>
-  ·
-  <a href="./docs/builders.md">Builders</a>
-  ·
-  <a href="./docs/see-it-fast.md">No-Boot Tour</a>
-  ·
-  <a href="./docs/index.md">Docs Home</a>
 </p>
 
 <p align="center">
@@ -33,20 +25,27 @@
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/xiaojiou176-open/SourceHarbor?style=social" />
 </p>
 
-SourceHarbor helps you turn long-form sources into grounded search results,
-knowledge cards, traceable job runs, and MCP-ready operations. It stays
-source-first and proof-first: you can inspect it, run it locally, and verify
-each surface instead of trusting product copy on vibes alone.
+SourceHarbor helps you turn long-form sources into a reader-first flow of
+grounded search results, finished reading surfaces, and inspectable job runs.
+It stays source-first and proof-first: you can inspect it, run it locally, and
+verify each surface instead of trusting product copy on vibes alone.
+
+> **Current reading specimen**
+>
+> `Bilibili history milestone: the earliest surviving AV2.`
+>
+> One readable title up front. One short excerpt. Proof one click away.
 
 ## Start With One First Path
 
-Choose only one first step:
+Choose one first move:
 
 | If you want to... | Open this first | Why this is the right first door |
 | --- | --- | --- |
-| **See whether the product is worth your time** | [docs/see-it-fast.md](./docs/see-it-fast.md), then [docs/proof.md](./docs/proof.md) | start with the shop window, then inspect the evidence ladder before you boot anything |
+| **See the product first** | [docs/see-it-fast.md](./docs/see-it-fast.md), then [docs/proof.md](./docs/proof.md) | start with the reader and the evidence before you boot anything |
 | **Run one real local flow** | [docs/start-here.md](./docs/start-here.md) | this is the shortest truthful path from clone to `/reader`, `/feed`, `/search`, `/ask`, and one real job |
-| **Build on top of SourceHarbor** | [docs/builders.md](./docs/builders.md) and [docs/public-distribution.md](./docs/public-distribution.md) | these pages keep MCP, API, CLI, SDK, starter packs, and official submit/read-back truth out of the newcomer path |
+
+If you are here as a builder, skip straight to [docs/builders.md](./docs/builders.md) and [docs/public-distribution.md](./docs/public-distribution.md) after you understand the reader-first front door.
 
 If you only remember one sentence, remember this:
 
@@ -71,21 +70,6 @@ SourceHarbor is a **multi-surface product repo, not a single skill package**.
 Public starter packs and plugin-grade bundles are adoption layers inside that
 repo. They are not the whole product, and they are not raw exports of the
 internal `.agents/skills` tree.
-
-## Builder Off-Ramp
-
-If you are here as a builder, use the builder path on purpose:
-
-- **MCP / API / CLI / SDK map:** [docs/builders.md](./docs/builders.md)
-- **Official submit/read-back truth:** [docs/public-distribution.md](./docs/public-distribution.md)
-- **Public packages and starter packs:** [`packages/sourceharbor-cli`](./packages/sourceharbor-cli/README.md), [`packages/sourceharbor-sdk`](./packages/sourceharbor-sdk/README.md), [`starter-packs/README.md`](./starter-packs/README.md)
-- **Registry ownership marker:** `mcp-name: io.github.xiaojiou176-open/sourceharbor-mcp`
-
-Container truth also stays separate on purpose:
-
-- the repo newcomer path is still [docs/start-here.md](./docs/start-here.md)
-- the dedicated API image is a builder lane, not the default install story
-- core-services compose, devcontainer, and strict-CI images are runtime or infrastructure surfaces, not the product front door
 
 ## What It Does Not Claim Today
 
@@ -149,14 +133,14 @@ Start with three surfaces:
 3. **Job trace:** the evidence view behind each result.
 
 ```text
-Source -> queued job -> digest feed -> reader / job trace -> MCP / API reuse
+Source -> queued job -> timeline -> reader / proof -> MCP / API reuse
 ```
 
 ## Why Star SourceHarbor Now
 
 - **It solves the full loop, not a single step.** SourceHarbor handles subscription intake, ingestion, digest production, artifact indexing, retrieval, and notification-ready outbound lanes in one system.
 - **It exposes proof, not vague claims.** Jobs, artifacts, step summaries, CI, and local verification paths are all first-class public surfaces.
-- **It is ready for operators and agents at the same time.** Humans use the command center. Agents use API and MCP. Both point at the same pipeline.
+- **It is ready for operators and agents at the same time.** Humans use the reader-facing web surfaces. Agents use API and MCP. Both point at the same pipeline.
 - **It is already shaped like a real product.** The repository is source-first and inspectable, but the public surface is now optimized around outcomes rather than internal wiring.
 
 ## What You Get
@@ -164,7 +148,7 @@ Source -> queued job -> digest feed -> reader / job trace -> MCP / API reuse
 | Surface | What you can do | Why it matters |
 | :-- | :-- | :-- |
 | **Subscriptions** | Start from strong YouTube/Bilibili templates or widen into RSSHub and generic RSS intake through the shared backend template catalog | Build a durable intake layer without pretending every source family is equally proven |
-| **Digest feed** | Read generated summaries in one operator flow, then jump into the current reader edition when that digest already has a published doc bridge | Turn long-form content into an actionable daily reading stream without hiding the finished published-doc layer |
+| **Timeline** | Read generated summaries in one calm flow, then jump into the current reader edition when a story is ready | Turn long-form content into an actionable daily reading stream without hiding the finished published-doc layer |
 | **Search & Ask** | Search raw evidence and turn a watchlist or selected story briefing into an answer + change + citation flow on one page, with Briefings and Ask now sharing a server-owned story read-model instead of parallel browser-side selection glue | Make the knowledge layer visible without pretending every question already has a global answer engine |
 | **Job trace** | Inspect pipeline status, retries, degradations, and artifacts | Debug with evidence instead of guessing what happened |
 | **Notifications** | Configure and send digests outward when the notification lane is enabled | Push results outward instead of trapping them in a database |
@@ -185,6 +169,21 @@ Use it to choose the next page, then leave quickly:
 If you need the live operator-side log trail after a local run, start at
 `.runtime-cache/logs/components/full-stack`.
 
+## Builder Off-Ramp
+
+If you are here as a builder, use the builder path on purpose:
+
+- **MCP / API / CLI / SDK map:** [docs/builders.md](./docs/builders.md)
+- **Official submit/read-back truth:** [docs/public-distribution.md](./docs/public-distribution.md)
+- **Public packages and starter packs:** [`packages/sourceharbor-cli`](./packages/sourceharbor-cli/README.md), [`packages/sourceharbor-sdk`](./packages/sourceharbor-sdk/README.md), [`starter-packs/README.md`](./starter-packs/README.md)
+- **Registry ownership marker:** `mcp-name: io.github.xiaojiou176-open/sourceharbor-mcp`
+
+Container truth also stays separate on purpose:
+
+- the repo newcomer path is still [docs/start-here.md](./docs/start-here.md)
+- the dedicated API image is a builder lane, not the default install story
+- core-services compose, devcontainer, and strict-CI images are runtime or infrastructure surfaces, not the product front door
+
 ## Why SourceHarbor Feels Different
 
 Most repos in this space stop at one of these layers:
@@ -192,13 +191,13 @@ Most repos in this space stop at one of these layers:
 - a transcript extractor
 - a summarizer script
 - a search index
-- an internal dashboard
+- an internal operations surface
 
 SourceHarbor is built around the full knowledge flow:
 
 1. **Capture** sources continuously
 2. **Process** each item into job-backed artifacts
-3. **Read** results in a digest feed
+3. **Read** results in the timeline and finished reader
 4. **Search** generated knowledge later
 5. **Deliver** updates through configured notifications when the outbound lane is enabled
 6. **Reuse** the same surface through MCP and API
@@ -269,7 +268,7 @@ More questions are answered in [docs/faq.md](./docs/faq.md).
 - `apps/api`: FastAPI service for ingestion, jobs, artifacts, retrieval, notifications, and operator controls
 - `apps/worker`: pipeline runner, Temporal workflows, and delivery automation
 - `apps/mcp`: MCP tool surface for agents
-- `apps/web`: browser command center for operators
+- `apps/web`: reader-first web surfaces for operators and builders
 - `contracts`: shared schemas and generated contract artifacts
 - `docs`: layered public navigation, proof, and architecture
 

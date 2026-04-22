@@ -32,6 +32,7 @@ Two special cases matter in the current repo:
 - workflow-dispatch readiness receipts may be public-safe to track while still waiting on protected-environment approval
 - browser/login proof receipts can explain local operator state without turning third-party account surfaces into public product claims
 - generated required-check ledgers and current-state summaries are public-safe only when they stay aligned to the current live branch-protection contract and current HEAD; stale snapshots must be treated as historical
+- `GET /api/v1/jobs/{job_id}/bundle` may now expose public-safe richer evidence summaries such as creator metadata, video stats, danmaku counts, and comment/reply summaries; those summaries are public-safe only because they stay derived and structured rather than dumping raw authenticated payloads
 - `docs/public-distribution.md` is the public-safe home for fast-moving package, registry, and directory read-backs; other public docs should cite that ledger instead of carrying their own duplicated version or listing snapshots
 - a tracked release-ready artifact or social-preview asset is still an input to public proof, not the same thing as the current remote `main` head or a completed live platform upload
 - a tracked registry template, directory packet, or older listing note is still only an input to public proof; without a fresh live registry read-back it must not be cited as a current official listing artifact
@@ -46,6 +47,7 @@ Two special cases matter in the current repo:
   still runtime hygiene only; it cleans repo-local verification state and does
   not create any new public artifact surface
 - lightweight proxy-video files generated only to satisfy maintainer-local Gemini input constraints are runtime-only surrogate artifacts; they are part of local verification behavior, not a public distribution surface
+- repo-owned browser-proof artifacts such as `.runtime-cache/reports/runtime/repo-chrome-open-tabs.json` remain maintainer-local verification artifacts even when `/ops` turns them into a safe status summary; the raw runtime artifact itself is not a public distribution artifact
 - the old `docs/blueprints/*.md` legacy stubs have now been retired from the tracked public docs tree; the full working contracts stay in the internal planning ledger and should not surface from visitor-facing routes
 - `docs/submission/*.md` and internal UI specs may remain as thin public pointers, but the working submission packets and design handoffs stay in the maintainer-only planning ledger rather than the newcomer-facing docs path
 

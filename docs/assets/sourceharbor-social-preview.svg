@@ -1,6 +1,6 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="previewTitle previewDesc">
   <title id="previewTitle">SourceHarbor social preview</title>
-  <desc id="previewDesc">A result-first social preview for SourceHarbor showing the command center, digest feed, and job trace without text overlap.</desc>
+  <desc id="previewDesc">A reader-first social preview for SourceHarbor showing the reader, timeline, and proof surfaces without text overlap.</desc>
   <rect width="1280" height="640" rx="32" fill="#0E2D2B"/>
   <circle cx="1104" cy="94" r="148" fill="#F4B65D" fill-opacity="0.16"/>
   <circle cx="218" cy="548" r="188" fill="#2D8A76" fill-opacity="0.16"/>
@@ -8,34 +8,31 @@
   <rect x="84" y="84" width="196" height="44" rx="22" fill="#1E6F63"/>
   <text x="118" y="113" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">SourceHarbor</text>
 
-  <text x="84" y="208" fill="#FFF7EE" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="700">See proof</text>
-  <text x="84" y="286" fill="#FFF7EE" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="700">before setup</text>
-  <text x="84" y="360" fill="#CFE2DB" font-family="Arial, Helvetica, sans-serif" font-size="26">Readable digests, job traces, and</text>
-  <text x="84" y="396" fill="#CFE2DB" font-family="Arial, Helvetica, sans-serif" font-size="26">searchable outputs from one operator view.</text>
+  <text x="84" y="208" fill="#FFF7EE" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="700">Read the story</text>
+  <text x="84" y="286" fill="#FFF7EE" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="700">before the console</text>
+  <text x="84" y="360" fill="#CFE2DB" font-family="Arial, Helvetica, sans-serif" font-size="26">Reader, timeline, and proof stay one click apart.</text>
+  <text x="84" y="396" fill="#CFE2DB" font-family="Arial, Helvetica, sans-serif" font-size="26">Builders come later, only when you need them.</text>
 
   <rect x="84" y="444" width="244" height="56" rx="28" fill="#F4B65D"/>
-  <text x="118" y="480" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">No-boot first look</text>
+  <text x="118" y="480" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">See it fast</text>
 
   <rect x="694" y="96" width="502" height="446" rx="30" fill="#FFF9F2"/>
-  <rect x="724" y="126" width="442" height="70" rx="18" fill="#F1EBDD"/>
-  <text x="754" y="170" fill="#143632" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700">Command Center | Feed | Jobs</text>
+  <rect x="724" y="126" width="196" height="38" rx="19" fill="#E8F3EF"/>
+  <text x="752" y="151" fill="#1A514A" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Reading specimen</text>
 
-  <rect x="724" y="226" width="132" height="108" rx="20" fill="#113833"/>
-  <text x="742" y="264" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="15">Subscriptions</text>
-  <text x="772" y="312" fill="#F8FFFD" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">12</text>
+  <rect x="724" y="190" width="442" height="236" rx="24" fill="#FFFFFF"/>
+  <text x="752" y="228" fill="#6C7B78" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="2">FINISHED READER</text>
+  <text x="752" y="278" fill="#143632" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">Bilibili history milestone:</text>
+  <text x="752" y="318" fill="#143632" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">the earliest surviving AV2.</text>
+  <text x="752" y="354" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="21">Open one story first. Keep proof nearby.</text>
 
-  <rect x="876" y="226" width="132" height="108" rx="20" fill="#2B7F70"/>
-  <text x="914" y="264" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="17">Queued</text>
-  <text x="926" y="312" fill="#F8FFFD" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">3</text>
+  <rect x="752" y="382" width="120" height="30" rx="15" fill="#113833"/>
+  <text x="781" y="402" fill="#EAF5F1" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Reader first</text>
+  <rect x="886" y="382" width="122" height="30" rx="15" fill="#E8F3EF"/>
+  <text x="914" y="402" fill="#1A514A" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Proof nearby</text>
+  <rect x="1022" y="382" width="122" height="30" rx="15" fill="#F1EBDD"/>
+  <text x="1047" y="402" fill="#7A5A17" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Builders later</text>
 
-  <rect x="1028" y="226" width="138" height="108" rx="20" fill="#F4B65D"/>
-  <text x="1068" y="264" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="17">Alerts</text>
-  <text x="1088" y="312" fill="#0E2D2B" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">1</text>
-
-  <rect x="724" y="364" width="442" height="72" rx="20" fill="#FFFFFF"/>
-  <text x="752" y="406" fill="#143632" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">AI Weekly</text>
-  <text x="900" y="406" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="19">YouTube | Tech Channel</text>
-
-  <rect x="724" y="458" width="442" height="54" rx="18" fill="#F1EBDD"/>
-  <text x="752" y="492" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="19">job-abcdef123 | succeeded | artifact bundle</text>
+  <rect x="724" y="448" width="442" height="64" rx="20" fill="#F1EBDD"/>
+  <text x="752" y="488" fill="#536865" font-family="Arial, Helvetica, sans-serif" font-size="19">Then inspect proof, search, or builder tools only on purpose.</text>
 </svg>

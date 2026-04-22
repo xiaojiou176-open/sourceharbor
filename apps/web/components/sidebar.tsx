@@ -104,6 +104,16 @@ type NavSection = {
 	items: NavItem[];
 };
 
+function readMobileViewport(): boolean {
+	if (
+		typeof window === "undefined" ||
+		typeof window.matchMedia !== "function"
+	) {
+		return false;
+	}
+	return window.matchMedia("(max-width: 768px)").matches;
+}
+
 function SidebarNavContent({
 	collapsed,
 	subscriptions,
@@ -554,8 +564,7 @@ export function Sidebar({
 	apiHealthLabel,
 }: SidebarProps) {
 	const pathname = usePathname();
-	const [collapsed, setCollapsed] = useState(false);
-	const [isMobile, setIsMobile] = useState(false);
+	const [isMobile, setIsMobile] = useState(readMobileViewport);
 	const frontstageFocused =
 		pathname === "/" ||
 		pathname.startsWith("/reader") ||
@@ -567,6 +576,9 @@ export function Sidebar({
 		pathname.startsWith("/trends") ||
 		pathname.startsWith("/briefings") ||
 		pathname.startsWith("/knowledge");
+	const [collapsed, setCollapsed] = useState(
+		() => readMobileViewport() || frontstageFocused,
+	);
 
 	useEffect(() => {
 		if (

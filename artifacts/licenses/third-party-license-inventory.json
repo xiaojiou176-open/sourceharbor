@@ -373,7 +373,7 @@
     },
     {
       "name": "lxml",
-      "version": "6.0.2",
+      "version": "6.1.0",
       "license": "BSD-3-Clause",
       "license_source": "license-field",
       "classifiers": [],
@@ -664,9 +664,9 @@
     },
     {
       "name": "python-dotenv",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "license": "BSD-3-Clause",
-      "license_source": "license-expression",
+      "license_source": "license-field",
       "classifiers": [],
       "summary": "Read key-value pairs from a .env file and set them as environment variables",
       "homepage": "Source, https://github.com/theskumar/python-dotenv"

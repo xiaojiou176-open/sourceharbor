@@ -6,24 +6,16 @@ This page is for fast evaluation. It is not a hosted demo, cloud sandbox, or one
 
 The goal here is simple:
 
-1. show what SourceHarbor looks like
-2. show what comes out of it
+1. show what SourceHarbor feels like when you read it
+2. show what the finished output actually looks like
 3. let you decide whether it is worth a deeper evaluation
 
 If you like what you see here, the next step is [run it locally](./start-here.md), not "open the live app."
 
 <p>
   <img
-    src="./assets/sourceharbor-hero.svg"
-    alt="SourceHarbor first-look preview showing the command center, digest feed, and job trace surfaces."
-    width="100%"
-  />
-</p>
-
-<p>
-  <img
-    src="./assets/sourceharbor-builder-loop.svg"
-    alt="SourceHarbor builder-facing loop showing how Codex, Claude Code, MCP clients, and operators reuse the same jobs, retrieval, and proof surfaces."
+    src="./assets/sourceharbor-studio-preview.svg"
+    alt="SourceHarbor first-look preview showing one finished reading sample with proof nearby."
     width="100%"
   />
 </p>
@@ -32,11 +24,11 @@ If you like what you see here, the next step is [run it locally](./start-here.md
 
 SourceHarbor is not just a summarizer.
 
-It is a full intake-to-digest loop:
+It is a full intake-to-reading loop:
 
 - sources come in from YouTube, Bilibili, and RSS
-- a job-backed pipeline processes each item
-- operators read the result in a digest flow
+- a job-backed pipeline processes each item into a readable surface
+- operators read the result in a calm timeline flow
 - agents reuse the same evidence through API and MCP
 
 The source story is intentionally uneven on purpose:
@@ -46,37 +38,37 @@ The source story is intentionally uneven on purpose:
 
 ## The Three Surfaces That Matter First
 
-### 1. Command Center
+### 1. Reader
 
-This is the operator home base.
+This is the finished reading surface.
 
 What you should picture:
 
-- subscription count
-- discovered videos
-- queued and failed jobs
-- one place to trigger intake and inspect recent activity
+- one finished reading surface
+- one clear title worth opening
+- source identity and proof nearby, not in front
+- a calm desk instead of a dashboard
 
 Why it matters:
 
-- it turns the repo from "a bunch of scripts" into a usable operating surface
+- it proves the repo is trying to become a reading product, not just a processing pipeline
 
 ### 2. Timeline
 
-This is the reading surface.
+This is the reading desk.
 
 Representative current feed shape:
 
-- title: `AI Weekly`
-- source label: `YouTube · Tech Channel`
-- category label: `Tech`
-- body path: digest markdown plus artifact metadata
+- title: `Bilibili history milestone: the earliest surviving AV2`
+- source label: `Bilibili · archive reading`
+- category label: `Misc`
+- body path: finished reader note plus nearby proof
 
 Why it matters:
 
-- the output is meant to be read, not just stored
+- the output is meant to be read as one calm story, not just stored as pipeline exhaust
 
-### 3. Job Trace
+### 3. Proof
 
 This is the evidence surface.
 
@@ -94,7 +86,7 @@ Why it matters:
 
 ## What The Result Looks Like
 
-SourceHarbor's digest artifact template already tells the story of the output shape:
+SourceHarbor's reading artifact template already tells the story of the output shape:
 
 ```markdown
 # <title>
@@ -115,7 +107,7 @@ SourceHarbor's digest artifact template already tells the story of the output sh
 That is the key idea:
 
 - not just transcript text
-- not just one summary blob
+- not just one collapsed summary blob
 - a reusable artifact with traceable structure
 
 ## The 60-Second Evaluation Path
@@ -124,28 +116,25 @@ If you want confidence without booting the full stack yet:
 
 1. Read [README.md](../README.md) for the public story.
 2. Read [proof.md](./proof.md) for the evidence ladder.
-3. Read [starter-packs/README.md](../starter-packs/README.md) if you want the public CLI / SDK / Codex / Claude Code starter surface.
-4. Read [docs/compat/openclaw.md](./compat/openclaw.md) if you specifically care about the new first-cut OpenClaw starter pack and its still-honest boundary.
-5. Read [samples/README.md](./samples/README.md) if you want the clearly labeled sample corpus path.
-6. Read [architecture.md](./architecture.md) if you want the system map.
+3. Read [start-here.md](./start-here.md) if you want the shortest truthful local run.
+4. Read [samples/README.md](./samples/README.md) if you want the clearly labeled sample corpus path.
+5. Read [architecture.md](./architecture.md) only after the front door and proof feel clear.
 
 If you want a real local run after that, go to [start-here.md](./start-here.md).
 
-## Why This Attracts Builders
+## If You Are Here As A Builder
 
-If you are evaluating whether this repo is worth starring, forking, or maintaining, this is the shortest honest filter:
+Do not start here by default. Start with the reader-first sample first, then open the builder lane on purpose:
 
-| You care about... | SourceHarbor answer |
-| --- | --- |
-| **Codex / Claude Code fit** | already exposed through MCP + HTTP API, with real Search / Ask / Job Trace surfaces behind it |
-| **AI product truth instead of AI vibes** | proof, runtime truth, and project status all explain what is shipped, what is gated, and what is still a bet |
-| **A repo that feels like a product, not a pile of scripts** | command center, digest feed, job trace, watchlists, trends, bundles, and sample playground all exist as coherent front doors |
-| **A contribution surface that is understandable** | builder docs, compare docs, see-it-fast, and public truth surfaces reduce the amount of archaeology required before contributing |
+- [docs/builders.md](./builders.md)
+- [docs/public-distribution.md](./public-distribution.md)
+- [starter-packs/README.md](../starter-packs/README.md)
+- [docs/compat/openclaw.md](./compat/openclaw.md)
 
-The honest lure is not "AI magic." It is that SourceHarbor already gives builders:
+## Builder Off-Ramp
 
-- a **Codex / Claude Code-friendly** MCP and HTTP API surface
-- a **repo-local CLI substrate** through `./bin/sourceharbor help` when they want one discoverable command surface
-- a **public packaged CLI and public TypeScript SDK** when they want versionable install/use examples without copying internal code
-- a **proof-first** story that names external gates instead of hiding them
-- a **compounder layer** worth revisiting when you care about watchlists, trends, and evidence bundles
+If you are here as a builder, leave this page early and use the builder surfaces on purpose:
+
+- [docs/builders.md](./builders.md)
+- [docs/public-distribution.md](./public-distribution.md)
+- [starter-packs/README.md](../starter-packs/README.md)

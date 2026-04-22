@@ -191,10 +191,14 @@ def test_local_private_ledger_migration_copies_and_then_skips_unchanged(tmp_path
 
     target = tmp_path / ".runtime-cache" / "evidence" / "ai-ledgers" / plan.name
     receipts = tmp_path / ".runtime-cache" / "evidence" / "ai-ledgers" / ".migration-receipts.json"
+    target_meta = target.with_name(f"{target.name}.meta.json")
+    receipts_meta = receipts.with_name(f"{receipts.name}.meta.json")
     assert target.is_file()
     assert target.read_text(encoding="utf-8") == "plan body"
     assert plan.is_file()
     assert receipts.is_file()
+    assert target_meta.is_file()
+    assert receipts_meta.is_file()
     assert first["summary"]["copied_count"] == 1
     assert second["summary"]["up_to_date_count"] == 1
 
