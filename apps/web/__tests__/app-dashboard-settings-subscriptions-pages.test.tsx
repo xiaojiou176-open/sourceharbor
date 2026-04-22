@@ -8,6 +8,7 @@ import SubscriptionsPage from "@/app/subscriptions/page";
 
 const mockListSubscriptions = vi.fn();
 const mockListSubscriptionTemplates = vi.fn();
+const mockListVendorSignalTemplates = vi.fn();
 const mockListVideos = vi.fn();
 const mockListIngestRuns = vi.fn();
 const mockGetIngestRun = vi.fn();
@@ -49,6 +50,8 @@ vi.mock("@/lib/api/client", () => ({
 		listSubscriptions: (...args: unknown[]) => mockListSubscriptions(...args),
 		listSubscriptionTemplates: (...args: unknown[]) =>
 			mockListSubscriptionTemplates(...args),
+		listVendorSignalTemplates: (...args: unknown[]) =>
+			mockListVendorSignalTemplates(...args),
 		listVideos: (...args: unknown[]) => mockListVideos(...args),
 		listIngestRuns: (...args: unknown[]) => mockListIngestRuns(...args),
 		getIngestRun: (...args: unknown[]) => mockGetIngestRun(...args),
@@ -159,6 +162,57 @@ describe("dashboard/settings/subscriptions pages", () => {
 						"Feed quality varies a lot. If the feed is noisy or incomplete, the intake surface should stay honest about that.",
 					evidence_note:
 						"Use Source value for the exact feed URL; Source URL stays optional unless you want to store the same feed URL explicitly.",
+				},
+			],
+		});
+		mockListVendorSignalTemplates.mockResolvedValue({
+			signal_layers: [
+				{
+					id: "confirmed",
+					label: "Confirmed truth",
+					description: "Official channels first.",
+				},
+				{
+					id: "observation",
+					label: "Observation layer",
+					description: "Fast signals later.",
+				},
+			],
+			vendors: [
+				{
+					id: "openai",
+					label: "OpenAI",
+					description: "Track official OpenAI channels.",
+					official_first_move: "Start with changelog and status.",
+					x_policy_summary: "Treat X as observation only.",
+					starter_watchlist: {
+						name: "OpenAI signals",
+						matcher_type: "source_match",
+						matcher_value: "openai",
+						delivery_channel: "dashboard",
+						briefing_goal: "What changed across official OpenAI channels this week?",
+					},
+					confirmation_chain: [],
+					channels: [
+						{
+							id: "openai-api-changelog",
+							label: "API changelog",
+							url: "https://developers.openai.com/api/docs/changelog",
+							channel_kind: "changelog",
+							signal_layer: "confirmed",
+							why_it_matters: "Contract truth.",
+							ingest_mode: "manual_url",
+						},
+						{
+							id: "openai-x",
+							label: "OpenAI on X",
+							url: "https://x.com/OpenAI",
+							channel_kind: "x_account",
+							signal_layer: "observation",
+							why_it_matters: "Fast hints.",
+							ingest_mode: "link_only",
+						},
+					],
 				},
 			],
 		});

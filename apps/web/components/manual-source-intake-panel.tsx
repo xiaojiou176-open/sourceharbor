@@ -74,6 +74,7 @@ type Props = {
 	copy: Copy;
 	sessionToken?: string;
 	headingLevel?: "h2" | "h3";
+	initialRawInput?: string;
 };
 
 function statusTone(
@@ -168,9 +169,10 @@ export function ManualSourceIntakePanel({
 	copy,
 	sessionToken,
 	headingLevel = "h3",
+	initialRawInput = "",
 }: Props) {
 	const effectiveSessionToken = resolveWriteSessionToken(sessionToken);
-	const [rawInput, setRawInput] = useState("");
+	const [rawInput, setRawInput] = useState(initialRawInput);
 	const [category, setCategory] = useState<SubscriptionCategory>("misc");
 	const [tags, setTags] = useState("");
 	const [enabled, setEnabled] = useState(true);

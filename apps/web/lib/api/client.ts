@@ -14,22 +14,24 @@ function syncSdkApiBaseUrl(): void {
 	process.env.NEXT_PUBLIC_API_BASE_URL = resolveApiBaseUrl();
 }
 
-const methodNames = Object.keys(sdkApiClient) as Array<keyof WebApiClient>;
-
-// Keep the SDK's full method surface, but re-sync the browser-safe app-local API
-// origin before each call so client bundles do not fall back to the SDK default
-// localhost:9000 when Next public env injection is not visible inside the package.
-export const apiClient = Object.fromEntries(
-	methodNames.map((methodName) => [
-		methodName,
-		(...args: unknown[]) => {
+// Keep the SDK's full method surface, but resolve it dynamically instead of
+// snapshotting method names once. That way newly added SDK methods cannot get
+// dropped by the app-local wrapper and turn into server-side page errors.
+export const apiClient = new Proxy(sdkApiClient as WebApiClient, {
+	get(target, property, receiver) {
+		const value = Reflect.get(target, property, receiver);
+		if (typeof value !== "function") {
+			return value;
+		}
+		return (...args: unknown[]) => {
 			syncSdkApiBaseUrl();
-			const method = sdkApiClient[methodName] as (
-				...methodArgs: unknown[]
-			) => unknown;
+			const method = Reflect.get(target, property, receiver);
+			if (typeof method !== "function") {
+				return method;
+			}
 			return method(...args);
-		},
-	]),
-) as WebApiClient;
+		};
+	},
+}) as WebApiClient;
 
 export { createSourceHarborClient };

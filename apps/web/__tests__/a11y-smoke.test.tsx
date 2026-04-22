@@ -11,6 +11,7 @@ import SubscriptionsPage from "@/app/subscriptions/page";
 
 const mockListSubscriptions = vi.fn();
 const mockListSubscriptionTemplates = vi.fn();
+const mockListVendorSignalTemplates = vi.fn();
 const mockListWatchlists = vi.fn();
 const mockListVideos = vi.fn();
 const mockListIngestRuns = vi.fn();
@@ -50,6 +51,8 @@ vi.mock("@/lib/api/client", () => ({
 		listSubscriptions: (...args: unknown[]) => mockListSubscriptions(...args),
 		listSubscriptionTemplates: (...args: unknown[]) =>
 			mockListSubscriptionTemplates(...args),
+		listVendorSignalTemplates: (...args: unknown[]) =>
+			mockListVendorSignalTemplates(...args),
 		listWatchlists: (...args: unknown[]) => mockListWatchlists(...args),
 		listVideos: (...args: unknown[]) => mockListVideos(...args),
 		listIngestRuns: (...args: unknown[]) => mockListIngestRuns(...args),
@@ -128,6 +131,48 @@ describe("a11y smoke", () => {
 					supports_video_pipeline: false,
 					evidence_note:
 						"Substrate does not block RSSHub universe, but routes are not claimed as individually verified.",
+				},
+			],
+		});
+		mockListVendorSignalTemplates.mockResolvedValue({
+			signal_layers: [
+				{
+					id: "confirmed",
+					label: "Confirmed truth",
+					description: "Official channels first.",
+				},
+				{
+					id: "observation",
+					label: "Observation layer",
+					description: "Fast signals later.",
+				},
+			],
+			vendors: [
+				{
+					id: "openai",
+					label: "OpenAI",
+					description: "Track official OpenAI channels.",
+					official_first_move: "Start with changelog and status.",
+					x_policy_summary: "Treat X as observation only.",
+					starter_watchlist: {
+						name: "OpenAI signals",
+						matcher_type: "source_match",
+						matcher_value: "openai",
+						delivery_channel: "dashboard",
+						briefing_goal: "What changed across official OpenAI channels this week?",
+					},
+					confirmation_chain: [],
+					channels: [
+						{
+							id: "openai-api-changelog",
+							label: "API changelog",
+							url: "https://developers.openai.com/api/docs/changelog",
+							channel_kind: "changelog",
+							signal_layer: "confirmed",
+							why_it_matters: "Contract truth.",
+							ingest_mode: "manual_url",
+						},
+					],
 				},
 			],
 		});

@@ -14,6 +14,7 @@ import { ManualSourceIntakePanel } from "@/components/manual-source-intake-panel
 import { SourceIdentityCard } from "@/components/source-identity-card";
 import { SubmitButton } from "@/components/submit-button";
 import { SubscriptionBatchPanel } from "@/components/subscription-batch-panel";
+import { SignalStrip } from "@/components/signal-strip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,7 @@ import { apiClient } from "@/lib/api/client";
 import type {
 	SubscriptionTemplate,
 	SubscriptionTemplateCatalogResponse,
+	VendorSignalCatalogResponse,
 } from "@/lib/api/types";
 import {
 	editorialMono,
@@ -55,6 +57,7 @@ type SubscriptionsPageProps = {
 
 type TemplatePresentation = SubscriptionTemplate;
 type SupportTier = SubscriptionTemplateCatalogResponse["support_tiers"][number];
+type VendorSignalVendor = VendorSignalCatalogResponse["vendors"][number];
 
 const CATEGORY_KEYS = ["misc", "tech", "creator", "macro", "ops"] as const;
 
@@ -175,17 +178,52 @@ function templatesForSupportTier(
 	return templates.filter((template) => template.support_tier === supportTier);
 }
 
+function vendorSignalBadgeClass(layer: string): string {
+	if (layer === "confirmed") {
+		return "border-emerald-500/40 bg-emerald-500/10 text-emerald-700";
+	}
+	return "border-amber-500/40 bg-amber-500/10 text-amber-700";
+}
+
+function buildVendorWatchlistHref(vendor: VendorSignalVendor): string {
+	const params = new URLSearchParams({
+		compose: "1",
+		name: vendor.starter_watchlist.name,
+		matcher_type: vendor.starter_watchlist.matcher_type,
+		matcher_value: vendor.starter_watchlist.matcher_value,
+		delivery_channel: vendor.starter_watchlist.delivery_channel,
+	});
+	return `/watchlists?${params.toString()}#create-watchlist`;
+}
+
+function buildVendorRawInputHref(vendor: VendorSignalVendor): string {
+	const firstConfirmed = vendor.channels.find(
+		(channel) => channel.signal_layer === "confirmed",
+	);
+	if (!firstConfirmed) {
+		return "#manual-source-intake-input";
+	}
+	return `/subscriptions?raw_input=${encodeURIComponent(firstConfirmed.url)}#manual-source-intake-input`;
+}
+
 export default async function SubscriptionsPage({
 	searchParams,
 }: SubscriptionsPageProps) {
 	const copy = getLocaleMessages().subscriptionsPage;
-	const { status, code, template } = await resolveSearchParams(searchParams, [
+	const {
+		status,
+		code,
+		template,
+		raw_input: rawInput,
+	} = await resolveSearchParams(searchParams, [
 		"status",
 		"code",
 		"template",
+		"raw_input",
 	] as const);
 	const sessionToken = getActionSessionTokenForForm();
-	const [subscriptionsResult, templateCatalogResult] = await Promise.all([
+	const [subscriptionsResult, templateCatalogResult, vendorCatalogResult] =
+		await Promise.all([
 		apiClient
 			.listSubscriptions()
 			.then((data) => ({ data, errorCode: null as string | null }))
@@ -199,13 +237,24 @@ export default async function SubscriptionsPage({
 			.catch(() => ({
 				data: {
 					support_tiers: [],
-					templates: [],
-				} satisfies SubscriptionTemplateCatalogResponse,
+				templates: [],
+			} satisfies SubscriptionTemplateCatalogResponse,
+				errorCode: "ERR_REQUEST_FAILED",
+			})),
+		apiClient
+			.listVendorSignalTemplates()
+			.then((data) => ({ data, errorCode: null as string | null }))
+			.catch(() => ({
+				data: {
+					signal_layers: [],
+					vendors: [],
+				} satisfies VendorSignalCatalogResponse,
 				errorCode: "ERR_REQUEST_FAILED",
 			})),
 	]);
 	const subscriptions = subscriptionsResult.data;
 	const templateCatalog = templateCatalogResult.data;
+	const vendorCatalog = vendorCatalogResult.data;
 	const templates = normalizeTemplateCatalog(templateCatalog);
 	const platformOptions = uniqueTemplateValues(
 		templates,
@@ -365,12 +414,141 @@ export default async function SubscriptionsPage({
 				</Card>
 			) : null}
 
+			{vendorCatalog.vendors.length > 0 ? (
+				<Card
+					id="vendor-sources"
+					className="folo-surface border-border/70 bg-background/95"
+				>
+					<CardHeader className="gap-2">
+						<p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+							Vendor radar
+						</p>
+						<h2 className={`text-2xl font-semibold ${editorialSerif.className}`}>
+							Vendor sources
+						</h2>
+						<CardDescription>
+							Follow official changelog, release-note, status, and blog lanes
+							first. Keep X as a fast signal later, not as the main truth source.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="grid gap-4 xl:grid-cols-2">
+							{vendorCatalog.vendors.map((vendor) => {
+								const counts = {
+									confirmed: vendor.channels.filter(
+										(channel) => channel.signal_layer === "confirmed",
+									).length,
+									observation: vendor.channels.filter(
+										(channel) => channel.signal_layer === "observation",
+									).length,
+								};
+								return (
+									<article
+										key={vendor.id}
+										className="rounded-[1.35rem] border border-border/60 bg-muted/18 p-4"
+									>
+										<div className="space-y-3">
+											<div className="flex flex-wrap items-center gap-2">
+												<p className="text-lg font-semibold text-foreground">
+													{vendor.label}
+												</p>
+												<Badge
+													variant="outline"
+													className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700"
+												>
+													Confirmed truth first
+												</Badge>
+											</div>
+											<p className="text-sm text-muted-foreground">
+												{vendor.description}
+											</p>
+											<SignalStrip
+												title="Signal mix"
+												description={vendor.official_first_move}
+												items={[
+													{
+														label: "Confirmed truth",
+														value: counts.confirmed,
+														valueLabel: String(counts.confirmed),
+														tone: "success",
+													},
+													{
+														label: "Observation layer",
+														value: counts.observation,
+														valueLabel: String(counts.observation),
+														tone: "warning",
+														detail: vendor.x_policy_summary,
+													},
+												]}
+											/>
+											<div className="flex flex-wrap gap-2">
+												<Button asChild variant="hero" size="sm">
+													<Link href={buildVendorRawInputHref(vendor)}>
+														Paste first confirmed source
+													</Link>
+												</Button>
+												<Button asChild variant="outline" size="sm">
+													<Link href={buildVendorWatchlistHref(vendor)}>
+														Create vendor watchlist
+													</Link>
+												</Button>
+											</div>
+											<details className="rounded-xl border border-border/60 bg-background/65 p-4">
+												<summary className="cursor-pointer text-sm font-medium text-foreground">
+													Channel map later
+												</summary>
+												<ul className="mt-3 space-y-3">
+													{vendor.channels.map((channel) => (
+														<li
+															key={channel.id}
+															className="rounded-lg border border-border/50 bg-muted/20 p-3"
+														>
+															<div className="flex flex-wrap items-center gap-2">
+																<p className="font-medium text-foreground">
+																	{channel.label}
+																</p>
+																<Badge
+																	variant="outline"
+																	className={vendorSignalBadgeClass(
+																		channel.signal_layer,
+																	)}
+																>
+																	{vendorCatalog.signal_layers.find(
+																		(item) => item.id === channel.signal_layer,
+																	)?.label ?? channel.signal_layer}
+																</Badge>
+															</div>
+															<p className="mt-2 text-sm text-muted-foreground">
+																{channel.why_it_matters}
+															</p>
+															<a
+																href={channel.url}
+																target="_blank"
+																rel="noreferrer"
+																className="mt-2 inline-flex text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+															>
+																Open official source
+															</a>
+														</li>
+													))}
+												</ul>
+											</details>
+										</div>
+									</article>
+								);
+							})}
+						</div>
+					</CardContent>
+				</Card>
+			) : null}
+
 			<section className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:items-start">
 				<section id="manual-source-intake" className="xl:order-2">
 					<ManualSourceIntakePanel
 						copy={copy.manualIntake}
 						sessionToken={sessionToken}
 						headingLevel="h2"
+						initialRawInput={rawInput}
 					/>
 				</section>
 
@@ -426,7 +604,26 @@ export default async function SubscriptionsPage({
 							)}
 						</div>
 					</details>
-					<BilibiliDiscoveryDesk trackedCreators={bilibiliTrackedCreators} />
+					<details className="group rounded-xl border border-border/70 bg-card text-card-foreground folo-surface">
+						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-6 marker:content-none [&::-webkit-details-marker]:hidden">
+							<div className="space-y-1">
+								<p className="text-lg font-semibold text-foreground">
+									Bilibili discovery later
+								</p>
+								<p className="text-sm text-muted-foreground">
+									Keep the starter path focused on vendor sources or one pasted
+									source first. Open Bilibili discovery only when you want to
+									widen the intake universe.
+								</p>
+							</div>
+							<span className="rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground transition group-open:text-foreground">
+								Later
+							</span>
+						</summary>
+						<div className="border-t border-border/50 px-6 pb-6 pt-4">
+							<BilibiliDiscoveryDesk trackedCreators={bilibiliTrackedCreators} />
+						</div>
+					</details>
 				</section>
 			</section>
 

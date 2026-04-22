@@ -223,6 +223,10 @@ def test_subscriptions_manage_supports_list_upsert_remove() -> None:
         is True
     )
     assert (
+        mcp.tools["sourceharbor.subscriptions.manage"](action="list_vendor_signals")["ok"]
+        is True
+    )
+    assert (
         mcp.tools["sourceharbor.subscriptions.manage"](
             action="upsert",
             platform="youtube",
@@ -253,17 +257,18 @@ def test_subscriptions_manage_supports_list_upsert_remove() -> None:
     assert mcp.tools["sourceharbor.subscriptions.manage"](action="remove", id=UUID_1)["ok"] is True
 
     assert calls[0]["method"] == "GET"
-    assert calls[1]["method"] == "POST"
+    assert calls[1]["path"] == "/api/v1/subscriptions/vendor-signals"
     assert calls[2]["method"] == "POST"
-    assert calls[3]["path"] == "/api/v1/subscriptions/manual-intake"
-    assert calls[3]["kwargs"]["json_body"] == {
+    assert calls[3]["method"] == "POST"
+    assert calls[4]["path"] == "/api/v1/subscriptions/manual-intake"
+    assert calls[4]["kwargs"]["json_body"] == {
         "raw_input": "https://www.youtube.com/watch?v=demo",
         "category": "creator",
         "tags": ["today"],
         "priority": 75,
         "enabled": False,
     }
-    assert calls[4]["method"] == "DELETE"
+    assert calls[5]["method"] == "DELETE"
 
 
 def test_notifications_manage_supports_get_set_send_daily_and_category_send() -> None:

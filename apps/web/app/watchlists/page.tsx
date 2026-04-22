@@ -10,6 +10,7 @@ import {
 	FormSelectField,
 } from "@/components/form-field";
 import { SignalStrip } from "@/components/signal-strip";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -27,6 +28,7 @@ import {
 	type SearchParamsInput,
 } from "@/lib/search-params";
 import { buildProductMetadata } from "@/lib/seo";
+import type { VendorSignalCatalogResponse } from "@/lib/api/types";
 
 const watchlistsCopy = getLocaleMessages().watchlistsPage;
 
@@ -65,28 +67,61 @@ export default async function WatchlistsPage({
 		code,
 		watchlist_id: watchlistId,
 		compose,
+		name,
+		matcher_type: matcherTypeParam,
+		matcher_value: matcherValueParam,
+		delivery_channel: deliveryChannelParam,
 	} = await resolveSearchParams(searchParams, [
 		"status",
 		"code",
 		"watchlist_id",
 		"compose",
+		"name",
+		"matcher_type",
+		"matcher_value",
+		"delivery_channel",
 	] as const);
 	const sessionToken = getActionSessionTokenForForm();
 
-	const [watchlistsResult, opsResult] = await Promise.all([
+	const [watchlistsResult, opsResult, vendorCatalogResult] = await Promise.all([
 		apiClient
 			.listWatchlists()
 			.then((items) => ({ items, error: false }))
 			.catch(() => ({ items: [], error: true })),
 		apiClient
 			.getOpsInbox({ limit: 4, window_hours: 24 })
+				.then((payload) => ({ payload, error: false }))
+				.catch(() => ({ payload: null, error: true })),
+		apiClient
+			.listVendorSignalTemplates()
 			.then((payload) => ({ payload, error: false }))
-			.catch(() => ({ payload: null, error: true })),
+			.catch(() => ({
+				payload: {
+					signal_layers: [],
+					vendors: [],
+				} satisfies VendorSignalCatalogResponse,
+				error: true,
+			})),
 	]);
 
 	const watchlists = watchlistsResult.items;
+	const vendorCatalog = vendorCatalogResult.payload;
 	const editingWatchlist = watchlistId.trim()
 		? (watchlists.find((item) => item.id === watchlistId.trim()) ?? null)
+		: null;
+	const starterDefaults = {
+		name: name.trim(),
+		matcherType: matcherTypeParam.trim() || "topic_key",
+		matcherValue: matcherValueParam.trim(),
+		deliveryChannel: deliveryChannelParam.trim() || "dashboard",
+	};
+	const starterVendor = !editingWatchlist
+		? vendorCatalog.vendors.find(
+				(vendor) =>
+					vendor.starter_watchlist.name === starterDefaults.name ||
+					(vendor.starter_watchlist.matcher_type === starterDefaults.matcherType &&
+						vendor.starter_watchlist.matcher_value === starterDefaults.matcherValue),
+			) ?? null
 		: null;
 	const trendWatchlist = editingWatchlist ?? watchlists[0] ?? null;
 	const trendResult = trendWatchlist
@@ -109,7 +144,9 @@ export default async function WatchlistsPage({
 	const selectedStoryRoutes =
 		selectedStory?.routes ?? briefingPageResult.payload?.routes;
 	const openCreateWatchlist =
-		compose.trim() === "1" || Boolean(editingWatchlist);
+		compose.trim() === "1" ||
+		Boolean(editingWatchlist) ||
+		Boolean(starterDefaults.name || starterDefaults.matcherValue);
 	const compounderFrontDoorHref = trendWatchlist
 		? `/trends?watchlist_id=${encodeURIComponent(trendWatchlist.id)}`
 		: "/trends";
@@ -168,7 +205,7 @@ export default async function WatchlistsPage({
 
 			{alert}
 
-			{isReadyEmpty ? (
+			{isReadyEmpty && !starterVendor ? (
 				<Card className="folo-surface border-border/70">
 					<CardHeader>
 						<CardTitle>{copy.emptyReadyTitle}</CardTitle>
@@ -330,10 +367,95 @@ export default async function WatchlistsPage({
 				) : null}
 
 				<div className="space-y-4">
+					{starterVendor ? (
+						<Card className="folo-surface border-primary/25 bg-primary/5">
+							<CardHeader>
+								<CardTitle>Continue with {starterVendor.label}</CardTitle>
+								<CardDescription>
+									Step 2 of 3. Name the watchlist, confirm the matcher, then
+									use briefings to read the current story, the recent changes,
+									and the receipts together.
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								<div className="flex flex-wrap items-center gap-2">
+									<Badge variant="outline">Starter watchlist</Badge>
+									<Badge variant="outline">
+										{starterVendor.starter_watchlist.matcher_value}
+									</Badge>
+								</div>
+								<p className="text-sm text-muted-foreground">
+									{starterVendor.starter_watchlist.briefing_goal}
+								</p>
+								<div className="flex flex-wrap gap-3">
+									<Button asChild variant="outline" size="sm">
+										<Link href="/subscriptions#vendor-sources">
+											Back to vendor sources
+										</Link>
+									</Button>
+									<Button asChild variant="outline" size="sm">
+										<Link href="/briefings">See the payoff later</Link>
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+					) : null}
+
+					{vendorCatalog.vendors.length > 0 && !starterVendor ? (
+						<Card className="folo-surface border-border/70">
+							<CardHeader>
+								<CardTitle>Vendor starters</CardTitle>
+								<CardDescription>
+									Start from the vendor you already care about. Keep the
+									briefing goal and signal mix visible, then tune matching later.
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="grid gap-3">
+								{vendorCatalog.vendors.map((vendor) => (
+									<div
+										key={vendor.id}
+										className="rounded-lg border border-border/60 bg-muted/20 p-4"
+									>
+										<div className="space-y-2">
+											<div className="flex flex-wrap items-center gap-2">
+												<p className="font-medium text-foreground">
+													{vendor.label}
+												</p>
+												<Badge variant="outline">
+													{vendor.starter_watchlist.matcher_value}
+												</Badge>
+											</div>
+											<p className="text-sm text-muted-foreground">
+												{vendor.starter_watchlist.briefing_goal}
+											</p>
+											<p className="text-sm text-muted-foreground">
+												{vendor.official_first_move}
+											</p>
+										</div>
+										<div className="mt-3 flex flex-wrap gap-3">
+											<Button asChild variant="hero" size="sm">
+												<Link
+													href={`/watchlists?compose=1&name=${encodeURIComponent(vendor.starter_watchlist.name)}&matcher_type=${encodeURIComponent(vendor.starter_watchlist.matcher_type)}&matcher_value=${encodeURIComponent(vendor.starter_watchlist.matcher_value)}&delivery_channel=${encodeURIComponent(vendor.starter_watchlist.delivery_channel)}#create-watchlist`}
+												>
+													Create starter watchlist
+												</Link>
+											</Button>
+											<Button asChild variant="outline" size="sm">
+												<Link href={`/subscriptions#vendor-sources`}>
+													Open vendor sources
+												</Link>
+											</Button>
+										</div>
+									</div>
+								))}
+							</CardContent>
+						</Card>
+					) : null}
+
 					<details
 						className="group rounded-xl border border-border/70 bg-card text-card-foreground folo-surface"
 						id="create-watchlist"
-						open={isReadyEmpty || Boolean(editingWatchlist)}
+						open={openCreateWatchlist || isReadyEmpty || Boolean(editingWatchlist)}
 					>
 						<summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-6 marker:content-none [&::-webkit-details-marker]:hidden">
 							<div className="space-y-1">
@@ -341,14 +463,29 @@ export default async function WatchlistsPage({
 									{editingWatchlist ? "Edit this watchlist" : copy.saveTitle}
 								</p>
 								<p className="text-sm text-muted-foreground">
-									Start with one topic or source. Delivery can wait.
+									{starterVendor
+										? `Finish the ${starterVendor.label} starter here, then read the first briefing.`
+										: "Start with one topic or source. Delivery can wait."}
 								</p>
 							</div>
 							<span className="rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground transition group-open:text-foreground">
-								{isReadyEmpty || editingWatchlist ? "Open" : "Later"}
+								{openCreateWatchlist || isReadyEmpty || editingWatchlist
+									? "Open"
+									: "Later"}
 							</span>
 						</summary>
 						<div className="border-t border-border/50 px-6 pb-6 pt-4">
+							{starterVendor ? (
+								<div className="mb-4 rounded-xl border border-border/60 bg-background/70 p-4">
+									<p className="text-sm font-medium text-foreground">
+										You are creating {starterVendor.starter_watchlist.name}
+									</p>
+									<p className="mt-1 text-sm text-muted-foreground">
+										Keep the starter matcher for now. You can widen delivery and
+										matching details later.
+									</p>
+								</div>
+							) : null}
 							<form action={upsertWatchlistAction} className="grid gap-4">
 								<WebActionSessionHiddenInput sessionToken={sessionToken} />
 								<input
@@ -362,7 +499,7 @@ export default async function WatchlistsPage({
 									name="name"
 									label={copy.nameLabel}
 									type="text"
-									defaultValue={editingWatchlist?.name ?? ""}
+									defaultValue={editingWatchlist?.name ?? starterDefaults.name}
 									placeholder={copy.namePlaceholder}
 									required
 								/>
@@ -377,7 +514,7 @@ export default async function WatchlistsPage({
 									<input
 										type="hidden"
 										name="matcher_type"
-										value="topic_key"
+										value={starterDefaults.matcherType}
 										readOnly
 									/>
 								)}
@@ -390,7 +527,9 @@ export default async function WatchlistsPage({
 											: "What do you want to keep following?"
 									}
 									type="text"
-									defaultValue={editingWatchlist?.matcher_value ?? ""}
+									defaultValue={
+										editingWatchlist?.matcher_value ?? starterDefaults.matcherValue
+									}
 									placeholder={copy.matcherValuePlaceholder}
 									required
 								/>
@@ -413,7 +552,7 @@ export default async function WatchlistsPage({
 												<FormSelectField
 													name="matcher_type"
 													label={copy.watchTypeLabel}
-													defaultValue="topic_key"
+													defaultValue={starterDefaults.matcherType}
 													options={matcherOptions}
 												/>
 											</>
@@ -422,7 +561,8 @@ export default async function WatchlistsPage({
 											name="delivery_channel"
 											label={copy.deliveryLabel}
 											defaultValue={
-												editingWatchlist?.delivery_channel ?? "dashboard"
+												editingWatchlist?.delivery_channel ??
+												starterDefaults.deliveryChannel
 											}
 											options={deliveryOptions}
 										/>

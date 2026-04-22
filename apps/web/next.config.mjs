@@ -21,7 +21,10 @@ const nextConfig = {
 	outputFileTracingRoot: monorepoRoot,
 	transpilePackages: ["@sourceharbor/sdk"],
 	turbopack: {
-		root: monorepoRoot,
+		// Keep Turbopack scoped to the app directory so runtime workspace copies
+		// do not infer a higher synthetic root and rewrite `.next` paths into
+		// `apps/web/.next`, which later breaks app-path manifest resolution.
+		root: configDir,
 	},
 	...(process.env.WEB_E2E_NEXT_DIST_DIR
 		? { distDir: process.env.WEB_E2E_NEXT_DIST_DIR }

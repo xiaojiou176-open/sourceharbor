@@ -160,6 +160,66 @@ export default async function BriefingsPage({
 				</CardContent>
 			</Card>
 
+			{watchlists.length === 0 ? (
+				<Card className="folo-surface border-border/70">
+					<CardHeader>
+						<h2 className="text-xl font-semibold">
+							Start with vendor sources first
+						</h2>
+						<CardDescription>
+							Briefings only become useful after you follow a few official
+							vendor channels and save the first vendor watchlist.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-3 text-sm text-muted-foreground">
+						<p>
+							Use vendor sources to follow changelog, release-note, status, and
+							blog lanes first. Treat X as a fast signal later, not as the main
+							truth source.
+						</p>
+						<div className="grid gap-3 md:grid-cols-3">
+							<div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+								<p className="text-sm font-medium text-foreground">
+									Current summary
+								</p>
+								<p className="mt-2">
+									One watchlist becomes a lead paragraph for what the story is
+									saying now.
+								</p>
+							</div>
+							<div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+								<p className="text-sm font-medium text-foreground">
+									Recent changes
+								</p>
+								<p className="mt-2">
+									The second block shows what changed instead of forcing you to
+									diff every run by hand.
+								</p>
+							</div>
+							<div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+								<p className="text-sm font-medium text-foreground">
+									Evidence nearby
+								</p>
+								<p className="mt-2">
+									The last layer keeps jobs, knowledge cards, and sources one
+									click away when you want the receipts.
+								</p>
+							</div>
+						</div>
+						<div className="flex flex-wrap gap-3">
+							<Button asChild variant="hero" size="sm">
+								<Link href="/subscriptions#vendor-sources">Open vendor sources</Link>
+							</Button>
+							<Button asChild variant="outline" size="sm">
+								<Link href="/watchlists?compose=1#create-watchlist">
+									Create a starter watchlist
+								</Link>
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+			) : null}
+
 			{selectedWatchlist && briefing ? (
 				<>
 					<section className="grid gap-4 xl:grid-cols-[1.15fr_0.95fr]">

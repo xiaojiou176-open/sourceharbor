@@ -741,6 +741,90 @@ def _mock_handler(state: MockApiState) -> type[BaseHTTPRequestHandler]:
                 self._send_json(HTTPStatus.OK, payload)
                 return
 
+            if path == "/api/v1/subscriptions/vendor-signals":
+                payload = {
+                    "signal_layers": [
+                        {
+                            "id": "confirmed",
+                            "label": "Confirmed truth",
+                            "description": "Official docs, changelog, release notes, status, and blog updates.",
+                        },
+                        {
+                            "id": "observation",
+                            "label": "Observation layer",
+                            "description": "Fast signals such as official X posts that need confirmation before promotion.",
+                        },
+                    ],
+                    "vendors": [
+                        {
+                            "id": "openai",
+                            "label": "OpenAI",
+                            "description": "Track official model, API, and product changes before downstream summaries drift.",
+                            "official_first_move": "Start with the API changelog and status before repeating a claim.",
+                            "x_policy_summary": "Treat OpenAI on X as a fast signal only until docs, status, or a longer-form post corroborates it.",
+                            "starter_watchlist": {
+                                "name": "OpenAI signals",
+                                "matcher_type": "source_match",
+                                "matcher_value": "openai",
+                                "delivery_channel": "dashboard",
+                                "briefing_goal": "What changed across official OpenAI channels this week?",
+                            },
+                            "confirmation_chain": [
+                                {
+                                    "id": "fast-signal",
+                                    "label": "Fast signal",
+                                    "description": "Use official X as observation only.",
+                                },
+                                {
+                                    "id": "confirm",
+                                    "label": "Confirm",
+                                    "description": "Promote only after changelog, status, or release notes corroborate it.",
+                                },
+                            ],
+                            "channels": [
+                                {
+                                    "id": "openai-api-changelog",
+                                    "label": "API changelog",
+                                    "url": "https://platform.openai.com/docs/changelog",
+                                    "channel_kind": "changelog",
+                                    "signal_layer": "confirmed",
+                                    "why_it_matters": "Model and API contract truth lands here first.",
+                                    "ingest_mode": "manual_url",
+                                    "feed_url": None,
+                                },
+                                {
+                                    "id": "openai-status",
+                                    "label": "OpenAI status",
+                                    "url": "https://status.openai.com/",
+                                    "channel_kind": "status",
+                                    "signal_layer": "confirmed",
+                                    "why_it_matters": "Incident truth without guesswork.",
+                                    "ingest_mode": "manual_url",
+                                    "feed_url": None,
+                                },
+                                {
+                                    "id": "openai-x",
+                                    "label": "OpenAI on X",
+                                    "url": "https://x.com/OpenAI",
+                                    "channel_kind": "x_account",
+                                    "signal_layer": "observation",
+                                    "why_it_matters": "Fast hints and screenshots, not final truth.",
+                                    "ingest_mode": "link_only",
+                                    "feed_url": None,
+                                },
+                            ],
+                        }
+                    ],
+                }
+                self._record_http(
+                    method="GET",
+                    path=path,
+                    query=parsed.query,
+                    status=int(HTTPStatus.OK),
+                )
+                self._send_json(HTTPStatus.OK, payload)
+                return
+
             if path == "/api/v1/subscriptions":
                 with state.lock:
                     subscriptions = list(state.subscriptions)

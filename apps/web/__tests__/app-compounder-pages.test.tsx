@@ -17,6 +17,7 @@ const mockGetWatchlistBriefingPage = vi.fn();
 const mockGetWatchlistTrend = vi.fn();
 const mockGetJobEvidenceBundle = vi.fn();
 const mockGetOpsInbox = vi.fn();
+const mockListVendorSignalTemplates = vi.fn();
 
 vi.mock("next/link", () => ({
 	default: ({
@@ -36,6 +37,8 @@ vi.mock("next/link", () => ({
 vi.mock("@/lib/api/client", () => ({
 	apiClient: {
 		listWatchlists: (...args: unknown[]) => mockListWatchlists(...args),
+		listVendorSignalTemplates: (...args: unknown[]) =>
+			mockListVendorSignalTemplates(...args),
 		getWatchlistBriefing: (...args: unknown[]) =>
 			mockGetWatchlistBriefing(...args),
 		getWatchlistBriefingPage: (...args: unknown[]) =>
@@ -62,6 +65,57 @@ describe("compounder pages", () => {
 				updated_at: "2026-03-31T10:00:00Z",
 			},
 		]);
+		mockListVendorSignalTemplates.mockResolvedValue({
+			signal_layers: [
+				{
+					id: "confirmed",
+					label: "Confirmed truth",
+					description: "Official channels first.",
+				},
+				{
+					id: "observation",
+					label: "Observation layer",
+					description: "Fast signals later.",
+				},
+			],
+			vendors: [
+				{
+					id: "openai",
+					label: "OpenAI",
+					description: "Track official OpenAI channels.",
+					official_first_move: "Start with changelog and status.",
+					x_policy_summary: "Treat X as observation only.",
+					starter_watchlist: {
+						name: "OpenAI signals",
+						matcher_type: "source_match",
+						matcher_value: "openai",
+						delivery_channel: "dashboard",
+						briefing_goal: "What changed across official OpenAI channels this week?",
+					},
+					confirmation_chain: [],
+					channels: [
+						{
+							id: "openai-api-changelog",
+							label: "API changelog",
+							url: "https://developers.openai.com/api/docs/changelog",
+							channel_kind: "changelog",
+							signal_layer: "confirmed",
+							why_it_matters: "Contract truth.",
+							ingest_mode: "manual_url",
+						},
+						{
+							id: "openai-x",
+							label: "OpenAI on X",
+							url: "https://x.com/OpenAI",
+							channel_kind: "x_account",
+							signal_layer: "observation",
+							why_it_matters: "Fast hints.",
+							ingest_mode: "link_only",
+						},
+					],
+				},
+			],
+		});
 		mockGetWatchlistTrend.mockResolvedValue({
 			watchlist: {
 				id: "wl-1",

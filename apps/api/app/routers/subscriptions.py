@@ -19,6 +19,7 @@ from ..services.subscriptions import (
     resolve_subscription_content_profile,
     resolve_subscription_support_tier,
 )
+from ..services.vendor_signal_templates import load_vendor_signal_catalog
 
 router = APIRouter(prefix="/api/v1/subscriptions", tags=["subscriptions"])
 
@@ -166,6 +167,53 @@ class SubscriptionTemplateCatalogResponse(BaseModel):
     templates: list[SubscriptionTemplate]
 
 
+class VendorSignalLayer(BaseModel):
+    id: str
+    label: str
+    description: str
+
+
+class VendorSignalConfirmationStep(BaseModel):
+    id: str
+    label: str
+    description: str
+
+
+class VendorSignalStarterWatchlist(BaseModel):
+    name: str
+    matcher_type: str
+    matcher_value: str
+    delivery_channel: str
+    briefing_goal: str
+
+
+class VendorSignalChannel(BaseModel):
+    id: str
+    label: str
+    url: str
+    channel_kind: str
+    signal_layer: str
+    why_it_matters: str
+    ingest_mode: str
+    feed_url: str | None = None
+
+
+class VendorSignalVendor(BaseModel):
+    id: str
+    label: str
+    description: str
+    official_first_move: str
+    x_policy_summary: str
+    starter_watchlist: VendorSignalStarterWatchlist
+    confirmation_chain: list[VendorSignalConfirmationStep]
+    channels: list[VendorSignalChannel]
+
+
+class VendorSignalCatalogResponse(BaseModel):
+    signal_layers: list[VendorSignalLayer]
+    vendors: list[VendorSignalVendor]
+
+
 class ManualSourceIntakeRequest(BaseModel):
     raw_input: str = Field(min_length=1, max_length=20_000)
     category: str = "misc"
@@ -247,6 +295,12 @@ def list_subscriptions(
 def get_subscription_templates():
     payload = load_subscription_template_catalog()
     return SubscriptionTemplateCatalogResponse(**payload)
+
+
+@router.get("/vendor-signals", response_model=VendorSignalCatalogResponse)
+def get_vendor_signal_templates():
+    payload = load_vendor_signal_catalog()
+    return VendorSignalCatalogResponse(**payload)
 
 
 @router.post(

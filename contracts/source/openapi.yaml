@@ -86,6 +86,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubscriptionTemplateCatalogResponse'
 
+  /api/v1/subscriptions/vendor-signals:
+    get:
+      operationId: listVendorSignalTemplates
+      responses:
+        '200':
+          description: Official vendor-channel catalog with confirmed and observation layers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorSignalCatalogResponse'
+
   /api/v1/subscriptions/{id}:
     delete:
       operationId: removeSubscription
@@ -1462,6 +1473,107 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionTemplate'
+
+    VendorSignalLayer:
+      type: object
+      required: [id, label, description]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+
+    VendorSignalConfirmationStep:
+      type: object
+      required: [id, label, description]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+
+    VendorSignalStarterWatchlist:
+      type: object
+      required: [name, matcher_type, matcher_value, delivery_channel, briefing_goal]
+      properties:
+        name:
+          type: string
+        matcher_type:
+          type: string
+          enum: [topic_key, claim_kind, platform, source_match]
+        matcher_value:
+          type: string
+        delivery_channel:
+          type: string
+          enum: [dashboard, email]
+        briefing_goal:
+          type: string
+
+    VendorSignalChannel:
+      type: object
+      required: [id, label, url, channel_kind, signal_layer, why_it_matters, ingest_mode]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        url:
+          type: string
+        channel_kind:
+          type: string
+        signal_layer:
+          type: string
+          enum: [confirmed, observation]
+        why_it_matters:
+          type: string
+        ingest_mode:
+          type: string
+        feed_url:
+          type: string
+          nullable: true
+
+    VendorSignalVendor:
+      type: object
+      required:
+        [id, label, description, official_first_move, x_policy_summary, starter_watchlist, confirmation_chain, channels]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        official_first_move:
+          type: string
+        x_policy_summary:
+          type: string
+        starter_watchlist:
+          $ref: '#/components/schemas/VendorSignalStarterWatchlist'
+        confirmation_chain:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorSignalConfirmationStep'
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorSignalChannel'
+
+    VendorSignalCatalogResponse:
+      type: object
+      required: [signal_layers, vendors]
+      properties:
+        signal_layers:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorSignalLayer'
+        vendors:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorSignalVendor'
 
     SubscriptionUpsertResponse:
       type: object

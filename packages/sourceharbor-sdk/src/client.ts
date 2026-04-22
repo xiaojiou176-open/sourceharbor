@@ -31,6 +31,7 @@ import type {
 	Subscription,
 	SubscriptionCategory,
 	SubscriptionTemplateCatalogResponse,
+	VendorSignalCatalogResponse,
 	SubscriptionUpsertRequest,
 	SubscriptionUpsertResponse,
 	Video,
@@ -585,34 +586,40 @@ export const apiClient = {
 		);
 	},
 
-		upsertSubscription(
-			payload: SubscriptionUpsertRequest,
-			options?: { writeAccessToken?: string | null },
-		) {
+	listVendorSignalTemplates() {
+		return requestJson<VendorSignalCatalogResponse>(
+			"/api/v1/subscriptions/vendor-signals",
+		);
+	},
+
+	upsertSubscription(
+		payload: SubscriptionUpsertRequest,
+		options?: { writeAccessToken?: string | null },
+	) {
 		return requestJson<SubscriptionUpsertResponse>("/api/v1/subscriptions", {
 			method: "POST",
 			body: payload,
 			writeAccessToken: options?.writeAccessToken,
-			});
-		},
+		});
+	},
 
-		submitManualSourceIntake(
-			payload: ManualSourceIntakeRequest,
-			options?: {
-				webSessionToken?: string | null;
-				writeAccessToken?: string | null;
-			},
-		) {
-			return requestJson<ManualSourceIntakeResponse>(
-				"/api/v1/subscriptions/manual-intake",
-				{
-					method: "POST",
-					body: payload,
-					webSessionToken: options?.webSessionToken,
-					writeAccessToken: options?.writeAccessToken,
-				},
-			);
+	submitManualSourceIntake(
+		payload: ManualSourceIntakeRequest,
+		options?: {
+			webSessionToken?: string | null;
+			writeAccessToken?: string | null;
 		},
+	) {
+		return requestJson<ManualSourceIntakeResponse>(
+			"/api/v1/subscriptions/manual-intake",
+			{
+				method: "POST",
+				body: payload,
+				webSessionToken: options?.webSessionToken,
+				writeAccessToken: options?.writeAccessToken,
+			},
+		);
+	},
 
 		batchUpdateSubscriptionCategory(
 			payload: { ids: string[]; category: string },
@@ -1143,6 +1150,12 @@ export function createSourceHarborClient(
 		listSubscriptionTemplates() {
 			return requestJsonForBase<SubscriptionTemplateCatalogResponse>(
 				"/api/v1/subscriptions/templates",
+			);
+		},
+
+		listVendorSignalTemplates() {
+			return requestJsonForBase<VendorSignalCatalogResponse>(
+				"/api/v1/subscriptions/vendor-signals",
 			);
 		},
 

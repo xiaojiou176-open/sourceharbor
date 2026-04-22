@@ -37,6 +37,8 @@ They should not assume:
 - a duplicated README, builder-guide, or status-page sentence about package versions or directory visibility carries fresher provenance than the canonical `docs/public-distribution.md` ledger
 - a repo-managed web runtime copy or a local mutation receipt automatically upgrades into public proof of hosted, packaged, or registry-listed distribution
 - a richer Bilibili evidence summary in a job bundle or feed reading pane grants any redistribution right over the raw danmaku, comments, replies, or third-party media behind it
+- a vendor-radar starter packet, shared `vendor-signals` catalog entry, or starter watchlist link grants any special redistribution or endorsement right over the linked vendor channels; those artifacts only describe how SourceHarbor points at public official sources
+- an official vendor X account listed as `observation` in the starter catalog changes the provenance tier of that signal into confirmed truth; confirmation still belongs to changelog, release-note, status, or long-form official posts
 - a registry starter packet, package metadata template, or older repo ledger automatically proves a current Official MCP Registry listing without a fresh anonymous read-back
 - a lowercase GitHub Pages URL variant carries the same public provenance as the live deployed homepage path when the actual Pages host only serves the case-correct route
 - a repo-managed web runtime `.env.local` file or local write-session fallback token carries any public redistribution rights; it remains maintainer-local runtime state only

@@ -163,6 +163,60 @@ export type SubscriptionTemplateCatalogResponse = {
 	templates: SubscriptionTemplate[];
 };
 
+export type VendorSignalLayer = {
+	id: "confirmed" | "observation" | ExtensibleString;
+	label: string;
+	description: string;
+};
+
+export type VendorSignalConfirmationStep = {
+	id: string;
+	label: string;
+	description: string;
+};
+
+export type VendorSignalStarterWatchlist = {
+	name: string;
+	matcher_type: "source_match" | "topic_key" | "claim_kind" | "platform" | ExtensibleString;
+	matcher_value: string;
+	delivery_channel: "dashboard" | "email" | ExtensibleString;
+	briefing_goal: string;
+};
+
+export type VendorSignalChannel = {
+	id: string;
+	label: string;
+	url: string;
+	channel_kind:
+		| "changelog"
+		| "release_notes"
+		| "status"
+		| "blog"
+		| "docs"
+		| "x_account"
+		| ExtensibleString;
+	signal_layer: VendorSignalLayer["id"];
+	why_it_matters: string;
+	ingest_mode: "manual_url" | "link_only" | ExtensibleString;
+	feed_url?: string | null;
+};
+
+export type VendorSignalVendor = {
+	id: string;
+	label: string;
+	description: string;
+	official_first_move: string;
+	x_policy_summary: string;
+	starter_watchlist: VendorSignalStarterWatchlist;
+	confirmation_chain: VendorSignalConfirmationStep[];
+	channels: VendorSignalChannel[];
+};
+
+export type VendorSignalCatalogResponse = {
+	signal_layers: VendorSignalLayer[];
+	vendors: VendorSignalVendor[];
+};
+
 export type IngestPollRequest = {
 	subscription_id?: string;
 	platform?: Platform;

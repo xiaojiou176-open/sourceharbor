@@ -55,6 +55,7 @@ Current intake truth:
 
 - **strong support:** YouTube channels and Bilibili creators
 - **general substrate:** RSSHub routes and generic RSS/Atom feeds
+- **vendor radar starters:** official channel templates for OpenAI, Anthropic, Gemini, and xAI now live inside `/subscriptions`, with changelog/status/blog as confirmed truth and X explicitly held as an observation layer
 - **not yet claimable:** route-by-route verification for the full RSSHub universe
 
 ## Product In One Glance

@@ -1,0 +1,308 @@
+{
+  "signal_layers": [
+    {
+      "id": "confirmed",
+      "label": "Confirmed truth",
+      "description": "Official docs, changelog, release notes, status, and long-form blog updates."
+    },
+    {
+      "id": "observation",
+      "label": "Observation layer",
+      "description": "Fast signals such as official X posts that need confirmation before promotion."
+    }
+  ],
+  "vendors": [
+    {
+      "id": "openai",
+      "label": "OpenAI",
+      "description": "Track official model, API, and product updates before they get paraphrased downstream.",
+      "official_first_move": "Start with the API changelog and status before repeating a claim.",
+      "x_policy_summary": "Treat OpenAI on X as a fast signal only until docs, status, or a longer-form post corroborates it.",
+      "starter_watchlist": {
+        "name": "OpenAI signals",
+        "matcher_type": "source_match",
+        "matcher_value": "openai",
+        "delivery_channel": "dashboard",
+        "briefing_goal": "What changed across official OpenAI channels this week?"
+      },
+      "confirmation_chain": [
+        {
+          "id": "fast-signal",
+          "label": "Fast signal",
+          "description": "Use official X as observation only."
+        },
+        {
+          "id": "confirm",
+          "label": "Confirm",
+          "description": "Promote only after changelog, status, help release notes, or blog corroborates it."
+        }
+      ],
+      "channels": [
+        {
+          "id": "openai-api-changelog",
+          "label": "API changelog",
+          "url": "https://platform.openai.com/docs/changelog",
+          "channel_kind": "changelog",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Model and API contract truth lands here first.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "openai-chatgpt-release-notes",
+          "label": "ChatGPT release notes",
+          "url": "https://help.openai.com/en/articles/6825453-chatgpt-release-notes",
+          "channel_kind": "release_notes",
+          "signal_layer": "confirmed",
+          "why_it_matters": "User-facing product rollouts and behavior changes.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "openai-status",
+          "label": "OpenAI status",
+          "url": "https://status.openai.com/",
+          "channel_kind": "status",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Incidents explain runtime regressions without guesswork.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "openai-news",
+          "label": "OpenAI developers blog",
+          "url": "https://developers.openai.com/blog",
+          "channel_kind": "blog",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Long-form developer launches, migration notes, and rollout framing.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "openai-x",
+          "label": "OpenAI on X",
+          "url": "https://x.com/OpenAI",
+          "channel_kind": "x_account",
+          "signal_layer": "observation",
+          "why_it_matters": "Fast hints and screenshots, not final truth.",
+          "ingest_mode": "link_only"
+        }
+      ]
+    },
+    {
+      "id": "anthropic",
+      "label": "Anthropic",
+      "description": "Track Claude, API, and developer-surface changes through official release and reliability channels.",
+      "official_first_move": "Start with Anthropic release notes and status before taking a social post as truth.",
+      "x_policy_summary": "Treat Anthropic on X as observation until release notes, docs, or status confirms it.",
+      "starter_watchlist": {
+        "name": "Anthropic signals",
+        "matcher_type": "source_match",
+        "matcher_value": "anthropic",
+        "delivery_channel": "dashboard",
+        "briefing_goal": "What changed across official Anthropic channels this week?"
+      },
+      "confirmation_chain": [
+        {
+          "id": "fast-signal",
+          "label": "Fast signal",
+          "description": "Use official X as an early hint only."
+        },
+        {
+          "id": "confirm",
+          "label": "Confirm",
+          "description": "Promote only after release notes, status, or newsroom posts line up."
+        }
+      ],
+      "channels": [
+        {
+          "id": "anthropic-release-notes",
+          "label": "Anthropic release notes",
+          "url": "https://docs.anthropic.com/en/release-notes/overview",
+          "channel_kind": "release_notes",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Claude and API product truth.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "anthropic-claude-code",
+          "label": "Claude Code release notes",
+          "url": "https://docs.anthropic.com/en/release-notes/claude-code",
+          "channel_kind": "release_notes",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Developer-surface changes often land here first.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "anthropic-status",
+          "label": "Anthropic status",
+          "url": "https://status.anthropic.com/",
+          "channel_kind": "status",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Incident truth with an official status surface.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "anthropic-news",
+          "label": "Anthropic news",
+          "url": "https://www.anthropic.com/news",
+          "channel_kind": "blog",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Long-form launches and research framing.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "anthropic-x",
+          "label": "Anthropic on X",
+          "url": "https://x.com/AnthropicAI",
+          "channel_kind": "x_account",
+          "signal_layer": "observation",
+          "why_it_matters": "Fast hints and public demos before formal confirmation.",
+          "ingest_mode": "link_only"
+        }
+      ]
+    },
+    {
+      "id": "gemini",
+      "label": "Google Gemini",
+      "description": "Track Gemini API, model, and platform changes across official Google AI surfaces.",
+      "official_first_move": "Start with Gemini API changelog before extrapolating from screenshots or summaries.",
+      "x_policy_summary": "Treat Google AI / DeepMind on X as observation until the Gemini changelog, docs, or blog confirms it.",
+      "starter_watchlist": {
+        "name": "Gemini signals",
+        "matcher_type": "source_match",
+        "matcher_value": "gemini",
+        "delivery_channel": "dashboard",
+        "briefing_goal": "What changed across official Gemini channels this week?"
+      },
+      "confirmation_chain": [
+        {
+          "id": "fast-signal",
+          "label": "Fast signal",
+          "description": "Use official Google AI social posts as observation only."
+        },
+        {
+          "id": "confirm",
+          "label": "Confirm",
+          "description": "Promote only after the Gemini API changelog or official Google blog confirms it."
+        }
+      ],
+      "channels": [
+        {
+          "id": "gemini-api-changelog",
+          "label": "Gemini API changelog",
+          "url": "https://ai.google.dev/gemini-api/docs/changelog",
+          "channel_kind": "changelog",
+          "signal_layer": "confirmed",
+          "why_it_matters": "API, model, and tier changes land here first.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "gemini-api-docs",
+          "label": "Gemini API docs",
+          "url": "https://ai.google.dev/gemini-api/docs",
+          "channel_kind": "docs",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Reference surface for current model and feature behavior.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "gemini-api-deprecations",
+          "label": "Gemini API deprecations",
+          "url": "https://ai.google.dev/gemini-api/docs/deprecations",
+          "channel_kind": "release_notes",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Shutdown windows and recommended replacements belong here, not in social chatter.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "vertex-gemini-status",
+          "label": "Vertex Gemini API status",
+          "url": "https://status.cloud.google.com/products/Z0FZJAMvEB4j3NbCJs6B/history",
+          "channel_kind": "status",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Official ops signal for the Vertex Gemini API surface; treat it as scoped status, not total Gemini truth.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "google-deepmind-blog",
+          "label": "Google DeepMind blog",
+          "url": "https://blog.google/technology/google-deepmind/",
+          "channel_kind": "blog",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Long-form product and research launches.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "google-deepmind-x",
+          "label": "Google DeepMind on X",
+          "url": "https://x.com/GoogleDeepMind",
+          "channel_kind": "x_account",
+          "signal_layer": "observation",
+          "why_it_matters": "Fast hints, screenshots, and demos before formal docs catch up.",
+          "ingest_mode": "link_only"
+        }
+      ]
+    },
+    {
+      "id": "xai",
+      "label": "xAI",
+      "description": "Track Grok and API/runtime changes through official developer notes and status channels.",
+      "official_first_move": "Start with xAI developer release notes and status before repeating a product rumor.",
+      "x_policy_summary": "Treat xAI on X as observation only until release notes or status confirms the change.",
+      "starter_watchlist": {
+        "name": "xAI signals",
+        "matcher_type": "source_match",
+        "matcher_value": "xai",
+        "delivery_channel": "dashboard",
+        "briefing_goal": "What changed across official xAI channels this week?"
+      },
+      "confirmation_chain": [
+        {
+          "id": "fast-signal",
+          "label": "Fast signal",
+          "description": "Use xAI posts on X as early hints only."
+        },
+        {
+          "id": "confirm",
+          "label": "Confirm",
+          "description": "Promote only after developer release notes or status corroborates it."
+        }
+      ],
+      "channels": [
+        {
+          "id": "xai-release-notes",
+          "label": "xAI release notes",
+          "url": "https://docs.x.ai/developers/release-notes",
+          "channel_kind": "release_notes",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Developer-facing Grok and API changes.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "xai-status",
+          "label": "xAI status",
+          "url": "https://status.x.ai/",
+          "channel_kind": "status",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Reliability and incident truth.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "xai-docs",
+          "label": "xAI developer docs",
+          "url": "https://docs.x.ai/",
+          "channel_kind": "docs",
+          "signal_layer": "confirmed",
+          "why_it_matters": "Reference surface for current API behavior.",
+          "ingest_mode": "manual_url"
+        },
+        {
+          "id": "xai-x",
+          "label": "xAI on X",
+          "url": "https://x.com/xai",
+          "channel_kind": "x_account",
+          "signal_layer": "observation",
+          "why_it_matters": "Fast hints and launch teases before formal notes land.",
+          "ingest_mode": "link_only"
+        }
+      ]
+    }
+  ]
+}

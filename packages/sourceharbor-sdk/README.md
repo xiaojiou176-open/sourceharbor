@@ -8,7 +8,7 @@ This first public SDK intentionally stays small:
 - story-aware Ask page payload
 - job lookup
 - watchlist listing
-- subscription template discovery
+- subscription template and vendor signal discovery
 - opt-in write helpers for ingest poll and video processing
 
 It does **not** try to mirror every operator-only web helper. The SDK is meant

@@ -12,6 +12,7 @@ That does **not** automatically mean every remote or release claim is proven for
 - the current frontstage/story surfaces can now be re-verified with a repo-owned clean proof pack and UI audit runner instead of one-off manual screenshot commands
 - the current public front door can also be re-verified with a repo-owned frontstage clean proof pack and UI audit runner over `/`, `/feed`, `/subscriptions`, and `/reader/demo`
 - the current Bilibili-facing front door now includes a discovery desk on `/subscriptions`, richer source facts on `/jobs` and the feed reading pane, and repo-owned browser proof on `/ops`
+- the current `/subscriptions` front door now also includes a vendor-radar starter desk backed by the shared `vendor-signals` catalog, with official changelog/status/blog lanes marked as confirmed truth and X explicitly held as an observation layer
 
 ## What Needs Stronger Evidence
 
@@ -51,6 +52,7 @@ Two current reading rules are worth keeping explicit:
   - the current local video-first lane can use Gemini upload waiting plus a lightweight proxy-video path so oversized raw downloads do not get mistaken for a stable hosted/runtime guarantee
 - the reader-first frontstage on `/reader`, `/feed`, `/search`, and `/ask` is a public product surface, but the working contracts that shaped it stay in the internal planning ledger; public docs should point at the stable summary and proof ladder instead of exposing those internal ledgers as visitor-facing truth
 - `/subscriptions` can now help with Bilibili discovery through explicit external hot/rank/search/creator shortcuts, but that surface is still a discovery front door, not a claim that SourceHarbor has become a full Bilibili client
+- `/subscriptions` can now help users start vendor watchlists from public vendor starter packets, but that surface is still a reader-first intake front door rather than a claim that SourceHarbor now owns or mirrors those vendor platforms
 
 That separation matters because SourceHarbor can honestly advance one layer without pretending all the other layers moved with it.
 
