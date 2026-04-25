@@ -11,6 +11,10 @@ is_linux_arm64() {
   [[ "$kernel" == "Linux" && ( "$machine" == "aarch64" || "$machine" == "arm64" ) ]]
 }
 
+is_sourced_script() {
+  [[ "${BASH_SOURCE[0]}" != "$0" ]]
+}
+
 configure_strict_ci_python_environment() {
   local platform_id env_root repo_hash env_dir
   platform_id="$(uname -s)-$(uname -m)"
@@ -159,7 +163,12 @@ if [[ "${STRICT_CI_BOOTSTRAP_LOAD_HELPERS_ONLY:-0}" != "1" ]]; then
   if ! web_node_modules_ready || [[ "$existing_web_hash" != "$web_hash" ]]; then
     bash "$ROOT_DIR/scripts/ci/prepare_web_runtime.sh" >/dev/null
     repair_linux_arm64_optional_native_web_packages
-    web_node_modules_ready
-    printf '%s' "$web_hash" > "$web_hash_file"
+    if web_node_modules_ready; then
+      printf '%s' "$web_hash" > "$web_hash_file"
+    elif is_sourced_script && is_linux_arm64; then
+      true
+    else
+      exit 1
+    fi
   fi
 fi

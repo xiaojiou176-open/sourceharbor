@@ -37,10 +37,15 @@ is_running_inside_standard_env() {
 }
 
 append_standard_env_git_mounts() {
-  local -n mounts_ref="$1"
+  local mounts_ref="${1:-}"
   local git_file="$ROOT_DIR/.git"
   local git_dir=""
   local git_common_dir=""
+
+  if [[ ! "$mounts_ref" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+    echo "[strict-standard-env] invalid git mounts array name: ${mounts_ref:-<empty>}" >&2
+    return 2
+  fi
 
   if [[ -d "$git_file" ]]; then
     return 0
@@ -54,7 +59,7 @@ append_standard_env_git_mounts() {
   [[ -n "$git_dir" ]] || return 0
 
   if [[ "$git_dir" != "$ROOT_DIR/.git" ]]; then
-    mounts_ref+=(-v "$git_dir:$git_dir")
+    eval "$mounts_ref+=(\"-v\" \"\$git_dir:\$git_dir\")"
   fi
   if [[ -n "$git_common_dir" ]]; then
     git_common_dir="$(cd "$ROOT_DIR" && python3 - <<'PY' "$git_common_dir"
@@ -64,7 +69,7 @@ print(Path(sys.argv[1]).resolve())
 PY
 )"
     if [[ "$git_common_dir" != "$ROOT_DIR/.git" && "$git_common_dir" != "$git_dir" ]]; then
-      mounts_ref+=(-v "$git_common_dir:$git_common_dir")
+      eval "$mounts_ref+=(\"-v\" \"\$git_common_dir:\$git_common_dir\")"
     fi
   fi
 }
@@ -164,7 +169,8 @@ build_standard_env_image() {
     return 0
   fi
 
-  "$ROOT_DIR/scripts/ci/build_standard_image.sh" --load --tag local-debug
+  SOURCE_HARBOR_STANDARD_ENV_DOCKERFILE="$STANDARD_ENV_DOCKERFILE" \
+    "$ROOT_DIR/scripts/ci/build_standard_image.sh" --load --tag local-debug
   STANDARD_ENV_IMAGE="${STRICT_CI_STANDARD_IMAGE_REPOSITORY}:local-debug"
 }
 
@@ -240,7 +246,7 @@ run_in_standard_env() {
   docker run --rm --init \
     --network host \
     -v "$ROOT_DIR:$STANDARD_ENV_WORKDIR" \
-    "${extra_mounts[@]}" \
+    ${extra_mounts[@]+"${extra_mounts[@]}"} \
     -w "$STANDARD_ENV_WORKDIR" \
     -e SOURCE_HARBOR_IN_STANDARD_ENV=1 \
     -e CI="${CI:-}" \
