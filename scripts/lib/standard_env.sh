@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 eval "$(python3 "$ROOT_DIR/scripts/ci/contract.py" shell-exports)"
 STANDARD_ENV_IMAGE="${SOURCE_HARBOR_STANDARD_ENV_IMAGE:-$STRICT_CI_STANDARD_IMAGE_REF}"
+STANDARD_ENV_DOCKERFILE="${SOURCE_HARBOR_STANDARD_ENV_DOCKERFILE:-$ROOT_DIR/$STRICT_CI_STANDARD_IMAGE_DOCKERFILE}"
 STANDARD_ENV_WORKDIR="${SOURCE_HARBOR_STANDARD_ENV_WORKDIR:-$STRICT_CI_STANDARD_IMAGE_WORKDIR}"
 STANDARD_ENV_HOST_GATEWAY="${SOURCE_HARBOR_STANDARD_ENV_HOST_GATEWAY:-host.docker.internal}"
 STANDARD_ENV_MARKER_PATH="${SOURCE_HARBOR_STANDARD_ENV_MARKER_PATH:-/etc/sourceharbor-strict-ci-standard-env}"
@@ -168,7 +169,8 @@ build_standard_env_image() {
     return 0
   fi
 
-  "$ROOT_DIR/scripts/ci/build_standard_image.sh" --load --tag local-debug
+  SOURCE_HARBOR_STANDARD_ENV_DOCKERFILE="$STANDARD_ENV_DOCKERFILE" \
+    "$ROOT_DIR/scripts/ci/build_standard_image.sh" --load --tag local-debug
   STANDARD_ENV_IMAGE="${STRICT_CI_STANDARD_IMAGE_REPOSITORY}:local-debug"
 }
 

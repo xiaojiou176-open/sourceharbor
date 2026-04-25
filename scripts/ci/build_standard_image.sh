@@ -97,6 +97,7 @@ eval "$(python3 "$ROOT_DIR/scripts/ci/contract.py" shell-exports)"
 
 image_repository="$STRICT_CI_STANDARD_IMAGE_REPOSITORY"
 image_tag="$STRICT_CI_STANDARD_IMAGE_TAG"
+standard_image_dockerfile="${SOURCE_HARBOR_STANDARD_ENV_DOCKERFILE:-$STRICT_CI_STANDARD_IMAGE_DOCKERFILE}"
 if [[ -n "$TAG_OVERRIDE" ]]; then
   image_tag="$TAG_OVERRIDE"
 fi
@@ -111,7 +112,7 @@ build_args=(
 )
 
 common_args=(
-  --file "$STRICT_CI_STANDARD_IMAGE_DOCKERFILE"
+  --file "$standard_image_dockerfile"
   --tag "${image_repository}:${image_tag}"
 )
 
